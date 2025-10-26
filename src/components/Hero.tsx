@@ -1,16 +1,46 @@
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
-import heroImage from "@/assets/hvac-hero.jpg";
+import heroImage1 from "@/assets/hvac-hero.jpg";
+import heroImage2 from "@/assets/hvac-hero-2.jpg";
+import heroImage3 from "@/assets/hvac-hero-3.jpg";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+
+const heroImages = [
+  { src: heroImage1, alt: "Professional HVAC technician servicing air conditioning unit" },
+  { src: heroImage2, alt: "Professional HVAC installation service" },
+  { src: heroImage3, alt: "Modern HVAC equipment and professional service" },
+];
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center pt-20">
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroImage} 
-          alt="Professional HVAC technician servicing air conditioning unit" 
-          className="w-full h-full object-cover"
-        />
+        <Carousel
+          opts={{ loop: true }}
+          plugins={[
+            Autoplay({
+              delay: 5000,
+            }),
+          ]}
+          className="w-full h-full"
+        >
+          <CarouselContent>
+            {heroImages.map((image, index) => (
+              <CarouselItem key={index}>
+                <img 
+                  src={image.src} 
+                  alt={image.alt} 
+                  className="w-full h-screen object-cover"
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60"></div>
       </div>
       
