@@ -47,15 +47,132 @@ export type Database = {
         }
         Relationships: []
       }
+      hero_content: {
+        Row: {
+          badge_text: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean | null
+          primary_button_link: string
+          primary_button_text: string
+          secondary_button_link: string
+          secondary_button_text: string
+          stat1_label: string
+          stat1_value: string
+          stat2_label: string
+          stat2_value: string
+          stat3_label: string
+          stat3_value: string
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean | null
+          primary_button_link?: string
+          primary_button_text?: string
+          secondary_button_link?: string
+          secondary_button_text?: string
+          stat1_label?: string
+          stat1_value?: string
+          stat2_label?: string
+          stat2_value?: string
+          stat3_label?: string
+          stat3_value?: string
+          subtitle: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          primary_button_link?: string
+          primary_button_text?: string
+          secondary_button_link?: string
+          secondary_button_text?: string
+          stat1_label?: string
+          stat1_value?: string
+          stat2_label?: string
+          stat2_value?: string
+          stat3_label?: string
+          stat3_value?: string
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hero_images: {
+        Row: {
+          alt_text: string
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean | null
+        }
+        Insert: {
+          alt_text: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -182,6 +299,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
