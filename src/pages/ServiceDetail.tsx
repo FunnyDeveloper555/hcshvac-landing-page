@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import ServiceBookingForm from "@/components/ServiceBookingForm";
 
 interface Service {
@@ -22,6 +22,7 @@ interface Service {
 const ServiceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [service, setService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ const ServiceDetail = () => {
   }, [id]);
 
   const fetchService = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from("services")
       .select("*")
@@ -41,6 +43,7 @@ const ServiceDetail = () => {
     if (data) {
       setService(data);
     }
+    setLoading(false);
   };
 
   const getIcon = (iconName: string) => {
@@ -48,12 +51,24 @@ const ServiceDetail = () => {
     return Icon;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!service) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-20 text-center">
-          <p>Loading...</p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Service not found</p>
         </div>
         <Footer />
       </div>
@@ -63,10 +78,10 @@ const ServiceDetail = () => {
   const Icon = getIcon(service.icon);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="pt-20">
+      <main className="flex-1 pt-20">
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-primary/10 via-background to-secondary/20 py-20">
           <div className="container mx-auto px-4">
