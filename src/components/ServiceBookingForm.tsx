@@ -22,18 +22,19 @@ const formSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters").max(100),
   email: z.string().email("Invalid email address").max(255),
   phone: z.string().min(10, "Phone number must be at least 10 digits").max(20),
+  address: z.string().max(500).optional(),
   preferred_date: z.string().min(1, "Please select a date"),
   preferred_time: z.string().min(1, "Please select a time"),
-  address: z.string().max(500).optional(),
   message: z.string().max(1000).optional(),
 });
 
 interface ServiceBookingFormProps {
   serviceId: string;
   serviceName: string;
+  onClose?: () => void;
 }
 
-const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps) => {
+const ServiceBookingForm = ({ serviceId, serviceName, onClose }: ServiceBookingFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,36 +43,41 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
       full_name: "",
       email: "",
       phone: "",
+      address: "",
       preferred_date: "",
       preferred_time: "",
-      address: "",
       message: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    
     try {
-      const { error } = await supabase.from("service_bookings").insert([
-        {
-          service_id: serviceId,
-          ...values,
-        },
-      ]);
+      setIsSubmitting(true);
+
+      const { error } = await supabase.from("service_bookings").insert({
+        service_id: serviceId,
+        full_name: values.full_name,
+        email: values.email,
+        phone: values.phone,
+        address: values.address || null,
+        preferred_date: values.preferred_date,
+        preferred_time: values.preferred_time,
+        message: values.message || null,
+      });
 
       if (error) throw error;
 
       toast({
-        title: "Booking Request Submitted!",
+        title: "Booking submitted!",
         description: "We'll contact you shortly to confirm your appointment.",
       });
 
       form.reset();
-    } catch (error: any) {
+      onClose?.();
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to submit booking. Please try again.",
+        description: "Failed to submit booking. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -80,39 +86,55 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
   };
 
   return (
-    <Card className="shadow-xl">
+    <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
+          <Calendar className="w-5 h-5" />
           Book {serviceName}
         </CardTitle>
         <CardDescription>
-          Fill out the form below and we'll get back to you shortly
+          Fill out the form below and we'll get back to you to confirm your appointment
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(555) 123-4567" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email *</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="john@example.com" {...field} />
                   </FormControl>
@@ -123,25 +145,25 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
 
             <FormField
               control={form.control}
-              name="phone"
+              name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel>Service Address</FormLabel>
                   <FormControl>
-                    <Input type="tel" placeholder="(555) 123-4567" {...field} />
+                    <Input placeholder="123 Main St, City, State" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="preferred_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preferred Date</FormLabel>
+                    <FormLabel>Preferred Date *</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -155,7 +177,7 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
                 name="preferred_time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preferred Time</FormLabel>
+                    <FormLabel>Preferred Time *</FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
@@ -167,27 +189,14 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
 
             <FormField
               control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Service Address (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Main St, City, State" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Information (Optional)</FormLabel>
+                  <FormLabel>Additional Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Tell us more about your service needs..."
+                      placeholder="Any specific requirements or details..."
+                      rows={4}
                       {...field}
                     />
                   </FormControl>
@@ -196,13 +205,16 @@ const ServiceBookingForm = ({ serviceId, serviceName }: ServiceBookingFormProps)
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Request Booking"}
-            </Button>
+            <div className="flex gap-3">
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting ? "Submitting..." : "Book Appointment"}
+              </Button>
+              {onClose && (
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </form>
         </Form>
       </CardContent>
