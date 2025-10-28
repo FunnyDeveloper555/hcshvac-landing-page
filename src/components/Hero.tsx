@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
-import heroImage1 from "@/assets/hvac-hero.jpg";
-import heroImage2 from "@/assets/hvac-hero-2.jpg";
-import heroImage3 from "@/assets/hvac-hero-3.jpg";
 import {
   Carousel,
   CarouselContent,
@@ -11,12 +8,6 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { supabase } from "@/integrations/supabase/client";
-
-const heroImages = [
-  { src: heroImage1, alt: "Professional HVAC technician servicing air conditioning unit" },
-  { src: heroImage2, alt: "Professional HVAC installation service" },
-  { src: heroImage3, alt: "Modern HVAC equipment and professional service" },
-];
 
 interface HeroContent {
   title: string;
@@ -35,11 +26,21 @@ interface HeroContent {
   stat3_label: string;
 }
 
+interface HeroImage {
+  id: string;
+  image_url: string;
+  alt_text: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 const Hero = () => {
   const [content, setContent] = useState<HeroContent | null>(null);
+  const [images, setImages] = useState<HeroImage[]>([]);
 
   useEffect(() => {
     fetchHeroContent();
+    fetchHeroImages();
   }, []);
 
   const fetchHeroContent = async () => {
@@ -54,7 +55,19 @@ const Hero = () => {
     }
   };
 
-  if (!content) {
+  const fetchHeroImages = async () => {
+    const { data } = await supabase
+      .from("hero_images")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+
+    if (data) {
+      setImages(data);
+    }
+  };
+
+  if (!content || images.length === 0) {
     return null;
   }
 
@@ -71,11 +84,11 @@ const Hero = () => {
           className="w-full h-full"
         >
           <CarouselContent>
-            {heroImages.map((image, index) => (
-              <CarouselItem key={index}>
+            {images.map((image) => (
+              <CarouselItem key={image.id}>
                 <img 
-                  src={image.src} 
-                  alt={image.alt} 
+                  src={image.image_url} 
+                  alt={image.alt_text} 
                   className="w-full h-screen object-cover"
                 />
               </CarouselItem>
