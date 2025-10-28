@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HeroAdmin from "@/components/admin/HeroAdmin";
 import HeroImagesAdmin from "@/components/admin/HeroImagesAdmin";
+import ServicesAdmin from "@/components/admin/ServicesAdmin";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -52,7 +53,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="hero">Hero Content</TabsTrigger>
             <TabsTrigger value="images">Hero Images</TabsTrigger>
-            <TabsTrigger value="services" disabled>Services (Coming Soon)</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
             <TabsTrigger value="benefits" disabled>Why Choose Us (Coming Soon)</TabsTrigger>
             <TabsTrigger value="companies" disabled>Companies (Coming Soon)</TabsTrigger>
           </TabsList>
@@ -63,6 +64,10 @@ const Admin = () => {
 
           <TabsContent value="images" className="mt-6">
             <HeroImagesAdmin />
+          </TabsContent>
+
+          <TabsContent value="services" className="mt-6">
+            <ServicesAdmin />
           </TabsContent>
         </Tabs>
       </main>
