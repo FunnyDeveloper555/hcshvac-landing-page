@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Trash2, Upload } from "lucide-react";
 
 interface Company {
   id: string;
@@ -14,16 +14,19 @@ interface Company {
   display_order: number;
   is_active: boolean;
   created_at: string;
+  logo_url?: string;
 }
 
 const CompaniesAdmin = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Partial<Company>>({
     name: "",
     display_order: 0,
     is_active: true,
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +52,63 @@ const CompaniesAdmin = () => {
     setLoading(false);
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please upload an image smaller than 2MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('company-logos')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('company-logos')
+        .getPublicUrl(filePath);
+
+      setEditingCompany({ ...editingCompany, logo_url: publicUrl });
+
+      toast({
+        title: "Success",
+        description: "Logo uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload logo",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!editingCompany.name?.trim()) {
       toast({
@@ -60,13 +120,13 @@ const CompaniesAdmin = () => {
     }
 
     if (editingCompany.id) {
-      // Update
       const { error } = await supabase
         .from("companies")
         .update({
           name: editingCompany.name,
           display_order: editingCompany.display_order || 0,
           is_active: editingCompany.is_active,
+          logo_url: editingCompany.logo_url,
         })
         .eq("id", editingCompany.id);
 
@@ -85,13 +145,13 @@ const CompaniesAdmin = () => {
         setEditingCompany({ name: "", display_order: 0, is_active: true });
       }
     } else {
-      // Create
       const { error } = await supabase
         .from("companies")
         .insert({
           name: editingCompany.name,
           display_order: editingCompany.display_order || 0,
           is_active: editingCompany.is_active ?? true,
+          logo_url: editingCompany.logo_url,
         });
 
       if (error) {
@@ -178,6 +238,46 @@ const CompaniesAdmin = () => {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="logo">Company Logo</Label>
+            <div className="flex items-center gap-4">
+              {editingCompany.logo_url && (
+                <img
+                  src={editingCompany.logo_url}
+                  alt="Logo preview"
+                  className="w-16 h-16 object-contain border rounded"
+                />
+              )}
+              <div className="flex-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Logo
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center space-x-2">
             <Switch
               id="is_active"
@@ -223,12 +323,21 @@ const CompaniesAdmin = () => {
                   key={company.id}
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{company.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Order: {company.display_order} • 
-                      {company.is_active ? " Active" : " Inactive"}
-                    </p>
+                  <div className="flex items-center gap-4 flex-1">
+                    {company.logo_url && (
+                      <img
+                        src={company.logo_url}
+                        alt={company.name}
+                        className="w-12 h-12 object-contain"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{company.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Order: {company.display_order} • 
+                        {company.is_active ? " Active" : " Inactive"}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button

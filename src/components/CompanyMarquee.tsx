@@ -7,6 +7,7 @@ interface Company {
   name: string;
   display_order: number;
   is_active: boolean;
+  logo_url?: string;
 }
 
 const CompanyMarquee = () => {
@@ -47,7 +48,15 @@ const CompanyMarquee = () => {
               key={`first-${company.id}`}
               className="flex items-center gap-3 mx-8 min-w-fit"
             >
-              <Building2 className="text-accent" size={24} />
+              {company.logo_url ? (
+                <img
+                  src={company.logo_url}
+                  alt={company.name}
+                  className="w-8 h-8 object-contain"
+                />
+              ) : (
+                <Building2 className="text-accent" size={24} />
+              )}
               <span className="text-lg font-medium whitespace-nowrap">
                 {company.name}
               </span>
@@ -60,7 +69,15 @@ const CompanyMarquee = () => {
               key={`second-${company.id}`}
               className="flex items-center gap-3 mx-8 min-w-fit"
             >
-              <Building2 className="text-accent" size={24} />
+              {company.logo_url ? (
+                <img
+                  src={company.logo_url}
+                  alt={company.name}
+                  className="w-8 h-8 object-contain"
+                />
+              ) : (
+                <Building2 className="text-accent" size={24} />
+              )}
               <span className="text-lg font-medium whitespace-nowrap">
                 {company.name}
               </span>
