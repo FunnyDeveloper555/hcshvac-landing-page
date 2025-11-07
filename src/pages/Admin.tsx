@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import HeroAdmin from "@/components/admin/HeroAdmin";
 import HeroImagesAdmin from "@/components/admin/HeroImagesAdmin";
 import ServicesAdmin from "@/components/admin/ServicesAdmin";
@@ -36,47 +37,38 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="bg-background border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button onClick={handleSignOut} variant="outline">
-              Sign Out
-            </Button>
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-secondary/30">
+        <AdminSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          <header className="bg-background border-b">
+            <div className="px-4 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger />
+                <h1 className="text-2xl font-bold">Admin Panel</h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <Button onClick={handleSignOut} variant="outline">
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 p-8">
+            <Routes>
+              <Route path="/" element={<Navigate to="/admin/hero" replace />} />
+              <Route path="/hero" element={<HeroAdmin />} />
+              <Route path="/images" element={<HeroImagesAdmin />} />
+              <Route path="/services" element={<ServicesAdmin />} />
+              <Route path="/companies" element={<CompaniesAdmin />} />
+            </Routes>
+          </main>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="hero" className="w-full">
-          <TabsList>
-            <TabsTrigger value="hero">Hero Content</TabsTrigger>
-            <TabsTrigger value="images">Hero Images</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="companies">Companies</TabsTrigger>
-            <TabsTrigger value="benefits" disabled>Why Choose Us (Coming Soon)</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="hero" className="mt-6">
-            <HeroAdmin />
-          </TabsContent>
-
-          <TabsContent value="images" className="mt-6">
-            <HeroImagesAdmin />
-          </TabsContent>
-
-          <TabsContent value="services" className="mt-6">
-            <ServicesAdmin />
-          </TabsContent>
-
-          <TabsContent value="companies" className="mt-6">
-            <CompaniesAdmin />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
