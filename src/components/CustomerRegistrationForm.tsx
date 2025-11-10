@@ -26,17 +26,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formSchema = z.object({
-  // Ship To
-  ship_to_first_name: z.string().trim().min(2, "Required").max(100),
-  ship_to_last_name: z.string().trim().min(2, "Required").max(100),
-  ship_to_business_name: z.string().trim().max(200).optional(),
-  ship_to_address: z.string().trim().min(5, "Required").max(500),
-  ship_to_suite_number: z.string().trim().max(50).optional(),
-  ship_to_city: z.string().trim().min(2, "Required").max(100),
+  ship_to_first_name: z.string().min(2, "Required"),
+  ship_to_last_name: z.string().min(2, "Required"),
+  ship_to_business_name: z.string().optional(),
+  ship_to_address: z.string().min(5, "Required"),
+  ship_to_suite_number: z.string().optional(),
+  ship_to_city: z.string().min(2, "Required"),
   ship_to_state: z.string().min(1, "Required"),
-  ship_to_zip_code: z.string().trim().min(5, "Required").max(10),
-  
-  // Bill To
+  ship_to_zip_code: z.string().min(5, "Required"),
   bill_to_same_as_ship_to: z.boolean(),
   bill_to_first_name: z.string().optional(),
   bill_to_last_name: z.string().optional(),
@@ -46,16 +43,10 @@ const formSchema = z.object({
   bill_to_city: z.string().optional(),
   bill_to_state: z.string().optional(),
   bill_to_zip_code: z.string().optional(),
-  
-  // Location Profile
-  location_age_years: z.coerce.number().int().min(0).max(200).optional(),
+  location_age_years: z.number().optional(),
   location_type: z.string().min(1, "Required"),
-  
-  // Residential
   residential_type: z.string().optional(),
   residential_occupancy: z.string().optional(),
-  
-  // Commercial/Industrial/Educational
   building_occupied: z.string().optional(),
   point_of_contact_name: z.string().optional(),
   point_of_contact_phone: z.string().optional(),
@@ -65,6 +56,8 @@ const formSchema = z.object({
   cautions_restrictions: z.string().optional(),
   hours_of_operation: z.string().optional(),
 });
+
+type FormData = z.infer<typeof formSchema>;
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -78,7 +71,7 @@ const CustomerRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       ship_to_first_name: "",
@@ -98,7 +91,7 @@ const CustomerRegistrationForm = () => {
       bill_to_city: "",
       bill_to_state: "",
       bill_to_zip_code: "",
-      location_age_years: undefined,
+      location_age_years: 0,
       location_type: "",
       residential_type: "",
       residential_occupancy: "",
@@ -116,7 +109,7 @@ const CustomerRegistrationForm = () => {
   const sameAsShipTo = form.watch("bill_to_same_as_ship_to");
   const locationType = form.watch("location_type");
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     
     try {

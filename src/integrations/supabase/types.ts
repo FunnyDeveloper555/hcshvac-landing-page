@@ -52,7 +52,7 @@ export type Database = {
           bill_to_state: string | null
           bill_to_suite_number: string | null
           bill_to_zip_code: string | null
-          building_occupied: boolean | null
+          building_occupied: string | null
           cautions_restrictions: string | null
           created_at: string
           equipment_location: string | null
@@ -85,7 +85,7 @@ export type Database = {
           bill_to_state?: string | null
           bill_to_suite_number?: string | null
           bill_to_zip_code?: string | null
-          building_occupied?: boolean | null
+          building_occupied?: string | null
           cautions_restrictions?: string | null
           created_at?: string
           equipment_location?: string | null
@@ -118,7 +118,7 @@ export type Database = {
           bill_to_state?: string | null
           bill_to_suite_number?: string | null
           bill_to_zip_code?: string | null
-          building_occupied?: boolean | null
+          building_occupied?: string | null
           cautions_restrictions?: string | null
           created_at?: string
           equipment_location?: string | null
