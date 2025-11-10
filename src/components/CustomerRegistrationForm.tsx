@@ -112,12 +112,20 @@ const CustomerRegistrationForm = () => {
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     
+    console.log("Form submission started", values);
+    
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("customer_registrations")
-        .insert([values]);
+        .insert([values])
+        .select();
 
-      if (error) throw error;
+      console.log("Supabase response:", { data, error });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       toast({
         title: "Registration Successful!",
@@ -125,10 +133,11 @@ const CustomerRegistrationForm = () => {
       });
 
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Form submission error:", error);
       toast({
         title: "Registration Failed",
-        description: "Please try again or call us directly.",
+        description: error?.message || "Please try again or call us directly.",
         variant: "destructive",
       });
     } finally {
