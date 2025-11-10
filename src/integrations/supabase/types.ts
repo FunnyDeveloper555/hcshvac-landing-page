@@ -55,11 +55,13 @@ export type Database = {
           building_occupied: string | null
           cautions_restrictions: string | null
           created_at: string
+          email: string
           equipment_location: string | null
           hours_of_operation: string | null
           id: string
           location_age_years: number | null
           location_type: string
+          phone: string
           point_of_contact_email: string | null
           point_of_contact_name: string | null
           point_of_contact_phone: string | null
@@ -88,11 +90,13 @@ export type Database = {
           building_occupied?: string | null
           cautions_restrictions?: string | null
           created_at?: string
+          email?: string
           equipment_location?: string | null
           hours_of_operation?: string | null
           id?: string
           location_age_years?: number | null
           location_type: string
+          phone?: string
           point_of_contact_email?: string | null
           point_of_contact_name?: string | null
           point_of_contact_phone?: string | null
@@ -121,11 +125,13 @@ export type Database = {
           building_occupied?: string | null
           cautions_restrictions?: string | null
           created_at?: string
+          email?: string
           equipment_location?: string | null
           hours_of_operation?: string | null
           id?: string
           location_age_years?: number | null
           location_type?: string
+          phone?: string
           point_of_contact_email?: string | null
           point_of_contact_name?: string | null
           point_of_contact_phone?: string | null

@@ -28,6 +28,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const formSchema = z.object({
   ship_to_first_name: z.string().min(2, "Required"),
   ship_to_last_name: z.string().min(2, "Required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
   ship_to_business_name: z.string().default(""),
   ship_to_address: z.string().min(5, "Required"),
   ship_to_suite_number: z.string().default(""),
@@ -76,6 +78,8 @@ const CustomerRegistrationForm = () => {
     defaultValues: {
       ship_to_first_name: "",
       ship_to_last_name: "",
+      email: "",
+      phone: "",
       ship_to_business_name: "",
       ship_to_address: "",
       ship_to_suite_number: "",
@@ -203,6 +207,35 @@ const CustomerRegistrationForm = () => {
                           <FormLabel>Last Name</FormLabel>
                           <FormControl>
                             <Input placeholder="Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="john@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input type="tel" placeholder="(555) 123-4567" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
