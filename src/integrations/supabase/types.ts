@@ -43,34 +43,103 @@ export type Database = {
       }
       customer_registrations: {
         Row: {
-          address: string | null
+          bill_to_address: string | null
+          bill_to_business_name: string | null
+          bill_to_city: string | null
+          bill_to_first_name: string | null
+          bill_to_last_name: string | null
+          bill_to_same_as_ship_to: boolean | null
+          bill_to_state: string | null
+          bill_to_suite_number: string | null
+          bill_to_zip_code: string | null
+          building_occupied: boolean | null
+          cautions_restrictions: string | null
           created_at: string
-          email: string
-          full_name: string
+          equipment_location: string | null
+          hours_of_operation: string | null
           id: string
-          message: string | null
-          phone: string
-          service_type: string
+          location_age_years: number | null
+          location_type: string
+          point_of_contact_email: string | null
+          point_of_contact_name: string | null
+          point_of_contact_phone: string | null
+          residential_occupancy: string | null
+          residential_type: string | null
+          ship_to_address: string
+          ship_to_business_name: string | null
+          ship_to_city: string
+          ship_to_first_name: string
+          ship_to_last_name: string
+          ship_to_state: string
+          ship_to_suite_number: string | null
+          ship_to_zip_code: string
+          type_of_use: string | null
         }
         Insert: {
-          address?: string | null
+          bill_to_address?: string | null
+          bill_to_business_name?: string | null
+          bill_to_city?: string | null
+          bill_to_first_name?: string | null
+          bill_to_last_name?: string | null
+          bill_to_same_as_ship_to?: boolean | null
+          bill_to_state?: string | null
+          bill_to_suite_number?: string | null
+          bill_to_zip_code?: string | null
+          building_occupied?: boolean | null
+          cautions_restrictions?: string | null
           created_at?: string
-          email: string
-          full_name: string
+          equipment_location?: string | null
+          hours_of_operation?: string | null
           id?: string
-          message?: string | null
-          phone: string
-          service_type: string
+          location_age_years?: number | null
+          location_type: string
+          point_of_contact_email?: string | null
+          point_of_contact_name?: string | null
+          point_of_contact_phone?: string | null
+          residential_occupancy?: string | null
+          residential_type?: string | null
+          ship_to_address: string
+          ship_to_business_name?: string | null
+          ship_to_city: string
+          ship_to_first_name: string
+          ship_to_last_name: string
+          ship_to_state: string
+          ship_to_suite_number?: string | null
+          ship_to_zip_code: string
+          type_of_use?: string | null
         }
         Update: {
-          address?: string | null
+          bill_to_address?: string | null
+          bill_to_business_name?: string | null
+          bill_to_city?: string | null
+          bill_to_first_name?: string | null
+          bill_to_last_name?: string | null
+          bill_to_same_as_ship_to?: boolean | null
+          bill_to_state?: string | null
+          bill_to_suite_number?: string | null
+          bill_to_zip_code?: string | null
+          building_occupied?: boolean | null
+          cautions_restrictions?: string | null
           created_at?: string
-          email?: string
-          full_name?: string
+          equipment_location?: string | null
+          hours_of_operation?: string | null
           id?: string
-          message?: string | null
-          phone?: string
-          service_type?: string
+          location_age_years?: number | null
+          location_type?: string
+          point_of_contact_email?: string | null
+          point_of_contact_name?: string | null
+          point_of_contact_phone?: string | null
+          residential_occupancy?: string | null
+          residential_type?: string | null
+          ship_to_address?: string
+          ship_to_business_name?: string | null
+          ship_to_city?: string
+          ship_to_first_name?: string
+          ship_to_last_name?: string
+          ship_to_state?: string
+          ship_to_suite_number?: string | null
+          ship_to_zip_code?: string
+          type_of_use?: string | null
         }
         Relationships: []
       }
