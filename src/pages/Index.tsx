@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import Services from "@/components/Services";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CompanyMarquee from "@/components/CompanyMarquee";
-import CustomerRegistrationForm from "@/components/CustomerRegistrationForm";
+import RegistrationCTA from "@/components/RegistrationCTA";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -15,7 +15,7 @@ const Index = () => {
         <Services />
         <WhyChooseUs />
         <CompanyMarquee />
-        <CustomerRegistrationForm />
+        <RegistrationCTA />
       </main>
       <Footer />
     </div>
