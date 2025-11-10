@@ -115,10 +115,19 @@ const CustomerRegistrationForm = () => {
     console.log("Form submission started", values);
     
     try {
-      const { data, error } = await supabase
+      const insertPromise = supabase
         .from("customer_registrations")
         .insert([values])
         .select();
+
+      // Fail fast if backend is unreachable
+      const timeoutMs = 12000;
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Network timeout: unable to reach server")), timeoutMs)
+      );
+
+      const result = (await Promise.race([insertPromise, timeoutPromise])) as any;
+      const { data, error } = result || {};
 
       console.log("Supabase response:", { data, error });
 
@@ -135,9 +144,15 @@ const CustomerRegistrationForm = () => {
       form.reset();
     } catch (error: any) {
       console.error("Form submission error:", error);
+      const isNetworkIssue =
+        error?.message?.includes("Failed to fetch") ||
+        error?.message?.includes("Network timeout") ||
+        error?.status === 0;
       toast({
         title: "Registration Failed",
-        description: error?.message || "Please try again or call us directly.",
+        description: isNetworkIssue
+          ? "We’re having trouble connecting right now. Please check your internet and try again shortly."
+          : error?.message || "Please try again or call us directly.",
         variant: "destructive",
       });
     } finally {
