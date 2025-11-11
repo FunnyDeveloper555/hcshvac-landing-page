@@ -100,15 +100,15 @@ const Hero = () => {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-2xl">
-          <div className="inline-block px-4 py-2 bg-accent/10 border border-accent/20 rounded-full mb-6">
-            <span className="text-accent font-semibold">{content.badge_text}</span>
+          <div className="inline-block px-4 py-2 bg-accent/20 backdrop-blur-sm border border-accent/30 rounded-full mb-6">
+            <span className="text-accent font-semibold drop-shadow-lg">{content.badge_text}</span>
           </div>
           
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl">
             {content.title}
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed drop-shadow-lg bg-background/30 backdrop-blur-sm p-4 rounded-lg">
             {content.description}
           </p>
           
@@ -131,18 +131,18 @@ const Hero = () => {
             </Button>
           </div>
           
-          <div className="mt-12 grid grid-cols-3 gap-8 max-w-lg">
+          <div className="mt-12 grid grid-cols-3 gap-8 max-w-lg bg-background/40 backdrop-blur-sm p-6 rounded-lg">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">{content.stat1_value}</div>
-              <div className="text-sm text-muted-foreground">{content.stat1_label}</div>
+              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat1_value}</div>
+              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat1_label}</div>
             </div>
-            <div className="text-center border-x border-border">
-              <div className="text-3xl font-bold text-primary mb-1">{content.stat2_value}</div>
-              <div className="text-sm text-muted-foreground">{content.stat2_label}</div>
+            <div className="text-center border-x border-border/50">
+              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat2_value}</div>
+              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat2_label}</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">{content.stat3_value}</div>
-              <div className="text-sm text-muted-foreground">{content.stat3_label}</div>
+              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat3_value}</div>
+              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat3_label}</div>
             </div>
           </div>
         </div>
