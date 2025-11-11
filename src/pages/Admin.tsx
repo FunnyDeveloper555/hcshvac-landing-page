@@ -1,16 +1,16 @@
 import { useEffect } from "react";
-import { useNavigate, useLocation, Routes, Route, Navigate } from "react-router-dom";
+import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import HeroAdmin from "@/components/admin/HeroAdmin";
+import HeroAdd from "@/components/admin/HeroAdd";
 import HeroList from "@/components/admin/HeroList";
-import HeroImagesAdmin from "@/components/admin/HeroImagesAdmin";
+import HeroImagesAdd from "@/components/admin/HeroImagesAdd";
 import HeroImagesList from "@/components/admin/HeroImagesList";
-import ServicesAdmin from "@/components/admin/ServicesAdmin";
+import ServicesAdd from "@/components/admin/ServicesAdd";
 import ServicesList from "@/components/admin/ServicesList";
-import CompaniesAdmin from "@/components/admin/CompaniesAdmin";
+import CompaniesAdd from "@/components/admin/CompaniesAdd";
 import CompaniesList from "@/components/admin/CompaniesList";
 import VendorsAdd from "@/components/admin/VendorsAdd";
 import VendorsList from "@/components/admin/VendorsList";
@@ -66,13 +66,13 @@ const Admin = () => {
           <main className="flex-1 p-8">
             <Routes>
               <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
-              <Route path="/hero/add" element={<HeroAdmin />} />
+              <Route path="/hero/add" element={<HeroAdd />} />
               <Route path="/hero/list" element={<HeroList />} />
-              <Route path="/images/add" element={<HeroImagesAdmin />} />
+              <Route path="/images/add" element={<HeroImagesAdd />} />
               <Route path="/images/list" element={<HeroImagesList />} />
-              <Route path="/services/add" element={<ServicesAdmin />} />
+              <Route path="/services/add" element={<ServicesAdd />} />
               <Route path="/services/list" element={<ServicesList />} />
-              <Route path="/companies/add" element={<CompaniesAdmin />} />
+              <Route path="/companies/add" element={<CompaniesAdd />} />
               <Route path="/companies/list" element={<CompaniesList />} />
               <Route path="/vendors/add" element={<VendorsAdd />} />
               <Route path="/vendors/list" element={<VendorsList />} />
