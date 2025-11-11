@@ -95,7 +95,7 @@ const Hero = () => {
             ))}
           </CarouselContent>
         </Carousel>
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-background/75 via-background/50 to-background/30"></div>
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
