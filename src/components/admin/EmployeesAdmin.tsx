@@ -5,9 +5,9 @@ import { EmployeesList } from "./EmployeesList";
 export function EmployeesAdmin() {
   return (
     <Routes>
-      <Route path="add" element={<EmployeesAdd />} />
-      <Route path="list" element={<EmployeesList />} />
-      <Route path="/" element={<Navigate to="list" replace />} />
+      <Route path="/" element={<Navigate to="/admin/employees/list" replace />} />
+      <Route path="/add" element={<EmployeesAdd />} />
+      <Route path="/list" element={<EmployeesList />} />
     </Routes>
   );
 }

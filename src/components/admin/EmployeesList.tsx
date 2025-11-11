@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export function EmployeesList() {
@@ -15,7 +16,7 @@ export function EmployeesList() {
         .from("employees")
         .select("*")
         .order("created_at", { ascending: false });
-      
+
       if (error) throw error;
       return data;
     },
@@ -23,10 +24,7 @@ export function EmployeesList() {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("employees")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.from("employees").delete().eq("id", id);
 
       if (error) throw error;
 
@@ -34,13 +32,12 @@ export function EmployeesList() {
         title: "Success",
         description: "Employee deleted successfully",
       });
-      
+
       refetch();
-    } catch (error) {
-      console.error("Error deleting employee:", error);
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to delete employee",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -50,49 +47,56 @@ export function EmployeesList() {
     return <div>Loading...</div>;
   }
 
+  if (!employees || employees.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-center text-muted-foreground">No employees found</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Employees List</CardTitle>
       </CardHeader>
       <CardContent>
-        {employees && employees.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>State</TableHead>
-                <TableHead>Actions</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>City</TableHead>
+              <TableHead>Date of Birth</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {employees.map((employee) => (
+              <TableRow key={employee.id}>
+                <TableCell className="font-medium">
+                  {employee.first_name} {employee.middle_name ? employee.middle_name + " " : ""}{employee.last_name}
+                </TableCell>
+                <TableCell>{employee.email_address}</TableCell>
+                <TableCell>{employee.phone_number}</TableCell>
+                <TableCell>{employee.city}, {employee.state}</TableCell>
+                <TableCell>{new Date(employee.date_of_birth).toLocaleDateString()}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(employee.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell>{`${employee.first_name} ${employee.middle_name || ''} ${employee.last_name}`.trim()}</TableCell>
-                  <TableCell>{employee.email_address}</TableCell>
-                  <TableCell>{employee.phone_number}</TableCell>
-                  <TableCell>{employee.city}</TableCell>
-                  <TableCell>{employee.state}</TableCell>
-                  <TableCell className="space-x-2">
-                    <Button variant="outline" size="sm">Edit</Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleDelete(employee.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <p>No employees found.</p>
-        )}
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
