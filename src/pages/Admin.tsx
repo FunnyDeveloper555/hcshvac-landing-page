@@ -5,9 +5,15 @@ import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import HeroAdmin from "@/components/admin/HeroAdmin";
+import HeroList from "@/components/admin/HeroList";
 import HeroImagesAdmin from "@/components/admin/HeroImagesAdmin";
+import HeroImagesList from "@/components/admin/HeroImagesList";
 import ServicesAdmin from "@/components/admin/ServicesAdmin";
+import ServicesList from "@/components/admin/ServicesList";
 import CompaniesAdmin from "@/components/admin/CompaniesAdmin";
+import CompaniesList from "@/components/admin/CompaniesList";
+import VendorsAdd from "@/components/admin/VendorsAdd";
+import VendorsList from "@/components/admin/VendorsList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -61,15 +67,15 @@ const Admin = () => {
             <Routes>
               <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
               <Route path="/hero/add" element={<HeroAdmin />} />
-              <Route path="/hero/list" element={<HeroAdmin />} />
+              <Route path="/hero/list" element={<HeroList />} />
               <Route path="/images/add" element={<HeroImagesAdmin />} />
-              <Route path="/images/list" element={<HeroImagesAdmin />} />
+              <Route path="/images/list" element={<HeroImagesList />} />
               <Route path="/services/add" element={<ServicesAdmin />} />
-              <Route path="/services/list" element={<ServicesAdmin />} />
+              <Route path="/services/list" element={<ServicesList />} />
               <Route path="/companies/add" element={<CompaniesAdmin />} />
-              <Route path="/companies/list" element={<CompaniesAdmin />} />
-              <Route path="/vendors/add" element={<div className="text-center p-8">Vendor Add Form - Coming Soon</div>} />
-              <Route path="/vendors/list" element={<div className="text-center p-8">Vendor List - Coming Soon</div>} />
+              <Route path="/companies/list" element={<CompaniesList />} />
+              <Route path="/vendors/add" element={<VendorsAdd />} />
+              <Route path="/vendors/list" element={<VendorsList />} />
             </Routes>
           </main>
         </div>
