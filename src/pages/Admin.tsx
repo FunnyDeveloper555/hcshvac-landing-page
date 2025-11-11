@@ -14,6 +14,7 @@ import CompaniesAdd from "@/components/admin/CompaniesAdd";
 import CompaniesList from "@/components/admin/CompaniesList";
 import VendorsAdd from "@/components/admin/VendorsAdd";
 import VendorsList from "@/components/admin/VendorsList";
+import { EmployeesAdmin } from "@/components/admin/EmployeesAdmin";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -76,6 +77,7 @@ const Admin = () => {
               <Route path="/companies/list" element={<CompaniesList />} />
               <Route path="/vendors/add" element={<VendorsAdd />} />
               <Route path="/vendors/list" element={<VendorsList />} />
+              <Route path="/employees/*" element={<EmployeesAdmin />} />
             </Routes>
           </main>
         </div>

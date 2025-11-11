@@ -149,6 +149,153 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          address: string
+          birth_gender: string | null
+          certificates_held: string | null
+          city: string
+          city_of_birth: string | null
+          created_at: string
+          date_of_birth: string
+          drivers_license_number: string | null
+          email_address: string
+          first_name: string
+          four_year_college: string | null
+          high_school: string | null
+          id: string
+          last_name: string
+          licenses_held: string | null
+          middle_name: string | null
+          phone_number: string
+          prev_business_name: string | null
+          prev_corporate_address: string | null
+          prev_corporate_city: string | null
+          prev_corporate_contact_person: string | null
+          prev_corporate_phone_number: string | null
+          prev_corporate_state: string | null
+          prev_corporate_zip_code: string | null
+          prev_eligible_for_rehire: boolean | null
+          prev_end_month: string | null
+          prev_end_year: string | null
+          prev_ending_position: string | null
+          prev_reason_for_leaving: string | null
+          prev_start_month: string | null
+          prev_start_year: string | null
+          prev_starting_position: string | null
+          prev_work_address: string | null
+          prev_work_city: string | null
+          prev_work_contact_person: string | null
+          prev_work_phone_number: string | null
+          prev_work_state: string | null
+          prev_work_zip_code: string | null
+          social_security_number: string | null
+          state: string
+          state_of_birth: string | null
+          trade_school: string | null
+          two_year_college: string | null
+          updated_at: string
+          us_citizen: boolean | null
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          birth_gender?: string | null
+          certificates_held?: string | null
+          city: string
+          city_of_birth?: string | null
+          created_at?: string
+          date_of_birth: string
+          drivers_license_number?: string | null
+          email_address: string
+          first_name: string
+          four_year_college?: string | null
+          high_school?: string | null
+          id?: string
+          last_name: string
+          licenses_held?: string | null
+          middle_name?: string | null
+          phone_number: string
+          prev_business_name?: string | null
+          prev_corporate_address?: string | null
+          prev_corporate_city?: string | null
+          prev_corporate_contact_person?: string | null
+          prev_corporate_phone_number?: string | null
+          prev_corporate_state?: string | null
+          prev_corporate_zip_code?: string | null
+          prev_eligible_for_rehire?: boolean | null
+          prev_end_month?: string | null
+          prev_end_year?: string | null
+          prev_ending_position?: string | null
+          prev_reason_for_leaving?: string | null
+          prev_start_month?: string | null
+          prev_start_year?: string | null
+          prev_starting_position?: string | null
+          prev_work_address?: string | null
+          prev_work_city?: string | null
+          prev_work_contact_person?: string | null
+          prev_work_phone_number?: string | null
+          prev_work_state?: string | null
+          prev_work_zip_code?: string | null
+          social_security_number?: string | null
+          state: string
+          state_of_birth?: string | null
+          trade_school?: string | null
+          two_year_college?: string | null
+          updated_at?: string
+          us_citizen?: boolean | null
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          birth_gender?: string | null
+          certificates_held?: string | null
+          city?: string
+          city_of_birth?: string | null
+          created_at?: string
+          date_of_birth?: string
+          drivers_license_number?: string | null
+          email_address?: string
+          first_name?: string
+          four_year_college?: string | null
+          high_school?: string | null
+          id?: string
+          last_name?: string
+          licenses_held?: string | null
+          middle_name?: string | null
+          phone_number?: string
+          prev_business_name?: string | null
+          prev_corporate_address?: string | null
+          prev_corporate_city?: string | null
+          prev_corporate_contact_person?: string | null
+          prev_corporate_phone_number?: string | null
+          prev_corporate_state?: string | null
+          prev_corporate_zip_code?: string | null
+          prev_eligible_for_rehire?: boolean | null
+          prev_end_month?: string | null
+          prev_end_year?: string | null
+          prev_ending_position?: string | null
+          prev_reason_for_leaving?: string | null
+          prev_start_month?: string | null
+          prev_start_year?: string | null
+          prev_starting_position?: string | null
+          prev_work_address?: string | null
+          prev_work_city?: string | null
+          prev_work_contact_person?: string | null
+          prev_work_phone_number?: string | null
+          prev_work_state?: string | null
+          prev_work_zip_code?: string | null
+          social_security_number?: string | null
+          state?: string
+          state_of_birth?: string | null
+          trade_school?: string | null
+          two_year_college?: string | null
+          updated_at?: string
+          us_citizen?: boolean | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
       hero_content: {
         Row: {
           badge_text: string
