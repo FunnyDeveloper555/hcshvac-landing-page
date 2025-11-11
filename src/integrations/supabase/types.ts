@@ -352,6 +352,89 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_industries: {
+        Row: {
+          created_at: string
+          id: string
+          product_brand_name: string
+          product_category: string
+          vendor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_brand_name: string
+          product_category: string
+          vendor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_brand_name?: string
+          product_category?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_industries_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          created_at: string
+          hours_of_operation: string | null
+          id: string
+          logo_url: string | null
+          our_account_number: string | null
+          phone: string
+          representative_email: string
+          representative_first_name: string
+          representative_last_name: string
+          representative_phone: string
+          updated_at: string
+          vendor_address: string
+          vendor_name: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          hours_of_operation?: string | null
+          id?: string
+          logo_url?: string | null
+          our_account_number?: string | null
+          phone: string
+          representative_email: string
+          representative_first_name: string
+          representative_last_name: string
+          representative_phone: string
+          updated_at?: string
+          vendor_address: string
+          vendor_name: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          hours_of_operation?: string | null
+          id?: string
+          logo_url?: string | null
+          our_account_number?: string | null
+          phone?: string
+          representative_email?: string
+          representative_first_name?: string
+          representative_last_name?: string
+          representative_phone?: string
+          updated_at?: string
+          vendor_address?: string
+          vendor_name?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

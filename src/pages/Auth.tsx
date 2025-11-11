@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { VendorRegistrationForm } from "@/components/VendorRegistrationForm";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -135,9 +136,10 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="vendor">Vendor</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -196,6 +198,10 @@ const Auth = () => {
                   {isLoading ? "Creating account..." : "Sign Up"}
                 </Button>
               </form>
+            </TabsContent>
+
+            <TabsContent value="vendor">
+              <VendorRegistrationForm />
             </TabsContent>
           </Tabs>
         </CardContent>
