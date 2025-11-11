@@ -59,11 +59,17 @@ const Admin = () => {
 
           <main className="flex-1 p-8">
             <Routes>
-              <Route path="/" element={<Navigate to="/admin/hero" replace />} />
-              <Route path="/hero" element={<HeroAdmin />} />
-              <Route path="/images" element={<HeroImagesAdmin />} />
-              <Route path="/services" element={<ServicesAdmin />} />
-              <Route path="/companies" element={<CompaniesAdmin />} />
+              <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
+              <Route path="/hero/add" element={<HeroAdmin />} />
+              <Route path="/hero/list" element={<HeroAdmin />} />
+              <Route path="/images/add" element={<HeroImagesAdmin />} />
+              <Route path="/images/list" element={<HeroImagesAdmin />} />
+              <Route path="/services/add" element={<ServicesAdmin />} />
+              <Route path="/services/list" element={<ServicesAdmin />} />
+              <Route path="/companies/add" element={<CompaniesAdmin />} />
+              <Route path="/companies/list" element={<CompaniesAdmin />} />
+              <Route path="/vendors/add" element={<div className="text-center p-8">Vendor Add Form - Coming Soon</div>} />
+              <Route path="/vendors/list" element={<div className="text-center p-8">Vendor List - Coming Soon</div>} />
             </Routes>
           </main>
         </div>
