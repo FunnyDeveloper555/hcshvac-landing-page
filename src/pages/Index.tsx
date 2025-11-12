@@ -6,6 +6,7 @@ import Employees from "@/components/Employees";
 import CompanyMarquee from "@/components/CompanyMarquee";
 import RegistrationCTA from "@/components/RegistrationCTA";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 
 const Index = () => {
   return (
@@ -20,6 +21,7 @@ const Index = () => {
         <RegistrationCTA />
       </main>
       <Footer />
+      <Chatbot />
     </div>
   );
 };
