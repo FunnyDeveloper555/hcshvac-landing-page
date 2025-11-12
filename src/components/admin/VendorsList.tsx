@@ -18,7 +18,7 @@ const VendorsList = () => {
           vendor_industries (
             id,
             product_category,
-            product_brand
+            product_brand_name
           )
         `)
         .order("created_at", { ascending: false });
@@ -124,8 +124,8 @@ const VendorsList = () => {
                     {vendor.vendor_industries.map((industry: any) => (
                       <div key={industry.id} className="text-sm bg-muted p-2 rounded">
                         <span className="font-medium">{industry.product_category}</span>
-                        {industry.product_brand && (
-                          <span className="text-muted-foreground"> - {industry.product_brand}</span>
+                        {industry.product_brand_name && (
+                          <span className="text-muted-foreground"> - {industry.product_brand_name}</span>
                         )}
                       </div>
                     ))}
