@@ -32,9 +32,6 @@ const Employees = () => {
     }
   };
 
-  if (employees.length === 0) {
-    return null;
-  }
 
   return (
     <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
