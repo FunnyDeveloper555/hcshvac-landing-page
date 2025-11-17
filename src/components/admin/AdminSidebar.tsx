@@ -48,7 +48,8 @@ const menuItems = [
     icon: Building2,
     children: [
       { title: "Add", url: "/admin/companies/add", icon: Plus },
-      { title: "List", url: "/admin/companies/list", icon: List },
+      { title: "Active Companies", url: "/admin/companies/active", icon: List },
+      { title: "Deactive Companies", url: "/admin/companies/deactive", icon: List },
     ]
   },
   { 

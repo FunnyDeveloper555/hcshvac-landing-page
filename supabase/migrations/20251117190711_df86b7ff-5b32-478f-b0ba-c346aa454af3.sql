@@ -1,0 +1,22 @@
+-- Add new columns to companies table
+ALTER TABLE public.companies
+ADD COLUMN IF NOT EXISTS company_address text,
+ADD COLUMN IF NOT EXISTS company_city text,
+ADD COLUMN IF NOT EXISTS company_state text,
+ADD COLUMN IF NOT EXISTS company_zip_code text,
+ADD COLUMN IF NOT EXISTS company_phone text,
+ADD COLUMN IF NOT EXISTS company_email_primary text,
+ADD COLUMN IF NOT EXISTS company_support_email text,
+ADD COLUMN IF NOT EXISTS poc_first_name text,
+ADD COLUMN IF NOT EXISTS poc_last_name text,
+ADD COLUMN IF NOT EXISTS poc_phone text,
+ADD COLUMN IF NOT EXISTS poc_email text,
+ADD COLUMN IF NOT EXISTS poc_title text,
+ADD COLUMN IF NOT EXISTS secondary_poc_first_name text,
+ADD COLUMN IF NOT EXISTS secondary_poc_last_name text,
+ADD COLUMN IF NOT EXISTS secondary_poc_phone text,
+ADD COLUMN IF NOT EXISTS secondary_poc_email text,
+ADD COLUMN IF NOT EXISTS secondary_poc_title text,
+ADD COLUMN IF NOT EXISTS services_provided jsonb DEFAULT '[]'::jsonb,
+ADD COLUMN IF NOT EXISTS service_areas jsonb DEFAULT '[]'::jsonb,
+ADD COLUMN IF NOT EXISTS brands_installed jsonb DEFAULT '[]'::jsonb;

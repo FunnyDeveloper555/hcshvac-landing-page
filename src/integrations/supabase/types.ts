@@ -16,28 +16,88 @@ export type Database = {
     Tables: {
       companies: {
         Row: {
+          brands_installed: Json | null
+          company_address: string | null
+          company_city: string | null
+          company_email_primary: string | null
+          company_phone: string | null
+          company_state: string | null
+          company_support_email: string | null
+          company_zip_code: string | null
           created_at: string
           display_order: number
           id: string
           is_active: boolean | null
           logo_url: string | null
           name: string
+          poc_email: string | null
+          poc_first_name: string | null
+          poc_last_name: string | null
+          poc_phone: string | null
+          poc_title: string | null
+          secondary_poc_email: string | null
+          secondary_poc_first_name: string | null
+          secondary_poc_last_name: string | null
+          secondary_poc_phone: string | null
+          secondary_poc_title: string | null
+          service_areas: Json | null
+          services_provided: Json | null
         }
         Insert: {
+          brands_installed?: Json | null
+          company_address?: string | null
+          company_city?: string | null
+          company_email_primary?: string | null
+          company_phone?: string | null
+          company_state?: string | null
+          company_support_email?: string | null
+          company_zip_code?: string | null
           created_at?: string
           display_order?: number
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
           name: string
+          poc_email?: string | null
+          poc_first_name?: string | null
+          poc_last_name?: string | null
+          poc_phone?: string | null
+          poc_title?: string | null
+          secondary_poc_email?: string | null
+          secondary_poc_first_name?: string | null
+          secondary_poc_last_name?: string | null
+          secondary_poc_phone?: string | null
+          secondary_poc_title?: string | null
+          service_areas?: Json | null
+          services_provided?: Json | null
         }
         Update: {
+          brands_installed?: Json | null
+          company_address?: string | null
+          company_city?: string | null
+          company_email_primary?: string | null
+          company_phone?: string | null
+          company_state?: string | null
+          company_support_email?: string | null
+          company_zip_code?: string | null
           created_at?: string
           display_order?: number
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
+          poc_email?: string | null
+          poc_first_name?: string | null
+          poc_last_name?: string | null
+          poc_phone?: string | null
+          poc_title?: string | null
+          secondary_poc_email?: string | null
+          secondary_poc_first_name?: string | null
+          secondary_poc_last_name?: string | null
+          secondary_poc_phone?: string | null
+          secondary_poc_title?: string | null
+          service_areas?: Json | null
+          services_provided?: Json | null
         }
         Relationships: []
       }
