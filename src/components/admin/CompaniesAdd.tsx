@@ -72,8 +72,28 @@ const CompaniesAdd = () => {
     services_provided: [] as string[],
     service_areas: [] as string[],
     brands_installed: [] as string[],
+    brands_serviced: [] as string[],
+    affiliations: {
+      bbb: "",
+      angies_list: "",
+      google: "",
+      yelp: "",
+      yahoo: "",
+      bing: "",
+      manta: "",
+      houzz: "",
+      facebook: "",
+      instagram: "",
+      tiktok: "",
+      nextdoor: "",
+      youtube: "",
+    },
+    inventory_parts: "",
+    inventory_equipment: "",
+    inventory_locations: "",
   });
   const [brandInput, setBrandInput] = useState("");
+  const [serviceInput, setServiceInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -169,6 +189,23 @@ const CompaniesAdd = () => {
     }));
   };
 
+  const addServiceBrand = () => {
+    if (serviceInput.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        brands_serviced: [...prev.brands_serviced, serviceInput.trim()]
+      }));
+      setServiceInput("");
+    }
+  };
+
+  const removeServiceBrand = (brand: string) => {
+    setFormData(prev => ({
+      ...prev,
+      brands_serviced: prev.brands_serviced.filter(b => b !== brand)
+    }));
+  };
+
   const handleSave = async () => {
     if (!formData.name?.trim()) {
       toast({
@@ -186,6 +223,8 @@ const CompaniesAdd = () => {
         services_provided: formData.services_provided,
         service_areas: formData.service_areas,
         brands_installed: formData.brands_installed,
+        brands_serviced: formData.brands_serviced,
+        affiliations: formData.affiliations,
       }]);
 
     if (error) {
@@ -526,6 +565,226 @@ const CompaniesAdd = () => {
                 </button>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Brands You Service</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={serviceInput}
+              onChange={(e) => setServiceInput(e.target.value)}
+              placeholder="Enter brand name"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addServiceBrand())}
+            />
+            <Button type="button" onClick={addServiceBrand}>Add Brand</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {formData.brands_serviced.map((brand) => (
+              <div key={brand} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                <span>{brand}</span>
+                <button
+                  type="button"
+                  onClick={() => removeServiceBrand(brand)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Who are you Affiliated with?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="bbb">BBB</Label>
+              <Input
+                id="bbb"
+                type="url"
+                value={formData.affiliations.bbb}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, bbb: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="facebook">Facebook</Label>
+              <Input
+                id="facebook"
+                type="url"
+                value={formData.affiliations.facebook}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, facebook: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="angies_list">Angies List</Label>
+              <Input
+                id="angies_list"
+                type="url"
+                value={formData.affiliations.angies_list}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, angies_list: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                type="url"
+                value={formData.affiliations.instagram}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, instagram: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="google">Google</Label>
+              <Input
+                id="google"
+                type="url"
+                value={formData.affiliations.google}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, google: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tiktok">TikTok</Label>
+              <Input
+                id="tiktok"
+                type="url"
+                value={formData.affiliations.tiktok}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, tiktok: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="yelp">Yelp</Label>
+              <Input
+                id="yelp"
+                type="url"
+                value={formData.affiliations.yelp}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, yelp: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nextdoor">NextDoor</Label>
+              <Input
+                id="nextdoor"
+                type="url"
+                value={formData.affiliations.nextdoor}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, nextdoor: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="yahoo">Yahoo</Label>
+              <Input
+                id="yahoo"
+                type="url"
+                value={formData.affiliations.yahoo}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, yahoo: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="youtube">YouTube</Label>
+              <Input
+                id="youtube"
+                type="url"
+                value={formData.affiliations.youtube}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, youtube: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bing">Bing</Label>
+              <Input
+                id="bing"
+                type="url"
+                value={formData.affiliations.bing}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, bing: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="manta">Manta</Label>
+              <Input
+                id="manta"
+                type="url"
+                value={formData.affiliations.manta}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, manta: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="houzz">Houzz</Label>
+              <Input
+                id="houzz"
+                type="url"
+                value={formData.affiliations.houzz}
+                onChange={(e) => setFormData({ ...formData, affiliations: { ...formData.affiliations, houzz: e.target.value } })}
+                placeholder="Enter URL"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Inventory</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="inventory_parts">Parts</Label>
+            <Input
+              id="inventory_parts"
+              value={formData.inventory_parts}
+              onChange={(e) => setFormData({ ...formData, inventory_parts: e.target.value })}
+              placeholder="Enter parts information"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="inventory_equipment">Equipment</Label>
+            <Input
+              id="inventory_equipment"
+              value={formData.inventory_equipment}
+              onChange={(e) => setFormData({ ...formData, inventory_equipment: e.target.value })}
+              placeholder="Enter equipment information"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="inventory_locations">Locations</Label>
+            <Input
+              id="inventory_locations"
+              value={formData.inventory_locations}
+              onChange={(e) => setFormData({ ...formData, inventory_locations: e.target.value })}
+              placeholder="Enter locations information"
+            />
           </div>
         </CardContent>
       </Card>

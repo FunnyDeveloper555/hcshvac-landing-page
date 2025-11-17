@@ -16,7 +16,9 @@ export type Database = {
     Tables: {
       companies: {
         Row: {
+          affiliations: Json | null
           brands_installed: Json | null
+          brands_serviced: Json | null
           company_address: string | null
           company_city: string | null
           company_email_primary: string | null
@@ -27,6 +29,9 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
+          inventory_equipment: string | null
+          inventory_locations: string | null
+          inventory_parts: string | null
           is_active: boolean | null
           logo_url: string | null
           name: string
@@ -44,7 +49,9 @@ export type Database = {
           services_provided: Json | null
         }
         Insert: {
+          affiliations?: Json | null
           brands_installed?: Json | null
+          brands_serviced?: Json | null
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
@@ -55,6 +62,9 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          inventory_equipment?: string | null
+          inventory_locations?: string | null
+          inventory_parts?: string | null
           is_active?: boolean | null
           logo_url?: string | null
           name: string
@@ -72,7 +82,9 @@ export type Database = {
           services_provided?: Json | null
         }
         Update: {
+          affiliations?: Json | null
           brands_installed?: Json | null
+          brands_serviced?: Json | null
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
@@ -83,6 +95,9 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          inventory_equipment?: string | null
+          inventory_locations?: string | null
+          inventory_parts?: string | null
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
