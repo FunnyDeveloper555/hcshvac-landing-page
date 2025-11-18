@@ -16,6 +16,7 @@ import DeactiveCompaniesList from "@/components/admin/DeactiveCompaniesList";
 import VendorsAdd from "@/components/admin/VendorsAdd";
 import VendorsList from "@/components/admin/VendorsList";
 import { EmployeesAdmin } from "@/components/admin/EmployeesAdmin";
+import CitiesImport from "@/components/admin/CitiesImport";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -80,6 +81,7 @@ const Admin = () => {
               <Route path="/vendors/add" element={<VendorsAdd />} />
               <Route path="/vendors/list" element={<VendorsList />} />
               <Route path="/employees/*" element={<EmployeesAdmin />} />
+              <Route path="/cities/import" element={<CitiesImport />} />
             </Routes>
           </main>
         </div>
