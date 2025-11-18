@@ -613,9 +613,7 @@ const CompaniesAdd = () => {
                 />
                 <CommandList>
                   <CommandEmpty>
-                    {citySearch.trim().length < 2
-                      ? "Type at least 2 characters to search"
-                      : (citiesLoading ? "Searching..." : "No cities found.")}
+                    {citiesLoading ? "Searching..." : "No cities found."}
                   </CommandEmpty>
                   <CommandGroup>
                     {filteredCities.map((city) => {
