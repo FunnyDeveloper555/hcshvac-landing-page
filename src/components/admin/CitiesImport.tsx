@@ -29,8 +29,8 @@ const CitiesImport = () => {
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
       
-      // Find column indices
-      const cityIdIndex = headers.indexOf('city_id');
+      // Find column indices - CSV uses "id" not "city_id"
+      const cityIdIndex = headers.indexOf('id');
       const nameIndex = headers.indexOf('name');
       const countyIndex = headers.indexOf('county');
       const stateCodeIndex = headers.indexOf('state_code');
