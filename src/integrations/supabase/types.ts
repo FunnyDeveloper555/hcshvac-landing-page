@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      cities: {
+        Row: {
+          area_code: string | null
+          city_id: number
+          county: string | null
+          created_at: string
+          households: number | null
+          id: string
+          land_area: number | null
+          latitude: number | null
+          longitude: number | null
+          median_income: number | null
+          name: string
+          population: number | null
+          state: string
+          state_code: string
+          time_zone: string | null
+          type: string | null
+          water_area: number | null
+          zip_codes: string | null
+        }
+        Insert: {
+          area_code?: string | null
+          city_id: number
+          county?: string | null
+          created_at?: string
+          households?: number | null
+          id?: string
+          land_area?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          median_income?: number | null
+          name: string
+          population?: number | null
+          state: string
+          state_code: string
+          time_zone?: string | null
+          type?: string | null
+          water_area?: number | null
+          zip_codes?: string | null
+        }
+        Update: {
+          area_code?: string | null
+          city_id?: number
+          county?: string | null
+          created_at?: string
+          households?: number | null
+          id?: string
+          land_area?: number | null
+          latitude?: number | null
+          longitude?: number | null
+          median_income?: number | null
+          name?: string
+          population?: number | null
+          state?: string
+          state_code?: string
+          time_zone?: string | null
+          type?: string | null
+          water_area?: number | null
+          zip_codes?: string | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           affiliations: Json | null
