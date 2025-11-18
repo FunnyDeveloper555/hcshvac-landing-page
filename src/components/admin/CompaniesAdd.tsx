@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, X, Check, ChevronsUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 const SERVICES = [
   "Heating Services",
@@ -37,16 +40,18 @@ const SERVICES = [
   "Mini Split Installation",
 ];
 
-const SERVICE_AREAS = [
-  "Addison, IL",
-  "Berwyn, IL",
-  "Belvidere, IL",
-  "Bolingbrook, IL",
-  "Cicero, IL",
-];
+interface City {
+  id: string;
+  name: string;
+  state: string;
+  state_code: string;
+}
 
 const CompaniesAdd = () => {
   const [uploading, setUploading] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
+  const [citySearch, setCitySearch] = useState("");
+  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     company_address: "",
@@ -97,6 +102,23 @@ const CompaniesAdd = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
+  const fetchCities = async () => {
+    const { data, error } = await supabase
+      .from("cities")
+      .select("id, name, state, state_code")
+      .order("name");
+
+    if (error) {
+      console.error("Error fetching cities:", error);
+    } else if (data) {
+      setCities(data);
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -163,14 +185,36 @@ const CompaniesAdd = () => {
     }));
   };
 
-  const toggleServiceArea = (area: string) => {
+  const addCity = (cityId: string) => {
+    const city = cities.find(c => c.id === cityId);
+    if (city) {
+      const cityLabel = `${city.name}, ${city.state_code}`;
+      if (!formData.service_areas.includes(cityLabel)) {
+        setFormData(prev => ({
+          ...prev,
+          service_areas: [...prev.service_areas, cityLabel]
+        }));
+      }
+    }
+    setCityPopoverOpen(false);
+    setCitySearch("");
+  };
+
+  const removeCity = (city: string) => {
     setFormData(prev => ({
       ...prev,
-      service_areas: prev.service_areas.includes(area)
-        ? prev.service_areas.filter(a => a !== area)
-        : [...prev.service_areas, area]
+      service_areas: prev.service_areas.filter(a => a !== city)
     }));
   };
+
+  const filteredCities = cities.filter(city => {
+    const searchLower = citySearch.toLowerCase();
+    return (
+      city.name.toLowerCase().includes(searchLower) ||
+      city.state.toLowerCase().includes(searchLower) ||
+      city.state_code.toLowerCase().includes(searchLower)
+    );
+  }).slice(0, 50);
 
   const addBrand = () => {
     if (brandInput.trim()) {
@@ -521,18 +565,68 @@ const CompaniesAdd = () => {
       <Card>
         <CardHeader>
           <CardTitle>Company Service Area</CardTitle>
+          <CardDescription>Select cities from the database where the company provides services</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {SERVICE_AREAS.map((area) => (
-              <div key={area} className="flex items-center space-x-2">
-                <Checkbox
-                  id={area}
-                  checked={formData.service_areas.includes(area)}
-                  onCheckedChange={() => toggleServiceArea(area)}
+        <CardContent className="space-y-4">
+          <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={cityPopoverOpen}
+                className="w-full justify-between"
+              >
+                Select cities...
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput 
+                  placeholder="Search cities..." 
+                  value={citySearch}
+                  onValueChange={setCitySearch}
                 />
-                <Label htmlFor={area} className="cursor-pointer">{area}</Label>
-              </div>
+                <CommandList>
+                  <CommandEmpty>No cities found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredCities.map((city) => {
+                      const cityLabel = `${city.name}, ${city.state_code}`;
+                      return (
+                        <CommandItem
+                          key={city.id}
+                          value={city.id}
+                          onSelect={() => addCity(city.id)}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              formData.service_areas.includes(cityLabel)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }`}
+                          />
+                          {city.name}, {city.state_code}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          
+          <div className="flex flex-wrap gap-2">
+            {formData.service_areas.map((city) => (
+              <Badge key={city} variant="secondary" className="px-3 py-1">
+                {city}
+                <button
+                  type="button"
+                  onClick={() => removeCity(city)}
+                  className="ml-2 hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
             ))}
           </div>
         </CardContent>
