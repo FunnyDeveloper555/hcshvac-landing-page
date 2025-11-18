@@ -52,6 +52,7 @@ const CompaniesAdd = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [citySearch, setCitySearch] = useState("");
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
+  const [citiesLoading, setCitiesLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     company_address: "",
@@ -104,21 +105,39 @@ const CompaniesAdd = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCities();
-  }, []);
+    let active = true;
+    const q = citySearch.trim();
 
-  const fetchCities = async () => {
-    const { data, error } = await supabase
-      .from("cities")
-      .select("id, name, state, state_code")
-      .order("name");
-
-    if (error) {
-      console.error("Error fetching cities:", error);
-    } else if (data) {
-      setCities(data);
+    if (q.length < 2) {
+      setCities([]);
+      return;
     }
-  };
+
+    const timer = setTimeout(async () => {
+      setCitiesLoading(true);
+      const { data, error } = await supabase
+        .from("cities")
+        .select("id, name, state, state_code")
+        .or(`name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%`)
+        .order("name")
+        .limit(50);
+
+      if (active) {
+        if (error) {
+          console.error("Error searching cities:", error);
+          setCities([]);
+        } else {
+          setCities(data || []);
+        }
+        setCitiesLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [citySearch]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -207,14 +226,7 @@ const CompaniesAdd = () => {
     }));
   };
 
-  const filteredCities = cities.filter(city => {
-    const searchLower = citySearch.toLowerCase();
-    return (
-      city.name.toLowerCase().includes(searchLower) ||
-      city.state.toLowerCase().includes(searchLower) ||
-      city.state_code.toLowerCase().includes(searchLower)
-    );
-  }).slice(0, 50);
+  const filteredCities = cities;
 
   const addBrand = () => {
     if (brandInput.trim()) {
@@ -588,7 +600,11 @@ const CompaniesAdd = () => {
                   onValueChange={setCitySearch}
                 />
                 <CommandList>
-                  <CommandEmpty>No cities found.</CommandEmpty>
+                  <CommandEmpty>
+                    {citySearch.trim().length < 2
+                      ? "Type at least 2 characters to search"
+                      : (citiesLoading ? "Searching..." : "No cities found.")}
+                  </CommandEmpty>
                   <CommandGroup>
                     {filteredCities.map((city) => {
                       const cityLabel = `${city.name}, ${city.state_code}`;
