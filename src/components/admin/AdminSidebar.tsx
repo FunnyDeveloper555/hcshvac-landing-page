@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -66,6 +66,13 @@ const menuItems = [
     children: [
       { title: "Add", url: "/admin/employees/add", icon: Plus },
       { title: "List", url: "/admin/employees/list", icon: List },
+    ]
+  },
+  { 
+    title: "Cities", 
+    icon: MapPin,
+    children: [
+      { title: "Import CSV", url: "/admin/cities/import", icon: Plus },
     ]
   },
 ];
