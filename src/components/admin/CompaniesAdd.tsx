@@ -127,7 +127,19 @@ const CompaniesAdd = () => {
           console.error("Error searching cities:", error);
           setCities([]);
         } else {
-          setCities(data || []);
+          const qLower = q.toLowerCase();
+          const scored = (data || []).map((c) => {
+            const name = c.name.toLowerCase();
+            const state = c.state.toLowerCase();
+            const stateCode = c.state_code.toLowerCase();
+            let score = 0;
+            if (name.startsWith(qLower)) score = 3;
+            else if (name.includes(qLower)) score = 2;
+            else if (state.startsWith(qLower) || stateCode.startsWith(qLower)) score = 1;
+            return { c, score };
+          });
+          scored.sort((a, b) => b.score - a.score || a.c.name.localeCompare(b.c.name));
+          setCities(scored.map((s) => s.c));
         }
         setCitiesLoading(false);
       }
