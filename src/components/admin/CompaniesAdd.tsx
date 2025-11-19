@@ -117,6 +117,8 @@ const CompaniesAdd = () => {
 
     const timer = setTimeout(async () => {
       setCitiesLoading(true);
+      
+      // Build multiple queries to search across all fields
       const { data, error } = await supabase
         .from("cities")
         .select("id, name, state, state_code, county, zip_codes")
@@ -129,6 +131,7 @@ const CompaniesAdd = () => {
           console.error("Error searching cities:", error);
           setCities([]);
         } else {
+          console.log(`Found ${data?.length || 0} cities for search: "${q}"`, data?.slice(0, 3));
           const qLower = q.toLowerCase();
           const scored = (data || []).map((c) => {
             const name = c.name.toLowerCase();
