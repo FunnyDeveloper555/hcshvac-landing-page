@@ -51,10 +51,9 @@ interface City {
 
 const CompaniesAdd = () => {
   const [uploading, setUploading] = useState(false);
-  const [cities, setCities] = useState<City[]>([]);
-  const [citySearch, setCitySearch] = useState("");
+  const [availableCities, setAvailableCities] = useState<City[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
-  const [citiesLoading, setCitiesLoading] = useState(false);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [availableStates, setAvailableStates] = useState<{code: string, name: string}[]>([]);
@@ -182,78 +181,35 @@ const CompaniesAdd = () => {
     loadCounties();
   }, [selectedStates]);
 
+  // Load cities when states or counties change
   useEffect(() => {
-    let active = true;
-    const q = citySearch.trim();
-
-    if (q.length < 2) {
-      setCities([]);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setCitiesLoading(true);
-      const isZipSearch = /^\d{2,}$/.test(q);
+    const loadCities = async () => {
+      if (selectedStates.length === 0) {
+        setAvailableCities([]);
+        setSelectedCities([]);
+        return;
+      }
 
       let query = supabase
         .from("cities")
-        .select("id, name, state, state_code, county, zip_codes");
+        .select("id, name, state, state_code, county, zip_codes")
+        .in("state_code", selectedStates)
+        .order("name");
 
-      // Filter by selected states if any
-      if (selectedStates.length > 0) {
-        query = query.in("state_code", selectedStates);
-      }
-
-      // Filter by selected counties if any
       if (selectedCounties.length > 0) {
         query = query.in("county", selectedCounties);
       }
 
-      if (isZipSearch) {
-        query = query.ilike("zip_codes", `%${q}%`);
-      } else {
-        query = query.or(
-          `name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%,county.ilike.%${q}%`
-        );
+      const { data, error } = await query.limit(1000);
+
+      if (!error && data) {
+        setAvailableCities(data);
+        // Remove selected cities that are no longer available
+        setSelectedCities(prev => prev.filter(cityId => data.some(c => c.id === cityId)));
       }
-
-      const { data, error } = await query
-        .order("name")
-        .limit(50);
-
-      if (active) {
-        if (error) {
-          console.error("Error searching cities:", error);
-          setCities([]);
-        } else {
-          console.log(`Found ${data?.length || 0} cities for search: "${q}"`, data?.slice(0, 3));
-          const qLower = q.toLowerCase();
-          const scored = (data || []).map((c) => {
-            const name = c.name.toLowerCase();
-            const state = c.state.toLowerCase();
-            const stateCode = c.state_code.toLowerCase();
-            const county = (c.county || '').toLowerCase();
-            const zipCodes = (c.zip_codes || '').toLowerCase();
-            let score = 0;
-            if (name.startsWith(qLower)) score = 5;
-            else if (name.includes(qLower)) score = 4;
-            else if (zipCodes.includes(qLower)) score = 3;
-            else if (county.includes(qLower)) score = 2;
-            else if (state.startsWith(qLower) || stateCode.startsWith(qLower)) score = 1;
-            return { c, score };
-          });
-          scored.sort((a, b) => b.score - a.score || a.c.name.localeCompare(b.c.name));
-          setCities(scored.map((s) => s.c));
-        }
-        setCitiesLoading(false);
-      }
-    }, 300);
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
     };
-  }, [citySearch, selectedStates, selectedCounties]);
+    loadCities();
+  }, [selectedStates, selectedCounties]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -321,28 +277,16 @@ const CompaniesAdd = () => {
   };
 
   const addCity = (cityId: string) => {
-    const city = cities.find(c => c.id === cityId);
-    if (city) {
-      const cityLabel = `${city.name}, ${city.state_code}`;
-      if (!formData.service_areas.includes(cityLabel)) {
-        setFormData(prev => ({
-          ...prev,
-          service_areas: [...prev.service_areas, cityLabel]
-        }));
-      }
+    if (selectedCities.includes(cityId)) {
+      setSelectedCities(prev => prev.filter(id => id !== cityId));
+    } else {
+      setSelectedCities(prev => [...prev, cityId]);
     }
-    setCityPopoverOpen(false);
-    setCitySearch("");
   };
 
-  const removeCity = (city: string) => {
-    setFormData(prev => ({
-      ...prev,
-      service_areas: prev.service_areas.filter(a => a !== city)
-    }));
+  const removeCity = (cityId: string) => {
+    setSelectedCities(prev => prev.filter(id => id !== cityId));
   };
-
-  const filteredCities = cities;
 
   const addBrand = () => {
     if (brandInput.trim()) {
@@ -388,12 +332,18 @@ const CompaniesAdd = () => {
       return;
     }
 
+    // Build service areas from selected cities
+    const serviceAreas = selectedCities.map(cityId => {
+      const city = availableCities.find(c => c.id === cityId);
+      return city ? `${city.name}, ${city.state_code}` : null;
+    }).filter(Boolean) as string[];
+
     const { error } = await supabase
       .from("companies")
       .insert([{
         ...formData,
+        service_areas: serviceAreas,
         services_provided: formData.services_provided,
-        service_areas: formData.service_areas,
         brands_installed: formData.brands_installed,
         brands_serviced: formData.brands_serviced,
         affiliations: formData.affiliations,
@@ -835,73 +785,73 @@ const CompaniesAdd = () => {
             </div>
           )}
 
-          {/* City Selection - Keep existing */}
-          <div className="space-y-2">
-            <Label>Cities (Optional)</Label>
-            <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={cityPopoverOpen}
-                  className="w-full justify-between"
-                >
-                  Select cities...
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command shouldFilter={false}>
-                  <CommandInput 
-                    placeholder="Search cities..." 
-                    value={citySearch}
-                    onValueChange={setCitySearch}
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      {citiesLoading ? "Searching..." : "No cities found."}
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {filteredCities.map((city) => {
-                        const cityLabel = `${city.name}, ${city.state_code}`;
-                        return (
+          {/* City Selection */}
+          {selectedStates.length > 0 && (
+            <div className="space-y-2">
+              <Label>Cities (Optional)</Label>
+              <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={cityPopoverOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedCities.length > 0
+                      ? `${selectedCities.length} cities selected`
+                      : "Select cities..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 max-h-[400px]" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search cities..." />
+                    <CommandList className="max-h-[350px] overflow-y-auto">
+                      <CommandEmpty>No cities found.</CommandEmpty>
+                      <CommandGroup>
+                        {availableCities.map((city) => (
                           <CommandItem
                             key={city.id}
-                            value={city.id}
+                            value={`${city.name} ${city.state_code}`}
                             onSelect={() => addCity(city.id)}
                           >
                             <Check
                               className={`mr-2 h-4 w-4 ${
-                                formData.service_areas.includes(cityLabel)
+                                selectedCities.includes(city.id)
                                   ? "opacity-100"
                                   : "opacity-0"
                               }`}
                             />
                             {city.name}, {city.state_code}
+                            {city.county && ` (${city.county})`}
                           </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            
-            <div className="flex flex-wrap gap-2">
-              {formData.service_areas.map((city) => (
-                <Badge key={city} variant="secondary" className="px-3 py-1">
-                  {city}
-                  <button
-                    type="button"
-                    onClick={() => removeCity(city)}
-                    className="ml-2 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              
+              <div className="flex flex-wrap gap-2">
+                {selectedCities.map((cityId) => {
+                  const city = availableCities.find(c => c.id === cityId);
+                  if (!city) return null;
+                  return (
+                    <Badge key={cityId} variant="secondary" className="px-3 py-1">
+                      {city.name}, {city.state_code}
+                      <button
+                        type="button"
+                        onClick={() => removeCity(cityId)}
+                        className="ml-2 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
