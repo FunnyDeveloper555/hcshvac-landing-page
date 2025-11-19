@@ -45,6 +45,8 @@ interface City {
   name: string;
   state: string;
   state_code: string;
+  county: string | null;
+  zip_codes: string | null;
 }
 
 const CompaniesAdd = () => {
@@ -117,8 +119,8 @@ const CompaniesAdd = () => {
       setCitiesLoading(true);
       const { data, error } = await supabase
         .from("cities")
-        .select("id, name, state, state_code")
-        .or(`name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%`)
+        .select("id, name, state, state_code, county, zip_codes")
+        .or(`name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%,county.ilike.%${q}%,zip_codes.ilike.%${q}%`)
         .order("name")
         .limit(50);
 
@@ -132,9 +134,13 @@ const CompaniesAdd = () => {
             const name = c.name.toLowerCase();
             const state = c.state.toLowerCase();
             const stateCode = c.state_code.toLowerCase();
+            const county = (c.county || '').toLowerCase();
+            const zipCodes = (c.zip_codes || '').toLowerCase();
             let score = 0;
-            if (name.startsWith(qLower)) score = 3;
-            else if (name.includes(qLower)) score = 2;
+            if (name.startsWith(qLower)) score = 5;
+            else if (name.includes(qLower)) score = 4;
+            else if (zipCodes.includes(qLower)) score = 3;
+            else if (county.includes(qLower)) score = 2;
             else if (state.startsWith(qLower) || stateCode.startsWith(qLower)) score = 1;
             return { c, score };
           });
