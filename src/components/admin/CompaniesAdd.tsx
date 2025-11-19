@@ -119,14 +119,18 @@ const CompaniesAdd = () => {
         .from("cities")
         .select("state, state_code")
         .order("state")
-        .limit(10000); // Ensure we get all cities to extract unique states
+        .limit(10000);
       
       if (!error && data) {
+        console.log("Raw cities data count:", data.length);
         const uniqueStates = Array.from(
           new Map(data.map(item => [item.state_code, { code: item.state_code, name: item.state }]))
             .values()
         );
+        console.log("Unique states loaded:", uniqueStates.length, uniqueStates);
         setAvailableStates(uniqueStates);
+      } else if (error) {
+        console.error("Error loading states:", error);
       }
     };
     loadStates();
@@ -679,10 +683,10 @@ const CompaniesAdd = () => {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
+              <PopoverContent className="w-full p-0 max-h-[400px]" align="start">
                 <Command>
                   <CommandInput placeholder="Search states..." />
-                  <CommandList>
+                  <CommandList className="max-h-[350px] overflow-y-auto">
                     <CommandEmpty>No states found.</CommandEmpty>
                     <CommandGroup>
                       {availableStates.map((state) => (
