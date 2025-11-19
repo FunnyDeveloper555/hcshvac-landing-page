@@ -185,23 +185,20 @@ const CompaniesAdd = () => {
   // Load cities when states or counties change
   useEffect(() => {
     const loadCities = async () => {
-      if (selectedStates.length === 0) {
+      // Cities only load when BOTH states AND counties are selected
+      if (selectedStates.length === 0 || selectedCounties.length === 0) {
         setAvailableCities([]);
         setSelectedCities([]);
         return;
       }
 
-      let query = supabase
+      const { data, error } = await supabase
         .from("cities")
         .select("id, name, state, state_code, county, zip_codes")
         .in("state_code", selectedStates)
-        .order("name");
-
-      if (selectedCounties.length > 0) {
-        query = query.in("county", selectedCounties);
-      }
-
-      const { data, error } = await query.limit(1000);
+        .in("county", selectedCounties)
+        .order("name")
+        .limit(1000);
 
       if (!error && data) {
         setAvailableCities(data);
@@ -787,7 +784,7 @@ const CompaniesAdd = () => {
           )}
 
           {/* City Selection */}
-          {selectedStates.length > 0 && (
+          {selectedStates.length > 0 && selectedCounties.length > 0 && (
             <div className="space-y-2">
               <Label>Cities (Optional)</Label>
               <Select
