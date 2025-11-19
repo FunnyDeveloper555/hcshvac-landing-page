@@ -115,23 +115,43 @@ const CompaniesAdd = () => {
   // Load all unique states on mount
   useEffect(() => {
     const loadStates = async () => {
-      const { data, error } = await supabase
-        .from("cities")
-        .select("state, state_code")
-        .order("state")
-        .limit(10000);
+      const allStates = new Map<string, {code: string, name: string}>();
+      let offset = 0;
+      const batchSize = 1000;
+      let hasMore = true;
       
-      if (!error && data) {
-        console.log("Raw cities data count:", data.length);
-        const uniqueStates = Array.from(
-          new Map(data.map(item => [item.state_code, { code: item.state_code, name: item.state }]))
-            .values()
-        );
-        console.log("Unique states loaded:", uniqueStates.length, uniqueStates);
-        setAvailableStates(uniqueStates);
-      } else if (error) {
-        console.error("Error loading states:", error);
+      while (hasMore) {
+        const { data: batch, error: batchError } = await supabase
+          .from("cities")
+          .select("state, state_code")
+          .order("state")
+          .range(offset, offset + batchSize - 1);
+        
+        if (batchError) {
+          console.error("Error loading states batch:", batchError);
+          break;
+        }
+        
+        if (batch && batch.length > 0) {
+          batch.forEach(item => {
+            if (!allStates.has(item.state_code)) {
+              allStates.set(item.state_code, { code: item.state_code, name: item.state });
+            }
+          });
+          
+          if (batch.length < batchSize) {
+            hasMore = false;
+          } else {
+            offset += batchSize;
+          }
+        } else {
+          hasMore = false;
+        }
       }
+      
+      const uniqueStates = Array.from(allStates.values()).sort((a, b) => a.name.localeCompare(b.name));
+      console.log("Total unique states loaded:", uniqueStates.length);
+      setAvailableStates(uniqueStates);
     };
     loadStates();
   }, []);
