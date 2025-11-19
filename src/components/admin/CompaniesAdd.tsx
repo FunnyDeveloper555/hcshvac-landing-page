@@ -117,12 +117,21 @@ const CompaniesAdd = () => {
 
     const timer = setTimeout(async () => {
       setCitiesLoading(true);
-      
-      // Build multiple queries to search across all fields
-      const { data, error } = await supabase
+      const isZipSearch = /^\d{2,}$/.test(q);
+
+      let query = supabase
         .from("cities")
-        .select("id, name, state, state_code, county, zip_codes")
-        .or(`name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%,county.ilike.%${q}%,zip_codes.ilike.%${q}%`)
+        .select("id, name, state, state_code, county, zip_codes");
+
+      if (isZipSearch) {
+        query = query.ilike("zip_codes", `%${q}%`);
+      } else {
+        query = query.or(
+          `name.ilike.%${q}%,state_code.ilike.%${q}%,state.ilike.%${q}%,county.ilike.%${q}%`
+        );
+      }
+
+      const { data, error } = await query
         .order("name")
         .limit(50);
 
