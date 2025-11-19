@@ -199,6 +199,16 @@ const CompaniesAdd = () => {
         .from("cities")
         .select("id, name, state, state_code, county, zip_codes");
 
+      // Filter by selected states if any
+      if (selectedStates.length > 0) {
+        query = query.in("state_code", selectedStates);
+      }
+
+      // Filter by selected counties if any
+      if (selectedCounties.length > 0) {
+        query = query.in("county", selectedCounties);
+      }
+
       if (isZipSearch) {
         query = query.ilike("zip_codes", `%${q}%`);
       } else {
@@ -243,7 +253,7 @@ const CompaniesAdd = () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [citySearch]);
+  }, [citySearch, selectedStates, selectedCounties]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
