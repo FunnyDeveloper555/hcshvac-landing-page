@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SERVICES = [
   "Heating Services",
@@ -789,48 +790,30 @@ const CompaniesAdd = () => {
           {selectedStates.length > 0 && (
             <div className="space-y-2">
               <Label>Cities (Optional)</Label>
-              <Popover open={cityPopoverOpen} onOpenChange={setCityPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={cityPopoverOpen}
-                    className="w-full justify-between"
-                  >
-                    {selectedCities.length > 0
-                      ? `${selectedCities.length} cities selected`
-                      : "Select cities..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0 max-h-[400px]" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search cities..." />
-                    <CommandList className="max-h-[350px] overflow-y-auto">
-                      <CommandEmpty>No cities found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableCities.map((city) => (
-                          <CommandItem
-                            key={city.id}
-                            value={`${city.name} ${city.state_code}`}
-                            onSelect={() => addCity(city.id)}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedCities.includes(city.id)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                            />
-                            {city.name}, {city.state_code}
-                            {city.county && ` (${city.county})`}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Select
+                value=""
+                onValueChange={(cityId) => {
+                  if (!selectedCities.includes(cityId)) {
+                    addCity(cityId);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select cities..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {availableCities.map((city) => (
+                    <SelectItem 
+                      key={city.id} 
+                      value={city.id}
+                      disabled={selectedCities.includes(city.id)}
+                    >
+                      {city.name}, {city.state_code}
+                      {city.county && ` (${city.county})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               
               <div className="flex flex-wrap gap-2">
                 {selectedCities.map((cityId) => {
