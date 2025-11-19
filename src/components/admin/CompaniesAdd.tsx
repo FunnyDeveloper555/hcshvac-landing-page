@@ -118,7 +118,8 @@ const CompaniesAdd = () => {
       const { data, error } = await supabase
         .from("cities")
         .select("state, state_code")
-        .order("state");
+        .order("state")
+        .limit(10000); // Ensure we get all cities to extract unique states
       
       if (!error && data) {
         const uniqueStates = Array.from(
