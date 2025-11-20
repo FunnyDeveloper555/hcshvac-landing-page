@@ -7,12 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, Check, ChevronsUpDown } from "lucide-react";
+import { Loader2, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const SERVICES = [
   "Heating Services",
@@ -50,17 +49,22 @@ interface City {
   zip_codes: string | null;
 }
 
+interface CountyWithCities {
+  county: string;
+  state_code: string;
+  cities: City[];
+}
+
 const CompaniesAdd = () => {
   const [uploading, setUploading] = useState(false);
-  const [availableCities, setAvailableCities] = useState<City[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
-  const [cityPopoverOpen, setCityPopoverOpen] = useState(false);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
   const [availableStates, setAvailableStates] = useState<{code: string, name: string}[]>([]);
-  const [availableCounties, setAvailableCounties] = useState<string[]>([]);
-  const [statePopoverOpen, setStatePopoverOpen] = useState(false);
-  const [countyPopoverOpen, setCountyPopoverOpen] = useState(false);
+  const [countiesByState, setCountiesByState] = useState<Map<string, string[]>>(new Map());
+  const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
+  const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
+  const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     name: "",
     company_address: "",
@@ -160,54 +164,68 @@ const CompaniesAdd = () => {
   useEffect(() => {
     const loadCounties = async () => {
       if (selectedStates.length === 0) {
-        setAvailableCounties([]);
+        setCountiesByState(new Map());
         setSelectedCounties([]);
         return;
       }
 
-      const { data, error } = await supabase
-        .from("cities")
-        .select("county")
-        .in("state_code", selectedStates)
-        .not("county", "is", null)
-        .order("county");
-      
-      if (!error && data) {
-        const uniqueCounties = Array.from(new Set(data.map(item => item.county).filter(Boolean))) as string[];
-        setAvailableCounties(uniqueCounties);
-        // Remove selected counties that are no longer available
-        setSelectedCounties(prev => prev.filter(c => uniqueCounties.includes(c)));
+      const newCountiesByState = new Map<string, string[]>();
+
+      for (const stateCode of selectedStates) {
+        const { data, error } = await supabase
+          .from("cities")
+          .select("county")
+          .eq("state_code", stateCode)
+          .not("county", "is", null);
+        
+        if (!error && data) {
+          const uniqueCounties = Array.from(new Set(data.map(item => item.county).filter(Boolean))) as string[];
+          newCountiesByState.set(stateCode, uniqueCounties.sort());
+        }
       }
+
+      setCountiesByState(newCountiesByState);
+      
+      // Remove selected counties that are no longer in selected states
+      const allAvailableCounties = Array.from(newCountiesByState.values()).flat();
+      setSelectedCounties(prev => prev.filter(c => allAvailableCounties.includes(c)));
     };
     loadCounties();
   }, [selectedStates]);
 
-  // Load cities when states or counties change
+  // Load cities when counties are selected
   useEffect(() => {
     const loadCities = async () => {
-      // Cities only load when BOTH states AND counties are selected
-      if (selectedStates.length === 0 || selectedCounties.length === 0) {
-        setAvailableCities([]);
+      if (selectedCounties.length === 0) {
+        setCitiesByCounty(new Map());
         setSelectedCities([]);
         return;
       }
 
-      const { data, error } = await supabase
-        .from("cities")
-        .select("id, name, state, state_code, county, zip_codes")
-        .in("state_code", selectedStates)
-        .in("county", selectedCounties)
-        .order("name")
-        .limit(1000);
+      const newCitiesByCounty = new Map<string, City[]>();
 
-      if (!error && data) {
-        setAvailableCities(data);
-        // Remove selected cities that are no longer available
-        setSelectedCities(prev => prev.filter(cityId => data.some(c => c.id === cityId)));
+      for (const county of selectedCounties) {
+        const { data, error } = await supabase
+          .from("cities")
+          .select("id, name, state, state_code, county, zip_codes")
+          .eq("county", county)
+          .order("name");
+
+        if (!error && data) {
+          newCitiesByCounty.set(county, data);
+        }
       }
+
+      setCitiesByCounty(newCitiesByCounty);
+      
+      // Remove selected cities that are no longer available
+      const allAvailableCityIds = Array.from(newCitiesByCounty.values())
+        .flat()
+        .map(c => c.id);
+      setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
     };
     loadCities();
-  }, [selectedStates, selectedCounties]);
+  }, [selectedCounties]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -282,8 +300,44 @@ const CompaniesAdd = () => {
     }
   };
 
-  const removeCity = (cityId: string) => {
-    setSelectedCities(prev => prev.filter(id => id !== cityId));
+  const toggleCounty = (county: string) => {
+    setSelectedCounties(prev =>
+      prev.includes(county)
+        ? prev.filter(c => c !== county)
+        : [...prev, county]
+    );
+  };
+
+  const toggleCity = (cityId: string) => {
+    setSelectedCities(prev =>
+      prev.includes(cityId)
+        ? prev.filter(id => id !== cityId)
+        : [...prev, cityId]
+    );
+  };
+
+  const toggleStateExpanded = (stateCode: string) => {
+    setExpandedStates(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stateCode)) {
+        newSet.delete(stateCode);
+      } else {
+        newSet.add(stateCode);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleCountyExpanded = (county: string) => {
+    setExpandedCounties(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(county)) {
+        newSet.delete(county);
+      } else {
+        newSet.add(county);
+      }
+      return newSet;
+    });
   };
 
   const addBrand = () => {
@@ -331,10 +385,14 @@ const CompaniesAdd = () => {
     }
 
     // Build service areas from selected cities
-    const serviceAreas = selectedCities.map(cityId => {
-      const city = availableCities.find(c => c.id === cityId);
-      return city ? `${city.name}, ${city.state_code}` : null;
-    }).filter(Boolean) as string[];
+    const serviceAreas: string[] = [];
+    citiesByCounty.forEach((cities) => {
+      cities.forEach(city => {
+        if (selectedCities.includes(city.id)) {
+          serviceAreas.push(`${city.name}, ${city.state_code}`);
+        }
+      });
+    });
 
     const { error } = await supabase
       .from("companies")
@@ -646,187 +704,165 @@ const CompaniesAdd = () => {
         <CardContent className="space-y-4">
           {/* State Selection */}
           <div className="space-y-2">
-            <Label>States</Label>
-            <Popover open={statePopoverOpen} onOpenChange={setStatePopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={statePopoverOpen}
-                  className="w-full justify-between"
-                >
-                  {selectedStates.length > 0 
-                    ? `${selectedStates.length} state${selectedStates.length > 1 ? 's' : ''} selected`
-                    : "Select states..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0 max-h-[400px]" align="start">
-                <Command>
-                  <CommandInput placeholder="Search states..." />
-                  <CommandList className="max-h-[350px] overflow-y-auto">
-                    <CommandEmpty>No states found.</CommandEmpty>
-                    <CommandGroup>
-                      {availableStates.map((state) => (
-                        <CommandItem
-                          key={state.code}
-                          value={state.name}
-                          onSelect={() => {
-                            setSelectedStates(prev =>
-                              prev.includes(state.code)
-                                ? prev.filter(s => s !== state.code)
-                                : [...prev, state.code]
-                            );
-                          }}
-                        >
-                          <Check
-                            className={`mr-2 h-4 w-4 ${
-                              selectedStates.includes(state.code)
-                                ? "opacity-100"
-                                : "opacity-0"
-                            }`}
-                          />
-                          {state.name} ({state.code})
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <Label>Select your State/s you Operate In</Label>
+            <Select
+              value=""
+              onValueChange={(stateCode) => {
+                if (!selectedStates.includes(stateCode)) {
+                  setSelectedStates(prev => [...prev, stateCode]);
+                  setExpandedStates(prev => new Set([...prev, stateCode]));
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select states..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                {availableStates.map((state) => (
+                  <SelectItem 
+                    key={state.code} 
+                    value={state.code}
+                    disabled={selectedStates.includes(state.code)}
+                  >
+                    {state.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             
-            <div className="flex flex-wrap gap-2">
-              {selectedStates.map((stateCode) => {
-                const state = availableStates.find(s => s.code === stateCode);
-                return (
-                  <Badge key={stateCode} variant="secondary" className="px-3 py-1">
-                    {state?.name} ({stateCode})
-                    <button
-                      type="button"
-                      onClick={() => setSelectedStates(prev => prev.filter(s => s !== stateCode))}
-                      className="ml-2 hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                );
-              })}
-            </div>
+            {selectedStates.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                You Choose: {selectedStates.map(code => availableStates.find(s => s.code === code)?.name).join(", ")}
+              </div>
+            )}
           </div>
 
-          {/* County Selection */}
+          {/* County Selection by State */}
           {selectedStates.length > 0 && (
             <div className="space-y-2">
-              <Label>Counties</Label>
-              <Popover open={countyPopoverOpen} onOpenChange={setCountyPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={countyPopoverOpen}
-                    className="w-full justify-between"
-                  >
-                    {selectedCounties.length > 0 
-                      ? `${selectedCounties.length} count${selectedCounties.length > 1 ? 'ies' : 'y'} selected`
-                      : "Select counties..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search counties..." />
-                    <CommandList>
-                      <CommandEmpty>No counties found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableCounties.map((county) => (
-                          <CommandItem
-                            key={county}
-                            value={county}
-                            onSelect={() => {
-                              setSelectedCounties(prev =>
-                                prev.includes(county)
-                                  ? prev.filter(c => c !== county)
-                                  : [...prev, county]
-                              );
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedCounties.includes(county)
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              }`}
-                            />
-                            {county}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              
-              <div className="flex flex-wrap gap-2">
-                {selectedCounties.map((county) => (
-                  <Badge key={county} variant="secondary" className="px-3 py-1">
-                    {county}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCounties(prev => prev.filter(c => c !== county))}
-                      className="ml-2 hover:text-destructive"
+              <Label>Select your "Counties" you Operate In Per Selected "State"</Label>
+              <div className="space-y-3 border rounded-lg p-4">
+                {selectedStates.map((stateCode) => {
+                  const state = availableStates.find(s => s.code === stateCode);
+                  const counties = countiesByState.get(stateCode) || [];
+                  const isExpanded = expandedStates.has(stateCode);
+                  
+                  return (
+                    <Collapsible
+                      key={stateCode}
+                      open={isExpanded}
+                      onOpenChange={() => toggleStateExpanded(stateCode)}
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
+                      <div className="space-y-2">
+                        <CollapsibleTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex items-center justify-between w-full p-2 bg-muted rounded hover:bg-muted/80"
+                          >
+                            <span className="font-medium">{state?.name}</span>
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        
+                        <CollapsibleContent className="space-y-1 pl-4">
+                          {counties.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-2">No counties available</p>
+                          ) : (
+                            counties.map((county) => (
+                              <div key={county} className="flex items-center space-x-2 py-1">
+                                <Checkbox
+                                  id={`county-${stateCode}-${county}`}
+                                  checked={selectedCounties.includes(county)}
+                                  onCheckedChange={() => toggleCounty(county)}
+                                />
+                                <label
+                                  htmlFor={`county-${stateCode}-${county}`}
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {county}
+                                </label>
+                              </div>
+                            ))
+                          )}
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* City Selection */}
-          {selectedStates.length > 0 && selectedCounties.length > 0 && (
+          {/* City Selection by County */}
+          {selectedCounties.length > 0 && (
             <div className="space-y-2">
-              <Label>Cities (Optional)</Label>
-              <Select
-                value=""
-                onValueChange={(cityId) => {
-                  if (!selectedCities.includes(cityId)) {
-                    addCity(cityId);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select cities..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {availableCities.map((city) => (
-                    <SelectItem 
-                      key={city.id} 
-                      value={city.id}
-                      disabled={selectedCities.includes(city.id)}
-                    >
-                      {city.name}, {city.state_code}
-                      {city.county && ` (${city.county})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <div className="flex flex-wrap gap-2">
-                {selectedCities.map((cityId) => {
-                  const city = availableCities.find(c => c.id === cityId);
-                  if (!city) return null;
+              <Label>Select your "Cities/Townships" you Operate In Per Selected "County"</Label>
+              <div className="space-y-3 border rounded-lg p-4">
+                {selectedCounties.map((county) => {
+                  const cities = citiesByCounty.get(county) || [];
+                  const isExpanded = expandedCounties.has(county);
+                  const selectedCitiesInCounty = cities.filter(c => selectedCities.includes(c.id)).length;
+                  const stateCode = cities[0]?.state_code || '';
+                  
                   return (
-                    <Badge key={cityId} variant="secondary" className="px-3 py-1">
-                      {city.name}, {city.state_code}
-                      <button
-                        type="button"
-                        onClick={() => removeCity(cityId)}
-                        className="ml-2 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
+                    <Collapsible
+                      key={county}
+                      open={isExpanded}
+                      onOpenChange={() => toggleCountyExpanded(county)}
+                    >
+                      <div className="space-y-2">
+                        <CollapsibleTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex items-center justify-between w-full p-2 bg-muted rounded hover:bg-muted/80"
+                          >
+                            <span className="font-medium">
+                              {county}, {stateCode} ({cities.length} Cities/Townships Listed)
+                            </span>
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        
+                        <CollapsibleContent className="space-y-1 pl-4">
+                          <div className="border rounded p-3 bg-background min-h-[100px]">
+                            {cities.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No cities available</p>
+                            ) : (
+                              <div className="space-y-1">
+                                {cities.map((city) => (
+                                  <div key={city.id} className="flex items-center space-x-2 py-1">
+                                    <Checkbox
+                                      id={`city-${city.id}`}
+                                      checked={selectedCities.includes(city.id)}
+                                      onCheckedChange={() => toggleCity(city.id)}
+                                    />
+                                    <label
+                                      htmlFor={`city-${city.id}`}
+                                      className="text-sm cursor-pointer flex-1"
+                                    >
+                                      {city.name}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {selectedCitiesInCounty > 0 && (
+                              <div className="text-right text-sm text-muted-foreground mt-2 pt-2 border-t">
+                                {selectedCitiesInCounty} Cities/Townships Selected
+                              </div>
+                            )}
+                          </div>
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
                   );
                 })}
               </div>
