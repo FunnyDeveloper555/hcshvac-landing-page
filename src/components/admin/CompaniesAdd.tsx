@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const SERVICES = [
@@ -318,6 +318,25 @@ const CompaniesAdd = () => {
         ? prev.filter(id => id !== cityId)
         : [...prev, cityId]
     );
+  };
+
+  const toggleStateSelection = (stateCode: string) => {
+    setSelectedStates(prev => {
+      if (prev.includes(stateCode)) {
+        return prev.filter(code => code !== stateCode);
+      }
+      return [...prev, stateCode];
+    });
+
+    setExpandedStates(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stateCode)) {
+        newSet.delete(stateCode);
+      } else {
+        newSet.add(stateCode);
+      }
+      return newSet;
+    });
   };
 
   const toggleStateExpanded = (stateCode: string) => {
@@ -709,37 +728,28 @@ const CompaniesAdd = () => {
           {/* State Selection */}
           <div className="space-y-2">
             <Label>Select your State/s you Operate In</Label>
-            <Select
-              value=""
-              onValueChange={(stateCode) => {
-                if (!selectedStates.includes(stateCode)) {
-                  setSelectedStates(prev => [...prev, stateCode]);
-                  setExpandedStates(prev => new Set([...prev, stateCode]));
-                }
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select states..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px] bg-background z-50">
-                {availableStates.length === 0 ? (
-                  <div className="p-4 text-sm text-muted-foreground text-center">
-                    Loading states...
-                  </div>
-                ) : (
-                  availableStates.map((state) => (
-                    <SelectItem 
-                      key={state.code} 
-                      value={state.code}
-                      disabled={selectedStates.includes(state.code)}
+            <div className="space-y-2 border rounded-lg p-4">
+              {availableStates.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Loading states...</p>
+              ) : (
+                availableStates.map((state) => (
+                  <div key={state.code} className="flex items-center space-x-2 py-1">
+                    <Checkbox
+                      id={`state-${state.code}`}
+                      checked={selectedStates.includes(state.code)}
+                      onCheckedChange={() => toggleStateSelection(state.code)}
+                    />
+                    <label
+                      htmlFor={`state-${state.code}`}
+                      className="text-sm cursor-pointer flex-1"
                     >
                       {state.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+
             {selectedStates.length > 0 && (
               <div className="text-sm text-muted-foreground">
                 You Choose: {selectedStates.map(code => availableStates.find(s => s.code === code)?.name).join(", ")}
