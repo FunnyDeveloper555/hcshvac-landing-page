@@ -728,25 +728,27 @@ const CompaniesAdd = () => {
           {/* State Selection */}
           <div className="space-y-2">
             <Label>Select your State/s you Operate In</Label>
-            <div className="space-y-2 border rounded-lg p-4">
+            <div className="border rounded-lg p-4">
               {availableStates.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Loading states...</p>
               ) : (
-                availableStates.map((state) => (
-                  <div key={state.code} className="flex items-center space-x-2 py-1">
-                    <Checkbox
-                      id={`state-${state.code}`}
-                      checked={selectedStates.includes(state.code)}
-                      onCheckedChange={() => toggleStateSelection(state.code)}
-                    />
-                    <label
-                      htmlFor={`state-${state.code}`}
-                      className="text-sm cursor-pointer flex-1"
-                    >
-                      {state.name}
-                    </label>
-                  </div>
-                ))
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {availableStates.map((state) => (
+                    <div key={state.code} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`state-${state.code}`}
+                        checked={selectedStates.includes(state.code)}
+                        onCheckedChange={() => toggleStateSelection(state.code)}
+                      />
+                      <label
+                        htmlFor={`state-${state.code}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {state.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
