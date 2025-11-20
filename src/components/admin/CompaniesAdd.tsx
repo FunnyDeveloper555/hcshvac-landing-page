@@ -717,16 +717,22 @@ const CompaniesAdd = () => {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select states..." />
               </SelectTrigger>
-              <SelectContent className="max-h-[300px]">
-                {availableStates.map((state) => (
-                  <SelectItem 
-                    key={state.code} 
-                    value={state.code}
-                    disabled={selectedStates.includes(state.code)}
-                  >
-                    {state.name}
-                  </SelectItem>
-                ))}
+              <SelectContent className="max-h-[300px] bg-background z-50">
+                {availableStates.length === 0 ? (
+                  <div className="p-4 text-sm text-muted-foreground text-center">
+                    Loading states...
+                  </div>
+                ) : (
+                  availableStates.map((state) => (
+                    <SelectItem 
+                      key={state.code} 
+                      value={state.code}
+                      disabled={selectedStates.includes(state.code)}
+                    >
+                      {state.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             
