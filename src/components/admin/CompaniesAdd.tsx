@@ -59,7 +59,7 @@ const CompaniesAdd = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
-  const [selectedCounties, setSelectedCounties] = useState<string[]>([]);
+  const [selectedCounties, setSelectedCounties] = useState<Array<{county: string, stateCode: string}>>([]);
   const [availableStates, setAvailableStates] = useState<{code: string, name: string}[]>([]);
   const [countiesByState, setCountiesByState] = useState<Map<string, string[]>>(new Map());
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
@@ -187,8 +187,7 @@ const CompaniesAdd = () => {
       setCountiesByState(newCountiesByState);
       
       // Remove selected counties that are no longer in selected states
-      const allAvailableCounties = Array.from(newCountiesByState.values()).flat();
-      setSelectedCounties(prev => prev.filter(c => allAvailableCounties.includes(c)));
+      setSelectedCounties(prev => prev.filter(c => selectedStates.includes(c.stateCode)));
     };
     loadCounties();
   }, [selectedStates]);
@@ -204,15 +203,17 @@ const CompaniesAdd = () => {
 
       const newCitiesByCounty = new Map<string, City[]>();
 
-      for (const county of selectedCounties) {
+      for (const countyObj of selectedCounties) {
+        const countyKey = `${countyObj.county}|${countyObj.stateCode}`;
         const { data, error } = await supabase
           .from("cities")
           .select("id, name, state, state_code, county, zip_codes")
-          .eq("county", county)
+          .eq("county", countyObj.county)
+          .eq("state_code", countyObj.stateCode)
           .order("name");
 
         if (!error && data) {
-          newCitiesByCounty.set(county, data);
+          newCitiesByCounty.set(countyKey, data);
         }
       }
 
@@ -300,12 +301,15 @@ const CompaniesAdd = () => {
     }
   };
 
-  const toggleCounty = (county: string) => {
-    setSelectedCounties(prev =>
-      prev.includes(county)
-        ? prev.filter(c => c !== county)
-        : [...prev, county]
-    );
+  const toggleCounty = (county: string, stateCode: string) => {
+    setSelectedCounties(prev => {
+      const exists = prev.some(c => c.county === county && c.stateCode === stateCode);
+      if (exists) {
+        return prev.filter(c => !(c.county === county && c.stateCode === stateCode));
+      } else {
+        return [...prev, { county, stateCode }];
+      }
+    });
   };
 
   const toggleCity = (cityId: string) => {
@@ -778,12 +782,12 @@ const CompaniesAdd = () => {
                           {counties.length === 0 ? (
                             <p className="text-sm text-muted-foreground py-2">No counties available</p>
                           ) : (
-                            counties.map((county) => (
+                          counties.map((county) => (
                               <div key={county} className="flex items-center space-x-2 py-1">
                                 <Checkbox
                                   id={`county-${stateCode}-${county}`}
-                                  checked={selectedCounties.includes(county)}
-                                  onCheckedChange={() => toggleCounty(county)}
+                                  checked={selectedCounties.some(c => c.county === county && c.stateCode === stateCode)}
+                                  onCheckedChange={() => toggleCounty(county, stateCode)}
                                 />
                                 <label
                                   htmlFor={`county-${stateCode}-${county}`}
@@ -808,17 +812,17 @@ const CompaniesAdd = () => {
             <div className="space-y-2">
               <Label>Select your "Cities/Townships" you Operate In Per Selected "County"</Label>
               <div className="space-y-3 border rounded-lg p-4">
-                {selectedCounties.map((county) => {
-                  const cities = citiesByCounty.get(county) || [];
-                  const isExpanded = expandedCounties.has(county);
+                {selectedCounties.map((countyObj) => {
+                  const countyKey = `${countyObj.county}|${countyObj.stateCode}`;
+                  const cities = citiesByCounty.get(countyKey) || [];
+                  const isExpanded = expandedCounties.has(countyKey);
                   const selectedCitiesInCounty = cities.filter(c => selectedCities.includes(c.id)).length;
-                  const stateCode = cities[0]?.state_code || '';
                   
                   return (
                     <Collapsible
-                      key={county}
+                      key={countyKey}
                       open={isExpanded}
-                      onOpenChange={() => toggleCountyExpanded(county)}
+                      onOpenChange={() => toggleCountyExpanded(countyKey)}
                     >
                       <div className="space-y-2">
                         <CollapsibleTrigger asChild>
@@ -827,7 +831,7 @@ const CompaniesAdd = () => {
                             className="flex items-center justify-between w-full p-2 bg-muted rounded hover:bg-muted/80"
                           >
                             <span className="font-medium">
-                              {county}, {stateCode} ({cities.length} Cities/Townships Listed)
+                              {countyObj.county}, {countyObj.stateCode} ({cities.length} Cities/Townships Listed)
                             </span>
                             {isExpanded ? (
                               <ChevronUp className="h-4 w-4" />
