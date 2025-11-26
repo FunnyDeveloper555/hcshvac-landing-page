@@ -17,6 +17,15 @@ import VendorsAdd from "@/components/admin/VendorsAdd";
 import VendorsList from "@/components/admin/VendorsList";
 import { EmployeesAdmin } from "@/components/admin/EmployeesAdmin";
 import CitiesImport from "@/components/admin/CitiesImport";
+import HvacKeywords from "@/components/admin/pagebuilder/HvacKeywords";
+import NegativeKeywords from "@/components/admin/pagebuilder/NegativeKeywords";
+import HvacParts from "@/components/admin/pagebuilder/HvacParts";
+import EquipmentBrands from "@/components/admin/pagebuilder/EquipmentBrands";
+import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
+import AreasService from "@/components/admin/pagebuilder/AreasService";
+import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
+import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
+import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -82,6 +91,15 @@ const Admin = () => {
               <Route path="/vendors/list" element={<VendorsList />} />
               <Route path="/employees/*" element={<EmployeesAdmin />} />
               <Route path="/cities/import" element={<CitiesImport />} />
+              <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
+              <Route path="/page-builder/negative-keywords" element={<NegativeKeywords />} />
+              <Route path="/page-builder/hvac-parts" element={<HvacParts />} />
+              <Route path="/page-builder/equipment-brands" element={<EquipmentBrands />} />
+              <Route path="/page-builder/plumbing-brands" element={<PlumbingBrands />} />
+              <Route path="/page-builder/areas-service" element={<AreasService />} />
+              <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
+              <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
+              <Route path="/page-builder/local-business" element={<LocalBusiness />} />
             </Routes>
           </main>
         </div>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -73,6 +73,21 @@ const menuItems = [
     icon: MapPin,
     children: [
       { title: "Import CSV", url: "/admin/cities/import", icon: Plus },
+    ]
+  },
+  { 
+    title: "Page Builder", 
+    icon: Layout,
+    children: [
+      { title: "HVAC Keywords", url: "/admin/page-builder/hvac-keywords", icon: Search },
+      { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
+      { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
+      { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
+      { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
+      { title: "Areas We Service", url: "/admin/page-builder/areas-service", icon: Map },
+      { title: "Images & Logos", url: "/admin/page-builder/images-logos", icon: ImageIcon },
+      { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
+      { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
     ]
   },
 ];
