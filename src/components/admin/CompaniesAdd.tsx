@@ -13,33 +13,6 @@ import { Badge } from "@/components/ui/badge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-const SERVICES = [
-  "Heating Services",
-  "Air Conditioning Services",
-  "Plumbing",
-  "Electrical",
-  "Boilers Hot Water",
-  "Boilers Steam",
-  "Boilers Tankless",
-  "Hot Water Heaters",
-  "Hot Water Heaters Tankless",
-  "Residential (Hvac)",
-  "Commercial (Hvac)",
-  "Industrial (Hvac)",
-  "Educational Facilities (Hvac)",
-  "Hvac Service",
-  "Hvac Repair",
-  "Hvac Furnace Installation",
-  "Hvac Furnace Repair",
-  "Hvac Furnace Service",
-  "Hvac Air Conditioning Repair",
-  "Hvac Air Conditioning Service",
-  "Hvac Air Conditioning Installation",
-  "Mini Split Repair",
-  "Mini Split Service",
-  "Mini Split Installation",
-];
-
 interface City {
   id: string;
   name: string;
@@ -61,6 +34,7 @@ const CompaniesAdd = () => {
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const [selectedCounties, setSelectedCounties] = useState<Array<{county: string, stateCode: string}>>([]);
   const [availableStates, setAvailableStates] = useState<{code: string, name: string}[]>([]);
+  const [availableServices, setAvailableServices] = useState<Array<{ id: string; title: string }>>([]);
   const [countiesByState, setCountiesByState] = useState<Map<string, string[]>>(new Map());
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
@@ -116,8 +90,28 @@ const CompaniesAdd = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Load all unique states on mount
+  // Load services and states on mount
   useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('id, title')
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (error) throw error;
+        setAvailableServices(data || []);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load services",
+          variant: "destructive",
+        });
+      }
+    };
+
     const loadStates = async () => {
       const allStates = new Map<string, {code: string, name: string}>();
       let offset = 0;
@@ -157,8 +151,10 @@ const CompaniesAdd = () => {
       console.log("Total unique states loaded:", uniqueStates.length);
       setAvailableStates(uniqueStates);
     };
+    
+    loadServices();
     loadStates();
-  }, []);
+  }, [toast]);
 
   // Load counties when states are selected
   useEffect(() => {
@@ -284,12 +280,12 @@ const CompaniesAdd = () => {
     }
   };
 
-  const toggleService = (service: string) => {
+  const toggleService = (serviceId: string) => {
     setFormData(prev => ({
       ...prev,
-      services_provided: prev.services_provided.includes(service)
-        ? prev.services_provided.filter(s => s !== service)
-        : [...prev.services_provided, service]
+      services_provided: prev.services_provided.includes(serviceId)
+        ? prev.services_provided.filter(s => s !== serviceId)
+        : [...prev.services_provided, serviceId]
     }));
   };
 
@@ -704,18 +700,22 @@ const CompaniesAdd = () => {
           <CardTitle>Company Profile - Services Provided</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {SERVICES.map((service) => (
-              <div key={service} className="flex items-center space-x-2">
-                <Checkbox
-                  id={service}
-                  checked={formData.services_provided.includes(service)}
-                  onCheckedChange={() => toggleService(service)}
-                />
-                <Label htmlFor={service} className="cursor-pointer">{service}</Label>
-              </div>
-            ))}
-          </div>
+          {availableServices.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Loading services...</p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {availableServices.map((service) => (
+                <div key={service.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={service.id}
+                    checked={formData.services_provided.includes(service.id)}
+                    onCheckedChange={() => toggleService(service.id)}
+                  />
+                  <Label htmlFor={service.id} className="cursor-pointer">{service.title}</Label>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
