@@ -120,7 +120,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+    <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
