@@ -79,8 +79,14 @@ const menuItems = [
     title: "Page Builder", 
     icon: Layout,
     children: [
-      { title: "HVAC Keywords", url: "/admin/page-builder/hvac-keywords", icon: Search },
-      { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
+      { 
+        title: "HVAC Keywords", 
+        url: "/admin/page-builder/hvac-keywords", 
+        icon: Search,
+        children: [
+          { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
+        ]
+      },
       { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
       { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
       { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
@@ -139,16 +145,46 @@ export function AdminSidebar() {
                     </CollapsibleTrigger>
                     {open && (
                       <CollapsibleContent>
-                        <SidebarMenuSub>
+                         <SidebarMenuSub>
                           {item.children.map((child) => (
                             <SidebarMenuSubItem key={child.url}>
-                              <SidebarMenuSubButton
-                                onClick={() => navigate(child.url)}
-                                className={`cursor-pointer ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-                              >
-                                <child.icon className="h-4 w-4" />
-                                <span>{child.title}</span>
-                              </SidebarMenuSubButton>
+                              {child.children ? (
+                                <Collapsible defaultOpen={child.children.some(subChild => isActive(subChild.url))}>
+                                  <CollapsibleTrigger asChild>
+                                    <SidebarMenuSubButton
+                                      onClick={() => navigate(child.url)}
+                                      className={`cursor-pointer ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                    >
+                                      <child.icon className="h-4 w-4" />
+                                      <span>{child.title}</span>
+                                      <ChevronDown className="ml-auto h-3 w-3" />
+                                    </SidebarMenuSubButton>
+                                  </CollapsibleTrigger>
+                                  <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                      {child.children.map((subChild) => (
+                                        <SidebarMenuSubItem key={subChild.url}>
+                                          <SidebarMenuSubButton
+                                            onClick={() => navigate(subChild.url)}
+                                            className={`cursor-pointer pl-8 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                          >
+                                            <subChild.icon className="h-4 w-4" />
+                                            <span>{subChild.title}</span>
+                                          </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                      ))}
+                                    </SidebarMenuSub>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              ) : (
+                                <SidebarMenuSubButton
+                                  onClick={() => navigate(child.url)}
+                                  className={`cursor-pointer ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                >
+                                  <child.icon className="h-4 w-4" />
+                                  <span>{child.title}</span>
+                                </SidebarMenuSubButton>
+                              )}
                             </SidebarMenuSubItem>
                           ))}
                         </SidebarMenuSub>
