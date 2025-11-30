@@ -14,6 +14,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -145,7 +146,7 @@ export function AdminSidebar() {
                     </CollapsibleTrigger>
                     {open && (
                       <CollapsibleContent>
-                         <SidebarMenuSub>
+                        <SidebarMenuSub>
                           {item.children.map((child) => (
                             <SidebarMenuSubItem key={child.url} className="w-full">
                               {child.children ? (
@@ -197,6 +198,7 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }
