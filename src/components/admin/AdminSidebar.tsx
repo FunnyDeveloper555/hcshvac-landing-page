@@ -164,9 +164,9 @@ export function AdminSidebar() {
                                     <SidebarMenuSub>
                                       {child.children.map((subChild) => (
                                         <SidebarMenuSubItem key={subChild.url}>
-                                          <SidebarMenuSubButton
+                                        <SidebarMenuSubButton
                                             onClick={() => navigate(subChild.url)}
-                                            className={`cursor-pointer pl-8 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                            className={`cursor-pointer pl-6 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
                                           >
                                             <subChild.icon className="h-4 w-4" />
                                             <span>{subChild.title}</span>
