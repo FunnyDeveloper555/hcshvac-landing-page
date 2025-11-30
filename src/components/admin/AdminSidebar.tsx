@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -85,7 +85,10 @@ const menuItems = [
         url: "/admin/page-builder/hvac-keywords", 
         icon: Search,
         children: [
+          { title: "Positive Keywords", url: "/admin/page-builder/positive-keywords", icon: CheckCircle },
           { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
+          { title: "Negative Search Terms", url: "/admin/page-builder/negative-search-terms", icon: XCircle },
+          { title: "Positive Search Terms", url: "/admin/page-builder/positive-search-terms", icon: CheckCircle },
         ]
       },
       { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
