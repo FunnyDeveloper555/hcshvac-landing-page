@@ -166,7 +166,7 @@ export function AdminSidebar() {
                                         <SidebarMenuSubItem key={subChild.url}>
                                         <SidebarMenuSubButton
                                             onClick={() => navigate(subChild.url)}
-                                            className={`cursor-pointer pl-6 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                            className={`cursor-pointer pl-2 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
                                           >
                                             <subChild.icon className="h-4 w-4" />
                                             <span>{subChild.title}</span>
