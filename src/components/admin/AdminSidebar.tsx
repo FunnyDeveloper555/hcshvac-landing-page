@@ -147,13 +147,13 @@ export function AdminSidebar() {
                       <CollapsibleContent>
                          <SidebarMenuSub>
                           {item.children.map((child) => (
-                            <SidebarMenuSubItem key={child.url}>
+                            <SidebarMenuSubItem key={child.url} className="w-full">
                               {child.children ? (
                                 <Collapsible defaultOpen={child.children.some(subChild => isActive(subChild.url))}>
                                   <CollapsibleTrigger asChild>
                                     <SidebarMenuSubButton
                                       onClick={() => navigate(child.url)}
-                                      className={`cursor-pointer ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                      className={`cursor-pointer w-full ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
                                     >
                                       <child.icon className="h-4 w-4" />
                                       <span>{child.title}</span>
@@ -163,10 +163,10 @@ export function AdminSidebar() {
                                   <CollapsibleContent>
                                     <SidebarMenuSub>
                                       {child.children.map((subChild) => (
-                                        <SidebarMenuSubItem key={subChild.url}>
-                                        <SidebarMenuSubButton
+                                        <SidebarMenuSubItem key={subChild.url} className="w-full">
+                                          <SidebarMenuSubButton
                                             onClick={() => navigate(subChild.url)}
-                                            className={`cursor-pointer pl-2 ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                            className={`cursor-pointer pl-2 w-full ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
                                           >
                                             <subChild.icon className="h-4 w-4" />
                                             <span>{subChild.title}</span>
@@ -179,7 +179,7 @@ export function AdminSidebar() {
                               ) : (
                                 <SidebarMenuSubButton
                                   onClick={() => navigate(child.url)}
-                                  className={`cursor-pointer ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                                  className={`cursor-pointer w-full ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
                                 >
                                   <child.icon className="h-4 w-4" />
                                   <span>{child.title}</span>
