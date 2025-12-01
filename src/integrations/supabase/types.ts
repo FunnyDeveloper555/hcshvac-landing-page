@@ -14,6 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
+      business: {
+        Row: {
+          address: string | null
+          address2: string | null
+          area_code: string | null
+          base_category: string | null
+          city: string | null
+          company_name: string | null
+          contact_name: string | null
+          county_code: string | null
+          created_at: string
+          detailed_category: string | null
+          exact_category: string | null
+          facebook: string | null
+          fax_number: string | null
+          id: string
+          job_title: string | null
+          latitude: number | null
+          location_type: string | null
+          longitude: number | null
+          market_variable: string | null
+          naics: string | null
+          no: number | null
+          revenue_1: number | null
+          revenue_2: number | null
+          sic_2: string | null
+          sic_4: string | null
+          state: string | null
+          telephone_number: string | null
+          toll_free_number: string | null
+          total_employees: number | null
+          twitter: string | null
+          updated_at: string
+          web_address: string | null
+          year_founded: number | null
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          address2?: string | null
+          area_code?: string | null
+          base_category?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          county_code?: string | null
+          created_at?: string
+          detailed_category?: string | null
+          exact_category?: string | null
+          facebook?: string | null
+          fax_number?: string | null
+          id?: string
+          job_title?: string | null
+          latitude?: number | null
+          location_type?: string | null
+          longitude?: number | null
+          market_variable?: string | null
+          naics?: string | null
+          no?: number | null
+          revenue_1?: number | null
+          revenue_2?: number | null
+          sic_2?: string | null
+          sic_4?: string | null
+          state?: string | null
+          telephone_number?: string | null
+          toll_free_number?: string | null
+          total_employees?: number | null
+          twitter?: string | null
+          updated_at?: string
+          web_address?: string | null
+          year_founded?: number | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          address2?: string | null
+          area_code?: string | null
+          base_category?: string | null
+          city?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          county_code?: string | null
+          created_at?: string
+          detailed_category?: string | null
+          exact_category?: string | null
+          facebook?: string | null
+          fax_number?: string | null
+          id?: string
+          job_title?: string | null
+          latitude?: number | null
+          location_type?: string | null
+          longitude?: number | null
+          market_variable?: string | null
+          naics?: string | null
+          no?: number | null
+          revenue_1?: number | null
+          revenue_2?: number | null
+          sic_2?: string | null
+          sic_4?: string | null
+          state?: string | null
+          telephone_number?: string | null
+          toll_free_number?: string | null
+          total_employees?: number | null
+          twitter?: string | null
+          updated_at?: string
+          web_address?: string | null
+          year_founded?: number | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       cities: {
         Row: {
           area_code: string | null
