@@ -16,36 +16,38 @@ const BusinessImport = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === "text/csv") {
-      setSelectedFile(file);
-      setIsComplete(false);
-    } else {
+    if (!file) return;
+    
+    if (file.type !== "text/csv") {
       toast({
         title: "Invalid file",
         description: "Please select a CSV file",
         variant: "destructive",
       });
-    }
-  };
-
-  const importBusiness = async () => {
-    if (!selectedFile) {
-      toast({
-        title: "No file selected",
-        description: "Please select a CSV file first",
-        variant: "destructive",
-      });
       return;
     }
+    
+    setSelectedFile(file);
+    setIsComplete(false);
+    
+    // Start import immediately after file selection
+    await importBusiness(file);
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const importBusiness = async (file: File) => {
     try {
       setImporting(true);
       setProgress(0);
       setImportedCount(0);
       setIsComplete(false);
 
-      const csvText = await selectedFile.text();
+      const csvText = await file.text();
       
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -210,23 +212,16 @@ const BusinessImport = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleFileSelect}
-              className="max-w-md"
-            />
-            {selectedFile && (
-              <span className="text-sm text-muted-foreground">
-                {selectedFile.name}
-              </span>
-            )}
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
           
-          {!importing && !isComplete && selectedFile && (
-            <Button onClick={importBusiness}>
+          {!importing && !isComplete && (
+            <Button onClick={handleButtonClick}>
               <Upload className="mr-2 h-4 w-4" />
               Start Import
             </Button>
