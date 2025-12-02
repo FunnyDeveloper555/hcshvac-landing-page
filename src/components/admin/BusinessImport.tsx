@@ -20,10 +20,13 @@ const BusinessImport = () => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    if (file.type !== "text/csv") {
+    console.log('File selected:', file.name, 'Type:', file.type);
+    
+    // Accept .csv files regardless of MIME type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
       toast({
         title: "Invalid file",
-        description: "Please select a CSV file",
+        description: "Please select a CSV file (.csv)",
         variant: "destructive",
       });
       return;
@@ -40,6 +43,33 @@ const BusinessImport = () => {
     fileInputRef.current?.click();
   };
 
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
   const importBusiness = async (file: File) => {
     try {
       setImporting(true);
@@ -47,16 +77,25 @@ const BusinessImport = () => {
       setImportedCount(0);
       setIsComplete(false);
 
+      console.log('Reading file...');
       const csvText = await file.text();
+      console.log('File read, length:', csvText.length);
       
-      const lines = csvText.split('\n');
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const lines = csvText.split('\n').filter(line => line.trim());
+      console.log('Total lines:', lines.length);
+      
+      if (lines.length < 2) {
+        throw new Error('CSV file appears to be empty or has only headers');
+      }
+      
+      const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, '').trim());
+      console.log('Headers:', headers);
       
       const records = lines.slice(1)
-        .filter(line => line.trim())
-        .map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-          const record: any = {};
+        .map((line, lineIndex) => {
+          try {
+            const values = parseCSVLine(line).map(v => v.replace(/"/g, '').trim());
+            const record: any = {};
           
           headers.forEach((header, index) => {
             const value = values[index];
@@ -160,8 +199,19 @@ const BusinessImport = () => {
           });
           
           return record;
-        });
+        } catch (error) {
+          console.error(`Error parsing line ${lineIndex + 2}:`, error);
+          return null;
+        }
+      })
+      .filter(record => record !== null);
 
+      console.log('Parsed records:', records.length);
+      
+      if (records.length === 0) {
+        throw new Error('No valid records found in CSV file');
+      }
+      
       setTotalCount(records.length);
       
       const batchSize = 100;
@@ -187,9 +237,10 @@ const BusinessImport = () => {
       });
     } catch (error: any) {
       console.error('Import error:', error);
+      console.error('Error details:', error.message, error.stack);
       toast({
         title: "Import failed",
-        description: error.message,
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
     } finally {
