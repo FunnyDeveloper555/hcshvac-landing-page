@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -74,6 +74,13 @@ const menuItems = [
     icon: MapPin,
     children: [
       { title: "Import CSV", url: "/admin/cities/import", icon: Plus },
+    ]
+  },
+  { 
+    title: "Business", 
+    icon: Database,
+    children: [
+      { title: "Import CSV", url: "/admin/business/import", icon: Plus },
     ]
   },
   { 
