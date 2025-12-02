@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, Pause, Play } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const CHUNK_SIZE = 500; // Records per chunk
 const DELAY_BETWEEN_CHUNKS = 100; // ms delay between chunks to prevent overwhelming
@@ -54,6 +56,7 @@ const BusinessImport = () => {
   const [totalChunks, setTotalChunks] = useState(0);
   const [failedChunks, setFailedChunks] = useState<number[]>([]);
   const [statusMessage, setStatusMessage] = useState("");
+  const [startFromRecord, setStartFromRecord] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pauseRef = useRef(false);
   const { toast } = useToast();
@@ -295,16 +298,19 @@ const BusinessImport = () => {
       const total = dataLines.length;
       setTotalCount(total);
       
+      // Calculate starting chunk based on startFromRecord
+      const startingChunk = Math.floor(startFromRecord / CHUNK_SIZE);
       const chunks = Math.ceil(total / CHUNK_SIZE);
       setTotalChunks(chunks);
       
-      console.log(`Processing ${total} records in ${chunks} chunks`);
-      setStatusMessage(`Found ${total.toLocaleString()} records to import`);
+      console.log(`Processing ${total} records in ${chunks} chunks, starting from chunk ${startingChunk + 1}`);
+      setStatusMessage(`Found ${total.toLocaleString()} records. Starting from record ${startFromRecord.toLocaleString()}`);
 
-      let imported = 0;
+      let imported = startFromRecord; // Start count from where we resume
+      setImportedCount(imported);
       const failed: number[] = [];
 
-      for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+      for (let chunkIndex = startingChunk; chunkIndex < chunks; chunkIndex++) {
         // Check for pause
         while (pauseRef.current) {
           setStatusMessage("Paused - click Resume to continue");
@@ -409,10 +415,27 @@ const BusinessImport = () => {
           />
           
           {!importing && !isComplete && (
-            <Button onClick={handleButtonClick}>
-              <Upload className="mr-2 h-4 w-4" />
-              Select CSV File
-            </Button>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="startFrom">Start from record (for resuming)</Label>
+                <Input
+                  id="startFrom"
+                  type="number"
+                  min="0"
+                  value={startFromRecord}
+                  onChange={(e) => setStartFromRecord(Math.max(0, parseInt(e.target.value) || 0))}
+                  placeholder="0"
+                  className="max-w-xs"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Set to 0 to start fresh, or enter the last imported count to resume (e.g., 104000)
+                </p>
+              </div>
+              <Button onClick={handleButtonClick}>
+                <Upload className="mr-2 h-4 w-4" />
+                {startFromRecord > 0 ? `Resume from Record ${startFromRecord.toLocaleString()}` : 'Select CSV File'}
+              </Button>
+            </div>
           )}
           
           {importing && (
