@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Pause, Play } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const CHUNK_SIZE = 500; // Records per chunk (smaller to avoid request size limits)
+const CHUNK_SIZE = 500; // Records per chunk
+const DELAY_BETWEEN_CHUNKS = 100; // ms delay between chunks to prevent overwhelming
 
 interface BusinessRecord {
   no?: number | null;
@@ -44,13 +45,17 @@ interface BusinessRecord {
 
 const BusinessImport = () => {
   const [importing, setImporting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
   const [importedCount, setImportedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [currentChunk, setCurrentChunk] = useState(0);
   const [totalChunks, setTotalChunks] = useState(0);
+  const [failedChunks, setFailedChunks] = useState<number[]>([]);
+  const [statusMessage, setStatusMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pauseRef = useRef(false);
   const { toast } = useToast();
 
   const parseCSVLine = (line: string): string[] => {
@@ -191,6 +196,8 @@ const BusinessImport = () => {
     }
   };
 
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -210,6 +217,9 @@ const BusinessImport = () => {
     }
     
     setIsComplete(false);
+    setFailedChunks([]);
+    pauseRef.current = false;
+    setIsPaused(false);
     await processLargeCSV(file);
   };
 
@@ -217,6 +227,43 @@ const BusinessImport = () => {
     e.preventDefault();
     e.stopPropagation();
     fileInputRef.current?.click();
+  };
+
+  const togglePause = () => {
+    pauseRef.current = !pauseRef.current;
+    setIsPaused(pauseRef.current);
+  };
+
+  const sendChunkWithRetry = async (records: BusinessRecord[], chunkIndex: number, maxRetries = 3): Promise<{ success: boolean; imported: number }> => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke<{
+          success: boolean;
+          imported?: number;
+          message?: string;
+          error?: string;
+        }>("import-business", {
+          body: { records },
+        });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        if (!data?.success) {
+          throw new Error(data?.error || 'Import failed');
+        }
+
+        return { success: true, imported: data.imported ?? records.length };
+      } catch (err: any) {
+        console.error(`Chunk ${chunkIndex + 1} attempt ${attempt} failed:`, err.message);
+        if (attempt === maxRetries) {
+          return { success: false, imported: 0 };
+        }
+        await delay(1000 * attempt); // Exponential backoff
+      }
+    }
+    return { success: false, imported: 0 };
   };
 
   const processLargeCSV = async (file: File) => {
@@ -227,11 +274,14 @@ const BusinessImport = () => {
       setTotalCount(0);
       setCurrentChunk(0);
       setTotalChunks(0);
+      setStatusMessage("Reading CSV file...");
 
       console.log("Reading CSV file...");
       
       // Read file as text
       const text = await file.text();
+      setStatusMessage("Parsing CSV...");
+      
       const lines = text.split('\n').filter(line => line.trim());
       
       if (lines.length < 2) {
@@ -249,11 +299,20 @@ const BusinessImport = () => {
       setTotalChunks(chunks);
       
       console.log(`Processing ${total} records in ${chunks} chunks`);
+      setStatusMessage(`Found ${total.toLocaleString()} records to import`);
 
       let imported = 0;
+      const failed: number[] = [];
 
       for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+        // Check for pause
+        while (pauseRef.current) {
+          setStatusMessage("Paused - click Resume to continue");
+          await delay(500);
+        }
+
         setCurrentChunk(chunkIndex + 1);
+        setStatusMessage(`Processing chunk ${chunkIndex + 1} of ${chunks}...`);
         
         const startIdx = chunkIndex * CHUNK_SIZE;
         const endIdx = Math.min(startIdx + CHUNK_SIZE, total);
@@ -271,39 +330,45 @@ const BusinessImport = () => {
 
         console.log(`Sending chunk ${chunkIndex + 1}/${chunks} with ${records.length} records`);
 
-        // Send chunk to edge function
-        const { data, error } = await supabase.functions.invoke<{
-          success: boolean;
-          imported?: number;
-          message?: string;
-          error?: string;
-        }>("import-business", {
-          body: { records },
-        });
-
-        if (error) {
-          throw new Error(`Chunk ${chunkIndex + 1} failed: ${error.message}`);
-        }
-
-        if (!data?.success) {
-          throw new Error(data?.error || `Chunk ${chunkIndex + 1} import failed`);
-        }
-
-        imported += data.imported ?? records.length;
-        setImportedCount(imported);
-        setProgress(Math.round(((chunkIndex + 1) / chunks) * 100));
+        const result = await sendChunkWithRetry(records, chunkIndex);
         
+        if (result.success) {
+          imported += result.imported;
+          setImportedCount(imported);
+        } else {
+          failed.push(chunkIndex + 1);
+          setFailedChunks([...failed]);
+          console.error(`Chunk ${chunkIndex + 1} failed after retries`);
+        }
+
+        setProgress(Math.round(((chunkIndex + 1) / chunks) * 100));
         console.log(`Chunk ${chunkIndex + 1}/${chunks} complete. Total imported: ${imported}`);
+
+        // Add delay between chunks
+        if (chunkIndex < chunks - 1) {
+          await delay(DELAY_BETWEEN_CHUNKS);
+        }
       }
 
       setIsComplete(true);
-      toast({
-        title: "Import successful",
-        description: `Imported ${imported} business records.`,
-      });
+      setStatusMessage("");
+      
+      if (failed.length > 0) {
+        toast({
+          title: "Import completed with errors",
+          description: `Imported ${imported.toLocaleString()} records. ${failed.length} chunks failed.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Import successful",
+          description: `Imported ${imported.toLocaleString()} business records.`,
+        });
+      }
 
     } catch (error: any) {
       console.error("Import error:", error);
+      setStatusMessage("");
       toast({
         title: "Import failed",
         description: error.message || "An unknown error occurred",
@@ -311,6 +376,8 @@ const BusinessImport = () => {
       });
     } finally {
       setImporting(false);
+      setIsPaused(false);
+      pauseRef.current = false;
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -329,7 +396,7 @@ const BusinessImport = () => {
         <CardHeader>
           <CardTitle>Business Data Import</CardTitle>
           <CardDescription>
-            Select a CSV file from your computer. Large files (200MB+) are processed in chunks automatically.
+            Select a CSV file from your computer. Large files (200MB+) are processed in chunks with retry logic.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -350,25 +417,49 @@ const BusinessImport = () => {
           
           {importing && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>
-                  Processing chunk {currentChunk} of {totalChunks}...
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>
+                    Chunk {currentChunk} of {totalChunks}
+                  </span>
+                </div>
+                <Button variant="outline" size="sm" onClick={togglePause}>
+                  {isPaused ? (
+                    <>
+                      <Play className="mr-2 h-4 w-4" />
+                      Resume
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="mr-2 h-4 w-4" />
+                      Pause
+                    </>
+                  )}
+                </Button>
               </div>
               
               <Progress value={progress} className="h-2" />
               
-              <div className="text-sm text-muted-foreground">
-                Imported {importedCount.toLocaleString()} of {totalCount.toLocaleString()} records ({progress}%)
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div>Imported {importedCount.toLocaleString()} of {totalCount.toLocaleString()} records ({progress}%)</div>
+                {statusMessage && <div className="text-xs">{statusMessage}</div>}
+                {failedChunks.length > 0 && (
+                  <div className="text-destructive text-xs">
+                    Failed chunks: {failedChunks.join(', ')}
+                  </div>
+                )}
               </div>
             </div>
           )}
           
           {isComplete && (
             <div className="space-y-4">
-              <div className="text-green-600 font-medium">
-                ✓ Import completed successfully! Imported {importedCount.toLocaleString()} records.
+              <div className={failedChunks.length > 0 ? "text-yellow-600 font-medium" : "text-green-600 font-medium"}>
+                {failedChunks.length > 0 
+                  ? `⚠ Import completed with ${failedChunks.length} failed chunks. Imported ${importedCount.toLocaleString()} records.`
+                  : `✓ Import completed successfully! Imported ${importedCount.toLocaleString()} records.`
+                }
               </div>
               <Button onClick={handleButtonClick} variant="outline">
                 <Upload className="mr-2 h-4 w-4" />
