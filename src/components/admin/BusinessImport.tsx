@@ -48,6 +48,40 @@ const BusinessImport = () => {
     fileInputRef.current?.click();
   };
 
+  // Map CSV headers to database column names
+  const HEADER_MAPPING: Record<string, string> = {
+    "contact name": "contact_name",
+    "company name": "company_name",
+    "address": "address",
+    "address2": "address2",
+    "city": "city",
+    "state": "state",
+    "zip": "zip",
+    "latitude": "latitude",
+    "longitude": "longitude",
+    "county code": "county_code",
+    "area code": "area_code",
+    "telephone number": "telephone_number",
+    "toll free number": "toll_free_number",
+    "fax number": "fax_number",
+    "web address": "web_address",
+    "total employees": "total_employees",
+    "revenue 1": "revenue_1",
+    "revenue 2": "revenue_2",
+    "naics": "naics",
+    "year founded": "year_founded",
+    "sic 2": "sic_2",
+    "sic 4": "sic_4",
+    "job title": "job_title",
+    "facebook": "facebook",
+    "twitter": "twitter",
+    "base category": "base_category",
+    "detailed category": "detailed_category",
+    "exact category": "exact_category",
+    "location type": "location_type",
+    "market variable": "market_variable",
+  };
+
   const parseCSVLine = (line: string): string[] => {
     const result: string[] = [];
     let current = "";
@@ -92,7 +126,12 @@ const BusinessImport = () => {
         throw new Error('CSV file does not contain any data rows');
       }
 
-      const headers = parseCSVLine(lines[0]).map((h) => h.trim().toLowerCase());
+      const rawHeaders = parseCSVLine(lines[0]);
+      const mappedHeaders = rawHeaders.map((h) => {
+        const normalized = h.trim().toLowerCase();
+        return HEADER_MAPPING[normalized] || null;
+      });
+
       const records: Record<string, any>[] = [];
 
       for (let i = 1; i < lines.length; i++) {
@@ -100,11 +139,16 @@ const BusinessImport = () => {
         if (values.every((v) => v.trim() === '')) continue;
 
         const record: Record<string, any> = {};
-        headers.forEach((header, index) => {
+        mappedHeaders.forEach((dbColumn, index) => {
+          if (!dbColumn) return; // Skip unmapped columns
           const value = values[index] ?? '';
-          record[header] = value === '' ? null : value.trim();
+          record[dbColumn] = value === '' ? null : value.trim();
         });
-        records.push(record);
+        
+        // Only add record if it has at least one mapped field
+        if (Object.keys(record).length > 0) {
+          records.push(record);
+        }
       }
 
       setTotalCount(records.length);
