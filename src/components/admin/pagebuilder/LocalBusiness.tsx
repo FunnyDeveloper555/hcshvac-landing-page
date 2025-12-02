@@ -50,23 +50,42 @@ export default function LocalBusiness() {
   // Load states on mount
   useEffect(() => {
     const loadStates = async () => {
+      setLoading(true);
       try {
-        // Use RPC or fetch with a high limit to get all unique states
-        const { data, error } = await supabase
-          .from('cities')
-          .select('state, state_code')
-          .limit(10000) // Fetch enough records to cover all states
-          .order('state');
-
-        if (error) throw error;
-
-        // Create unique states map
-        const uniqueStates = Array.from(
-          new Map(data?.map(item => [item.state_code, { code: item.state_code, name: item.state }]) || [])
-            .values()
-        ).sort((a, b) => a.name.localeCompare(b.name));
-
-        setAvailableStates(uniqueStates);
+        // Get distinct states using a proper aggregation approach
+        const { data, error } = await supabase.rpc('get_distinct_states');
+        
+        if (error) {
+          // Fallback: fetch all cities and dedupe client-side
+          console.log('RPC not available, using fallback method');
+          const { data: cities, error: citiesError } = await supabase
+            .from('cities')
+            .select('state, state_code');
+          
+          if (citiesError) throw citiesError;
+          
+          // Create unique states map from all cities
+          const statesMap = new Map<string, { code: string; name: string }>();
+          cities?.forEach(city => {
+            if (!statesMap.has(city.state_code)) {
+              statesMap.set(city.state_code, {
+                code: city.state_code,
+                name: city.state
+              });
+            }
+          });
+          
+          const uniqueStates = Array.from(statesMap.values())
+            .sort((a, b) => a.name.localeCompare(b.name));
+          
+          setAvailableStates(uniqueStates);
+        } else {
+          // Use RPC result
+          const uniqueStates = data
+            ?.map((item: any) => ({ code: item.state_code, name: item.state }))
+            .sort((a: any, b: any) => a.name.localeCompare(b.name)) || [];
+          setAvailableStates(uniqueStates);
+        }
       } catch (error) {
         console.error('Error loading states:', error);
         toast({
@@ -74,6 +93,8 @@ export default function LocalBusiness() {
           description: "Failed to load states",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
     };
 
