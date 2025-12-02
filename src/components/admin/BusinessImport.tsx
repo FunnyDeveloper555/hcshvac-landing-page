@@ -48,136 +48,58 @@ const BusinessImport = () => {
     fileInputRef.current?.click();
   };
 
-  // Map CSV headers to database column names
-  const HEADER_MAPPING: Record<string, string> = {
-    "contact name": "contact_name",
-    "company name": "company_name",
-    "address": "address",
-    "address2": "address2",
-    "city": "city",
-    "state": "state",
-    "zip": "zip",
-    "latitude": "latitude",
-    "longitude": "longitude",
-    "county code": "county_code",
-    "area code": "area_code",
-    "telephone number": "telephone_number",
-    "toll free number": "toll_free_number",
-    "fax number": "fax_number",
-    "web address": "web_address",
-    "total employees": "total_employees",
-    "revenue 1": "revenue_1",
-    "revenue 2": "revenue_2",
-    "naics": "naics",
-    "year founded": "year_founded",
-    "sic 2": "sic_2",
-    "sic 4": "sic_4",
-    "job title": "job_title",
-    "facebook": "facebook",
-    "twitter": "twitter",
-    "base category": "base_category",
-    "detailed category": "detailed_category",
-    "exact category": "exact_category",
-    "location type": "location_type",
-    "market variable": "market_variable",
-  };
-
-  const parseCSVLine = (line: string): string[] => {
-    const result: string[] = [];
-    let current = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      const nextChar = line[i + 1];
-
-      if (char === '"') {
-        if (inQuotes && nextChar === '"') {
-          // Escaped quote
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        result.push(current);
-        current = "";
-      } else {
-        current += char;
-      }
-    }
-
-    result.push(current);
-    return result;
-  };
-
   const importBusinessViaStorage = async (file: File) => {
     try {
       setImporting(true);
       setProgress(10);
       setImportedCount(0);
+      setTotalCount(0);
       setIsComplete(false);
 
-      console.log('Reading CSV file locally...');
-      const csvText = await file.text();
+      console.log("Uploading CSV file to storage for server-side import...");
 
-      const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
-      if (lines.length < 2) {
-        throw new Error('CSV file does not contain any data rows');
+      const filePath = `imports/${Date.now()}-${file.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("business-imports")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw new Error(`Failed to upload file: ${uploadError.message}`);
       }
 
-      const rawHeaders = parseCSVLine(lines[0]);
-      const mappedHeaders = rawHeaders.map((h) => {
-        const normalized = h.trim().toLowerCase();
-        return HEADER_MAPPING[normalized] || null;
+      setProgress(40);
+
+      const { data, error } = await supabase.functions.invoke<{
+        success: boolean;
+        imported?: number;
+        message?: string;
+        error?: string;
+      }>("import-business", {
+        body: { filePath },
       });
 
-      const records: Record<string, any>[] = [];
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = parseCSVLine(lines[i]);
-        if (values.every((v) => v.trim() === '')) continue;
-
-        const record: Record<string, any> = {};
-        mappedHeaders.forEach((dbColumn, index) => {
-          if (!dbColumn) return; // Skip unmapped columns
-          const value = values[index] ?? '';
-          record[dbColumn] = value === '' ? null : value.trim();
-        });
-        
-        // Only add record if it has at least one mapped field
-        if (Object.keys(record).length > 0) {
-          records.push(record);
-        }
+      if (error) {
+        throw new Error(error.message || "Import function failed");
       }
 
-      setTotalCount(records.length);
-
-      const batchSize = 1000;
-      let imported = 0;
-
-      for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-
-        const { error } = await supabase.from('business').insert(batch as any);
-        if (error) {
-          throw new Error(`Import failed at row ${i + 1}: ${error.message}`);
-        }
-
-        imported += batch.length;
-        setImportedCount(imported);
-        setProgress(10 + Math.round((imported / records.length) * 90));
+      if (!data?.success) {
+        throw new Error(data?.error || "Import failed on server");
       }
 
-      setIsComplete(true);
+      const imported = data.imported ?? 0;
+
+      setImportedCount(imported);
+      setTotalCount(imported);
       setProgress(100);
+      setIsComplete(true);
 
       toast({
         title: "Import successful",
-        description: `Imported ${imported} business records.`,
+        description: data.message || `Imported ${imported} business records.`,
       });
     } catch (error: any) {
-      console.error('Import error:', error);
+      console.error("Import error:", error);
       toast({
         title: "Import failed",
         description: error.message || "An unknown error occurred",
@@ -187,6 +109,7 @@ const BusinessImport = () => {
       setImporting(false);
     }
   };
+
   return (
     <div className="space-y-6">
       <div>
@@ -221,7 +144,7 @@ const BusinessImport = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Importing... {importedCount} / {totalCount}</span>
+                <span>Importing business data... This may take several minutes for large files.</span>
               </div>
               <div className="w-full bg-secondary rounded-full h-2">
                 <div 
