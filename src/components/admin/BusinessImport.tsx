@@ -73,171 +73,55 @@ const BusinessImport = () => {
   const importBusiness = async (file: File) => {
     try {
       setImporting(true);
-      setProgress(0);
+      setProgress(25);
       setImportedCount(0);
       setIsComplete(false);
 
-      console.log('Reading file...');
-      const csvText = await file.text();
-      console.log('File read, length:', csvText.length);
+      console.log('Uploading CSV file to storage...');
       
-      const lines = csvText.split('\n').filter(line => line.trim());
-      console.log('Total lines:', lines.length);
+      // Generate unique filename
+      const fileName = `import_${Date.now()}_${file.name}`;
       
-      if (lines.length < 2) {
-        throw new Error('CSV file appears to be empty or has only headers');
-      }
-      
-      const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, '').trim());
-      console.log('Headers:', headers);
-      
-      const records = lines.slice(1)
-        .map((line, lineIndex) => {
-          try {
-            const values = parseCSVLine(line).map(v => v.replace(/"/g, '').trim());
-            const record: any = {};
-          
-          headers.forEach((header, index) => {
-            const value = values[index];
-            
-            // Map CSV headers to database columns
-            switch(header.toLowerCase()) {
-              case 'no':
-                record.no = value ? parseInt(value) : null;
-                break;
-              case 'contact name':
-                record.contact_name = value || null;
-                break;
-              case 'company name':
-                record.company_name = value || null;
-                break;
-              case 'address':
-                record.address = value || null;
-                break;
-              case 'address2':
-                record.address2 = value || null;
-                break;
-              case 'city':
-                record.city = value || null;
-                break;
-              case 'state':
-                record.state = value || null;
-                break;
-              case 'zip':
-                record.zip = value || null;
-                break;
-              case 'latitude':
-                record.latitude = value ? parseFloat(value) : null;
-                break;
-              case 'longitude':
-                record.longitude = value ? parseFloat(value) : null;
-                break;
-              case 'county code':
-                record.county_code = value || null;
-                break;
-              case 'area code':
-                record.area_code = value || null;
-                break;
-              case 'telephone number':
-                record.telephone_number = value || null;
-                break;
-              case 'toll free number':
-                record.toll_free_number = value || null;
-                break;
-              case 'fax number':
-                record.fax_number = value || null;
-                break;
-              case 'web address':
-                record.web_address = value || null;
-                break;
-              case 'total employees':
-                record.total_employees = value ? parseInt(value) : null;
-                break;
-              case 'revenue 1':
-                record.revenue_1 = value ? parseFloat(value) : null;
-                break;
-              case 'revenue 2':
-                record.revenue_2 = value ? parseFloat(value) : null;
-                break;
-              case 'naics':
-                record.naics = value || null;
-                break;
-              case 'year founded':
-                record.year_founded = value ? parseInt(value) : null;
-                break;
-              case 'sic 2':
-                record.sic_2 = value || null;
-                break;
-              case 'sic 4':
-                record.sic_4 = value || null;
-                break;
-              case 'job title':
-                record.job_title = value || null;
-                break;
-              case 'facebook':
-                record.facebook = value || null;
-                break;
-              case 'twitter':
-                record.twitter = value || null;
-                break;
-              case 'base category':
-                record.base_category = value || null;
-                break;
-              case 'detailed category':
-                record.detailed_category = value || null;
-                break;
-              case 'exact category':
-                record.exact_category = value || null;
-                break;
-              case 'location type':
-                record.location_type = value || null;
-                break;
-              case 'market variable':
-                record.market_variable = value || null;
-                break;
-            }
-          });
-          
-          return record;
-        } catch (error) {
-          console.error(`Error parsing line ${lineIndex + 2}:`, error);
-          return null;
-        }
-      })
-      .filter(record => record !== null);
+      // Upload CSV to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('business-imports')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      console.log('Parsed records:', records.length);
-      
-      if (records.length === 0) {
-        throw new Error('No valid records found in CSV file');
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
-      
-      setTotalCount(records.length);
-      
-      const batchSize = 100;
-      for (let i = 0; i < records.length; i += batchSize) {
-        const batch = records.slice(i, i + batchSize);
-        
-        const { error } = await supabase
-          .from('business')
-          .insert(batch);
-        
-        if (error) {
-          throw error;
-        }
-        
-        setImportedCount(i + batch.length);
-        setProgress(((i + batch.length) / records.length) * 100);
+
+      console.log('File uploaded, starting server-side import...');
+      setProgress(50);
+
+      // Call edge function to process the import server-side
+      const { data, error: functionError } = await supabase.functions.invoke('import-business', {
+        body: { filePath: fileName }
+      });
+
+      if (functionError) {
+        throw new Error(`Import failed: ${functionError.message}`);
       }
-      
+
+      if (!data.success) {
+        throw new Error(data.error || 'Import failed');
+      }
+
+      setProgress(100);
+      setImportedCount(data.imported);
+      setTotalCount(data.imported);
       setIsComplete(true);
+      
       toast({
         title: "Import successful",
-        description: `Successfully imported ${records.length} business records`,
+        description: data.message,
       });
+      
     } catch (error: any) {
       console.error('Import error:', error);
-      console.error('Error details:', error.message, error.stack);
       toast({
         title: "Import failed",
         description: error.message || "An unknown error occurred",
