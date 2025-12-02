@@ -51,17 +51,20 @@ export default function LocalBusiness() {
   useEffect(() => {
     const loadStates = async () => {
       try {
+        // Use RPC or fetch with a high limit to get all unique states
         const { data, error } = await supabase
           .from('cities')
           .select('state, state_code')
+          .limit(10000) // Fetch enough records to cover all states
           .order('state');
 
         if (error) throw error;
 
+        // Create unique states map
         const uniqueStates = Array.from(
-          new Map(data.map(item => [item.state_code, { code: item.state_code, name: item.state }]))
+          new Map(data?.map(item => [item.state_code, { code: item.state_code, name: item.state }]) || [])
             .values()
-        );
+        ).sort((a, b) => a.name.localeCompare(b.name));
 
         setAvailableStates(uniqueStates);
       } catch (error) {
@@ -90,18 +93,19 @@ export default function LocalBusiness() {
           .from('cities')
           .select('county, state_code')
           .in('state_code', selectedStates)
-          .not('county', 'is', null);
+          .not('county', 'is', null)
+          .limit(10000); // Fetch enough records to cover all counties
 
         if (error) throw error;
 
         const countyMap = new Map<string, string[]>();
-        data.forEach(item => {
+        data?.forEach(item => {
           if (item.county) {
             const counties = countyMap.get(item.state_code) || [];
             if (!counties.includes(item.county)) {
               counties.push(item.county);
             }
-            countyMap.set(item.state_code, counties);
+            countyMap.set(item.state_code, counties.sort());
           }
         });
 
