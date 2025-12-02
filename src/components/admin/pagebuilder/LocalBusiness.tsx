@@ -52,40 +52,45 @@ export default function LocalBusiness() {
     const loadStates = async () => {
       setLoading(true);
       try {
-        // Get distinct states using a proper aggregation approach
-        const { data, error } = await supabase.rpc('get_distinct_states');
+        // Fetch all cities to get unique states
+        // We'll paginate through all results
+        let allCities: { state: string; state_code: string }[] = [];
+        let hasMore = true;
+        let page = 0;
+        const pageSize = 1000;
         
-        if (error) {
-          // Fallback: fetch all cities and dedupe client-side
-          console.log('RPC not available, using fallback method');
-          const { data: cities, error: citiesError } = await supabase
+        while (hasMore) {
+          const { data, error } = await supabase
             .from('cities')
-            .select('state, state_code');
+            .select('state, state_code')
+            .range(page * pageSize, (page + 1) * pageSize - 1);
           
-          if (citiesError) throw citiesError;
+          if (error) throw error;
           
-          // Create unique states map from all cities
-          const statesMap = new Map<string, { code: string; name: string }>();
-          cities?.forEach(city => {
-            if (!statesMap.has(city.state_code)) {
-              statesMap.set(city.state_code, {
-                code: city.state_code,
-                name: city.state
-              });
-            }
-          });
-          
-          const uniqueStates = Array.from(statesMap.values())
-            .sort((a, b) => a.name.localeCompare(b.name));
-          
-          setAvailableStates(uniqueStates);
-        } else {
-          // Use RPC result
-          const uniqueStates = data
-            ?.map((item: any) => ({ code: item.state_code, name: item.state }))
-            .sort((a: any, b: any) => a.name.localeCompare(b.name)) || [];
-          setAvailableStates(uniqueStates);
+          if (data && data.length > 0) {
+            allCities = [...allCities, ...data];
+            page++;
+            hasMore = data.length === pageSize;
+          } else {
+            hasMore = false;
+          }
         }
+        
+        // Create unique states map
+        const statesMap = new Map<string, { code: string; name: string }>();
+        allCities.forEach(city => {
+          if (!statesMap.has(city.state_code)) {
+            statesMap.set(city.state_code, {
+              code: city.state_code,
+              name: city.state
+            });
+          }
+        });
+        
+        const uniqueStates = Array.from(statesMap.values())
+          .sort((a, b) => a.name.localeCompare(b.name));
+        
+        setAvailableStates(uniqueStates);
       } catch (error) {
         console.error('Error loading states:', error);
         toast({
@@ -110,17 +115,33 @@ export default function LocalBusiness() {
 
     const loadCounties = async () => {
       try {
-        const { data, error } = await supabase
-          .from('cities')
-          .select('county, state_code')
-          .in('state_code', selectedStates)
-          .not('county', 'is', null)
-          .limit(10000); // Fetch enough records to cover all counties
+        // Fetch all counties for selected states with pagination
+        let allCounties: { county: string | null; state_code: string }[] = [];
+        let hasMore = true;
+        let page = 0;
+        const pageSize = 1000;
+        
+        while (hasMore) {
+          const { data, error } = await supabase
+            .from('cities')
+            .select('county, state_code')
+            .in('state_code', selectedStates)
+            .not('county', 'is', null)
+            .range(page * pageSize, (page + 1) * pageSize - 1);
 
-        if (error) throw error;
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            allCounties = [...allCounties, ...data];
+            page++;
+            hasMore = data.length === pageSize;
+          } else {
+            hasMore = false;
+          }
+        }
 
         const countyMap = new Map<string, string[]>();
-        data?.forEach(item => {
+        allCounties.forEach(item => {
           if (item.county) {
             const counties = countyMap.get(item.state_code) || [];
             if (!counties.includes(item.county)) {
