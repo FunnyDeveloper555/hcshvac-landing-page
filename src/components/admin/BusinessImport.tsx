@@ -153,7 +153,7 @@ const BusinessImport = () => {
 
       setTotalCount(records.length);
 
-      const batchSize = 100;
+      const batchSize = 1000;
       let imported = 0;
 
       for (let i = 0; i < records.length; i += batchSize) {
