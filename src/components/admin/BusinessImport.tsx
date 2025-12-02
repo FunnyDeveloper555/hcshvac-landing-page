@@ -92,7 +92,7 @@ const BusinessImport = () => {
         throw new Error('CSV file does not contain any data rows');
       }
 
-      const headers = parseCSVLine(lines[0]).map((h) => h.trim());
+      const headers = parseCSVLine(lines[0]).map((h) => h.trim().toLowerCase());
       const records: Record<string, any>[] = [];
 
       for (let i = 1; i < lines.length; i++) {
