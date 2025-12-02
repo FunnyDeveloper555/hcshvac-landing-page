@@ -303,11 +303,14 @@ export default function LocalBusiness() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* State Selection */}
         <Card>
           <CardHeader>
             <CardTitle>Select State</CardTitle>
-            <CardDescription>Choose states to filter businesses</CardDescription>
+            <CardDescription>
+              {availableStates.length === 0
+                ? "Loading states..."
+                : `Choose states to filter businesses (scroll to see all ${availableStates.length} states)`}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[400px] pr-4">
