@@ -17,197 +17,217 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
+    
+    // Support both direct records array and legacy file-based import
+    const records = body.records as any[] | undefined;
     const filePath = body.filePath as string | undefined;
     const csvFromBody = body.csv as string | undefined;
 
-    if (!filePath && !csvFromBody) {
-      throw new Error('Either filePath or csv content is required');
-    }
+    let recordsToInsert: any[] = [];
 
-    let csvText: string;
+    if (records && Array.isArray(records) && records.length > 0) {
+      // Direct records import (chunked processing)
+      console.log(`Received ${records.length} pre-parsed records`);
+      recordsToInsert = records;
+    } else if (csvFromBody || filePath) {
+      // Legacy CSV parsing
+      let csvText: string;
 
-    if (csvFromBody && typeof csvFromBody === 'string') {
-      console.log('Received CSV content directly in request body');
-      csvText = csvFromBody;
-    } else {
-      if (!filePath) {
-        throw new Error('File path is required when csv content is not provided');
-      }
-
-      console.log('Downloading CSV file from storage:', filePath);
-      
-      // Download the CSV file from storage
-      const { data: fileData, error: downloadError } = await supabase.storage
-        .from('business-imports')
-        .download(filePath);
-
-      if (downloadError) {
-        throw new Error(`Failed to download file: ${downloadError.message}`);
-      }
-
-      csvText = await fileData.text();
-    }
-
-    const lines = csvText.split('\n').filter(line => line.trim());
-
-    console.log(`Processing ${lines.length} lines`);
-    
-    if (lines.length < 2) {
-      throw new Error('CSV file appears to be empty or has only headers');
-    }
-
-    // Parse CSV with proper quote handling
-    const parseCSVLine = (line: string): string[] => {
-      const result: string[] = [];
-      let current = '';
-      let inQuotes = false;
-      
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const nextChar = line[i + 1];
-        
-        if (char === '"') {
-          if (inQuotes && nextChar === '"') {
-            current += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === ',' && !inQuotes) {
-          result.push(current.trim());
-          current = '';
-        } else {
-          current += char;
+      if (csvFromBody && typeof csvFromBody === 'string') {
+        console.log('Received CSV content directly in request body');
+        csvText = csvFromBody;
+      } else {
+        if (!filePath) {
+          throw new Error('File path is required when csv content is not provided');
         }
-      }
-      result.push(current.trim());
-      return result;
-    };
 
-    const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, '').trim());
-    console.log('Headers:', headers);
-    
-    const records = lines.slice(1)
-      .map((line) => {
-        try {
-          const values = parseCSVLine(line).map(v => v.replace(/"/g, '').trim());
-          const record: any = {};
+        console.log('Downloading CSV file from storage:', filePath);
         
-          headers.forEach((header, index) => {
-            const value = values[index];
-            
-            switch(header.toLowerCase()) {
-              case 'no':
-                record.no = value ? parseInt(value) : null;
-                break;
-              case 'contact name':
-                record.contact_name = value || null;
-                break;
-              case 'company name':
-                record.company_name = value || null;
-                break;
-              case 'address':
-                record.address = value || null;
-                break;
-              case 'address2':
-                record.address2 = value || null;
-                break;
-              case 'city':
-                record.city = value || null;
-                break;
-              case 'state':
-                record.state = value || null;
-                break;
-              case 'zip':
-                record.zip = value || null;
-                break;
-              case 'latitude':
-                record.latitude = value ? parseFloat(value) : null;
-                break;
-              case 'longitude':
-                record.longitude = value ? parseFloat(value) : null;
-                break;
-              case 'county code':
-                record.county_code = value || null;
-                break;
-              case 'area code':
-                record.area_code = value || null;
-                break;
-              case 'telephone number':
-                record.telephone_number = value || null;
-                break;
-              case 'toll free number':
-                record.toll_free_number = value || null;
-                break;
-              case 'fax number':
-                record.fax_number = value || null;
-                break;
-              case 'web address':
-                record.web_address = value || null;
-                break;
-              case 'total employees':
-                record.total_employees = value ? parseInt(value) : null;
-                break;
-              case 'revenue 1':
-                record.revenue_1 = value ? parseFloat(value) : null;
-                break;
-              case 'revenue 2':
-                record.revenue_2 = value ? parseFloat(value) : null;
-                break;
-              case 'naics':
-                record.naics = value || null;
-                break;
-              case 'year founded':
-                record.year_founded = value ? parseInt(value) : null;
-                break;
-              case 'sic 2':
-                record.sic_2 = value || null;
-                break;
-              case 'sic 4':
-                record.sic_4 = value || null;
-                break;
-              case 'job title':
-                record.job_title = value || null;
-                break;
-              case 'facebook':
-                record.facebook = value || null;
-                break;
-              case 'twitter':
-                record.twitter = value || null;
-                break;
-              case 'base category':
-                record.base_category = value || null;
-                break;
-              case 'detailed category':
-                record.detailed_category = value || null;
-                break;
-              case 'exact category':
-                record.exact_category = value || null;
-                break;
-              case 'location type':
-                record.location_type = value || null;
-                break;
-              case 'market variable':
-                record.market_variable = value || null;
-                break;
-            }
-          });
+        const { data: fileData, error: downloadError } = await supabase.storage
+          .from('business-imports')
+          .download(filePath);
+
+        if (downloadError) {
+          throw new Error(`Failed to download file: ${downloadError.message}`);
+        }
+
+        csvText = await fileData.text();
+      }
+
+      const lines = csvText.split('\n').filter(line => line.trim());
+
+      console.log(`Processing ${lines.length} lines`);
+      
+      if (lines.length < 2) {
+        throw new Error('CSV file appears to be empty or has only headers');
+      }
+
+      const parseCSVLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          const nextChar = line[i + 1];
           
-          return record;
-        } catch (error) {
-          console.error('Error parsing line:', error);
-          return null;
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              current += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
         }
-      })
-      .filter(record => record !== null);
+        result.push(current.trim());
+        return result;
+      };
 
-    console.log(`Parsed ${records.length} valid records, starting batch insert`);
+      const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, '').trim());
+      console.log('Headers:', headers);
+      
+      recordsToInsert = lines.slice(1)
+        .map((line) => {
+          try {
+            const values = parseCSVLine(line).map(v => v.replace(/"/g, '').trim());
+            const record: any = {};
+          
+            headers.forEach((header, index) => {
+              const value = values[index];
+              
+              switch(header.toLowerCase()) {
+                case 'no':
+                  record.no = value ? parseInt(value) : null;
+                  break;
+                case 'contact name':
+                  record.contact_name = value || null;
+                  break;
+                case 'company name':
+                  record.company_name = value || null;
+                  break;
+                case 'address':
+                  record.address = value || null;
+                  break;
+                case 'address2':
+                  record.address2 = value || null;
+                  break;
+                case 'city':
+                  record.city = value || null;
+                  break;
+                case 'state':
+                  record.state = value || null;
+                  break;
+                case 'zip':
+                  record.zip = value || null;
+                  break;
+                case 'latitude':
+                  record.latitude = value ? parseFloat(value) : null;
+                  break;
+                case 'longitude':
+                  record.longitude = value ? parseFloat(value) : null;
+                  break;
+                case 'county code':
+                  record.county_code = value || null;
+                  break;
+                case 'area code':
+                  record.area_code = value || null;
+                  break;
+                case 'telephone number':
+                  record.telephone_number = value || null;
+                  break;
+                case 'toll free number':
+                  record.toll_free_number = value || null;
+                  break;
+                case 'fax number':
+                  record.fax_number = value || null;
+                  break;
+                case 'web address':
+                  record.web_address = value || null;
+                  break;
+                case 'total employees':
+                  record.total_employees = value ? parseInt(value) : null;
+                  break;
+                case 'revenue 1':
+                  record.revenue_1 = value ? parseFloat(value) : null;
+                  break;
+                case 'revenue 2':
+                  record.revenue_2 = value ? parseFloat(value) : null;
+                  break;
+                case 'naics':
+                  record.naics = value || null;
+                  break;
+                case 'year founded':
+                  record.year_founded = value ? parseInt(value) : null;
+                  break;
+                case 'sic 2':
+                  record.sic_2 = value || null;
+                  break;
+                case 'sic 4':
+                  record.sic_4 = value || null;
+                  break;
+                case 'job title':
+                  record.job_title = value || null;
+                  break;
+                case 'facebook':
+                  record.facebook = value || null;
+                  break;
+                case 'twitter':
+                  record.twitter = value || null;
+                  break;
+                case 'base category':
+                  record.base_category = value || null;
+                  break;
+                case 'detailed category':
+                  record.detailed_category = value || null;
+                  break;
+                case 'exact category':
+                  record.exact_category = value || null;
+                  break;
+                case 'location type':
+                  record.location_type = value || null;
+                  break;
+                case 'market variable':
+                  record.market_variable = value || null;
+                  break;
+              }
+            });
+            
+            return record;
+          } catch (error) {
+            console.error('Error parsing line:', error);
+            return null;
+          }
+        })
+        .filter(record => record !== null);
+
+      // Clean up file if it was from storage
+      if (filePath) {
+        console.log('Cleaning up uploaded file from storage:', filePath);
+        await supabase.storage
+          .from('business-imports')
+          .remove([filePath]);
+      }
+    } else {
+      throw new Error('Either records array, filePath, or csv content is required');
+    }
+
+    if (recordsToInsert.length === 0) {
+      throw new Error('No valid records to import');
+    }
+
+    console.log(`Inserting ${recordsToInsert.length} records`);
     
-    const batchSize = 1000; // Large batch size for server-side processing
+    const batchSize = 1000;
     let importedCount = 0;
     
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < recordsToInsert.length; i += batchSize) {
+      const batch = recordsToInsert.slice(i, i + batchSize);
       
       const { error } = await supabase
         .from('business')
@@ -219,14 +239,7 @@ Deno.serve(async (req) => {
       }
       
       importedCount += batch.length;
-      console.log(`Imported ${importedCount} / ${records.length} records`);
-    }
-
-    if (filePath) {
-      console.log('Cleaning up uploaded file from storage:', filePath);
-      await supabase.storage
-        .from('business-imports')
-        .remove([filePath]);
+      console.log(`Inserted ${importedCount} / ${recordsToInsert.length} records`);
     }
 
     console.log('Import completed successfully');
@@ -234,8 +247,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        imported: records.length,
-        message: `Successfully imported ${records.length} business records`
+        imported: recordsToInsert.length,
+        message: `Successfully imported ${recordsToInsert.length} business records`
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
