@@ -158,23 +158,33 @@ export default function LocalBusiness() {
     const loadBusinesses = async () => {
       setLoading(true);
       try {
-        const cityData = Array.from(citiesByCounty.values())
+        // Get all selected city data with their state information
+        const selectedCityData = Array.from(citiesByCounty.values())
           .flat()
           .filter(city => selectedCities.includes(city.id));
 
-        const cityNames = cityData.map(c => c.name);
-        const stateCodes = cityData.map(c => c.state_code);
+        // Fetch businesses for each city-state combination
+        const allBusinesses: Business[] = [];
+        
+        for (const city of selectedCityData) {
+          const { data, error } = await supabase
+            .from('business')
+            .select('*')
+            .eq('city', city.name)
+            .eq('state', city.state_code)
+            .order('company_name');
 
-        const { data, error } = await supabase
-          .from('business')
-          .select('*')
-          .in('city', cityNames)
-          .in('state', stateCodes)
-          .order('company_name');
+          if (error) {
+            console.error(`Error loading businesses for ${city.name}, ${city.state_code}:`, error);
+            continue;
+          }
 
-        if (error) throw error;
+          if (data) {
+            allBusinesses.push(...data);
+          }
+        }
 
-        setBusinesses(data || []);
+        setBusinesses(allBusinesses);
       } catch (error) {
         console.error('Error loading businesses:', error);
         toast({
