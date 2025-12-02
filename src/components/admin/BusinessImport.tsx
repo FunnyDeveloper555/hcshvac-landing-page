@@ -17,6 +17,9 @@ const BusinessImport = () => {
   const { toast } = useToast();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     const file = event.target.files?.[0];
     if (!file) return;
     
@@ -36,28 +39,38 @@ const BusinessImport = () => {
     setIsComplete(false);
     
     // Start import immediately after file selection
-    await importBusiness(file);
+    await importBusinessViaStorage(file);
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     fileInputRef.current?.click();
   };
 
-  const importBusiness = async (file: File) => {
+  const importBusinessViaStorage = async (file: File) => {
     try {
       setImporting(true);
-      setProgress(25);
+      setProgress(10);
       setImportedCount(0);
       setIsComplete(false);
 
-      console.log('Reading CSV file locally before import...');
-      const csvText = await file.text();
+      console.log('Uploading CSV to storage...');
+      const fileName = `import-${Date.now()}-${file.name}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('business-imports')
+        .upload(fileName, file);
 
-      console.log('Calling import-business function with raw CSV...');
-      setProgress(50);
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      setProgress(30);
+      console.log('Calling import-business function...');
 
       const { data, error: functionError } = await supabase.functions.invoke('import-business', {
-        body: { csv: csvText },
+        body: { filePath: fileName },
       });
 
       if (functionError) {
