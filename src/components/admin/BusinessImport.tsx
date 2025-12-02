@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const BusinessImport = () => {
   const [importing, setImporting] = useState(false);
@@ -11,17 +12,40 @@ const BusinessImport = () => {
   const [importedCount, setImportedCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "text/csv") {
+      setSelectedFile(file);
+      setIsComplete(false);
+    } else {
+      toast({
+        title: "Invalid file",
+        description: "Please select a CSV file",
+        variant: "destructive",
+      });
+    }
+  };
+
   const importBusiness = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "No file selected",
+        description: "Please select a CSV file first",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       setImporting(true);
       setProgress(0);
       setImportedCount(0);
       setIsComplete(false);
 
-      const response = await fetch('/data/business.csv');
-      const csvText = await response.text();
+      const csvText = await selectedFile.text();
       
       const lines = csvText.split('\n');
       const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
@@ -182,12 +206,28 @@ const BusinessImport = () => {
         <CardHeader>
           <CardTitle>Business Data Import</CardTitle>
           <CardDescription>
-            Place your business.csv file in the /public/data directory and click start import
+            Select a CSV file from your computer to import business records
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!importing && !isComplete && (
+          <div className="flex items-center gap-4">
+            <Input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleFileSelect}
+              className="max-w-md"
+            />
+            {selectedFile && (
+              <span className="text-sm text-muted-foreground">
+                {selectedFile.name}
+              </span>
+            )}
+          </div>
+          
+          {!importing && !isComplete && selectedFile && (
             <Button onClick={importBusiness}>
+              <Upload className="mr-2 h-4 w-4" />
               Start Import
             </Button>
           )}
