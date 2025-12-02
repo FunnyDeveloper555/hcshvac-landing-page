@@ -48,6 +48,35 @@ const BusinessImport = () => {
     fileInputRef.current?.click();
   };
 
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Escaped quote
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+
+    result.push(current);
+    return result;
+  };
+
   const importBusinessViaStorage = async (file: File) => {
     try {
       setImporting(true);
@@ -55,40 +84,53 @@ const BusinessImport = () => {
       setImportedCount(0);
       setIsComplete(false);
 
-      console.log('Uploading CSV to storage...');
-      const fileName = `import-${Date.now()}-${file.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('business-imports')
-        .upload(fileName, file);
+      console.log('Reading CSV file locally...');
+      const csvText = await file.text();
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`);
+      const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
+      if (lines.length < 2) {
+        throw new Error('CSV file does not contain any data rows');
       }
 
-      setProgress(30);
-      console.log('Calling import-business function...');
+      const headers = parseCSVLine(lines[0]).map((h) => h.trim());
+      const records: Record<string, any>[] = [];
 
-      const { data, error: functionError } = await supabase.functions.invoke('import-business', {
-        body: { filePath: fileName },
-      });
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.every((v) => v.trim() === '')) continue;
 
-      if (functionError) {
-        throw new Error(`Import failed: ${functionError.message}`);
+        const record: Record<string, any> = {};
+        headers.forEach((header, index) => {
+          const value = values[index] ?? '';
+          record[header] = value === '' ? null : value.trim();
+        });
+        records.push(record);
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Import failed');
+      setTotalCount(records.length);
+
+      const batchSize = 100;
+      let imported = 0;
+
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
+
+        const { error } = await supabase.from('business').insert(batch as any);
+        if (error) {
+          throw new Error(`Import failed at row ${i + 1}: ${error.message}`);
+        }
+
+        imported += batch.length;
+        setImportedCount(imported);
+        setProgress(10 + Math.round((imported / records.length) * 90));
       }
 
-      setProgress(100);
-      setImportedCount(data.imported);
-      setTotalCount(data.imported);
       setIsComplete(true);
+      setProgress(100);
 
       toast({
         title: "Import successful",
-        description: data.message,
+        description: `Imported ${imported} business records.`,
       });
     } catch (error: any) {
       console.error('Import error:', error);
@@ -101,7 +143,6 @@ const BusinessImport = () => {
       setImporting(false);
     }
   };
-
   return (
     <div className="space-y-6">
       <div>
