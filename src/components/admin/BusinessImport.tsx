@@ -43,33 +43,6 @@ const BusinessImport = () => {
     fileInputRef.current?.click();
   };
 
-  const parseCSVLine = (line: string): string[] => {
-    const result: string[] = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      const nextChar = line[i + 1];
-      
-      if (char === '"') {
-        if (inQuotes && nextChar === '"') {
-          current += '"';
-          i++;
-        } else {
-          inQuotes = !inQuotes;
-        }
-      } else if (char === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += char;
-      }
-    }
-    result.push(current.trim());
-    return result;
-  };
-
   const importBusiness = async (file: File) => {
     try {
       setImporting(true);
@@ -77,49 +50,33 @@ const BusinessImport = () => {
       setImportedCount(0);
       setIsComplete(false);
 
-      console.log('Uploading CSV file to storage...');
-      
-      // Generate unique filename
-      const fileName = `import_${Date.now()}_${file.name}`;
-      
-      // Upload CSV to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('business-imports')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      console.log('Reading CSV file locally before import...');
+      const csvText = await file.text();
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
-
-      console.log('File uploaded, starting server-side import...');
+      console.log('Calling import-business function with raw CSV...');
       setProgress(50);
 
-      // Call edge function to process the import server-side
       const { data, error: functionError } = await supabase.functions.invoke('import-business', {
-        body: { filePath: fileName }
+        body: { csv: csvText },
       });
 
       if (functionError) {
         throw new Error(`Import failed: ${functionError.message}`);
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Import failed');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Import failed');
       }
 
       setProgress(100);
       setImportedCount(data.imported);
       setTotalCount(data.imported);
       setIsComplete(true);
-      
+
       toast({
         title: "Import successful",
         description: data.message,
       });
-      
     } catch (error: any) {
       console.error('Import error:', error);
       toast({

@@ -16,26 +16,40 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { filePath } = await req.json();
-    
-    if (!filePath) {
-      throw new Error('File path is required');
+    const body = await req.json();
+    const filePath = body.filePath as string | undefined;
+    const csvFromBody = body.csv as string | undefined;
+
+    if (!filePath && !csvFromBody) {
+      throw new Error('Either filePath or csv content is required');
     }
 
-    console.log('Downloading CSV file from storage:', filePath);
-    
-    // Download the CSV file from storage
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('business-imports')
-      .download(filePath);
+    let csvText: string;
 
-    if (downloadError) {
-      throw new Error(`Failed to download file: ${downloadError.message}`);
+    if (csvFromBody && typeof csvFromBody === 'string') {
+      console.log('Received CSV content directly in request body');
+      csvText = csvFromBody;
+    } else {
+      if (!filePath) {
+        throw new Error('File path is required when csv content is not provided');
+      }
+
+      console.log('Downloading CSV file from storage:', filePath);
+      
+      // Download the CSV file from storage
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('business-imports')
+        .download(filePath);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      csvText = await fileData.text();
     }
 
-    const csvText = await fileData.text();
     const lines = csvText.split('\n').filter(line => line.trim());
-    
+
     console.log(`Processing ${lines.length} lines`);
     
     if (lines.length < 2) {
@@ -208,10 +222,12 @@ Deno.serve(async (req) => {
       console.log(`Imported ${importedCount} / ${records.length} records`);
     }
 
-    // Clean up the uploaded file
-    await supabase.storage
-      .from('business-imports')
-      .remove([filePath]);
+    if (filePath) {
+      console.log('Cleaning up uploaded file from storage:', filePath);
+      await supabase.storage
+        .from('business-imports')
+        .remove([filePath]);
+    }
 
     console.log('Import completed successfully');
 
