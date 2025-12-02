@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const CHUNK_SIZE = 5000; // Records per chunk
+const CHUNK_SIZE = 500; // Records per chunk (smaller to avoid request size limits)
 
 interface BusinessRecord {
   no?: number | null;
