@@ -836,6 +836,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_counties_by_states: {
+        Args: { state_codes: string[] }
+        Returns: {
+          county: string
+          state_code: string
+        }[]
+      }
+      get_distinct_states: {
+        Args: never
+        Returns: {
+          state: string
+          state_code: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
