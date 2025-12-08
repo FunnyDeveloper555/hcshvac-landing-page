@@ -246,30 +246,61 @@ export default function LocalBusiness() {
     loadBusinesses();
   }, [selectedCities, citiesByCounty, toast]);
 
-  // Calculate business counts for cities
+  // Calculate business counts for cities - batch query for efficiency
   useEffect(() => {
     const calculateCounts = async () => {
       const counts = new Map<string, number>();
       
-      for (const cities of citiesByCounty.values()) {
-        for (const city of cities) {
-          try {
-            const { count, error } = await supabase
-              .from('business')
-              .select('*', { count: 'exact', head: true })
-              .eq('city', city.name)
-              .eq('state', city.state_code);
-
-            if (!error && count !== null) {
-              counts.set(city.id, count);
-            }
-          } catch (error) {
-            console.error('Error counting businesses:', error);
-          }
-        }
-      }
+      // Collect all city/state combinations
+      const allCities = Array.from(citiesByCounty.values()).flat();
       
-      setBusinessCounts(counts);
+      if (allCities.length === 0) {
+        setBusinessCounts(counts);
+        return;
+      }
+
+      // Get unique city-state pairs
+      const cityStatePairs = allCities.map(city => ({
+        id: city.id,
+        name: city.name,
+        stateCode: city.state_code
+      }));
+
+      // Batch count queries in groups of 10 cities at a time
+      const batchSize = 10;
+      for (let i = 0; i < cityStatePairs.length; i += batchSize) {
+        const batch = cityStatePairs.slice(i, i + batchSize);
+        
+        // Run batch queries in parallel
+        const results = await Promise.all(
+          batch.map(async (city) => {
+            try {
+              const { count, error } = await supabase
+                .from('business')
+                .select('*', { count: 'exact', head: true })
+                .eq('city', city.name)
+                .eq('state', city.stateCode);
+
+              if (error) {
+                console.error(`Error counting businesses for ${city.name}:`, error);
+                return { id: city.id, count: 0 };
+              }
+              
+              return { id: city.id, count: count || 0 };
+            } catch (error) {
+              console.error('Error counting businesses:', error);
+              return { id: city.id, count: 0 };
+            }
+          })
+        );
+
+        results.forEach(result => {
+          counts.set(result.id, result.count);
+        });
+
+        // Update state progressively so user sees results coming in
+        setBusinessCounts(new Map(counts));
+      }
     };
 
     if (citiesByCounty.size > 0) {
