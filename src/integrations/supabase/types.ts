@@ -836,6 +836,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_business_counts_by_cities: {
+        Args: { city_names: string[]; state_codes: string[] }
+        Returns: {
+          business_count: number
+          city_name: string
+          state_code: string
+        }[]
+      }
       get_counties_by_states: {
         Args: { state_codes: string[] }
         Returns: {
