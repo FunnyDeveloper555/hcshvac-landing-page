@@ -68,7 +68,7 @@ const Admin = () => {
                 <h1 className="text-2xl font-bold">Admin Panel</h1>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <span className="hidden md:block text-sm text-muted-foreground">{user.email}</span>
                 <Button onClick={handleSignOut} variant="outline">
                   Sign Out
                 </Button>
