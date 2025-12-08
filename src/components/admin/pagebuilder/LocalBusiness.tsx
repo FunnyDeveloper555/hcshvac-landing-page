@@ -246,7 +246,7 @@ export default function LocalBusiness() {
     loadBusinesses();
   }, [selectedCities, citiesByCounty, toast]);
 
-  // Calculate business counts for cities - batch query for efficiency
+  // Calculate business counts for cities using database function
   useEffect(() => {
     const calculateCounts = async () => {
       const counts = new Map<string, number>();
@@ -259,47 +259,41 @@ export default function LocalBusiness() {
         return;
       }
 
-      // Get unique city-state pairs
-      const cityStatePairs = allCities.map(city => ({
-        id: city.id,
-        name: city.name,
-        stateCode: city.state_code
-      }));
+      // Get unique city names and state codes
+      const cityNames = [...new Set(allCities.map(city => city.name))];
+      const stateCodes = [...new Set(allCities.map(city => city.state_code))];
 
-      // Batch count queries in groups of 10 cities at a time
-      const batchSize = 10;
-      for (let i = 0; i < cityStatePairs.length; i += batchSize) {
-        const batch = cityStatePairs.slice(i, i + batchSize);
-        
-        // Run batch queries in parallel
-        const results = await Promise.all(
-          batch.map(async (city) => {
-            try {
-              const { count, error } = await supabase
-                .from('business')
-                .select('*', { count: 'exact', head: true })
-                .eq('city', city.name)
-                .eq('state', city.stateCode);
-
-              if (error) {
-                console.error(`Error counting businesses for ${city.name}:`, error);
-                return { id: city.id, count: 0 };
-              }
-              
-              return { id: city.id, count: count || 0 };
-            } catch (error) {
-              console.error('Error counting businesses:', error);
-              return { id: city.id, count: 0 };
-            }
-          })
-        );
-
-        results.forEach(result => {
-          counts.set(result.id, result.count);
+      try {
+        // Use the database function to get counts in a single query
+        const { data, error } = await supabase.rpc('get_business_counts_by_cities', {
+          city_names: cityNames,
+          state_codes: stateCodes
         });
 
-        // Update state progressively so user sees results coming in
-        setBusinessCounts(new Map(counts));
+        if (error) {
+          console.error('Error fetching business counts:', error);
+          return;
+        }
+
+        // Create a map of city-state to count
+        const countMap = new Map<string, number>();
+        if (data) {
+          data.forEach((row: { city_name: string; state_code: string; business_count: number }) => {
+            const key = `${row.city_name}-${row.state_code}`;
+            countMap.set(key, row.business_count);
+          });
+        }
+
+        // Map counts to city IDs
+        allCities.forEach(city => {
+          const key = `${city.name}-${city.state_code}`;
+          const count = countMap.get(key) || 0;
+          counts.set(city.id, count);
+        });
+
+        setBusinessCounts(counts);
+      } catch (error) {
+        console.error('Error calculating business counts:', error);
       }
     };
 
