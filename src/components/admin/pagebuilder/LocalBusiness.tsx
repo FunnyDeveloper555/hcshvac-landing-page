@@ -363,24 +363,24 @@ export default function LocalBusiness() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Local Business</h2>
-        <p className="text-muted-foreground">Filter and view businesses by location</p>
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Local Business</h2>
+        <p className="text-sm md:text-base text-muted-foreground">Filter and view businesses by location</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle>Select State</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Select State</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
               {availableStates.length === 0
                 ? "Loading states..."
-                : `Choose states to filter businesses (scroll to see all ${availableStates.length} states)`}
+                : `Choose states (${availableStates.length} available)`}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <ScrollArea className="h-[250px] md:h-[400px] pr-2 md:pr-4">
               <div className="space-y-2">
                 {availableStates.map(state => (
                   <div key={state.code} className="flex items-center space-x-2">
@@ -391,7 +391,7 @@ export default function LocalBusiness() {
                     />
                     <label
                       htmlFor={`state-${state.code}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      className="text-xs md:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       {state.name}
                     </label>
@@ -404,20 +404,20 @@ export default function LocalBusiness() {
 
         {/* County Selection */}
         <Card>
-          <CardHeader>
-            <CardTitle>Select Counties</CardTitle>
-            <CardDescription>
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Select Counties</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
               {selectedStates.length > 0
                 ? "Choose counties from selected states"
                 : "Select states first"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <ScrollArea className="h-[250px] md:h-[400px] pr-2 md:pr-4">
               {selectedStates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No states selected</p>
+                <p className="text-xs md:text-sm text-muted-foreground">No states selected</p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {selectedStates.map(stateCode => {
                     const state = availableStates.find(s => s.code === stateCode);
                     const counties = countiesByState.get(stateCode) || [];
@@ -429,14 +429,14 @@ export default function LocalBusiness() {
                         onOpenChange={() => toggleStateExpanded(stateCode)}
                       >
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md">
-                          <span className="font-medium">{state?.name}</span>
+                          <span className="text-sm md:text-base font-medium">{state?.name}</span>
                           {expandedStates.has(stateCode) ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
                             <ChevronDown className="h-4 w-4" />
                           )}
                         </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-2 mt-2 ml-4">
+                        <CollapsibleContent className="space-y-2 mt-2 ml-2 md:ml-4">
                           {counties.map(county => (
                             <div key={`${county}-${stateCode}`} className="flex items-center space-x-2">
                               <Checkbox
@@ -448,7 +448,7 @@ export default function LocalBusiness() {
                               />
                               <label
                                 htmlFor={`county-${county}-${stateCode}`}
-                                className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                className="text-xs md:text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                               >
                                 {county}
                               </label>
@@ -465,21 +465,21 @@ export default function LocalBusiness() {
         </Card>
 
         {/* City Selection */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Select Cities</CardTitle>
-            <CardDescription>
+        <Card className="sm:col-span-2 lg:col-span-1">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="text-base md:text-lg">Select Cities</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
               {selectedCounties.length > 0
                 ? `${selectedCities.length} cities selected`
                 : "Select counties first"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
+          <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+            <ScrollArea className="h-[250px] md:h-[400px] pr-2 md:pr-4">
               {selectedCounties.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No counties selected</p>
+                <p className="text-xs md:text-sm text-muted-foreground">No counties selected</p>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {selectedCounties.map(({county, stateCode}) => {
                     const key = `${county}-${stateCode}`;
                     const cities = citiesByCounty.get(key) || [];
@@ -492,7 +492,7 @@ export default function LocalBusiness() {
                       >
                         <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted rounded-md">
                           <div className="flex flex-col items-start">
-                            <span className="font-medium">{county}</span>
+                            <span className="text-sm md:text-base font-medium">{county}</span>
                             <span className="text-xs text-muted-foreground">
                               {cities.length} cities
                             </span>
@@ -503,12 +503,12 @@ export default function LocalBusiness() {
                             <ChevronDown className="h-4 w-4" />
                           )}
                         </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-2 mt-2 ml-4">
+                        <CollapsibleContent className="space-y-2 mt-2 ml-2 md:ml-4">
                           {cities.map(city => {
                             const count = businessCounts.get(city.id) || 0;
                             return (
                               <div key={city.id} className="flex items-center justify-between space-x-2">
-                                <div className="flex items-center space-x-2 flex-1">
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
                                   <Checkbox
                                     id={`city-${city.id}`}
                                     checked={selectedCities.includes(city.id)}
@@ -516,12 +516,12 @@ export default function LocalBusiness() {
                                   />
                                   <label
                                     htmlFor={`city-${city.id}`}
-                                    className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                                    className="text-xs md:text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1 truncate"
                                   >
                                     {city.name}
                                   </label>
                                 </div>
-                                <Badge variant="secondary" className="text-xs">
+                                <Badge variant="secondary" className="text-xs shrink-0">
                                   {count}
                                 </Badge>
                               </div>
@@ -540,15 +540,15 @@ export default function LocalBusiness() {
 
       {/* Business Results */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg flex-wrap">
+            <Building2 className="h-4 w-4 md:h-5 md:w-5" />
             Businesses
             {businesses.length > 0 && (
-              <Badge variant="secondary">{businesses.length} found</Badge>
+              <Badge variant="secondary" className="text-xs">{businesses.length} found</Badge>
             )}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs md:text-sm">
             {loading
               ? "Loading businesses..."
               : selectedCities.length === 0
@@ -556,41 +556,41 @@ export default function LocalBusiness() {
               : `Showing businesses from selected locations`}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-8 md:py-12">
+              <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-muted-foreground" />
             </div>
           ) : businesses.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12">
+            <p className="text-center text-xs md:text-sm text-muted-foreground py-8 md:py-12">
               {selectedCities.length === 0
                 ? "No cities selected"
                 : "No businesses found in selected locations"}
             </p>
           ) : (
-            <ScrollArea className="h-[600px]">
-              <div className="space-y-4">
+            <ScrollArea className="h-[400px] md:h-[600px]">
+              <div className="space-y-3 md:space-y-4 pr-2 md:pr-4">
                 {businesses.map(business => (
                   <Card key={business.id}>
-                    <CardContent className="pt-6">
-                      <div className="space-y-3">
+                    <CardContent className="p-3 md:p-6">
+                      <div className="space-y-2 md:space-y-3">
                         <div>
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-semibold text-sm md:text-lg leading-tight">
                             {business.company_name || "Unnamed Business"}
                           </h3>
                           {business.base_category && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                               {business.base_category}
                               {business.detailed_category && ` • ${business.detailed_category}`}
                             </p>
                           )}
                         </div>
 
-                        <div className="grid gap-2 text-sm">
+                        <div className="grid gap-1.5 md:gap-2 text-xs md:text-sm">
                           {business.address && (
                             <div className="flex items-start gap-2">
-                              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                              <span>
+                              <MapPin className="h-3 w-3 md:h-4 md:w-4 mt-0.5 text-muted-foreground shrink-0" />
+                              <span className="break-words">
                                 {business.address}
                                 {business.city && `, ${business.city}`}
                                 {business.state && `, ${business.state}`}
@@ -601,19 +601,19 @@ export default function LocalBusiness() {
 
                           {business.telephone_number && (
                             <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <Phone className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground shrink-0" />
                               <span>{business.telephone_number}</span>
                             </div>
                           )}
 
                           {business.web_address && (
-                            <div className="flex items-center gap-2">
-                              <Globe className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Globe className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground shrink-0" />
                               <a
                                 href={business.web_address}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline"
+                                className="text-primary hover:underline truncate"
                               >
                                 {business.web_address}
                               </a>
@@ -622,12 +622,12 @@ export default function LocalBusiness() {
                         </div>
 
                         {(business.sic_2 || business.sic_4) && (
-                          <div className="flex gap-2 flex-wrap">
+                          <div className="flex gap-1.5 md:gap-2 flex-wrap">
                             {business.sic_2 && (
-                              <Badge variant="outline">SIC-2: {business.sic_2}</Badge>
+                              <Badge variant="outline" className="text-xs">SIC-2: {business.sic_2}</Badge>
                             )}
                             {business.sic_4 && (
-                              <Badge variant="outline">SIC-4: {business.sic_4}</Badge>
+                              <Badge variant="outline" className="text-xs">SIC-4: {business.sic_4}</Badge>
                             )}
                           </div>
                         )}
