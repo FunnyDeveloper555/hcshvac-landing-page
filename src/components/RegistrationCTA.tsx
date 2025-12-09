@@ -4,17 +4,17 @@ import { ArrowRight } from "lucide-react";
 
 const RegistrationCTA = () => {
   return (
-    <section id="register" className="py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
+    <section id="register" className="py-12 md:py-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 md:mb-6">
             Ready to Get Started?
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+          <p className="text-base md:text-xl text-muted-foreground mb-6 md:mb-8 leading-relaxed px-2">
             Register with us today to access our premium HVAC services. Complete our comprehensive registration form to help us understand your specific needs and provide you with the best possible service.
           </p>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
+          <div className="space-y-3 md:space-y-4">
+            <p className="text-sm md:text-base text-muted-foreground">
               Our registration process takes just a few minutes and allows us to:
             </p>
             <ul className="text-left max-w-md mx-auto space-y-2 text-muted-foreground">
@@ -36,15 +36,15 @@ const RegistrationCTA = () => {
               </li>
             </ul>
           </div>
-          <div className="mt-10">
+          <div className="mt-8 md:mt-10">
             <Link to="/registration">
-              <Button size="lg" className="text-lg px-8 py-6 group">
+              <Button size="lg" className="text-base md:text-lg px-6 md:px-8 py-5 md:py-6 group">
                 Complete Registration
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </div>
-          <p className="mt-6 text-sm text-muted-foreground">
+          <p className="mt-4 md:mt-6 text-xs md:text-sm text-muted-foreground">
             Have questions? <a href="tel:+1234567890" className="text-primary hover:underline">Call us at (123) 456-7890</a>
           </p>
         </div>

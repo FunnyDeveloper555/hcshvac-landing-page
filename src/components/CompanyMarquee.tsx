@@ -33,9 +33,9 @@ const CompanyMarquee = () => {
     return null;
   }
   return (
-    <section className="py-16 bg-accent/5 overflow-hidden">
-      <div className="container mx-auto px-4 mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold text-center">
+    <section className="py-10 md:py-16 bg-accent/5 overflow-hidden">
+      <div className="container mx-auto px-4 mb-6 md:mb-8">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
           Trusted by Leading Businesses
         </h2>
       </div>

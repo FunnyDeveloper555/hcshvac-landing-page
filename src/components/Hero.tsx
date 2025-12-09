@@ -104,45 +104,46 @@ const Hero = () => {
             <span className="text-accent font-semibold drop-shadow-lg">{content.badge_text}</span>
           </div>
           
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight drop-shadow-2xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight drop-shadow-2xl">
             {content.title}
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed drop-shadow-lg bg-background/30 backdrop-blur-sm p-4 rounded-lg">
+          <p className="text-base sm:text-lg md:text-2xl text-muted-foreground mb-6 md:mb-8 leading-relaxed drop-shadow-lg bg-background/30 backdrop-blur-sm p-3 md:p-4 rounded-lg">
             {content.description}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <Button 
               variant="accent" 
-              size="xl" 
-              className="group"
+              size="lg" 
+              className="group md:size-xl"
               onClick={() => window.location.href = content.primary_button_link}
             >
-              <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              <Phone className="w-4 h-4 md:w-5 md:h-5 group-hover:rotate-12 transition-transform" />
               {content.primary_button_text}
             </Button>
             <Button 
               variant="outline" 
-              size="xl"
+              size="lg"
+              className="md:size-xl"
               onClick={() => window.location.href = content.secondary_button_link}
             >
               {content.secondary_button_text}
             </Button>
           </div>
           
-          <div className="mt-12 grid grid-cols-3 gap-8 max-w-lg bg-background/40 backdrop-blur-sm p-6 rounded-lg">
+          <div className="mt-8 md:mt-12 grid grid-cols-3 gap-3 sm:gap-6 md:gap-8 max-w-lg bg-background/40 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-lg">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat1_value}</div>
-              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat1_label}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat1_value}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground drop-shadow-md">{content.stat1_label}</div>
             </div>
             <div className="text-center border-x border-border/50">
-              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat2_value}</div>
-              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat2_label}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat2_value}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground drop-shadow-md">{content.stat2_label}</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat3_value}</div>
-              <div className="text-sm text-muted-foreground drop-shadow-md">{content.stat3_label}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-1 drop-shadow-lg">{content.stat3_value}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground drop-shadow-md">{content.stat3_label}</div>
             </div>
           </div>
         </div>
