@@ -34,21 +34,21 @@ const Employees = () => {
 
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+    <section className="py-12 md:py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in">
+        <div className="text-center mb-8 md:mb-16 animate-fade-in">
           <Badge variant="outline" className="mb-4 text-sm px-4 py-1">
             Our Team
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Meet Our Employees
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
             Skilled professionals dedicated to providing exceptional service
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {employees.map((employee) => (
             <Card 
               key={employee.id} 

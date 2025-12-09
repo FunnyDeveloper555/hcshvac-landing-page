@@ -35,28 +35,30 @@ const Header = () => {
             {isAdmin && (
               <Button 
                 variant="outline" 
-                size="lg"
+                size="sm"
+                className="md:size-default"
                 onClick={() => navigate("/admin")}
               >
                 <Shield className="w-4 h-4" />
-                Admin Panel
+                <span className="hidden sm:inline">Admin Panel</span>
               </Button>
             )}
             
             <Button 
               variant={user ? "outline" : "accent"} 
-              size="lg"
+              size="sm"
+              className="md:size-default"
               onClick={handleAuthClick}
             >
               {user ? (
                 <>
                   <LogOut className="w-4 h-4" />
-                  Sign Out
+                  <span className="hidden sm:inline">Sign Out</span>
                 </>
               ) : (
                 <>
                   <User className="w-4 h-4" />
-                  Sign In
+                  <span className="hidden sm:inline">Sign In</span>
                 </>
               )}
             </Button>
