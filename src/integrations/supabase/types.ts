@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          closed_at: string | null
+          company_id: string | null
+          created_at: string
+          customer_address: string | null
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          updated_at: string
+        }
+        Insert: {
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          closed_at?: string | null
+          company_id?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          scheduled_date: string
+          scheduled_time: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Update: {
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          closed_at?: string | null
+          company_id?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          scheduled_date?: string
+          scheduled_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business: {
         Row: {
           address: string | null
@@ -868,6 +927,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      appointment_status: "open" | "closed" | "cancelled"
+      appointment_type:
+        | "residential"
+        | "commercial"
+        | "non_profit"
+        | "church"
+        | "school"
+        | "government"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -996,6 +1064,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      appointment_status: ["open", "closed", "cancelled"],
+      appointment_type: [
+        "residential",
+        "commercial",
+        "non_profit",
+        "church",
+        "school",
+        "government",
+        "other",
+      ],
     },
   },
 } as const

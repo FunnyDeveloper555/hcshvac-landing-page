@@ -1,0 +1,321 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { Loader2, CheckCircle, XCircle, Clock, Calendar } from "lucide-react";
+import { format, isToday, isYesterday, startOfWeek, startOfMonth, startOfYear, isBefore, isAfter, parseISO } from "date-fns";
+
+type AppointmentStatus = "open" | "closed" | "cancelled";
+type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
+
+interface Appointment {
+  id: string;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string;
+  customer_address: string | null;
+  appointment_type: AppointmentType;
+  status: AppointmentStatus;
+  scheduled_date: string;
+  scheduled_time: string;
+  notes: string | null;
+  created_at: string;
+  closed_at: string | null;
+  company_id: string | null;
+  companies?: { name: string } | null;
+}
+
+type FilterType = "all" | "open" | "closed" | "open_today" | "closed_today" | "closed_week" | "closed_month" | "closed_year";
+
+export default function AppointmentsList() {
+  const [filter, setFilter] = useState<FilterType>("all");
+  const queryClient = useQueryClient();
+
+  const { data: appointments, isLoading } = useQuery({
+    queryKey: ["appointments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*, companies(name)")
+        .order("scheduled_date", { ascending: false });
+      
+      if (error) throw error;
+      return data as Appointment[];
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: AppointmentStatus }) => {
+      const updateData: Record<string, unknown> = { status };
+      if (status === "closed") {
+        updateData.closed_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from("appointments")
+        .update(updateData)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Appointment status updated");
+    },
+    onError: () => {
+      toast.error("Failed to update appointment status");
+    },
+  });
+
+  const filterAppointments = (appointments: Appointment[] | undefined): Appointment[] => {
+    if (!appointments) return [];
+    
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+    const monthStart = startOfMonth(now);
+    const yearStart = startOfYear(now);
+
+    switch (filter) {
+      case "open":
+        return appointments.filter(a => a.status === "open");
+      case "closed":
+        return appointments.filter(a => a.status === "closed");
+      case "open_today":
+        return appointments.filter(a => a.status === "open" && isToday(parseISO(a.scheduled_date)));
+      case "closed_today":
+        return appointments.filter(a => a.status === "closed" && a.closed_at && isToday(parseISO(a.closed_at)));
+      case "closed_week":
+        return appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), weekStart));
+      case "closed_month":
+        return appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), monthStart));
+      case "closed_year":
+        return appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), yearStart));
+      default:
+        return appointments;
+    }
+  };
+
+  const getStats = () => {
+    if (!appointments) return { open: 0, closed: 0, openToday: 0, closedToday: 0, closedWeek: 0, closedMonth: 0, closedYear: 0 };
+    
+    const now = new Date();
+    const weekStart = startOfWeek(now);
+    const monthStart = startOfMonth(now);
+    const yearStart = startOfYear(now);
+
+    return {
+      open: appointments.filter(a => a.status === "open").length,
+      closed: appointments.filter(a => a.status === "closed").length,
+      openToday: appointments.filter(a => a.status === "open" && isToday(parseISO(a.scheduled_date))).length,
+      closedToday: appointments.filter(a => a.status === "closed" && a.closed_at && isToday(parseISO(a.closed_at))).length,
+      closedWeek: appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), weekStart)).length,
+      closedMonth: appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), monthStart)).length,
+      closedYear: appointments.filter(a => a.status === "closed" && a.closed_at && isAfter(parseISO(a.closed_at), yearStart)).length,
+    };
+  };
+
+  const stats = getStats();
+  const filteredAppointments = filterAppointments(appointments);
+
+  const getStatusBadge = (status: AppointmentStatus) => {
+    switch (status) {
+      case "open":
+        return <Badge variant="default" className="bg-green-500">Open</Badge>;
+      case "closed":
+        return <Badge variant="secondary">Closed</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelled</Badge>;
+    }
+  };
+
+  const getTypeBadge = (type: AppointmentType) => {
+    const labels: Record<AppointmentType, string> = {
+      residential: "Residential",
+      commercial: "Commercial",
+      non_profit: "Non-Profit",
+      church: "Church",
+      school: "School",
+      government: "Government",
+      other: "Other",
+    };
+    return <Badge variant="outline">{labels[type]}</Badge>;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Appointments</h2>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("open")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-green-600">{stats.open}</div>
+            <div className="text-xs text-muted-foreground">Open</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("open_today")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-blue-600">{stats.openToday}</div>
+            <div className="text-xs text-muted-foreground">Open Today</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_today")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.closedToday}</div>
+            <div className="text-xs text-muted-foreground">Closed Today</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_week")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.closedWeek}</div>
+            <div className="text-xs text-muted-foreground">Closed This Week</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_month")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.closedMonth}</div>
+            <div className="text-xs text-muted-foreground">Closed This Month</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_year")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.closedYear}</div>
+            <div className="text-xs text-muted-foreground">Closed YTD</div>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed")}>
+          <CardContent className="p-3 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.closed}</div>
+            <div className="text-xs text-muted-foreground">Total Closed</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter */}
+      <div className="flex items-center gap-4">
+        <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter appointments" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Appointments</SelectItem>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+            <SelectItem value="open_today">Open Today</SelectItem>
+            <SelectItem value="closed_today">Closed Today</SelectItem>
+            <SelectItem value="closed_week">Closed This Week</SelectItem>
+            <SelectItem value="closed_month">Closed This Month</SelectItem>
+            <SelectItem value="closed_year">Closed This Year</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-muted-foreground">
+          Showing {filteredAppointments.length} appointments
+        </span>
+      </div>
+
+      {/* Table */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date/Time</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAppointments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      No appointments found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredAppointments.map((appointment) => (
+                    <TableRow key={appointment.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <div className="font-medium">
+                              {format(parseISO(appointment.scheduled_date), "MMM d, yyyy")}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {appointment.scheduled_time}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">{appointment.customer_name}</div>
+                          <div className="text-sm text-muted-foreground">{appointment.customer_phone}</div>
+                          {appointment.customer_email && (
+                            <div className="text-sm text-muted-foreground">{appointment.customer_email}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getTypeBadge(appointment.appointment_type)}</TableCell>
+                      <TableCell>{appointment.companies?.name || "-"}</TableCell>
+                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {appointment.status === "open" && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "closed" })}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Close
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "cancelled" })}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                            </>
+                          )}
+                          {appointment.status === "closed" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "open" })}
+                            >
+                              <Clock className="h-4 w-4 mr-1" />
+                              Reopen
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
