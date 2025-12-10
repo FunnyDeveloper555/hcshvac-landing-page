@@ -32,8 +32,11 @@ interface Appointment {
 
 type FilterType = "all" | "open" | "closed" | "open_today" | "closed_today" | "closed_week" | "closed_month" | "closed_year";
 
+const ITEMS_PER_PAGE = 20;
+
 export default function AppointmentsList() {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
   const { data: appointments, isLoading } = useQuery({
@@ -119,6 +122,19 @@ export default function AppointmentsList() {
 
   const stats = getStats();
   const filteredAppointments = filterAppointments(appointments);
+  
+  // Pagination
+  const totalPages = Math.ceil(filteredAppointments.length / ITEMS_PER_PAGE);
+  const paginatedAppointments = filteredAppointments.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filter changes
+  const handleFilterChange = (newFilter: FilterType) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
 
   const getStatusBadge = (status: AppointmentStatus) => {
     switch (status) {
@@ -158,43 +174,43 @@ export default function AppointmentsList() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("open")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("open")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-green-600">{stats.open}</div>
             <div className="text-xs text-muted-foreground">Open</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("open_today")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("open_today")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-blue-600">{stats.openToday}</div>
             <div className="text-xs text-muted-foreground">Open Today</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_today")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("closed_today")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.closedToday}</div>
             <div className="text-xs text-muted-foreground">Closed Today</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_week")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("closed_week")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.closedWeek}</div>
             <div className="text-xs text-muted-foreground">Closed This Week</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_month")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("closed_month")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.closedMonth}</div>
             <div className="text-xs text-muted-foreground">Closed This Month</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed_year")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("closed_year")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.closedYear}</div>
             <div className="text-xs text-muted-foreground">Closed YTD</div>
           </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => setFilter("closed")}>
+        <Card className="cursor-pointer hover:bg-accent/50" onClick={() => handleFilterChange("closed")}>
           <CardContent className="p-3 text-center">
             <div className="text-2xl font-bold text-gray-600">{stats.closed}</div>
             <div className="text-xs text-muted-foreground">Total Closed</div>
@@ -204,7 +220,7 @@ export default function AppointmentsList() {
 
       {/* Filter */}
       <div className="flex items-center gap-4">
-        <Select value={filter} onValueChange={(v) => setFilter(v as FilterType)}>
+        <Select value={filter} onValueChange={(v) => handleFilterChange(v as FilterType)}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter appointments" />
           </SelectTrigger>
@@ -220,7 +236,7 @@ export default function AppointmentsList() {
           </SelectContent>
         </Select>
         <span className="text-muted-foreground">
-          Showing {filteredAppointments.length} appointments
+          Showing {paginatedAppointments.length} of {filteredAppointments.length} appointments
         </span>
       </div>
 
@@ -247,7 +263,7 @@ export default function AppointmentsList() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredAppointments.map((appointment) => (
+                  paginatedAppointments.map((appointment) => (
                     <TableRow key={appointment.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -316,6 +332,49 @@ export default function AppointmentsList() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              First
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              Last
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
