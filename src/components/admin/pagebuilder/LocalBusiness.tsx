@@ -374,9 +374,14 @@ export default function LocalBusiness() {
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="text-base md:text-lg">Select State</CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              {availableStates.length === 0
-                ? "Loading states..."
-                : `Choose states (${availableStates.length} available)`}
+              {availableStates.length === 0 ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Loading states...
+                </span>
+              ) : (
+                `Choose states (${availableStates.length} available)`
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
@@ -549,11 +554,16 @@ export default function LocalBusiness() {
             )}
           </CardTitle>
           <CardDescription className="text-xs md:text-sm">
-            {loading
-              ? "Loading businesses..."
-              : selectedCities.length === 0
-              ? "Select cities to view businesses"
-              : `Showing businesses from selected locations`}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Loading businesses...
+              </span>
+            ) : selectedCities.length === 0 ? (
+              "Select cities to view businesses"
+            ) : (
+              `Showing businesses from selected locations`
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
