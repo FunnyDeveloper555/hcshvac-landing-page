@@ -281,7 +281,14 @@ const HeroAdmin = () => {
           </div>
 
           <Button type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </form>
       </CardContent>

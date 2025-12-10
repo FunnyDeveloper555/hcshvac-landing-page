@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -776,7 +777,14 @@ export function EmployeesAdd() {
           </Card>
 
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Adding..." : "Add Employee"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Employee"
+            )}
           </Button>
         </form>
       </Form>
