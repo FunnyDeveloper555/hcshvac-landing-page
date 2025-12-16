@@ -98,7 +98,7 @@ export default function AppointmentsAdd() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.customer_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time) {
+    if (!formData.customer_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -141,13 +141,13 @@ export default function AppointmentsAdd() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company_id">Assign to Company</Label>
+                <Label htmlFor="company_id">Assign to Company *</Label>
                 <Select
                   value={formData.company_id}
                   onValueChange={(v) => handleChange("company_id", v)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select company (optional)" />
+                    <SelectValue placeholder="Select company" />
                   </SelectTrigger>
                   <SelectContent>
                     {companies?.map((company) => (
