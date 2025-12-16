@@ -29,6 +29,7 @@ import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
+import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -95,6 +96,7 @@ const Admin = () => {
               <Route path="/employees/*" element={<EmployeesAdmin />} />
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
+              <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
               <Route path="/cities/import" element={<CitiesImport />} />
               <Route path="/business/import" element={<BusinessImport />} />
               <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
