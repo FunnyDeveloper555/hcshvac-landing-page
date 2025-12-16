@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 
@@ -18,6 +19,7 @@ interface Appointment {
   status: AppointmentStatus;
   scheduled_date: string;
   scheduled_time: string;
+  company_id: string | null;
   companies?: { name: string } | null;
 }
 
@@ -40,18 +42,37 @@ const statusColors: Record<AppointmentStatus, string> = {
 export default function AppointmentsCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [companyFilter, setCompanyFilter] = useState<string>("all");
+
+  const { data: companies } = useQuery({
+    queryKey: ["companies-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ["appointments-calendar"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("id, customer_name, customer_phone, appointment_type, status, scheduled_date, scheduled_time, companies(name)")
+        .select("id, customer_name, customer_phone, appointment_type, status, scheduled_date, scheduled_time, company_id, companies(name)")
         .order("scheduled_time", { ascending: true });
       
       if (error) throw error;
       return data as Appointment[];
     },
+  });
+
+  const filteredAppointments = appointments?.filter(apt => {
+    if (companyFilter === "all") return true;
+    return apt.company_id === companyFilter;
   });
 
   const monthStart = startOfMonth(currentMonth);
@@ -61,9 +82,9 @@ export default function AppointmentsCalendar() {
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getAppointmentsForDay = (date: Date) => {
-    if (!appointments) return [];
+    if (!filteredAppointments) return [];
     const dateStr = format(date, "yyyy-MM-dd");
-    return appointments.filter(apt => apt.scheduled_date === dateStr);
+    return filteredAppointments.filter(apt => apt.scheduled_date === dateStr);
   };
 
   const selectedDateAppointments = selectedDate ? getAppointmentsForDay(selectedDate) : [];
@@ -78,7 +99,22 @@ export default function AppointmentsCalendar() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Appointments Calendar</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 className="text-2xl font-bold">Appointments Calendar</h2>
+        <Select value={companyFilter} onValueChange={setCompanyFilter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by company" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Companies</SelectItem>
+            {companies?.map((company) => (
+              <SelectItem key={company.id} value={company.id}>
+                {company.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
