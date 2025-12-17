@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar } from "lucide-react";
 import { format, isToday, isYesterday, startOfWeek, startOfMonth, startOfYear, isBefore, isAfter, parseISO } from "date-fns";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -38,6 +39,7 @@ export default function AppointmentsList() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+  const { logAction } = useAdminLog();
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ["appointments"],
@@ -53,7 +55,7 @@ export default function AppointmentsList() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: AppointmentStatus }) => {
+    mutationFn: async ({ id, status, customerName }: { id: string; status: AppointmentStatus; customerName: string }) => {
       const updateData: Record<string, unknown> = { status };
       if (status === "closed") {
         updateData.closed_at = new Date().toISOString();
@@ -63,10 +65,15 @@ export default function AppointmentsList() {
         .update(updateData)
         .eq("id", id);
       if (error) throw error;
+      return { id, status, customerName };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Appointment status updated");
+      logAction("status_change", "appointment", data.id, { 
+        new_status: data.status,
+        customer_name: data.customerName 
+      });
     },
     onError: () => {
       toast.error("Failed to update appointment status");
@@ -297,7 +304,7 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "closed" })}
+                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "closed", customerName: appointment.customer_name })}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Close
@@ -305,7 +312,7 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "cancelled" })}
+                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })}
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Cancel
@@ -316,7 +323,7 @@ export default function AppointmentsList() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "open" })}
+                              onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "open", customerName: appointment.customer_name })}
                             >
                               <Clock className="h-4 w-4 mr-1" />
                               Reopen
