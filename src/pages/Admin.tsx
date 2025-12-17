@@ -30,6 +30,7 @@ import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
+import LogsList from "@/components/admin/logs/LogsList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -108,6 +109,7 @@ const Admin = () => {
               <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
               <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/local-business" element={<LocalBusiness />} />
+              <Route path="/logs/list" element={<LogsList />} />
             </Routes>
           </main>
         </div>
