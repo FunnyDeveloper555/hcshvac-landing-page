@@ -11,9 +11,10 @@ type EntityType =
   | "hero_content" 
   | "hero_image"
   | "customer_registration"
-  | "settings";
+  | "settings"
+  | "auth";
 
-type ActionType = "create" | "update" | "delete" | "view" | "status_change" | "import" | "export";
+type ActionType = "create" | "update" | "delete" | "view" | "status_change" | "import" | "export" | "login" | "logout";
 
 export function useAdminLog() {
   const { user } = useAuth();
