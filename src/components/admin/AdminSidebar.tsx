@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -114,6 +114,13 @@ const menuItems = [
       { title: "Images & Logos", url: "/admin/page-builder/images-logos", icon: ImageIcon },
       { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
       { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
+    ]
+  },
+  { 
+    title: "Logs", 
+    icon: FileText,
+    children: [
+      { title: "Activity Log", url: "/admin/logs/list", icon: List },
     ]
   },
 ];
