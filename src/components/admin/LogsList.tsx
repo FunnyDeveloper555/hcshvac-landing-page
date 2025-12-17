@@ -44,7 +44,7 @@ const actionTypes = [
   { value: "export", label: "Export" },
 ];
 
-export default function LogsList() {
+const LogsList = () => {
   const [entityFilter, setEntityFilter] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -196,4 +196,6 @@ export default function LogsList() {
       </Card>
     </div>
   );
-}
+};
+
+export default LogsList;
