@@ -31,6 +31,8 @@ import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
 import LogsList from "@/components/admin/LogsList";
+import CustomersAdd from "@/components/admin/CustomersAdd";
+import CustomersList from "@/components/admin/CustomersList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -95,6 +97,8 @@ const Admin = () => {
               <Route path="/vendors/add" element={<VendorsAdd />} />
               <Route path="/vendors/list" element={<VendorsList />} />
               <Route path="/employees/*" element={<EmployeesAdmin />} />
+              <Route path="/customers/add" element={<CustomersAdd />} />
+              <Route path="/customers/list" element={<CustomersList />} />
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
               <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />

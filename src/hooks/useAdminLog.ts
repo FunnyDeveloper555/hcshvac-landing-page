@@ -11,6 +11,7 @@ type EntityType =
   | "hero_content" 
   | "hero_image"
   | "customer_registration"
+  | "customer"
   | "settings"
   | "auth";
 
