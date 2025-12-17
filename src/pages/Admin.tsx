@@ -30,7 +30,7 @@ import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
-import LogsList from "@/components/admin/logs/LogsList";
+import LogsList from "@/components/admin/LogsList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
