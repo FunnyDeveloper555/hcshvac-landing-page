@@ -22,6 +22,7 @@ interface AdminLog {
 
 const entityTypes = [
   { value: "all", label: "All Entities" },
+  { value: "auth", label: "Authentication" },
   { value: "appointment", label: "Appointments" },
   { value: "company", label: "Companies" },
   { value: "employee", label: "Employees" },
@@ -35,6 +36,8 @@ const entityTypes = [
 
 const actionTypes = [
   { value: "all", label: "All Actions" },
+  { value: "login", label: "Login" },
+  { value: "logout", label: "Logout" },
   { value: "create", label: "Create" },
   { value: "update", label: "Update" },
   { value: "delete", label: "Delete" },
