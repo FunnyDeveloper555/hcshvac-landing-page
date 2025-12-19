@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const heroSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -29,6 +31,12 @@ const heroSchema = z.object({
 const HeroAdd = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const isEditing = !!editId;
+  const { logAction } = useAdminLog();
+
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -47,6 +55,48 @@ const HeroAdd = () => {
     stat3_label: "Emergency Service",
   });
 
+  useEffect(() => {
+    if (editId) {
+      fetchHeroContent();
+    }
+  }, [editId]);
+
+  const fetchHeroContent = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("hero_content")
+      .select("*")
+      .eq("id", editId)
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load hero content",
+        variant: "destructive",
+      });
+      navigate("/admin/hero/list");
+    } else if (data) {
+      setFormData({
+        title: data.title,
+        subtitle: data.subtitle,
+        description: data.description,
+        badge_text: data.badge_text,
+        primary_button_text: data.primary_button_text,
+        primary_button_link: data.primary_button_link,
+        secondary_button_text: data.secondary_button_text,
+        secondary_button_link: data.secondary_button_link,
+        stat1_value: data.stat1_value,
+        stat1_label: data.stat1_label,
+        stat2_value: data.stat2_value,
+        stat2_label: data.stat2_label,
+        stat3_value: data.stat3_value,
+        stat3_label: data.stat3_label,
+      });
+    }
+    setLoading(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -54,16 +104,34 @@ const HeroAdd = () => {
     try {
       const validated = heroSchema.parse(formData);
 
-      const { error } = await supabase
-        .from("hero_content")
-        .insert([validated]);
+      if (isEditing) {
+        const { error } = await supabase
+          .from("hero_content")
+          .update(validated)
+          .eq("id", editId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Hero content created successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Hero content updated successfully",
+        });
+        logAction("update", "hero", editId, { title: formData.title });
+      } else {
+        const { data, error } = await supabase
+          .from("hero_content")
+          .insert([validated])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Hero content created successfully",
+        });
+        logAction("create", "hero", data.id, { title: formData.title });
+      }
 
       navigate("/admin/hero/list");
     } catch (error: any) {
@@ -85,14 +153,22 @@ const HeroAdd = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Add Hero Content</h2>
+      <h2 className="text-3xl font-bold">{isEditing ? "Edit Hero Content" : "Add Hero Content"}</h2>
       <Card>
         <CardHeader>
           <CardTitle>Hero Section Content</CardTitle>
           <CardDescription>
-            Create new hero section content for the homepage
+            {isEditing ? "Update the hero section content" : "Create new hero section content for the homepage"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -225,9 +301,15 @@ const HeroAdd = () => {
               </div>
             </div>
 
-            <Button type="submit" disabled={saving}>
-              {saving ? "Creating..." : "Create Hero Content"}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {isEditing ? "Update Hero Content" : "Create Hero Content"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate("/admin/hero/list")}>
+                Cancel
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

@@ -4,9 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const ServicesList = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logAction } = useAdminLog();
   
   const { data: services, isLoading, refetch } = useQuery({
     queryKey: ["services-list"],
@@ -21,7 +25,7 @@ const ServicesList = () => {
     },
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, title: string) => {
     const { error } = await supabase
       .from("services")
       .delete()
@@ -38,8 +42,13 @@ const ServicesList = () => {
         title: "Success",
         description: "Service deleted successfully",
       });
+      logAction("delete", "service", id, { title });
       refetch();
     }
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/services/add?id=${id}`);
   };
 
   if (isLoading) {
@@ -65,14 +74,14 @@ const ServicesList = () => {
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">{service.description}</p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => handleEdit(service.id)}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
                 <Button 
                   size="sm" 
                   variant="destructive"
-                  onClick={() => handleDelete(service.id)}
+                  onClick={() => handleDelete(service.id, service.title)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const ServicesAdd = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const isEditing = !!editId;
+  const { logAction } = useAdminLog();
+  
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -22,6 +31,42 @@ const ServicesAdd = () => {
     display_order: 0,
   });
 
+  useEffect(() => {
+    if (editId) {
+      fetchService();
+    }
+  }, [editId]);
+
+  const fetchService = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("id", editId)
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load service",
+        variant: "destructive",
+      });
+      navigate("/admin/services/list");
+    } else if (data) {
+      setFormData({
+        title: data.title,
+        description: data.description,
+        detailed_description: data.detailed_description || "",
+        icon: data.icon,
+        price_from: data.price_from,
+        price_label: data.price_label || "Starting at",
+        is_active: data.is_active ?? true,
+        display_order: data.display_order ?? 0,
+      });
+    }
+    setLoading(false);
+  };
+
   const handleSave = async () => {
     if (!formData.title || !formData.description) {
       toast({
@@ -32,29 +77,63 @@ const ServicesAdd = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from("services")
-      .insert([formData]);
-    
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    setSaving(true);
+
+    if (isEditing) {
+      const { error } = await supabase
+        .from("services")
+        .update(formData)
+        .eq("id", editId);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Service updated successfully" });
+        logAction("update", "service", editId, { title: formData.title });
+        navigate("/admin/services/list");
+      }
     } else {
-      toast({ title: "Service created successfully" });
-      navigate("/admin/services/list");
+      const { data, error } = await supabase
+        .from("services")
+        .insert([formData])
+        .select()
+        .single();
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Service created successfully" });
+        logAction("create", "service", data.id, { title: formData.title });
+        navigate("/admin/services/list");
+      }
     }
+    
+    setSaving(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Add New Service</h2>
+      <h2 className="text-3xl font-bold">{isEditing ? "Edit Service" : "Add New Service"}</h2>
       <Card>
         <CardHeader>
-          <CardTitle>Create Service</CardTitle>
-          <CardDescription>Add a new service offering</CardDescription>
+          <CardTitle>{isEditing ? "Update Service" : "Create Service"}</CardTitle>
+          <CardDescription>{isEditing ? "Modify the service details" : "Add a new service offering"}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -151,7 +230,15 @@ const ServicesAdd = () => {
             <Label htmlFor="is_active">Active</Label>
           </div>
 
-          <Button onClick={handleSave}>Create Service</Button>
+          <div className="flex gap-2">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {isEditing ? "Update Service" : "Create Service"}
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/admin/services/list")}>
+              Cancel
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

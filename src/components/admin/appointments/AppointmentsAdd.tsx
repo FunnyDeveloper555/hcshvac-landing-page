@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 
@@ -55,9 +57,15 @@ const timeSlots = [
 
 export default function AppointmentsAdd() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const isEditing = !!editId;
+  const { logAction } = useAdminLog();
 
-  const { data: companies, isLoading: companiesLoading } = useQuery({
+  const { data: companies } = useQuery({
     queryKey: ["companies-active"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,6 +77,39 @@ export default function AppointmentsAdd() {
       return data;
     },
   });
+
+  useEffect(() => {
+    if (editId) {
+      fetchAppointment();
+    }
+  }, [editId]);
+
+  const fetchAppointment = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("id", editId)
+      .single();
+
+    if (error) {
+      toast.error("Failed to load appointment");
+      navigate("/admin/appointments/list");
+    } else if (data) {
+      setFormData({
+        customer_name: data.customer_name,
+        customer_email: data.customer_email || "",
+        customer_phone: data.customer_phone,
+        customer_address: data.customer_address || "",
+        appointment_type: data.appointment_type as AppointmentType,
+        scheduled_date: data.scheduled_date,
+        scheduled_time: data.scheduled_time,
+        notes: data.notes || "",
+        company_id: data.company_id || "",
+      });
+    }
+    setLoading(false);
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -83,16 +124,45 @@ export default function AppointmentsAdd() {
         notes: data.notes || null,
         company_id: data.company_id || null,
       };
-      const { error } = await supabase.from("appointments").insert(insertData);
+      const { data: result, error } = await supabase.from("appointments").insert(insertData).select().single();
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Appointment created successfully");
+      logAction("create", "appointment", data.id, { customer_name: formData.customer_name });
+      navigate("/admin/appointments/list");
+    },
+    onError: (error) => {
+      toast.error("Failed to create appointment: " + error.message);
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const updateData = {
+        customer_name: data.customer_name,
+        customer_email: data.customer_email || null,
+        customer_phone: data.customer_phone,
+        customer_address: data.customer_address || null,
+        appointment_type: data.appointment_type,
+        scheduled_date: data.scheduled_date,
+        scheduled_time: data.scheduled_time,
+        notes: data.notes || null,
+        company_id: data.company_id || null,
+      };
+      const { error } = await supabase.from("appointments").update(updateData).eq("id", editId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
-      toast.success("Appointment created successfully");
-      setFormData(initialFormData);
+      toast.success("Appointment updated successfully");
+      logAction("update", "appointment", editId!, { customer_name: formData.customer_name });
+      navigate("/admin/appointments/list");
     },
     onError: (error) => {
-      toast.error("Failed to create appointment: " + error.message);
+      toast.error("Failed to update appointment: " + error.message);
     },
   });
 
@@ -102,16 +172,31 @@ export default function AppointmentsAdd() {
       toast.error("Please fill in all required fields");
       return;
     }
-    createMutation.mutate(formData);
+    
+    if (isEditing) {
+      updateMutation.mutate(formData);
+    } else {
+      createMutation.mutate(formData);
+    }
   };
 
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Book New Appointment</h2>
+      <h2 className="text-2xl font-bold">{isEditing ? "Edit Appointment" : "Book New Appointment"}</h2>
 
       <Card>
         <CardHeader>
@@ -215,7 +300,6 @@ export default function AppointmentsAdd() {
                     type="date"
                     value={formData.scheduled_date}
                     onChange={(e) => handleChange("scheduled_date", e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 <div className="space-y-2">
@@ -251,10 +335,15 @@ export default function AppointmentsAdd() {
               />
             </div>
 
-            <Button type="submit" disabled={createMutation.isPending} className="w-full sm:w-auto">
-              {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Appointment
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEditing ? "Update Appointment" : "Create Appointment"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate("/admin/appointments/list")}>
+                Cancel
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

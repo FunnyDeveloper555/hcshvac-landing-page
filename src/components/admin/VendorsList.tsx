@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Trash2, ExternalLink, Loader2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const VendorsList = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logAction } = useAdminLog();
   
   const { data: vendors, isLoading, refetch } = useQuery({
     queryKey: ["vendors-list"],
@@ -28,7 +32,7 @@ const VendorsList = () => {
     },
   });
 
-  const handleDelete = async (id: string, logoUrl: string | null) => {
+  const handleDelete = async (id: string, logoUrl: string | null, vendorName: string) => {
     // Delete logo from storage if exists
     if (logoUrl) {
       const fileName = logoUrl.split("/").pop();
@@ -54,8 +58,13 @@ const VendorsList = () => {
         title: "Success",
         description: "Vendor deleted successfully",
       });
+      logAction("delete", "vendor", id, { vendor_name: vendorName });
       refetch();
     }
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/vendors/add?id=${id}`);
   };
 
   if (isLoading) {
@@ -137,11 +146,19 @@ const VendorsList = () => {
                 </div>
               )}
 
-              <div className="pt-4">
+              <div className="pt-4 flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleEdit(vendor.id)}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
                 <Button 
                   size="sm" 
                   variant="destructive"
-                  onClick={() => handleDelete(vendor.id, vendor.logo_url)}
+                  onClick={() => handleDelete(vendor.id, vendor.logo_url, vendor.vendor_name)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete

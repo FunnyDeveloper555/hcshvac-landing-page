@@ -10,6 +10,7 @@ type EntityType =
   | "service" 
   | "hero_content" 
   | "hero_image"
+  | "hero"
   | "customer_registration"
   | "customer"
   | "settings"

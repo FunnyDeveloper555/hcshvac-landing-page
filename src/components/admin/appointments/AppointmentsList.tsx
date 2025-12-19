@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, Clock, Calendar } from "lucide-react";
-import { format, isToday, isYesterday, startOfWeek, startOfMonth, startOfYear, isBefore, isAfter, parseISO } from "date-fns";
+import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil } from "lucide-react";
+import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { useNavigate } from "react-router-dom";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -40,6 +41,7 @@ export default function AppointmentsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
+  const navigate = useNavigate();
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ["appointments"],
@@ -141,6 +143,10 @@ export default function AppointmentsList() {
   const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter);
     setCurrentPage(1);
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/appointments/add?id=${id}`);
   };
 
   const getStatusBadge = (status: AppointmentStatus) => {
@@ -299,6 +305,13 @@ export default function AppointmentsList() {
                       <TableCell>{getStatusBadge(appointment.status)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(appointment.id)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                           {appointment.status === "open" && (
                             <>
                               <Button
