@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const HeroImagesList = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logAction } = useAdminLog();
   
   const { data: images, isLoading, refetch } = useQuery({
     queryKey: ["hero-images-list"],
@@ -45,8 +49,13 @@ const HeroImagesList = () => {
         title: "Success",
         description: "Image deleted successfully",
       });
+      logAction("delete", "hero_image", id, { image_url: imageUrl });
       refetch();
     }
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/images/add?id=${id}`);
   };
 
   if (isLoading) {
@@ -69,21 +78,29 @@ const HeroImagesList = () => {
             <CardContent className="p-4">
               <img 
                 src={image.image_url} 
-                alt={`Hero ${image.display_order}`}
+                alt={image.alt_text}
                 className="w-full h-48 object-cover rounded-md mb-4"
               />
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">
                   Order: {image.display_order}
                 </span>
-                <Button 
-                  size="sm" 
-                  variant="destructive"
-                  onClick={() => handleDelete(image.id, image.image_url)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleEdit(image.id)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => handleDelete(image.id, image.image_url)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

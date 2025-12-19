@@ -3,11 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, Pencil } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useNavigate } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 export function EmployeesList() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logAction } = useAdminLog();
 
   const { data: employees, isLoading, refetch } = useQuery({
     queryKey: ["employees"],
@@ -22,7 +26,7 @@ export function EmployeesList() {
     },
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, employeeName: string) => {
     try {
       const { error } = await supabase.from("employees").delete().eq("id", id);
 
@@ -32,7 +36,7 @@ export function EmployeesList() {
         title: "Success",
         description: "Employee deleted successfully",
       });
-
+      logAction("delete", "employee", id, { employee_name: employeeName });
       refetch();
     } catch (error: any) {
       toast({
@@ -41,6 +45,10 @@ export function EmployeesList() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/employees/add?id=${id}`);
   };
 
   if (isLoading) {
@@ -89,13 +97,22 @@ export function EmployeesList() {
                 <TableCell>{employee.city}, {employee.state}</TableCell>
                 <TableCell>{new Date(employee.date_of_birth).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(employee.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(employee.id)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(employee.id, `${employee.first_name} ${employee.last_name}`)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

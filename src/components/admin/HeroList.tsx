@@ -1,13 +1,16 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 const HeroList = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { logAction } = useAdminLog();
   
   const { data: heroContent, isLoading, refetch } = useQuery({
     queryKey: ["hero-content-list"],
@@ -22,7 +25,7 @@ const HeroList = () => {
     },
   });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, title: string) => {
     const { error } = await supabase
       .from("hero_content")
       .delete()
@@ -39,8 +42,13 @@ const HeroList = () => {
         title: "Success",
         description: "Hero content deleted successfully",
       });
+      logAction("delete", "hero", id, { title });
       refetch();
     }
+  };
+
+  const handleEdit = (id: string) => {
+    navigate(`/admin/hero/add?id=${id}`);
   };
 
   if (isLoading) {
@@ -66,14 +74,14 @@ const HeroList = () => {
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">{content.subtitle}</p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => handleEdit(content.id)}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
                 <Button 
                   size="sm" 
                   variant="destructive"
-                  onClick={() => handleDelete(content.id)}
+                  onClick={() => handleDelete(content.id, content.title)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
