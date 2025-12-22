@@ -13,6 +13,7 @@ import ServicesList from "@/components/admin/ServicesList";
 import CompaniesAdd from "@/components/admin/CompaniesAdd";
 import ActiveCompaniesList from "@/components/admin/ActiveCompaniesList";
 import DeactiveCompaniesList from "@/components/admin/DeactiveCompaniesList";
+import CompanyView from "@/components/admin/CompanyView";
 import VendorsAdd from "@/components/admin/VendorsAdd";
 import VendorsList from "@/components/admin/VendorsList";
 import { EmployeesAdmin } from "@/components/admin/EmployeesAdmin";
@@ -94,6 +95,7 @@ const Admin = () => {
               <Route path="/companies/add" element={<CompaniesAdd />} />
               <Route path="/companies/active" element={<ActiveCompaniesList />} />
               <Route path="/companies/deactive" element={<DeactiveCompaniesList />} />
+              <Route path="/companies/view/:id" element={<CompanyView />} />
               <Route path="/vendors/add" element={<VendorsAdd />} />
               <Route path="/vendors/list" element={<VendorsList />} />
               <Route path="/employees/*" element={<EmployeesAdmin />} />
