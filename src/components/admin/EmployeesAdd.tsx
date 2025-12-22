@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   // Employee Profile
@@ -68,7 +69,13 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function EmployeesAdd() {
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const editId = searchParams.get("id");
+  const isEditing = !!editId;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -78,20 +85,101 @@ export function EmployeesAdd() {
     },
   });
 
+  useEffect(() => {
+    if (editId) {
+      setIsLoading(true);
+      supabase
+        .from("employees")
+        .select("*")
+        .eq("id", editId)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            toast({
+              title: "Error",
+              description: "Failed to load employee data",
+              variant: "destructive",
+            });
+          } else if (data) {
+            form.reset({
+              first_name: data.first_name || "",
+              middle_name: data.middle_name || "",
+              last_name: data.last_name || "",
+              address: data.address || "",
+              city: data.city || "",
+              state: data.state || "",
+              zip_code: data.zip_code || "",
+              phone_number: data.phone_number || "",
+              email_address: data.email_address || "",
+              date_of_birth: data.date_of_birth || "",
+              drivers_license_number: data.drivers_license_number || "",
+              social_security_number: data.social_security_number || "",
+              us_citizen: data.us_citizen || false,
+              city_of_birth: data.city_of_birth || "",
+              state_of_birth: data.state_of_birth || "",
+              birth_gender: data.birth_gender || "",
+              high_school: data.high_school || "",
+              trade_school: data.trade_school || "",
+              two_year_college: data.two_year_college || "",
+              four_year_college: data.four_year_college || "",
+              certificates_held: data.certificates_held || "",
+              licenses_held: data.licenses_held || "",
+              prev_business_name: data.prev_business_name || "",
+              prev_work_address: data.prev_work_address || "",
+              prev_work_city: data.prev_work_city || "",
+              prev_work_state: data.prev_work_state || "",
+              prev_work_zip_code: data.prev_work_zip_code || "",
+              prev_work_phone_number: data.prev_work_phone_number || "",
+              prev_work_contact_person: data.prev_work_contact_person || "",
+              prev_corporate_address: data.prev_corporate_address || "",
+              prev_corporate_city: data.prev_corporate_city || "",
+              prev_corporate_state: data.prev_corporate_state || "",
+              prev_corporate_zip_code: data.prev_corporate_zip_code || "",
+              prev_corporate_phone_number: data.prev_corporate_phone_number || "",
+              prev_corporate_contact_person: data.prev_corporate_contact_person || "",
+              prev_start_month: data.prev_start_month || "",
+              prev_start_year: data.prev_start_year || "",
+              prev_end_month: data.prev_end_month || "",
+              prev_end_year: data.prev_end_year || "",
+              prev_starting_position: data.prev_starting_position || "",
+              prev_ending_position: data.prev_ending_position || "",
+              prev_reason_for_leaving: data.prev_reason_for_leaving || "",
+              prev_eligible_for_rehire: data.prev_eligible_for_rehire || false,
+            });
+          }
+          setIsLoading(false);
+        });
+    }
+  }, [editId, form, toast]);
+
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
 
-      const { error } = await supabase.from("employees").insert([values]);
+      if (isEditing) {
+        const { error } = await supabase
+          .from("employees")
+          .update(values)
+          .eq("id", editId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Employee added successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Employee updated successfully",
+        });
+        navigate("/admin/employees/list");
+      } else {
+        const { error } = await supabase.from("employees").insert([values]);
 
-      form.reset();
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Employee added successfully",
+        });
+        form.reset();
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -102,6 +190,14 @@ export function EmployeesAdd() {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -115,7 +211,7 @@ export function EmployeesAdd() {
           {/* Employee Profile */}
           <Card>
             <CardHeader>
-              <CardTitle>Employee Profile</CardTitle>
+              <CardTitle>{isEditing ? "Edit Employee" : "Add Employee"}</CardTitle>
               <CardDescription>Basic employee information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -780,10 +876,10 @@ export function EmployeesAdd() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Adding...
+                {isEditing ? "Updating..." : "Adding..."}
               </>
             ) : (
-              "Add Employee"
+              isEditing ? "Update Employee" : "Add Employee"
             )}
           </Button>
         </form>
