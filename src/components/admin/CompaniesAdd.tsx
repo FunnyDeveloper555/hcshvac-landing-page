@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -89,6 +89,99 @@ const CompaniesAdd = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("edit");
+  const isEditing = !!editId;
+  const [loading, setLoading] = useState(false);
+
+  // Load company data when editing
+  useEffect(() => {
+    const loadCompanyData = async () => {
+      if (!editId) return;
+      
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("id", editId)
+        .maybeSingle();
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load company data",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setFormData({
+          name: data.name || "",
+          company_address: data.company_address || "",
+          company_city: data.company_city || "",
+          company_state: data.company_state || "",
+          company_zip_code: data.company_zip_code || "",
+          company_phone: data.company_phone || "",
+          company_email_primary: data.company_email_primary || "",
+          company_support_email: data.company_support_email || "",
+          poc_first_name: data.poc_first_name || "",
+          poc_last_name: data.poc_last_name || "",
+          poc_phone: data.poc_phone || "",
+          poc_email: data.poc_email || "",
+          poc_title: data.poc_title || "",
+          secondary_poc_first_name: data.secondary_poc_first_name || "",
+          secondary_poc_last_name: data.secondary_poc_last_name || "",
+          secondary_poc_phone: data.secondary_poc_phone || "",
+          secondary_poc_email: data.secondary_poc_email || "",
+          secondary_poc_title: data.secondary_poc_title || "",
+          display_order: data.display_order || 0,
+          is_active: data.is_active ?? true,
+          logo_url: data.logo_url || "",
+          services_provided: Array.isArray(data.services_provided) ? data.services_provided as string[] : [],
+          service_areas: Array.isArray(data.service_areas) ? data.service_areas as string[] : [],
+          brands_installed: Array.isArray(data.brands_installed) ? data.brands_installed as string[] : [],
+          brands_serviced: Array.isArray(data.brands_serviced) ? data.brands_serviced as string[] : [],
+          affiliations: typeof data.affiliations === 'object' && data.affiliations !== null ? {
+            bbb: (data.affiliations as Record<string, string>).bbb || "",
+            angies_list: (data.affiliations as Record<string, string>).angies_list || "",
+            google: (data.affiliations as Record<string, string>).google || "",
+            yelp: (data.affiliations as Record<string, string>).yelp || "",
+            yahoo: (data.affiliations as Record<string, string>).yahoo || "",
+            bing: (data.affiliations as Record<string, string>).bing || "",
+            manta: (data.affiliations as Record<string, string>).manta || "",
+            houzz: (data.affiliations as Record<string, string>).houzz || "",
+            facebook: (data.affiliations as Record<string, string>).facebook || "",
+            instagram: (data.affiliations as Record<string, string>).instagram || "",
+            tiktok: (data.affiliations as Record<string, string>).tiktok || "",
+            nextdoor: (data.affiliations as Record<string, string>).nextdoor || "",
+            youtube: (data.affiliations as Record<string, string>).youtube || "",
+          } : {
+            bbb: "",
+            angies_list: "",
+            google: "",
+            yelp: "",
+            yahoo: "",
+            bing: "",
+            manta: "",
+            houzz: "",
+            facebook: "",
+            instagram: "",
+            tiktok: "",
+            nextdoor: "",
+            youtube: "",
+          },
+          inventory_parts: data.inventory_parts || "",
+          inventory_equipment: data.inventory_equipment || "",
+          inventory_locations: data.inventory_locations || "",
+        });
+      }
+      setLoading(false);
+    };
+
+    loadCompanyData();
+  }, [editId, toast]);
 
   // Load services and states on mount
   useEffect(() => {
@@ -403,45 +496,69 @@ const CompaniesAdd = () => {
       return;
     }
 
-    // Build service areas from selected cities
-    const serviceAreas: string[] = [];
-    citiesByCounty.forEach((cities) => {
-      cities.forEach(city => {
-        if (selectedCities.includes(city.id)) {
-          serviceAreas.push(`${city.name}, ${city.state_code}`);
-        }
+    // Build service areas from selected cities (only for new entries or if cities were selected)
+    let serviceAreas: string[] = formData.service_areas;
+    if (selectedCities.length > 0) {
+      serviceAreas = [];
+      citiesByCounty.forEach((cities) => {
+        cities.forEach(city => {
+          if (selectedCities.includes(city.id)) {
+            serviceAreas.push(`${city.name}, ${city.state_code}`);
+          }
+        });
       });
-    });
+    }
 
-    const { error } = await supabase
-      .from("companies")
-      .insert([{
-        ...formData,
-        service_areas: serviceAreas,
-        services_provided: formData.services_provided,
-        brands_installed: formData.brands_installed,
-        brands_serviced: formData.brands_serviced,
-        affiliations: formData.affiliations,
-      }]);
+    const companyData = {
+      ...formData,
+      service_areas: serviceAreas,
+      services_provided: formData.services_provided,
+      brands_installed: formData.brands_installed,
+      brands_serviced: formData.brands_serviced,
+      affiliations: formData.affiliations,
+    };
+
+    let error;
+
+    if (isEditing && editId) {
+      const result = await supabase
+        .from("companies")
+        .update(companyData)
+        .eq("id", editId);
+      error = result.error;
+    } else {
+      const result = await supabase
+        .from("companies")
+        .insert([companyData]);
+      error = result.error;
+    }
 
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to create company",
+        description: isEditing ? "Failed to update company" : "Failed to create company",
         variant: "destructive",
       });
     } else {
       toast({
         title: "Success",
-        description: "Company created successfully",
+        description: isEditing ? "Company updated successfully" : "Company created successfully",
       });
       navigate("/admin/companies/active");
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Add New Company</h2>
+      <h2 className="text-3xl font-bold">{isEditing ? "Edit Company" : "Add New Company"}</h2>
       
       <Card>
         <CardHeader>
@@ -1173,7 +1290,7 @@ const CompaniesAdd = () => {
             />
           </div>
 
-          <Button onClick={handleSave} className="w-full">Create Company</Button>
+          <Button onClick={handleSave} className="w-full">{isEditing ? "Update Company" : "Create Company"}</Button>
         </CardContent>
       </Card>
     </div>
