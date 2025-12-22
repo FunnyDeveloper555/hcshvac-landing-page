@@ -136,6 +136,7 @@ const HeroImagesAdd = () => {
         const { error } = await supabase
           .from("hero_images")
           .update({
+            image_url: formData.image_url,
             alt_text: formData.alt_text,
             display_order: formData.display_order,
             is_active: formData.is_active,
@@ -220,23 +221,21 @@ const HeroImagesAdd = () => {
             </div>
           )}
 
-          {!isEditing && (
-            <div>
-              <Label htmlFor="image-upload">Select Image</Label>
-              <div className="mt-2">
-                <Input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Maximum file size: 5MB. Accepted formats: JPG, PNG, GIF, WebP
-              </p>
+          <div>
+            <Label htmlFor="image-upload">{isEditing ? "Replace Image (optional)" : "Select Image"}</Label>
+            <div className="mt-2">
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
             </div>
-          )}
+            <p className="text-sm text-muted-foreground mt-2">
+              Maximum file size: 5MB. Accepted formats: JPG, PNG, GIF, WebP
+            </p>
+          </div>
 
           <div>
             <Label htmlFor="alt_text">Alt Text</Label>
