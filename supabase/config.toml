@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.import-business]
 verify_jwt = true
+
+[functions.send-sms-booking]
+verify_jwt = true

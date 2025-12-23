@@ -31,6 +31,8 @@ import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
+import SMSLinkSend from "@/components/admin/smslink/SMSLinkSend";
+import SMSLinkList from "@/components/admin/smslink/SMSLinkList";
 import LogsList from "@/components/admin/LogsList";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
@@ -104,6 +106,8 @@ const Admin = () => {
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
               <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
+              <Route path="/sms-link/send" element={<SMSLinkSend />} />
+              <Route path="/sms-link/list" element={<SMSLinkList />} />
               <Route path="/cities/import" element={<CitiesImport />} />
               <Route path="/business/import" element={<BusinessImport />} />
               <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
