@@ -14,9 +14,10 @@ type EntityType =
   | "customer_registration"
   | "customer"
   | "settings"
-  | "auth";
+  | "auth"
+  | "booking_invitation";
 
-type ActionType = "create" | "update" | "delete" | "view" | "status_change" | "import" | "export" | "login" | "logout";
+type ActionType = "create" | "update" | "delete" | "view" | "status_change" | "import" | "export" | "login" | "logout" | "send_booking_link";
 
 export function useAdminLog() {
   const { user } = useAuth();

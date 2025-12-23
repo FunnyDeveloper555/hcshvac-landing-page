@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -84,6 +84,14 @@ const menuItems = [
       { title: "Book New", url: "/admin/appointments/add", icon: Plus },
       { title: "Open & Closed", url: "/admin/appointments/list", icon: List },
       { title: "Calendar", url: "/admin/appointments/calendar", icon: Calendar },
+    ]
+  },
+  { 
+    title: "SMS Link", 
+    icon: MessageSquare,
+    children: [
+      { title: "Send Link", url: "/admin/sms-link/send", icon: Send },
+      { title: "Sent Links", url: "/admin/sms-link/list", icon: List },
     ]
   },
   { 
