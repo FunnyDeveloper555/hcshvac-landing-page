@@ -182,9 +182,9 @@ const CustomersAdd = () => {
     try {
       const customerData = {
         ...formData,
+        company_id: formData.company_id === "none" ? null : formData.company_id || null,
         location_age_years: formData.location_age_years || null,
         build_year: formData.build_year || null,
-        company_id: formData.company_id || null,
       };
 
       if (isEditing) {
@@ -255,8 +255,8 @@ const CustomersAdd = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select company" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No Company</SelectItem>
+              <SelectContent>
+                  <SelectItem value="none">No Company</SelectItem>
                   {companies?.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       {company.name}
