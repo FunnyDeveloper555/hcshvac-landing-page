@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
 const CustomersAdd = () => {
@@ -54,6 +56,37 @@ const CustomersAdd = () => {
     cautions_restrictions: "",
     hours_of_operation: "",
     location_age_years: null as number | null,
+    // New fields
+    company_id: "",
+    warranty_status: "active",
+    title_to_location: "",
+    on_location_during_visit: "",
+    initial_visit_notes: "",
+    security_gate_access: null as boolean | null,
+    lock_boxes_codes: "",
+    ems_monitoring: null as boolean | null,
+    ems_provider_info: "",
+    build_year: null as number | null,
+    housing_type: "",
+    occupied_by: "",
+    responsible_billing_party: "",
+    business_type: "",
+    corporation_name: "",
+    business_phone: "",
+  });
+
+  // Fetch companies for dropdown
+  const { data: companies } = useQuery({
+    queryKey: ["companies-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
   });
 
   useEffect(() => {
@@ -68,7 +101,7 @@ const CustomersAdd = () => {
       .from("customer_registrations")
       .select("*")
       .eq("id", editId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast({
@@ -110,6 +143,22 @@ const CustomersAdd = () => {
         cautions_restrictions: data.cautions_restrictions || "",
         hours_of_operation: data.hours_of_operation || "",
         location_age_years: data.location_age_years,
+        company_id: data.company_id || "",
+        warranty_status: data.warranty_status || "active",
+        title_to_location: data.title_to_location || "",
+        on_location_during_visit: data.on_location_during_visit || "",
+        initial_visit_notes: data.initial_visit_notes || "",
+        security_gate_access: data.security_gate_access,
+        lock_boxes_codes: data.lock_boxes_codes || "",
+        ems_monitoring: data.ems_monitoring,
+        ems_provider_info: data.ems_provider_info || "",
+        build_year: data.build_year,
+        housing_type: data.housing_type || "",
+        occupied_by: data.occupied_by || "",
+        responsible_billing_party: data.responsible_billing_party || "",
+        business_type: data.business_type || "",
+        corporation_name: data.corporation_name || "",
+        business_phone: data.business_phone || "",
       });
     }
     setLoading(false);
@@ -117,9 +166,9 @@ const CustomersAdd = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.ship_to_first_name || !formData.ship_to_last_name || !formData.ship_to_address || 
-        !formData.ship_to_city || !formData.ship_to_state || !formData.ship_to_zip_code) {
+
+    if (!formData.ship_to_first_name || !formData.ship_to_last_name || !formData.ship_to_address ||
+      !formData.ship_to_city || !formData.ship_to_state || !formData.ship_to_zip_code) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -134,6 +183,8 @@ const CustomersAdd = () => {
       const customerData = {
         ...formData,
         location_age_years: formData.location_age_years || null,
+        build_year: formData.build_year || null,
+        company_id: formData.company_id || null,
       };
 
       if (isEditing) {
@@ -145,8 +196,8 @@ const CustomersAdd = () => {
         if (error) throw error;
 
         toast({ title: "Customer updated successfully" });
-        logAction("update", "customer", editId, { 
-          customer_name: `${formData.ship_to_first_name} ${formData.ship_to_last_name}` 
+        logAction("update", "customer", editId, {
+          customer_name: `${formData.ship_to_first_name} ${formData.ship_to_last_name}`
         });
       } else {
         const { data, error } = await supabase
@@ -158,8 +209,8 @@ const CustomersAdd = () => {
         if (error) throw error;
 
         toast({ title: "Customer created successfully" });
-        logAction("create", "customer", data.id, { 
-          customer_name: `${formData.ship_to_first_name} ${formData.ship_to_last_name}` 
+        logAction("create", "customer", data.id, {
+          customer_name: `${formData.ship_to_first_name} ${formData.ship_to_last_name}`
         });
       }
 
@@ -186,8 +237,68 @@ const CustomersAdd = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Company Assignment & Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Assignment & Status</CardTitle>
+            <CardDescription>Assign customer to a company and set warranty status</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="company_id">Assign to Company</Label>
+              <Select
+                value={formData.company_id}
+                onValueChange={(value) => setFormData({ ...formData, company_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Company</SelectItem>
+                  {companies?.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="warranty_status">Warranty Status</Label>
+              <Select
+                value={formData.warranty_status}
+                onValueChange={(value) => setFormData({ ...formData, warranty_status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                  <SelectItem value="none">No Warranty</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="location_type">Location Type *</Label>
+              <Select
+                value={formData.location_type}
+                onValueChange={(value) => setFormData({ ...formData, location_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="residential">Residential</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Contact Information */}
         <Card>
           <CardHeader>
@@ -214,6 +325,81 @@ const CustomersAdd = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Commercial-specific fields */}
+        {formData.location_type === "commercial" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Business Information</CardTitle>
+              <CardDescription>Commercial customer details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="corporation_name">Corporation Name</Label>
+                  <Input
+                    id="corporation_name"
+                    value={formData.corporation_name}
+                    onChange={(e) => setFormData({ ...formData, corporation_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="business_type">Business Type</Label>
+                  <Input
+                    id="business_type"
+                    value={formData.business_type}
+                    onChange={(e) => setFormData({ ...formData, business_type: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="business_phone">Business Phone</Label>
+                  <Input
+                    id="business_phone"
+                    value={formData.business_phone}
+                    onChange={(e) => setFormData({ ...formData, business_phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hours_of_operation">Hours of Operation</Label>
+                  <Input
+                    id="hours_of_operation"
+                    value={formData.hours_of_operation}
+                    onChange={(e) => setFormData({ ...formData, hours_of_operation: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="point_of_contact_name">Point of Contact</Label>
+                  <Input
+                    id="point_of_contact_name"
+                    value={formData.point_of_contact_name}
+                    onChange={(e) => setFormData({ ...formData, point_of_contact_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="point_of_contact_phone">Contact Phone</Label>
+                  <Input
+                    id="point_of_contact_phone"
+                    value={formData.point_of_contact_phone}
+                    onChange={(e) => setFormData({ ...formData, point_of_contact_phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="point_of_contact_email">Contact Email</Label>
+                  <Input
+                    id="point_of_contact_email"
+                    type="email"
+                    value={formData.point_of_contact_email}
+                    onChange={(e) => setFormData({ ...formData, point_of_contact_email: e.target.value })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Ship To Address */}
         <Card>
@@ -386,6 +572,14 @@ const CustomersAdd = () => {
                   />
                 </div>
               </div>
+              <div>
+                <Label htmlFor="responsible_billing_party">Responsible Billing Party</Label>
+                <Input
+                  id="responsible_billing_party"
+                  value={formData.responsible_billing_party}
+                  onChange={(e) => setFormData({ ...formData, responsible_billing_party: e.target.value })}
+                />
+              </div>
             </CardContent>
           )}
         </Card>
@@ -397,61 +591,107 @@ const CustomersAdd = () => {
             <CardDescription>Property details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="location_type">Location Type *</Label>
-              <Select
-                value={formData.location_type}
-                onValueChange={(value) => setFormData({ ...formData, location_type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="residential">Residential</SelectItem>
-                  <SelectItem value="commercial">Commercial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.location_type === "commercial" && (
+            {formData.location_type === "residential" && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="point_of_contact_name">Point of Contact</Label>
+                    <Label htmlFor="build_year">Build Year</Label>
                     <Input
-                      id="point_of_contact_name"
-                      value={formData.point_of_contact_name}
-                      onChange={(e) => setFormData({ ...formData, point_of_contact_name: e.target.value })}
+                      id="build_year"
+                      type="number"
+                      value={formData.build_year || ""}
+                      onChange={(e) => setFormData({ ...formData, build_year: e.target.value ? parseInt(e.target.value) : null })}
+                      placeholder="e.g., 1995"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="point_of_contact_phone">Contact Phone</Label>
-                    <Input
-                      id="point_of_contact_phone"
-                      value={formData.point_of_contact_phone}
-                      onChange={(e) => setFormData({ ...formData, point_of_contact_phone: e.target.value })}
-                    />
+                    <Label htmlFor="housing_type">Housing Type</Label>
+                    <Select
+                      value={formData.housing_type}
+                      onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single_family">Single Family</SelectItem>
+                        <SelectItem value="townhouse">Townhouse</SelectItem>
+                        <SelectItem value="condo">Condo</SelectItem>
+                        <SelectItem value="apartment">Apartment</SelectItem>
+                        <SelectItem value="duplex">Duplex</SelectItem>
+                        <SelectItem value="mobile_home">Mobile Home</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
-                    <Label htmlFor="point_of_contact_email">Contact Email</Label>
-                    <Input
-                      id="point_of_contact_email"
-                      type="email"
-                      value={formData.point_of_contact_email}
-                      onChange={(e) => setFormData({ ...formData, point_of_contact_email: e.target.value })}
-                    />
+                    <Label htmlFor="occupied_by">Occupied By</Label>
+                    <Select
+                      value={formData.occupied_by}
+                      onValueChange={(value) => setFormData({ ...formData, occupied_by: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="owner">Owner</SelectItem>
+                        <SelectItem value="renter">Renter</SelectItem>
+                        <SelectItem value="vacant">Vacant</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="hours_of_operation">Hours of Operation</Label>
-                  <Input
-                    id="hours_of_operation"
-                    value={formData.hours_of_operation}
-                    onChange={(e) => setFormData({ ...formData, hours_of_operation: e.target.value })}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="residential_type">Residential Type</Label>
+                    <Input
+                      id="residential_type"
+                      value={formData.residential_type}
+                      onChange={(e) => setFormData({ ...formData, residential_type: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="residential_occupancy">Residential Occupancy</Label>
+                    <Input
+                      id="residential_occupancy"
+                      value={formData.residential_occupancy}
+                      onChange={(e) => setFormData({ ...formData, residential_occupancy: e.target.value })}
+                    />
+                  </div>
                 </div>
               </>
             )}
+
+            <div>
+              <Label htmlFor="title_to_location">Your Formal Title to the Ship To Location</Label>
+              <Input
+                id="title_to_location"
+                value={formData.title_to_location}
+                onChange={(e) => setFormData({ ...formData, title_to_location: e.target.value })}
+                placeholder="e.g., Owner, Property Manager, Tenant"
+              />
+            </div>
+
+            <div>
+              <Label>Will you be on location personally during our visit?</Label>
+              <RadioGroup
+                value={formData.on_location_during_visit}
+                onValueChange={(value) => setFormData({ ...formData, on_location_during_visit: value })}
+                className="flex gap-4 mt-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="on_location_yes" />
+                  <Label htmlFor="on_location_yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="on_location_no" />
+                  <Label htmlFor="on_location_no">No</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="unknown" id="on_location_unknown" />
+                  <Label htmlFor="on_location_unknown">Unknown</Label>
+                </div>
+              </RadioGroup>
+            </div>
 
             <div>
               <Label htmlFor="equipment_location">Equipment Location</Label>
@@ -470,6 +710,91 @@ const CustomersAdd = () => {
                 onChange={(e) => setFormData({ ...formData, cautions_restrictions: e.target.value })}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Commercial-specific Location Information */}
+        {formData.location_type === "commercial" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Location Information</CardTitle>
+              <CardDescription>Things we need for our tech to know</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Is there a Security Gate Access?</Label>
+                <RadioGroup
+                  value={formData.security_gate_access === null ? "" : formData.security_gate_access ? "yes" : "no"}
+                  onValueChange={(value) => setFormData({ ...formData, security_gate_access: value === "yes" })}
+                  className="flex gap-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="security_yes" />
+                    <Label htmlFor="security_yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="security_no" />
+                    <Label htmlFor="security_no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label htmlFor="lock_boxes_codes">Lock Boxes or Access Codes</Label>
+                <Input
+                  id="lock_boxes_codes"
+                  value={formData.lock_boxes_codes}
+                  onChange={(e) => setFormData({ ...formData, lock_boxes_codes: e.target.value })}
+                  placeholder="Enter any access codes or lock box information"
+                />
+              </div>
+
+              <div>
+                <Label>Is there an EMS (Energy Management Service) Monitoring your Location?</Label>
+                <RadioGroup
+                  value={formData.ems_monitoring === null ? "" : formData.ems_monitoring ? "yes" : "no"}
+                  onValueChange={(value) => setFormData({ ...formData, ems_monitoring: value === "yes" })}
+                  className="flex gap-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="ems_yes" />
+                    <Label htmlFor="ems_yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="ems_no" />
+                    <Label htmlFor="ems_no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {formData.ems_monitoring && (
+                <div>
+                  <Label htmlFor="ems_provider_info">EMS Provider Information</Label>
+                  <Textarea
+                    id="ems_provider_info"
+                    value={formData.ems_provider_info}
+                    onChange={(e) => setFormData({ ...formData, ems_provider_info: e.target.value })}
+                    placeholder="Please provide Name, Phone Number and account identification information"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Initial Visit Notes */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Initial Visit Notes</CardTitle>
+            <CardDescription>Any notes or memos for the initial visit</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              id="initial_visit_notes"
+              value={formData.initial_visit_notes}
+              onChange={(e) => setFormData({ ...formData, initial_visit_notes: e.target.value })}
+              rows={4}
+            />
           </CardContent>
         </Card>
 

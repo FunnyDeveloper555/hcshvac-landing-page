@@ -449,6 +449,7 @@ export type Database = {
       }
       customer_registrations: {
         Row: {
+          account_number: string | null
           bill_to_address: string | null
           bill_to_business_name: string | null
           bill_to_city: string | null
@@ -458,21 +459,36 @@ export type Database = {
           bill_to_state: string | null
           bill_to_suite_number: string | null
           bill_to_zip_code: string | null
+          build_year: number | null
           building_occupied: string | null
+          business_phone: string | null
+          business_type: string | null
           cautions_restrictions: string | null
+          company_id: string | null
+          corporation_name: string | null
           created_at: string
           email: string
+          ems_monitoring: boolean | null
+          ems_provider_info: string | null
           equipment_location: string | null
           hours_of_operation: string | null
+          housing_type: string | null
           id: string
+          initial_visit_notes: string | null
+          last_visit_date: string | null
           location_age_years: number | null
           location_type: string
+          lock_boxes_codes: string | null
+          occupied_by: string | null
+          on_location_during_visit: string | null
           phone: string
           point_of_contact_email: string | null
           point_of_contact_name: string | null
           point_of_contact_phone: string | null
           residential_occupancy: string | null
           residential_type: string | null
+          responsible_billing_party: string | null
+          security_gate_access: boolean | null
           ship_to_address: string
           ship_to_business_name: string | null
           ship_to_city: string
@@ -481,9 +497,12 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number: string | null
           ship_to_zip_code: string
+          title_to_location: string | null
           type_of_use: string | null
+          warranty_status: string | null
         }
         Insert: {
+          account_number?: string | null
           bill_to_address?: string | null
           bill_to_business_name?: string | null
           bill_to_city?: string | null
@@ -493,21 +512,36 @@ export type Database = {
           bill_to_state?: string | null
           bill_to_suite_number?: string | null
           bill_to_zip_code?: string | null
+          build_year?: number | null
           building_occupied?: string | null
+          business_phone?: string | null
+          business_type?: string | null
           cautions_restrictions?: string | null
+          company_id?: string | null
+          corporation_name?: string | null
           created_at?: string
           email?: string
+          ems_monitoring?: boolean | null
+          ems_provider_info?: string | null
           equipment_location?: string | null
           hours_of_operation?: string | null
+          housing_type?: string | null
           id?: string
+          initial_visit_notes?: string | null
+          last_visit_date?: string | null
           location_age_years?: number | null
           location_type: string
+          lock_boxes_codes?: string | null
+          occupied_by?: string | null
+          on_location_during_visit?: string | null
           phone?: string
           point_of_contact_email?: string | null
           point_of_contact_name?: string | null
           point_of_contact_phone?: string | null
           residential_occupancy?: string | null
           residential_type?: string | null
+          responsible_billing_party?: string | null
+          security_gate_access?: boolean | null
           ship_to_address: string
           ship_to_business_name?: string | null
           ship_to_city: string
@@ -516,9 +550,12 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number?: string | null
           ship_to_zip_code: string
+          title_to_location?: string | null
           type_of_use?: string | null
+          warranty_status?: string | null
         }
         Update: {
+          account_number?: string | null
           bill_to_address?: string | null
           bill_to_business_name?: string | null
           bill_to_city?: string | null
@@ -528,21 +565,36 @@ export type Database = {
           bill_to_state?: string | null
           bill_to_suite_number?: string | null
           bill_to_zip_code?: string | null
+          build_year?: number | null
           building_occupied?: string | null
+          business_phone?: string | null
+          business_type?: string | null
           cautions_restrictions?: string | null
+          company_id?: string | null
+          corporation_name?: string | null
           created_at?: string
           email?: string
+          ems_monitoring?: boolean | null
+          ems_provider_info?: string | null
           equipment_location?: string | null
           hours_of_operation?: string | null
+          housing_type?: string | null
           id?: string
+          initial_visit_notes?: string | null
+          last_visit_date?: string | null
           location_age_years?: number | null
           location_type?: string
+          lock_boxes_codes?: string | null
+          occupied_by?: string | null
+          on_location_during_visit?: string | null
           phone?: string
           point_of_contact_email?: string | null
           point_of_contact_name?: string | null
           point_of_contact_phone?: string | null
           residential_occupancy?: string | null
           residential_type?: string | null
+          responsible_billing_party?: string | null
+          security_gate_access?: boolean | null
           ship_to_address?: string
           ship_to_business_name?: string | null
           ship_to_city?: string
@@ -551,9 +603,19 @@ export type Database = {
           ship_to_state?: string
           ship_to_suite_number?: string | null
           ship_to_zip_code?: string
+          title_to_location?: string | null
           type_of_use?: string | null
+          warranty_status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customer_registrations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
