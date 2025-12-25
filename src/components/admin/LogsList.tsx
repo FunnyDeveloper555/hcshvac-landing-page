@@ -30,7 +30,10 @@ const entityTypes = [
   { value: "service", label: "Services" },
   { value: "hero_content", label: "Hero Content" },
   { value: "hero_image", label: "Hero Images" },
-  { value: "customer_registration", label: "Registrations" },
+  { value: "hero", label: "Hero" },
+  { value: "customer_registration", label: "Customer Registrations" },
+  { value: "customer", label: "Customers" },
+  { value: "booking_invitation", label: "Booking Invitations" },
   { value: "settings", label: "Settings" },
 ];
 
@@ -45,6 +48,7 @@ const actionTypes = [
   { value: "status_change", label: "Status Change" },
   { value: "import", label: "Import" },
   { value: "export", label: "Export" },
+  { value: "send_booking_link", label: "Send Booking Link" },
 ];
 
 const LogsList = () => {
