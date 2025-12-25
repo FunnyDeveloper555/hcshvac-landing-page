@@ -34,6 +34,7 @@ import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCa
 import SMSLinkSend from "@/components/admin/smslink/SMSLinkSend";
 import SMSLinkList from "@/components/admin/smslink/SMSLinkList";
 import LogsList from "@/components/admin/LogsList";
+import CallLogAdd from "@/components/admin/CallLogAdd";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
 
@@ -119,6 +120,7 @@ const Admin = () => {
               <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
               <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/local-business" element={<LocalBusiness />} />
+              <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
             </Routes>
           </main>
