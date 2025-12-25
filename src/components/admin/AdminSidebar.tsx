@@ -136,6 +136,7 @@ const menuItems = [
     title: "Logs", 
     icon: FileText,
     children: [
+      { title: "Log Call", url: "/admin/logs/call", icon: Plus },
       { title: "Activity Log", url: "/admin/logs/list", icon: List },
     ]
   },
