@@ -906,33 +906,65 @@ export type Database = {
       }
       service_terms: {
         Row: {
-          content: string
+          applies_to: string
+          company_id: string | null
           created_at: string
           display_order: number | null
+          equipment_type: string | null
+          hours_of_service: string | null
           id: string
+          industry_category: string | null
           is_active: boolean | null
-          title: string
+          listing_id: string
+          location_type: string | null
+          page_url: string | null
+          primary_keyword: string
+          service_type: string | null
           updated_at: string
         }
         Insert: {
-          content: string
+          applies_to: string
+          company_id?: string | null
           created_at?: string
           display_order?: number | null
+          equipment_type?: string | null
+          hours_of_service?: string | null
           id?: string
+          industry_category?: string | null
           is_active?: boolean | null
-          title: string
+          listing_id: string
+          location_type?: string | null
+          page_url?: string | null
+          primary_keyword: string
+          service_type?: string | null
           updated_at?: string
         }
         Update: {
-          content?: string
+          applies_to?: string
+          company_id?: string | null
           created_at?: string
           display_order?: number | null
+          equipment_type?: string | null
+          hours_of_service?: string | null
           id?: string
+          industry_category?: string | null
           is_active?: boolean | null
-          title?: string
+          listing_id?: string
+          location_type?: string | null
+          page_url?: string | null
+          primary_keyword?: string
+          service_type?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "service_terms_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {
