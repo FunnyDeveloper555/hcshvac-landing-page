@@ -8,6 +8,7 @@ type EntityType =
   | "employee" 
   | "vendor" 
   | "service" 
+  | "service_term"
   | "hero_content" 
   | "hero_image"
   | "hero"

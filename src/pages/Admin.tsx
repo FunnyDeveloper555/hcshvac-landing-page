@@ -10,6 +10,8 @@ import HeroImagesAdd from "@/components/admin/HeroImagesAdd";
 import HeroImagesList from "@/components/admin/HeroImagesList";
 import ServicesAdd from "@/components/admin/ServicesAdd";
 import ServicesList from "@/components/admin/ServicesList";
+import ServiceTermsAdd from "@/components/admin/ServiceTermsAdd";
+import ServiceTermsList from "@/components/admin/ServiceTermsList";
 import CompaniesAdd from "@/components/admin/CompaniesAdd";
 import ActiveCompaniesList from "@/components/admin/ActiveCompaniesList";
 import DeactiveCompaniesList from "@/components/admin/DeactiveCompaniesList";
@@ -95,6 +97,8 @@ const Admin = () => {
               <Route path="/images/list" element={<HeroImagesList />} />
               <Route path="/services/add" element={<ServicesAdd />} />
               <Route path="/services/list" element={<ServicesList />} />
+              <Route path="/services/terms" element={<ServiceTermsList />} />
+              <Route path="/services/terms/add" element={<ServiceTermsAdd />} />
               <Route path="/companies/add" element={<CompaniesAdd />} />
               <Route path="/companies/active" element={<ActiveCompaniesList />} />
               <Route path="/companies/deactive" element={<DeactiveCompaniesList />} />
