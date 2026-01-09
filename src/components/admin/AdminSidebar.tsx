@@ -42,6 +42,7 @@ const menuItems = [
     children: [
       { title: "Add", url: "/admin/services/add", icon: Plus },
       { title: "List", url: "/admin/services/list", icon: List },
+      { title: "Service Terms", url: "/admin/services/terms", icon: FileText },
     ]
   },
   { 
