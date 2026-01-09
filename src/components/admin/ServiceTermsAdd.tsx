@@ -29,7 +29,6 @@ const ServiceTermsAdd = () => {
     industry_category: "",
     service_type: "",
     hours_of_service: "",
-    page_url: "",
     display_order: 0,
     is_active: true,
   });
@@ -79,7 +78,6 @@ const ServiceTermsAdd = () => {
         industry_category: data.industry_category || "",
         service_type: data.service_type || "",
         hours_of_service: data.hours_of_service || "",
-        page_url: data.page_url || "",
         display_order: data.display_order || 0,
         is_active: data.is_active ?? true,
       });
@@ -267,16 +265,6 @@ const ServiceTermsAdd = () => {
                 value={formData.hours_of_service}
                 onChange={(e) => setFormData({ ...formData, hours_of_service: e.target.value })}
                 placeholder="e.g., 24 Hours Emergency Installation Available"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="page_url">Page URL</Label>
-              <Input
-                id="page_url"
-                value={formData.page_url}
-                onChange={(e) => setFormData({ ...formData, page_url: e.target.value })}
-                placeholder="e.g., /HVAC-Repair-FurnaceInstallation-Residential-123123"
               />
             </div>
 
