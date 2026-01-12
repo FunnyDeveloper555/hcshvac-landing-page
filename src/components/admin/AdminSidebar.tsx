@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -100,6 +100,73 @@ const menuItems = [
     children: [
       { title: "Send Link", url: "/admin/sms-link/send", icon: Send },
       { title: "Sent Links", url: "/admin/sms-link/list", icon: List },
+    ]
+  },
+  { 
+    title: "My Company", 
+    icon: Building,
+    children: [
+      { title: "Registration Profile", url: "/admin/my-company/profile", icon: FileCheck },
+      { 
+        title: "Employees", 
+        url: "/admin/my-company/employees", 
+        icon: Users,
+        children: [
+          { title: "Add New Employee", url: "/admin/my-company/employees/add", icon: Plus },
+          { title: "Current Employees", url: "/admin/my-company/employees/current", icon: List },
+          { title: "Archived Employees", url: "/admin/my-company/employees/archived", icon: Archive },
+          { title: "Assign & Assigned Items", url: "/admin/my-company/employees/assign", icon: ClipboardList },
+          { title: "Employee Handbook", url: "/admin/my-company/employees/handbook", icon: BookOpen },
+          { title: "Employee Consultations", url: "/admin/my-company/employees/consultations", icon: Stethoscope },
+        ]
+      },
+      { 
+        title: "Insurance Documents", 
+        url: "/admin/my-company/insurance", 
+        icon: FileStack,
+        children: [
+          { title: "Add New Documents", url: "/admin/my-company/insurance/add", icon: Plus },
+          { title: "Expired / Archived Documents", url: "/admin/my-company/insurance/archived", icon: Archive },
+        ]
+      },
+      { 
+        title: "Company Licensing", 
+        url: "/admin/my-company/licensing", 
+        icon: Award,
+        children: [
+          { title: "Add New License Document", url: "/admin/my-company/licensing/add", icon: Plus },
+          { title: "Expired / Archived License Documents", url: "/admin/my-company/licensing/archived", icon: Archive },
+        ]
+      },
+    ]
+  },
+  { 
+    title: "Other Office Locations", 
+    icon: MapPinned,
+    children: [
+      { title: "List Locations", url: "/admin/office-locations/list", icon: List },
+      { title: "Add Location", url: "/admin/office-locations/add", icon: Plus },
+    ]
+  },
+  { 
+    title: "Fleet Vehicles", 
+    icon: Car,
+    children: [
+      { title: "Add New Fleet Vehicle", url: "/admin/fleet/add", icon: Plus },
+      { title: "Current Fleet Vehicles", url: "/admin/fleet/list", icon: List },
+      { title: "Fleet Alerts", url: "/admin/fleet/alerts", icon: ClipboardList },
+      { title: "GPS Location", url: "/admin/fleet/gps", icon: GpsIcon },
+      { title: "Dash Camera", url: "/admin/fleet/dash-camera", icon: Camera },
+      { title: "Maintenance Logs", url: "/admin/fleet/maintenance", icon: FileText },
+    ]
+  },
+  { 
+    title: "Tools Inventory & Assignment", 
+    icon: Warehouse,
+    children: [
+      { title: "Add Tool", url: "/admin/tools/add", icon: Plus },
+      { title: "Inventory List", url: "/admin/tools/list", icon: List },
+      { title: "Assignments", url: "/admin/tools/assignments", icon: ClipboardList },
     ]
   },
   { 
