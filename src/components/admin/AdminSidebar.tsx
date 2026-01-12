@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -167,6 +167,14 @@ const menuItems = [
       { title: "Add Tool", url: "/admin/tools/add", icon: Plus },
       { title: "Inventory List", url: "/admin/tools/list", icon: List },
       { title: "Assignments", url: "/admin/tools/assignments", icon: ClipboardList },
+    ]
+  },
+  { 
+    title: "Calendar", 
+    icon: CalendarPlus,
+    children: [
+      { title: "Create New Calendar Entry", url: "/admin/calendar/add", icon: Plus },
+      { title: "Current Calendar", url: "/admin/calendar/list", icon: List },
     ]
   },
   { 
