@@ -39,6 +39,8 @@ import LogsList from "@/components/admin/LogsList";
 import CallLogAdd from "@/components/admin/CallLogAdd";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
+import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
+import CalendarList from "@/components/admin/calendar/CalendarList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -126,6 +128,8 @@ const Admin = () => {
               <Route path="/page-builder/local-business" element={<LocalBusiness />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
+              <Route path="/calendar/add" element={<CalendarAdd />} />
+              <Route path="/calendar/list" element={<CalendarList />} />
             </Routes>
           </main>
         </div>
