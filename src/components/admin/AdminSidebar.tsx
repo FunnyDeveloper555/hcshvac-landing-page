@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -175,6 +175,23 @@ const menuItems = [
     children: [
       { title: "Create New Calendar Entry", url: "/admin/calendar/add", icon: Plus },
       { title: "Current Calendar", url: "/admin/calendar/list", icon: List },
+    ]
+  },
+  { 
+    title: "Database Content PROFILE", 
+    icon: ServerCog,
+    children: [
+      { title: "Areas We Service", url: "/admin/db-profile/areas-service", icon: Map },
+      { title: "Services We Offer", url: "/admin/db-profile/services-offer", icon: Briefcase },
+      { title: "Visit Types We Complete", url: "/admin/db-profile/visit-types", icon: ClipboardList },
+      { title: "Equipment Brands We Service", url: "/admin/db-profile/equipment-brands-service", icon: Package },
+      { title: "Equipment Brands We Install", url: "/admin/db-profile/equipment-brands-install", icon: Package },
+      { title: "Plumbing Brands We Service", url: "/admin/db-profile/plumbing-brands-service", icon: Droplet },
+      { title: "Plumbing Brands We Install", url: "/admin/db-profile/plumbing-brands-install", icon: Droplet },
+      { title: "Equipment Types We Service", url: "/admin/db-profile/equipment-types-service", icon: Cog },
+      { title: "Equipment Types We Install", url: "/admin/db-profile/equipment-types-install", icon: Cog },
+      { title: "HVAC Parts We Install", url: "/admin/db-profile/hvac-parts-install", icon: Wrench },
+      { title: "HVAC Comfort Accessories We Install", url: "/admin/db-profile/hvac-accessories-install", icon: Wrench },
     ]
   },
   { 
