@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
 
 interface City {
   id: string;
@@ -91,6 +92,7 @@ const CompaniesAdd = () => {
     website_description: "",
     primary_color: "#0ea5e9",
     hero_image_url: "",
+    theme_style: "modern" as ThemeStyle,
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -189,6 +191,7 @@ const CompaniesAdd = () => {
           website_description: (data as { website_description?: string }).website_description || "",
           primary_color: (data as { primary_color?: string }).primary_color || "#0ea5e9",
           hero_image_url: (data as { hero_image_url?: string }).hero_image_url || "",
+          theme_style: ((data as { theme_style?: string }).theme_style || "modern") as ThemeStyle,
         });
       }
       setLoading(false);
@@ -618,6 +621,28 @@ const CompaniesAdd = () => {
                   Landing page URL: <span className="text-primary font-medium">{formData.slug}.hcshvac.com</span>
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="theme_style">Website Theme</Label>
+              <Select
+                value={formData.theme_style}
+                onValueChange={(value: ThemeStyle) => setFormData({ ...formData, theme_style: value })}
+              >
+                <SelectTrigger id="theme_style" className="w-full bg-background">
+                  <SelectValue placeholder="Select a theme" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {THEME_OPTIONS.map((theme) => (
+                    <SelectItem key={theme.value} value={theme.value}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{theme.label}</span>
+                        <span className="text-xs text-muted-foreground">{theme.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
