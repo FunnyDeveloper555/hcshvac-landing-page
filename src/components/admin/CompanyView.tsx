@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Edit, Building2, Phone, Mail, MapPin } from "lucide-react";
+import { Loader2, ArrowLeft, Edit, Building2, Phone, Mail, MapPin, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 import type { Json } from "@/integrations/supabase/types";
@@ -12,6 +12,7 @@ import type { Json } from "@/integrations/supabase/types";
 interface Company {
   id: string;
   name: string;
+  slug?: string | null;
   logo_url?: string | null;
   company_address?: string | null;
   company_city?: string | null;
@@ -114,6 +115,15 @@ const CompanyView = () => {
           <h2 className="text-3xl font-bold">Company Details</h2>
         </div>
         <div className="flex gap-2">
+          {company.slug && (
+            <Button 
+              variant="outline"
+              onClick={() => window.open(`/company/${company.slug}`, '_blank')}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              View Website
+            </Button>
+          )}
           <Button onClick={() => navigate(`/admin/companies/add?edit=${company.id}`)}>
             <Edit className="w-4 h-4 mr-2" />
             Edit Company
