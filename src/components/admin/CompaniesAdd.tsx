@@ -22,11 +22,13 @@ interface City {
   zip_codes: string | null;
 }
 
-interface CountyWithCities {
-  county: string;
-  state_code: string;
-  cities: City[];
-}
+// Helper function to generate slug from company name
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+    .replace(/^-+|-+$/g, '');
+};
 
 const CompaniesAdd = () => {
   const [uploading, setUploading] = useState(false);
@@ -41,6 +43,7 @@ const CompaniesAdd = () => {
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     name: "",
+    slug: "",
     company_address: "",
     company_city: "",
     company_state: "",
@@ -83,6 +86,11 @@ const CompaniesAdd = () => {
     inventory_parts: "",
     inventory_equipment: "",
     inventory_locations: "",
+    website_title: "",
+    website_tagline: "",
+    website_description: "",
+    primary_color: "#0ea5e9",
+    hero_image_url: "",
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -119,6 +127,7 @@ const CompaniesAdd = () => {
       if (data) {
         setFormData({
           name: data.name || "",
+          slug: (data as { slug?: string }).slug || "",
           company_address: data.company_address || "",
           company_city: data.company_city || "",
           company_state: data.company_state || "",
@@ -175,6 +184,11 @@ const CompaniesAdd = () => {
           inventory_parts: data.inventory_parts || "",
           inventory_equipment: data.inventory_equipment || "",
           inventory_locations: data.inventory_locations || "",
+          website_title: (data as { website_title?: string }).website_title || "",
+          website_tagline: (data as { website_tagline?: string }).website_tagline || "",
+          website_description: (data as { website_description?: string }).website_description || "",
+          primary_color: (data as { primary_color?: string }).primary_color || "#0ea5e9",
+          hero_image_url: (data as { hero_image_url?: string }).hero_image_url || "",
         });
       }
       setLoading(false);
@@ -572,9 +586,38 @@ const CompaniesAdd = () => {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setFormData({ 
+                    ...formData, 
+                    name: newName,
+                    // Auto-generate slug only if slug is empty or matches previous auto-generated slug
+                    slug: formData.slug === '' || formData.slug === generateSlug(formData.name) 
+                      ? generateSlug(newName) 
+                      : formData.slug
+                  });
+                }}
                 placeholder="Enter company name"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="slug">Website Subdomain (slug) *</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="slug"
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: generateSlug(e.target.value) })}
+                  placeholder="e.g., bestcomforthvac"
+                  className="flex-1"
+                />
+                <span className="text-sm text-muted-foreground whitespace-nowrap">.hcshvac.com</span>
+              </div>
+              {formData.slug && (
+                <p className="text-xs text-muted-foreground">
+                  Landing page URL: <span className="text-primary font-medium">{formData.slug}.hcshvac.com</span>
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
