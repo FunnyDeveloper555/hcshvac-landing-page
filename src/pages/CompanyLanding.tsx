@@ -8,6 +8,7 @@ import CompanyServiceAreas from "@/components/company/CompanyServiceAreas";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import { Loader2 } from "lucide-react";
+import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 
 interface Company {
   id: string;
@@ -31,6 +32,7 @@ interface Company {
   primary_color: string | null;
   hero_image_url: string | null;
   affiliations: Record<string, string> | null;
+  theme_style: ThemeStyle | null;
 }
 
 const CompanyLanding = () => {
@@ -63,7 +65,6 @@ const CompanyLanding = () => {
 
       setCompany(data as Company);
 
-      // Fetch services if company has services_provided
       const servicesProvided = data.services_provided as string[] | null;
       if (servicesProvided && Array.isArray(servicesProvided) && servicesProvided.length > 0) {
         const { data: servicesData } = await supabase
@@ -102,45 +103,34 @@ const CompanyLanding = () => {
     );
   }
 
-  // Convert hex color to HSL for CSS variables
-  const hexToHSL = (hex: string): string => {
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    let h = 0, s = 0;
-    const l = (max + min) / 2;
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-        case g: h = ((b - r) / d + 2) / 6; break;
-        case b: h = ((r - g) / d + 4) / 6; break;
-      }
-    }
-    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-  };
-
-  const primaryHSL = company.primary_color ? hexToHSL(company.primary_color) : "199 89% 48%";
+  const themeStyle = company.theme_style || 'modern';
+  const theme = getThemeConfig(themeStyle);
 
   return (
     <div 
       className="min-h-screen"
       style={{
-        "--primary": primaryHSL,
-        "--accent": primaryHSL,
-        "--ring": primaryHSL,
+        "--primary": theme.colors.primary,
+        "--secondary": theme.colors.secondary,
+        "--accent": theme.colors.accent,
+        "--background": theme.colors.background,
+        "--foreground": theme.colors.foreground,
+        "--muted": theme.colors.muted,
+        "--muted-foreground": theme.colors.mutedForeground,
+        "--card": theme.colors.card,
+        "--card-foreground": theme.colors.cardForeground,
+        "--border": theme.colors.border,
+        "--ring": theme.colors.primary,
       } as React.CSSProperties}
     >
-      <CompanyHeader company={company} />
+      <CompanyHeader company={company} theme={theme} />
       <main>
-        <CompanyHero company={company} />
-        <CompanyServices company={company} services={services} />
+        <CompanyHero company={company} theme={theme} />
+        <CompanyServices company={company} services={services} theme={theme} />
         <CompanyServiceAreas company={company} />
-        <CompanyContact company={company} />
+        <CompanyContact company={company} theme={theme} />
       </main>
-      <CompanyFooter company={company} />
+      <CompanyFooter company={company} theme={theme} />
     </div>
   );
 };
