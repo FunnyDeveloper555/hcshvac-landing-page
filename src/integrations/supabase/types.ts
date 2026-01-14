@@ -381,6 +381,7 @@ export type Database = {
           service_areas: Json | null
           services_provided: Json | null
           slug: string | null
+          theme_style: string | null
           website_description: string | null
           website_tagline: string | null
           website_title: string | null
@@ -420,6 +421,7 @@ export type Database = {
           service_areas?: Json | null
           services_provided?: Json | null
           slug?: string | null
+          theme_style?: string | null
           website_description?: string | null
           website_tagline?: string | null
           website_title?: string | null
@@ -459,6 +461,7 @@ export type Database = {
           service_areas?: Json | null
           services_provided?: Json | null
           slug?: string | null
+          theme_style?: string | null
           website_description?: string | null
           website_tagline?: string | null
           website_title?: string | null
