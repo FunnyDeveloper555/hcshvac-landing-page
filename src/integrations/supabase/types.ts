@@ -359,6 +359,7 @@ export type Database = {
           company_zip_code: string | null
           created_at: string
           display_order: number
+          hero_image_url: string | null
           id: string
           inventory_equipment: string | null
           inventory_locations: string | null
@@ -371,6 +372,7 @@ export type Database = {
           poc_last_name: string | null
           poc_phone: string | null
           poc_title: string | null
+          primary_color: string | null
           secondary_poc_email: string | null
           secondary_poc_first_name: string | null
           secondary_poc_last_name: string | null
@@ -378,6 +380,10 @@ export type Database = {
           secondary_poc_title: string | null
           service_areas: Json | null
           services_provided: Json | null
+          slug: string | null
+          website_description: string | null
+          website_tagline: string | null
+          website_title: string | null
         }
         Insert: {
           affiliations?: Json | null
@@ -392,6 +398,7 @@ export type Database = {
           company_zip_code?: string | null
           created_at?: string
           display_order?: number
+          hero_image_url?: string | null
           id?: string
           inventory_equipment?: string | null
           inventory_locations?: string | null
@@ -404,6 +411,7 @@ export type Database = {
           poc_last_name?: string | null
           poc_phone?: string | null
           poc_title?: string | null
+          primary_color?: string | null
           secondary_poc_email?: string | null
           secondary_poc_first_name?: string | null
           secondary_poc_last_name?: string | null
@@ -411,6 +419,10 @@ export type Database = {
           secondary_poc_title?: string | null
           service_areas?: Json | null
           services_provided?: Json | null
+          slug?: string | null
+          website_description?: string | null
+          website_tagline?: string | null
+          website_title?: string | null
         }
         Update: {
           affiliations?: Json | null
@@ -425,6 +437,7 @@ export type Database = {
           company_zip_code?: string | null
           created_at?: string
           display_order?: number
+          hero_image_url?: string | null
           id?: string
           inventory_equipment?: string | null
           inventory_locations?: string | null
@@ -437,6 +450,7 @@ export type Database = {
           poc_last_name?: string | null
           poc_phone?: string | null
           poc_title?: string | null
+          primary_color?: string | null
           secondary_poc_email?: string | null
           secondary_poc_first_name?: string | null
           secondary_poc_last_name?: string | null
@@ -444,6 +458,10 @@ export type Database = {
           secondary_poc_title?: string | null
           service_areas?: Json | null
           services_provided?: Json | null
+          slug?: string | null
+          website_description?: string | null
+          website_tagline?: string | null
+          website_title?: string | null
         }
         Relationships: []
       }
