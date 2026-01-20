@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, MoreHorizontal, Eye, Trash2, Globe, Archive, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -14,10 +16,12 @@ interface GeneratedPage {
   id: string;
   slug: string;
   title: string;
+  meta_description: string | null;
   audience_type: string | null;
   visit_type: string | null;
   equipment_type: string | null;
   location_city: string | null;
+  location_county: string | null;
   location_state: string | null;
   status: string;
   created_at: string;
@@ -28,6 +32,7 @@ export default function GeneratedPagesList() {
   const { campaignId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [previewPage, setPreviewPage] = useState<GeneratedPage | null>(null);
 
   const { data: campaign } = useQuery({
     queryKey: ["campaign", campaignId],
@@ -218,8 +223,8 @@ export default function GeneratedPagesList() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="bg-background">
+                          <DropdownMenuItem onClick={() => setPreviewPage(page)}>
                             <Eye className="mr-2 h-4 w-4" />
                             Preview
                           </DropdownMenuItem>
@@ -262,6 +267,85 @@ export default function GeneratedPagesList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewPage} onOpenChange={(open) => !open && setPreviewPage(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{previewPage?.title}</DialogTitle>
+            <DialogDescription>/{previewPage?.slug}</DialogDescription>
+          </DialogHeader>
+          {previewPage && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Status</p>
+                  <p>{getStatusBadge(previewPage.status)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Created</p>
+                  <p>{format(new Date(previewPage.created_at), "PPP")}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Meta Description</p>
+                <p className="text-sm bg-muted p-3 rounded-md">{previewPage.meta_description || "No description"}</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Targeting</p>
+                <div className="flex flex-wrap gap-2">
+                  {previewPage.audience_type && (
+                    <Badge variant="outline">Audience: {previewPage.audience_type}</Badge>
+                  )}
+                  {previewPage.visit_type && (
+                    <Badge variant="outline">Visit: {previewPage.visit_type}</Badge>
+                  )}
+                  {previewPage.equipment_type && (
+                    <Badge variant="outline">Equipment: {previewPage.equipment_type}</Badge>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Location</p>
+                <div className="flex flex-wrap gap-2">
+                  {previewPage.location_city && (
+                    <Badge>City: {previewPage.location_city}</Badge>
+                  )}
+                  {previewPage.location_county && (
+                    <Badge>County: {previewPage.location_county}</Badge>
+                  )}
+                  {previewPage.location_state && (
+                    <Badge>State: {previewPage.location_state}</Badge>
+                  )}
+                  {!previewPage.location_city && !previewPage.location_county && !previewPage.location_state && (
+                    <span className="text-sm text-muted-foreground">No location specified</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                {previewPage.status === "draft" && (
+                  <Button
+                    onClick={() => {
+                      updateStatusMutation.mutate({ id: previewPage.id, status: "published" });
+                      setPreviewPage(null);
+                    }}
+                  >
+                    <Globe className="mr-2 h-4 w-4" />
+                    Publish
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setPreviewPage(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
