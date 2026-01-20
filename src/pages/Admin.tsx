@@ -33,6 +33,7 @@ import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
 import CampaignForm from "@/components/admin/pagebuilder/CampaignForm";
 import GeneratedPagesList from "@/components/admin/pagebuilder/GeneratedPagesList";
+import PagePreview from "@/components/admin/pagebuilder/PagePreview";
 import PageTemplates from "@/components/admin/pagebuilder/PageTemplates";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
@@ -134,6 +135,7 @@ const Admin = () => {
               <Route path="/page-builder/campaigns" element={<CampaignDashboard />} />
               <Route path="/page-builder/campaigns/:campaignId" element={<CampaignForm />} />
               <Route path="/page-builder/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
+              <Route path="/page-builder/pages/:pageId/preview" element={<PagePreview />} />
               <Route path="/page-builder/templates" element={<PageTemplates />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />

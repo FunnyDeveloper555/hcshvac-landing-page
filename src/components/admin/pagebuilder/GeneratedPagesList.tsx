@@ -224,9 +224,13 @@ export default function GeneratedPagesList() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-background">
+                          <DropdownMenuItem onClick={() => navigate(`/admin/page-builder/pages/${page.id}/preview`)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Visual Preview
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setPreviewPage(page)}>
                             <Eye className="mr-2 h-4 w-4" />
-                            Preview
+                            Quick Info
                           </DropdownMenuItem>
                           {page.status === "published" && (
                             <DropdownMenuItem>
