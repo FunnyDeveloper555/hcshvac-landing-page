@@ -696,15 +696,17 @@ const CompaniesAdd = () => {
     let error;
 
     if (isEditing && editId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await supabase
         .from("companies")
-        .update(companyData as Record<string, unknown>)
+        .update(companyData as any)
         .eq("id", editId);
       error = result.error;
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await supabase
         .from("companies")
-        .insert([companyData as Record<string, unknown>]);
+        .insert([companyData as any]);
       error = result.error;
     }
 
