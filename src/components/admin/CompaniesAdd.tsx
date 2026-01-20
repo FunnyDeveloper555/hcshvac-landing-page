@@ -7,12 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Upload, X, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
+import { Textarea } from "@/components/ui/textarea";
 
 interface City {
   id: string;
@@ -22,6 +23,40 @@ interface City {
   county: string | null;
   zip_codes: string | null;
 }
+
+interface PartnerCompany {
+  name: string;
+  url: string;
+}
+
+// HVAC Equipment types from the PDF document
+const HVAC_EQUIPMENT_TYPES = [
+  "Air Conditioner",
+  "Furnace",
+  "Hot Water Boiler",
+  "Steam Boiler",
+  "Water Heater",
+  "Tankless Water Heater",
+  "Tankless Boiler",
+  "Humidifier",
+  "Radiant Heating",
+  "Water Softener",
+  "U.V Light",
+  "Dehumidifier",
+  "Smart Thermostats",
+];
+
+// Plumbing Equipment types
+const PLUMBING_EQUIPMENT_TYPES = [
+  "Water Heater",
+  "Tankless Water Heater",
+  "Water Softener",
+  "Sump Pump",
+  "Sewage Ejector",
+  "Garbage Disposal",
+  "Water Filtration",
+  "Backflow Preventer",
+];
 
 // Helper function to generate slug from company name
 const generateSlug = (name: string) => {
@@ -42,6 +77,16 @@ const CompaniesAdd = () => {
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+  
+  // Brand input states
+  const [hvacBrandInstallInput, setHvacBrandInstallInput] = useState("");
+  const [hvacBrandServiceInput, setHvacBrandServiceInput] = useState("");
+  const [hvacBrandRepairInput, setHvacBrandRepairInput] = useState("");
+  
+  // Partner company input
+  const [partnerNameInput, setPartnerNameInput] = useState("");
+  const [partnerUrlInput, setPartnerUrlInput] = useState("");
+  
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -93,6 +138,29 @@ const CompaniesAdd = () => {
     primary_color: "#0ea5e9",
     hero_image_url: "",
     theme_style: "modern" as ThemeStyle,
+    // New fields
+    financing_enabled: false,
+    financing_provider: "",
+    financing_url: "",
+    coupon_1_title: "",
+    coupon_1_description: "",
+    coupon_1_code: "",
+    coupon_2_title: "",
+    coupon_2_description: "",
+    coupon_2_code: "",
+    coupon_3_title: "",
+    coupon_3_description: "",
+    coupon_3_code: "",
+    partner_companies: [] as PartnerCompany[],
+    hvac_brands_install: [] as string[],
+    hvac_brands_service: [] as string[],
+    hvac_brands_repair: [] as string[],
+    hvac_equipment_install: [] as string[],
+    hvac_equipment_service: [] as string[],
+    hvac_equipment_repair: [] as string[],
+    plumbing_equipment_install: [] as string[],
+    plumbing_equipment_service: [] as string[],
+    plumbing_equipment_repair: [] as string[],
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -127,9 +195,10 @@ const CompaniesAdd = () => {
       }
 
       if (data) {
+        const companyData = data as Record<string, unknown>;
         setFormData({
           name: data.name || "",
-          slug: (data as { slug?: string }).slug || "",
+          slug: (companyData.slug as string) || "",
           company_address: data.company_address || "",
           company_city: data.company_city || "",
           company_state: data.company_state || "",
@@ -186,12 +255,35 @@ const CompaniesAdd = () => {
           inventory_parts: data.inventory_parts || "",
           inventory_equipment: data.inventory_equipment || "",
           inventory_locations: data.inventory_locations || "",
-          website_title: (data as { website_title?: string }).website_title || "",
-          website_tagline: (data as { website_tagline?: string }).website_tagline || "",
-          website_description: (data as { website_description?: string }).website_description || "",
-          primary_color: (data as { primary_color?: string }).primary_color || "#0ea5e9",
-          hero_image_url: (data as { hero_image_url?: string }).hero_image_url || "",
-          theme_style: ((data as { theme_style?: string }).theme_style || "modern") as ThemeStyle,
+          website_title: (companyData.website_title as string) || "",
+          website_tagline: (companyData.website_tagline as string) || "",
+          website_description: (companyData.website_description as string) || "",
+          primary_color: (companyData.primary_color as string) || "#0ea5e9",
+          hero_image_url: (companyData.hero_image_url as string) || "",
+          theme_style: ((companyData.theme_style as string) || "modern") as ThemeStyle,
+          // New fields
+          financing_enabled: (companyData.financing_enabled as boolean) || false,
+          financing_provider: (companyData.financing_provider as string) || "",
+          financing_url: (companyData.financing_url as string) || "",
+          coupon_1_title: (companyData.coupon_1_title as string) || "",
+          coupon_1_description: (companyData.coupon_1_description as string) || "",
+          coupon_1_code: (companyData.coupon_1_code as string) || "",
+          coupon_2_title: (companyData.coupon_2_title as string) || "",
+          coupon_2_description: (companyData.coupon_2_description as string) || "",
+          coupon_2_code: (companyData.coupon_2_code as string) || "",
+          coupon_3_title: (companyData.coupon_3_title as string) || "",
+          coupon_3_description: (companyData.coupon_3_description as string) || "",
+          coupon_3_code: (companyData.coupon_3_code as string) || "",
+          partner_companies: Array.isArray(companyData.partner_companies) ? companyData.partner_companies as PartnerCompany[] : [],
+          hvac_brands_install: Array.isArray(companyData.hvac_brands_install) ? companyData.hvac_brands_install as string[] : [],
+          hvac_brands_service: Array.isArray(companyData.hvac_brands_service) ? companyData.hvac_brands_service as string[] : [],
+          hvac_brands_repair: Array.isArray(companyData.hvac_brands_repair) ? companyData.hvac_brands_repair as string[] : [],
+          hvac_equipment_install: Array.isArray(companyData.hvac_equipment_install) ? companyData.hvac_equipment_install as string[] : [],
+          hvac_equipment_service: Array.isArray(companyData.hvac_equipment_service) ? companyData.hvac_equipment_service as string[] : [],
+          hvac_equipment_repair: Array.isArray(companyData.hvac_equipment_repair) ? companyData.hvac_equipment_repair as string[] : [],
+          plumbing_equipment_install: Array.isArray(companyData.plumbing_equipment_install) ? companyData.plumbing_equipment_install as string[] : [],
+          plumbing_equipment_service: Array.isArray(companyData.plumbing_equipment_service) ? companyData.plumbing_equipment_service as string[] : [],
+          plumbing_equipment_repair: Array.isArray(companyData.plumbing_equipment_repair) ? companyData.plumbing_equipment_repair as string[] : [],
         });
       }
       setLoading(false);
@@ -399,14 +491,6 @@ const CompaniesAdd = () => {
     }));
   };
 
-  const addCity = (cityId: string) => {
-    if (selectedCities.includes(cityId)) {
-      setSelectedCities(prev => prev.filter(id => id !== cityId));
-    } else {
-      setSelectedCities(prev => [...prev, cityId]);
-    }
-  };
-
   const toggleCounty = (county: string, stateCode: string) => {
     setSelectedCounties(prev => {
       const exists = prev.some(c => c.county === county && c.stateCode === stateCode);
@@ -469,6 +553,7 @@ const CompaniesAdd = () => {
     });
   };
 
+  // Legacy brand functions (keeping for backwards compatibility)
   const addBrand = () => {
     if (brandInput.trim()) {
       setFormData(prev => ({
@@ -503,6 +588,68 @@ const CompaniesAdd = () => {
     }));
   };
 
+  // New brand management functions for HVAC
+  const addHvacBrand = (type: 'install' | 'service' | 'repair') => {
+    const inputMap = {
+      install: { value: hvacBrandInstallInput, setter: setHvacBrandInstallInput, field: 'hvac_brands_install' as const },
+      service: { value: hvacBrandServiceInput, setter: setHvacBrandServiceInput, field: 'hvac_brands_service' as const },
+      repair: { value: hvacBrandRepairInput, setter: setHvacBrandRepairInput, field: 'hvac_brands_repair' as const },
+    };
+    const { value, setter, field } = inputMap[type];
+    if (value.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: [...prev[field], value.trim()]
+      }));
+      setter("");
+    }
+  };
+
+  const removeHvacBrand = (type: 'install' | 'service' | 'repair', brand: string) => {
+    const fieldMap = {
+      install: 'hvac_brands_install' as const,
+      service: 'hvac_brands_service' as const,
+      repair: 'hvac_brands_repair' as const,
+    };
+    setFormData(prev => ({
+      ...prev,
+      [fieldMap[type]]: prev[fieldMap[type]].filter(b => b !== brand)
+    }));
+  };
+
+  // Equipment type toggle functions
+  const toggleEquipment = (category: 'hvac' | 'plumbing', type: 'install' | 'service' | 'repair', equipment: string) => {
+    const fieldName = `${category}_equipment_${type}` as keyof typeof formData;
+    setFormData(prev => {
+      const current = prev[fieldName] as string[];
+      return {
+        ...prev,
+        [fieldName]: current.includes(equipment)
+          ? current.filter(e => e !== equipment)
+          : [...current, equipment]
+      };
+    });
+  };
+
+  // Partner company functions
+  const addPartnerCompany = () => {
+    if (partnerNameInput.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        partner_companies: [...prev.partner_companies, { name: partnerNameInput.trim(), url: partnerUrlInput.trim() }]
+      }));
+      setPartnerNameInput("");
+      setPartnerUrlInput("");
+    }
+  };
+
+  const removePartnerCompany = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      partner_companies: prev.partner_companies.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSave = async () => {
     if (!formData.name?.trim()) {
       toast({
@@ -533,6 +680,17 @@ const CompaniesAdd = () => {
       brands_installed: formData.brands_installed,
       brands_serviced: formData.brands_serviced,
       affiliations: formData.affiliations,
+      // Cast arrays to JSON for Supabase
+      partner_companies: formData.partner_companies as unknown as Record<string, unknown>[],
+      hvac_brands_install: formData.hvac_brands_install,
+      hvac_brands_service: formData.hvac_brands_service,
+      hvac_brands_repair: formData.hvac_brands_repair,
+      hvac_equipment_install: formData.hvac_equipment_install,
+      hvac_equipment_service: formData.hvac_equipment_service,
+      hvac_equipment_repair: formData.hvac_equipment_repair,
+      plumbing_equipment_install: formData.plumbing_equipment_install,
+      plumbing_equipment_service: formData.plumbing_equipment_service,
+      plumbing_equipment_repair: formData.plumbing_equipment_repair,
     };
 
     let error;
@@ -540,13 +698,13 @@ const CompaniesAdd = () => {
     if (isEditing && editId) {
       const result = await supabase
         .from("companies")
-        .update(companyData)
+        .update(companyData as Record<string, unknown>)
         .eq("id", editId);
       error = result.error;
     } else {
       const result = await supabase
         .from("companies")
-        .insert([companyData]);
+        .insert([companyData as Record<string, unknown>]);
       error = result.error;
     }
 
@@ -577,6 +735,7 @@ const CompaniesAdd = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Company" : "Add New Company"}</h2>
       
+      {/* Company Information */}
       <Card>
         <CardHeader>
           <CardTitle>Company Information</CardTitle>
@@ -594,7 +753,6 @@ const CompaniesAdd = () => {
                   setFormData({ 
                     ...formData, 
                     name: newName,
-                    // Auto-generate slug only if slug is empty or matches previous auto-generated slug
                     slug: formData.slug === '' || formData.slug === generateSlug(formData.name) 
                       ? generateSlug(newName) 
                       : formData.slug
@@ -760,6 +918,49 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Financing Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Financing</CardTitle>
+          <CardDescription>Configure financing options for customers</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="financing_enabled"
+              checked={formData.financing_enabled}
+              onCheckedChange={(checked) => setFormData({ ...formData, financing_enabled: checked })}
+            />
+            <Label htmlFor="financing_enabled">Enable Financing Options</Label>
+          </div>
+          
+          {formData.financing_enabled && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="financing_provider">Financing Provider</Label>
+                <Input
+                  id="financing_provider"
+                  value={formData.financing_provider}
+                  onChange={(e) => setFormData({ ...formData, financing_provider: e.target.value })}
+                  placeholder="e.g., Synchrony, GreenSky"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="financing_url">Financing Application URL</Label>
+                <Input
+                  id="financing_url"
+                  type="url"
+                  value={formData.financing_url}
+                  onChange={(e) => setFormData({ ...formData, financing_url: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Points of Contact */}
       <Card>
         <CardHeader>
           <CardTitle>Point of Contact</CardTitle>
@@ -775,7 +976,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter first name"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="poc_last_name">Last Name</Label>
               <Input
@@ -785,7 +985,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter last name"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="poc_phone">Phone</Label>
               <Input
@@ -795,7 +994,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter phone"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="poc_email">Email</Label>
               <Input
@@ -806,7 +1004,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter email"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="poc_title">Title</Label>
               <Input
@@ -835,7 +1032,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter first name"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="secondary_poc_last_name">Last Name</Label>
               <Input
@@ -845,7 +1041,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter last name"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="secondary_poc_phone">Phone</Label>
               <Input
@@ -855,7 +1050,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter phone"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="secondary_poc_email">Email</Label>
               <Input
@@ -866,7 +1060,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter email"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="secondary_poc_title">Title</Label>
               <Input
@@ -880,6 +1073,7 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Services Provided */}
       <Card>
         <CardHeader>
           <CardTitle>Company Profile - Services Provided</CardTitle>
@@ -904,6 +1098,7 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Service Area */}
       <Card>
         <CardHeader>
           <CardTitle>Company Service Area</CardTitle>
@@ -966,21 +1161,15 @@ const CompaniesAdd = () => {
                             type="button"
                             className="flex items-center justify-between w-full p-2 bg-muted rounded hover:bg-muted/80"
                           >
-                            <span className="font-medium">{state?.name}</span>
-                            {isExpanded ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
+                            <span className="font-medium">{state?.name} ({counties.length} Counties)</span>
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
                         </CollapsibleTrigger>
                         
                         <CollapsibleContent className="space-y-1 pl-4">
-                          {counties.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-2">No counties available</p>
-                          ) : (
-                          counties.map((county) => (
-                              <div key={county} className="flex items-center space-x-2 py-1">
+                          <div className="border rounded p-3 bg-background grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {counties.map((county) => (
+                              <div key={county} className="flex items-center space-x-2">
                                 <Checkbox
                                   id={`county-${stateCode}-${county}`}
                                   checked={selectedCounties.some(c => c.county === county && c.stateCode === stateCode)}
@@ -988,13 +1177,13 @@ const CompaniesAdd = () => {
                                 />
                                 <label
                                   htmlFor={`county-${stateCode}-${county}`}
-                                  className="text-sm cursor-pointer flex-1"
+                                  className="text-sm cursor-pointer"
                                 >
                                   {county}
                                 </label>
                               </div>
-                            ))
-                          )}
+                            ))}
+                          </div>
                         </CollapsibleContent>
                       </div>
                     </Collapsible>
@@ -1030,11 +1219,7 @@ const CompaniesAdd = () => {
                             <span className="font-medium">
                               {countyObj.county}, {countyObj.stateCode} ({cities.length} Cities/Townships Listed)
                             </span>
-                            {isExpanded ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
                         </CollapsibleTrigger>
                         
@@ -1078,9 +1263,402 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* HVAC Brands - Install/Service/Repair */}
       <Card>
         <CardHeader>
-          <CardTitle>Brands You Install</CardTitle>
+          <CardTitle>Brands We Install (Heating and Cooling)</CardTitle>
+          <CardDescription>HVAC equipment brands you install</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={hvacBrandInstallInput}
+              onChange={(e) => setHvacBrandInstallInput(e.target.value)}
+              placeholder="Enter brand name"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('install'))}
+            />
+            <Button type="button" onClick={() => addHvacBrand('install')}>Add Brand</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {formData.hvac_brands_install.map((brand) => (
+              <Badge key={brand} variant="secondary" className="px-3 py-1">
+                {brand}
+                <button
+                  type="button"
+                  onClick={() => removeHvacBrand('install', brand)}
+                  className="ml-2 text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>We Service (Heating and Cooling)</CardTitle>
+          <CardDescription>HVAC equipment brands you service</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={hvacBrandServiceInput}
+              onChange={(e) => setHvacBrandServiceInput(e.target.value)}
+              placeholder="Enter brand name"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('service'))}
+            />
+            <Button type="button" onClick={() => addHvacBrand('service')}>Add Brand</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {formData.hvac_brands_service.map((brand) => (
+              <Badge key={brand} variant="secondary" className="px-3 py-1">
+                {brand}
+                <button
+                  type="button"
+                  onClick={() => removeHvacBrand('service', brand)}
+                  className="ml-2 text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Equipment Type We Repair (Heating and Cooling)</CardTitle>
+          <CardDescription>HVAC equipment brands you repair</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={hvacBrandRepairInput}
+              onChange={(e) => setHvacBrandRepairInput(e.target.value)}
+              placeholder="Enter brand name"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('repair'))}
+            />
+            <Button type="button" onClick={() => addHvacBrand('repair')}>Add Brand</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {formData.hvac_brands_repair.map((brand) => (
+              <Badge key={brand} variant="secondary" className="px-3 py-1">
+                {brand}
+                <button
+                  type="button"
+                  onClick={() => removeHvacBrand('repair', brand)}
+                  className="ml-2 text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* HVAC Equipment Types */}
+      <Card>
+        <CardHeader>
+          <CardTitle>HVAC Equipment Types</CardTitle>
+          <CardDescription>Select equipment types for Install, Service, and Repair</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Install</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {HVAC_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`install-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`hvac-install-${equipment}`}
+                    checked={formData.hvac_equipment_install.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('hvac', 'install', equipment)}
+                  />
+                  <label htmlFor={`hvac-install-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Service</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {HVAC_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`service-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`hvac-service-${equipment}`}
+                    checked={formData.hvac_equipment_service.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('hvac', 'service', equipment)}
+                  />
+                  <label htmlFor={`hvac-service-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Repair</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {HVAC_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`repair-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`hvac-repair-${equipment}`}
+                    checked={formData.hvac_equipment_repair.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('hvac', 'repair', equipment)}
+                  />
+                  <label htmlFor={`hvac-repair-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Plumbing Equipment Types */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Plumbing Equipment Types</CardTitle>
+          <CardDescription>Select plumbing equipment types for Install, Service, and Repair</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Install</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {PLUMBING_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`plumbing-install-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`plumbing-install-${equipment}`}
+                    checked={formData.plumbing_equipment_install.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('plumbing', 'install', equipment)}
+                  />
+                  <label htmlFor={`plumbing-install-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Service</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {PLUMBING_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`plumbing-service-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`plumbing-service-${equipment}`}
+                    checked={formData.plumbing_equipment_service.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('plumbing', 'service', equipment)}
+                  />
+                  <label htmlFor={`plumbing-service-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-semibold">Equipment We Repair</Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 border rounded-lg p-4">
+              {PLUMBING_EQUIPMENT_TYPES.map((equipment) => (
+                <div key={`plumbing-repair-${equipment}`} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`plumbing-repair-${equipment}`}
+                    checked={formData.plumbing_equipment_repair.includes(equipment)}
+                    onCheckedChange={() => toggleEquipment('plumbing', 'repair', equipment)}
+                  />
+                  <label htmlFor={`plumbing-repair-${equipment}`} className="text-sm cursor-pointer">
+                    {equipment}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Home Page Coupons */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Home Page Coupons</CardTitle>
+          <CardDescription>Add up to 3 promotional coupons for your landing page</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Coupon 1 */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h4 className="font-medium">Coupon 1</h4>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="coupon_1_title">Title</Label>
+                <Input
+                  id="coupon_1_title"
+                  value={formData.coupon_1_title}
+                  onChange={(e) => setFormData({ ...formData, coupon_1_title: e.target.value })}
+                  placeholder="e.g., $50 OFF"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coupon_1_code">Code</Label>
+                <Input
+                  id="coupon_1_code"
+                  value={formData.coupon_1_code}
+                  onChange={(e) => setFormData({ ...formData, coupon_1_code: e.target.value })}
+                  placeholder="e.g., SAVE50"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-1">
+                <Label htmlFor="coupon_1_description">Description</Label>
+                <Input
+                  id="coupon_1_description"
+                  value={formData.coupon_1_description}
+                  onChange={(e) => setFormData({ ...formData, coupon_1_description: e.target.value })}
+                  placeholder="e.g., Any HVAC Service"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coupon 2 */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h4 className="font-medium">Coupon 2</h4>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="coupon_2_title">Title</Label>
+                <Input
+                  id="coupon_2_title"
+                  value={formData.coupon_2_title}
+                  onChange={(e) => setFormData({ ...formData, coupon_2_title: e.target.value })}
+                  placeholder="e.g., 10% OFF"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coupon_2_code">Code</Label>
+                <Input
+                  id="coupon_2_code"
+                  value={formData.coupon_2_code}
+                  onChange={(e) => setFormData({ ...formData, coupon_2_code: e.target.value })}
+                  placeholder="e.g., SUMMER10"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-1">
+                <Label htmlFor="coupon_2_description">Description</Label>
+                <Input
+                  id="coupon_2_description"
+                  value={formData.coupon_2_description}
+                  onChange={(e) => setFormData({ ...formData, coupon_2_description: e.target.value })}
+                  placeholder="e.g., New AC Installation"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Coupon 3 */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h4 className="font-medium">Coupon 3</h4>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="coupon_3_title">Title</Label>
+                <Input
+                  id="coupon_3_title"
+                  value={formData.coupon_3_title}
+                  onChange={(e) => setFormData({ ...formData, coupon_3_title: e.target.value })}
+                  placeholder="e.g., FREE"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coupon_3_code">Code</Label>
+                <Input
+                  id="coupon_3_code"
+                  value={formData.coupon_3_code}
+                  onChange={(e) => setFormData({ ...formData, coupon_3_code: e.target.value })}
+                  placeholder="e.g., FREEDIAG"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-1">
+                <Label htmlFor="coupon_3_description">Description</Label>
+                <Input
+                  id="coupon_3_description"
+                  value={formData.coupon_3_description}
+                  onChange={(e) => setFormData({ ...formData, coupon_3_description: e.target.value })}
+                  placeholder="e.g., Diagnostic with Repair"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Partner Companies */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Partner Companies</CardTitle>
+          <CardDescription>Add partner companies that appear on your landing page (up to 8)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {formData.partner_companies.length < 8 && (
+            <div className="flex gap-2">
+              <Input
+                value={partnerNameInput}
+                onChange={(e) => setPartnerNameInput(e.target.value)}
+                placeholder="Company name"
+                className="flex-1"
+              />
+              <Input
+                value={partnerUrlInput}
+                onChange={(e) => setPartnerUrlInput(e.target.value)}
+                placeholder="Website URL (optional)"
+                className="flex-1"
+              />
+              <Button type="button" onClick={addPartnerCompany}>
+                <Plus className="w-4 h-4 mr-1" />
+                Add
+              </Button>
+            </div>
+          )}
+          
+          {formData.partner_companies.length > 0 && (
+            <div className="grid gap-2 md:grid-cols-2">
+              {formData.partner_companies.map((partner, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div>
+                    <span className="font-medium">{partner.name}</span>
+                    {partner.url && (
+                      <span className="text-sm text-muted-foreground ml-2">({partner.url})</span>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removePartnerCompany(index)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {formData.partner_companies.length === 0 && (
+            <p className="text-sm text-muted-foreground">No partner companies added yet</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Legacy Brands (keeping for backwards compatibility) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Brands You Install (Legacy)</CardTitle>
+          <CardDescription>General brands list - use the new HVAC sections above for better organization</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -1111,7 +1689,7 @@ const CompaniesAdd = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Brands You Service</CardTitle>
+          <CardTitle>Brands You Service (Legacy)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -1140,6 +1718,7 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Affiliations */}
       <Card>
         <CardHeader>
           <CardTitle>Who are you Affiliated with?</CardTitle>
@@ -1156,7 +1735,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="facebook">Facebook</Label>
               <Input
@@ -1167,7 +1745,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="angies_list">Angies List</Label>
               <Input
@@ -1178,7 +1755,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="instagram">Instagram</Label>
               <Input
@@ -1189,7 +1765,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="google">Google</Label>
               <Input
@@ -1200,7 +1775,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="tiktok">TikTok</Label>
               <Input
@@ -1211,7 +1785,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="yelp">Yelp</Label>
               <Input
@@ -1222,7 +1795,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="nextdoor">NextDoor</Label>
               <Input
@@ -1233,7 +1805,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="yahoo">Yahoo</Label>
               <Input
@@ -1244,7 +1815,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="youtube">YouTube</Label>
               <Input
@@ -1255,7 +1825,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="bing">Bing</Label>
               <Input
@@ -1266,7 +1835,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="manta">Manta</Label>
               <Input
@@ -1277,7 +1845,6 @@ const CompaniesAdd = () => {
                 placeholder="Enter URL"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="houzz">Houzz</Label>
               <Input
@@ -1292,6 +1859,7 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Inventory */}
       <Card>
         <CardHeader>
           <CardTitle>Inventory</CardTitle>
@@ -1306,7 +1874,6 @@ const CompaniesAdd = () => {
               placeholder="Enter parts information"
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="inventory_equipment">Equipment</Label>
             <Input
@@ -1316,7 +1883,6 @@ const CompaniesAdd = () => {
               placeholder="Enter equipment information"
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="inventory_locations">Locations</Label>
             <Input
@@ -1329,15 +1895,14 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Status and Actions */}
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center space-x-2">
             <Switch
               id="is_active"
               checked={formData.is_active}
-              onCheckedChange={(checked) =>
-                setFormData({ ...formData, is_active: checked })
-              }
+              onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
             />
             <Label htmlFor="is_active">Active</Label>
           </div>
@@ -1348,12 +1913,7 @@ const CompaniesAdd = () => {
               id="display_order"
               type="number"
               value={formData.display_order}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  display_order: parseInt(e.target.value) || 0,
-                })
-              }
+              onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
               placeholder="0"
             />
           </div>
