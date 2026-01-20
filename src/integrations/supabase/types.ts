@@ -873,6 +873,7 @@ export type Database = {
           services_content: Json | null
           slug: string
           status: string
+          template_id: string | null
           title: string
           updated_at: string
           visit_type: string | null
@@ -898,6 +899,7 @@ export type Database = {
           services_content?: Json | null
           slug: string
           status?: string
+          template_id?: string | null
           title: string
           updated_at?: string
           visit_type?: string | null
@@ -923,6 +925,7 @@ export type Database = {
           services_content?: Json | null
           slug?: string
           status?: string
+          template_id?: string | null
           title?: string
           updated_at?: string
           visit_type?: string | null
@@ -940,6 +943,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_pages_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "page_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1097,6 +1107,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_page_campaigns_template"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "page_templates"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "page_campaigns_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
@@ -1132,6 +1149,48 @@ export type Database = {
           is_active?: boolean | null
           label?: string
           value?: string
+        }
+        Relationships: []
+      }
+      page_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          preview_image_url: string | null
+          sections: Json
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          preview_image_url?: string | null
+          sections?: Json
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          preview_image_url?: string | null
+          sections?: Json
+          settings?: Json
+          updated_at?: string
         }
         Relationships: []
       }
