@@ -186,7 +186,20 @@ export default function CampaignForm() {
       const audiences = formData.audience_types.length > 0 ? formData.audience_types : [null];
       const visits = formData.visit_types.length > 0 ? formData.visit_types : [null];
       const equipment = formData.equipment_types.length > 0 ? formData.equipment_types : [null];
-      const locations = formData.location_states.length > 0 ? formData.location_states : [null];
+      
+      // Use most specific location level: cities > counties > states
+      type LocationItem = { value: string; type: 'city' | 'county' | 'state' };
+      let locations: LocationItem[] = [];
+      
+      if (formData.location_cities.length > 0) {
+        locations = formData.location_cities.map(c => ({ value: c, type: 'city' as const }));
+      } else if (formData.location_counties.length > 0) {
+        locations = formData.location_counties.map(c => ({ value: c, type: 'county' as const }));
+      } else if (formData.location_states.length > 0) {
+        locations = formData.location_states.map(s => ({ value: s, type: 'state' as const }));
+      } else {
+        locations = [{ value: '', type: 'state' as const }];
+      }
 
       const pages: Array<{
         campaign_id: string;
@@ -198,6 +211,8 @@ export default function CampaignForm() {
         visit_type: string | null;
         equipment_type: string | null;
         location_state: string | null;
+        location_county: string | null;
+        location_city: string | null;
         status: string;
       }> = [];
 
@@ -217,25 +232,31 @@ export default function CampaignForm() {
           for (const equip of equipment) {
             for (const location of locations) {
               // Build slug from pattern
+              const locationSlug = location.value
+                .toLowerCase()
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9-]/g, "");
+              
               let slug = formData.naming_pattern
                 .replace("{audience}", audience || "")
                 .replace("{visit_type}", visit || "")
                 .replace("{equipment}", equip || "")
-                .replace("{location}", location || "")
+                .replace("{location}", locationSlug)
                 .replace(/--+/g, "-")
                 .replace(/^-|-$/g, "")
                 .toLowerCase();
 
-              // Build title
+              // Build title with location name
+              const locationDisplay = location.value || null;
               const parts = [
                 audience ? audienceLabels[audience] || audience : null,
                 equip ? equipmentLabels[equip] || equip : null,
                 visit ? visitLabels[visit] || visit : null,
-                location ? `in ${location}` : null,
+                locationDisplay ? `in ${locationDisplay}` : null,
               ].filter(Boolean);
               
               const title = parts.join(" ") || "Landing Page";
-              const metaDesc = `Professional ${visit || "HVAC"} services for ${audience || "your"} ${equip || "heating and cooling"} needs${location ? ` in ${location}` : ""}.`;
+              const metaDesc = `Professional ${visit || "HVAC"} services for ${audience || "your"} ${equip || "heating and cooling"} needs${locationDisplay ? ` in ${locationDisplay}` : ""}.`;
 
               pages.push({
                 campaign_id: campaignId!,
@@ -246,7 +267,9 @@ export default function CampaignForm() {
                 audience_type: audience,
                 visit_type: visit,
                 equipment_type: equip,
-                location_state: location,
+                location_state: location.type === 'state' && location.value ? location.value : null,
+                location_county: location.type === 'county' ? location.value : null,
+                location_city: location.type === 'city' ? location.value : null,
                 status: "draft",
               });
             }
