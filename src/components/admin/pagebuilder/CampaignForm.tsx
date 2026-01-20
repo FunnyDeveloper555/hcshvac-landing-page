@@ -84,6 +84,19 @@ export default function CampaignForm() {
     },
   });
 
+  // Fetch templates
+  const { data: templates } = useQuery({
+    queryKey: ["page-templates"],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from("page_templates") as any)
+        .select("id, name, is_default")
+        .eq("is_active", true)
+        .order("is_default", { ascending: false });
+      if (error) throw error;
+      return data as { id: string; name: string; is_default: boolean }[];
+    },
+  });
+
   // Fetch states from cities table
   const { data: states } = useQuery({
     queryKey: ["distinct-states"],
@@ -566,13 +579,14 @@ export default function CampaignForm() {
                   onValueChange={(v) => setFormData({ ...formData, template_id: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select a template" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="default">Default Template</SelectItem>
-                    <SelectItem value="modern">Modern Template</SelectItem>
-                    <SelectItem value="classic">Classic Template</SelectItem>
-                    <SelectItem value="minimal">Minimal Template</SelectItem>
+                    {templates?.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name} {template.is_default && "(Default)"}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -35,6 +35,8 @@ import CampaignForm from "@/components/admin/pagebuilder/CampaignForm";
 import GeneratedPagesList from "@/components/admin/pagebuilder/GeneratedPagesList";
 import PagePreview from "@/components/admin/pagebuilder/PagePreview";
 import PageTemplates from "@/components/admin/pagebuilder/PageTemplates";
+import TemplateForm from "@/components/admin/pagebuilder/TemplateForm";
+import TemplateCampaignLink from "@/components/admin/pagebuilder/TemplateCampaignLink";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
@@ -137,6 +139,8 @@ const Admin = () => {
               <Route path="/page-builder/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
               <Route path="/page-builder/pages/:pageId/preview" element={<PagePreview />} />
               <Route path="/page-builder/templates" element={<PageTemplates />} />
+              <Route path="/page-builder/templates/:templateId" element={<TemplateForm />} />
+              <Route path="/page-builder/templates/:templateId/link" element={<TemplateCampaignLink />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
