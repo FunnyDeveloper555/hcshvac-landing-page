@@ -357,9 +357,27 @@ export type Database = {
           company_state: string | null
           company_support_email: string | null
           company_zip_code: string | null
+          coupon_1_code: string | null
+          coupon_1_description: string | null
+          coupon_1_title: string | null
+          coupon_2_code: string | null
+          coupon_2_description: string | null
+          coupon_2_title: string | null
+          coupon_3_code: string | null
+          coupon_3_description: string | null
+          coupon_3_title: string | null
           created_at: string
           display_order: number
+          financing_enabled: boolean | null
+          financing_provider: string | null
+          financing_url: string | null
           hero_image_url: string | null
+          hvac_brands_install: Json | null
+          hvac_brands_repair: Json | null
+          hvac_brands_service: Json | null
+          hvac_equipment_install: Json | null
+          hvac_equipment_repair: Json | null
+          hvac_equipment_service: Json | null
           id: string
           inventory_equipment: string | null
           inventory_locations: string | null
@@ -367,6 +385,10 @@ export type Database = {
           is_active: boolean | null
           logo_url: string | null
           name: string
+          partner_companies: Json | null
+          plumbing_equipment_install: Json | null
+          plumbing_equipment_repair: Json | null
+          plumbing_equipment_service: Json | null
           poc_email: string | null
           poc_first_name: string | null
           poc_last_name: string | null
@@ -397,9 +419,27 @@ export type Database = {
           company_state?: string | null
           company_support_email?: string | null
           company_zip_code?: string | null
+          coupon_1_code?: string | null
+          coupon_1_description?: string | null
+          coupon_1_title?: string | null
+          coupon_2_code?: string | null
+          coupon_2_description?: string | null
+          coupon_2_title?: string | null
+          coupon_3_code?: string | null
+          coupon_3_description?: string | null
+          coupon_3_title?: string | null
           created_at?: string
           display_order?: number
+          financing_enabled?: boolean | null
+          financing_provider?: string | null
+          financing_url?: string | null
           hero_image_url?: string | null
+          hvac_brands_install?: Json | null
+          hvac_brands_repair?: Json | null
+          hvac_brands_service?: Json | null
+          hvac_equipment_install?: Json | null
+          hvac_equipment_repair?: Json | null
+          hvac_equipment_service?: Json | null
           id?: string
           inventory_equipment?: string | null
           inventory_locations?: string | null
@@ -407,6 +447,10 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name: string
+          partner_companies?: Json | null
+          plumbing_equipment_install?: Json | null
+          plumbing_equipment_repair?: Json | null
+          plumbing_equipment_service?: Json | null
           poc_email?: string | null
           poc_first_name?: string | null
           poc_last_name?: string | null
@@ -437,9 +481,27 @@ export type Database = {
           company_state?: string | null
           company_support_email?: string | null
           company_zip_code?: string | null
+          coupon_1_code?: string | null
+          coupon_1_description?: string | null
+          coupon_1_title?: string | null
+          coupon_2_code?: string | null
+          coupon_2_description?: string | null
+          coupon_2_title?: string | null
+          coupon_3_code?: string | null
+          coupon_3_description?: string | null
+          coupon_3_title?: string | null
           created_at?: string
           display_order?: number
+          financing_enabled?: boolean | null
+          financing_provider?: string | null
+          financing_url?: string | null
           hero_image_url?: string | null
+          hvac_brands_install?: Json | null
+          hvac_brands_repair?: Json | null
+          hvac_brands_service?: Json | null
+          hvac_equipment_install?: Json | null
+          hvac_equipment_repair?: Json | null
+          hvac_equipment_service?: Json | null
           id?: string
           inventory_equipment?: string | null
           inventory_locations?: string | null
@@ -447,6 +509,10 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
+          partner_companies?: Json | null
+          plumbing_equipment_install?: Json | null
+          plumbing_equipment_repair?: Json | null
+          plumbing_equipment_service?: Json | null
           poc_email?: string | null
           poc_first_name?: string | null
           poc_last_name?: string | null
