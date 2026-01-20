@@ -851,6 +851,99 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_pages: {
+        Row: {
+          areas_content: Json | null
+          audience_type: string | null
+          brands_content: Json | null
+          campaign_id: string
+          company_id: string | null
+          coupons_content: Json | null
+          created_at: string
+          equipment_type: string | null
+          hero_content: Json | null
+          id: string
+          location_city: string | null
+          location_county: string | null
+          location_state: string | null
+          location_zip: string | null
+          meta_description: string | null
+          published_at: string | null
+          reviews_content: Json | null
+          services_content: Json | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+          visit_type: string | null
+        }
+        Insert: {
+          areas_content?: Json | null
+          audience_type?: string | null
+          brands_content?: Json | null
+          campaign_id: string
+          company_id?: string | null
+          coupons_content?: Json | null
+          created_at?: string
+          equipment_type?: string | null
+          hero_content?: Json | null
+          id?: string
+          location_city?: string | null
+          location_county?: string | null
+          location_state?: string | null
+          location_zip?: string | null
+          meta_description?: string | null
+          published_at?: string | null
+          reviews_content?: Json | null
+          services_content?: Json | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Update: {
+          areas_content?: Json | null
+          audience_type?: string | null
+          brands_content?: Json | null
+          campaign_id?: string
+          company_id?: string | null
+          coupons_content?: Json | null
+          created_at?: string
+          equipment_type?: string | null
+          hero_content?: Json | null
+          id?: string
+          location_city?: string | null
+          location_county?: string | null
+          location_state?: string | null
+          location_zip?: string | null
+          meta_description?: string | null
+          published_at?: string | null
+          reviews_content?: Json | null
+          services_content?: Json | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_pages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "page_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_pages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hero_content: {
         Row: {
           badge_text: string
@@ -938,6 +1031,107 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean | null
+        }
+        Relationships: []
+      }
+      page_campaigns: {
+        Row: {
+          audience_types: Json | null
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          equipment_types: Json | null
+          id: string
+          location_cities: Json | null
+          location_counties: Json | null
+          location_states: Json | null
+          name: string
+          naming_pattern: string | null
+          pages_published: number | null
+          status: string
+          template_id: string | null
+          total_pages_generated: number | null
+          updated_at: string
+          visit_types: Json | null
+        }
+        Insert: {
+          audience_types?: Json | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment_types?: Json | null
+          id?: string
+          location_cities?: Json | null
+          location_counties?: Json | null
+          location_states?: Json | null
+          name: string
+          naming_pattern?: string | null
+          pages_published?: number | null
+          status?: string
+          template_id?: string | null
+          total_pages_generated?: number | null
+          updated_at?: string
+          visit_types?: Json | null
+        }
+        Update: {
+          audience_types?: Json | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          equipment_types?: Json | null
+          id?: string
+          location_cities?: Json | null
+          location_counties?: Json | null
+          location_states?: Json | null
+          name?: string
+          naming_pattern?: string | null
+          pages_published?: number | null
+          status?: string
+          template_id?: string | null
+          total_pages_generated?: number | null
+          updated_at?: string
+          visit_types?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_campaigns_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_filter_options: {
+        Row: {
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          label: string
+          value: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          value?: string
         }
         Relationships: []
       }

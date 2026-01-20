@@ -30,6 +30,10 @@ import AreasService from "@/components/admin/pagebuilder/AreasService";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
+import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
+import CampaignForm from "@/components/admin/pagebuilder/CampaignForm";
+import GeneratedPagesList from "@/components/admin/pagebuilder/GeneratedPagesList";
+import PageTemplates from "@/components/admin/pagebuilder/PageTemplates";
 import AppointmentsAdd from "@/components/admin/appointments/AppointmentsAdd";
 import AppointmentsList from "@/components/admin/appointments/AppointmentsList";
 import AppointmentsCalendar from "@/components/admin/appointments/AppointmentsCalendar";
@@ -127,6 +131,10 @@ const Admin = () => {
               <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
               <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/local-business" element={<LocalBusiness />} />
+              <Route path="/page-builder/campaigns" element={<CampaignDashboard />} />
+              <Route path="/page-builder/campaigns/:campaignId" element={<CampaignForm />} />
+              <Route path="/page-builder/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
+              <Route path="/page-builder/templates" element={<PageTemplates />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
