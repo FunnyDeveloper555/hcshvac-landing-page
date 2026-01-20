@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Wand2, X } from "lucide-react";
+import { ArrowLeft, Save, Wand2, X, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface FilterOption {
@@ -176,6 +176,108 @@ export default function CampaignForm() {
     },
     onError: (error) => {
       toast.error("Failed to save: " + error.message);
+    },
+  });
+
+  // Generate pages mutation
+  const generatePagesMutation = useMutation({
+    mutationFn: async () => {
+      // Build all combinations of filters
+      const audiences = formData.audience_types.length > 0 ? formData.audience_types : [null];
+      const visits = formData.visit_types.length > 0 ? formData.visit_types : [null];
+      const equipment = formData.equipment_types.length > 0 ? formData.equipment_types : [null];
+      const locations = formData.location_states.length > 0 ? formData.location_states : [null];
+
+      const pages: Array<{
+        campaign_id: string;
+        company_id: string | null;
+        slug: string;
+        title: string;
+        meta_description: string;
+        audience_type: string | null;
+        visit_type: string | null;
+        equipment_type: string | null;
+        location_state: string | null;
+        status: string;
+      }> = [];
+
+      // Get label maps for better titles
+      const audienceLabels: Record<string, string> = {};
+      const visitLabels: Record<string, string> = {};
+      const equipmentLabels: Record<string, string> = {};
+      
+      filterOptions?.forEach((opt) => {
+        if (opt.category === "audience") audienceLabels[opt.value] = opt.label;
+        if (opt.category === "visit_type") visitLabels[opt.value] = opt.label;
+        if (opt.category === "equipment") equipmentLabels[opt.value] = opt.label;
+      });
+
+      for (const audience of audiences) {
+        for (const visit of visits) {
+          for (const equip of equipment) {
+            for (const location of locations) {
+              // Build slug from pattern
+              let slug = formData.naming_pattern
+                .replace("{audience}", audience || "")
+                .replace("{visit_type}", visit || "")
+                .replace("{equipment}", equip || "")
+                .replace("{location}", location || "")
+                .replace(/--+/g, "-")
+                .replace(/^-|-$/g, "")
+                .toLowerCase();
+
+              // Build title
+              const parts = [
+                audience ? audienceLabels[audience] || audience : null,
+                equip ? equipmentLabels[equip] || equip : null,
+                visit ? visitLabels[visit] || visit : null,
+                location ? `in ${location}` : null,
+              ].filter(Boolean);
+              
+              const title = parts.join(" ") || "Landing Page";
+              const metaDesc = `Professional ${visit || "HVAC"} services for ${audience || "your"} ${equip || "heating and cooling"} needs${location ? ` in ${location}` : ""}.`;
+
+              pages.push({
+                campaign_id: campaignId!,
+                company_id: formData.company_id || null,
+                slug,
+                title,
+                meta_description: metaDesc,
+                audience_type: audience,
+                visit_type: visit,
+                equipment_type: equip,
+                location_state: location,
+                status: "draft",
+              });
+            }
+          }
+        }
+      }
+
+      // Insert all pages
+      const { error: insertError } = await supabase
+        .from("generated_pages")
+        .insert(pages);
+      
+      if (insertError) throw insertError;
+
+      // Update campaign metrics
+      const { error: updateError } = await supabase
+        .from("page_campaigns")
+        .update({ total_pages_generated: pages.length })
+        .eq("id", campaignId);
+      
+      if (updateError) throw updateError;
+
+      return pages.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["page-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["generated-pages", campaignId] });
+      toast.success(`Generated ${count} pages successfully!`);
+    },
+    onError: (error) => {
+      toast.error("Failed to generate pages: " + error.message);
     },
   });
 
@@ -493,10 +595,27 @@ export default function CampaignForm() {
               {saveMutation.isPending ? "Saving..." : "Save Campaign"}
             </Button>
             {!isNew && (
-              <Button variant="secondary">
-                <Wand2 className="mr-2 h-4 w-4" />
-                Generate Pages
-              </Button>
+              <>
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(`/admin/page-builder/campaigns/${campaignId}/pages`)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Pages
+                </Button>
+                <Button 
+                  variant="secondary"
+                  onClick={() => generatePagesMutation.mutate()}
+                  disabled={generatePagesMutation.isPending}
+                >
+                  {generatePagesMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="mr-2 h-4 w-4" />
+                  )}
+                  {generatePagesMutation.isPending ? "Generating..." : "Generate Pages"}
+                </Button>
+              </>
             )}
           </div>
         </CardContent>
