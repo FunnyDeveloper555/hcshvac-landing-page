@@ -41,6 +41,7 @@ import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
+import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -130,6 +131,7 @@ const Admin = () => {
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
+              <Route path="/my-company/profile" element={<CompanyWebsiteMockup />} />
             </Routes>
           </main>
         </div>
