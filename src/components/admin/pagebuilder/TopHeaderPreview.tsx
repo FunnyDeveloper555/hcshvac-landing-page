@@ -277,13 +277,8 @@ const TopHeaderPreview = () => {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Company Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder="Enter company name"
-              />
+              <Label>Company Name</Label>
+              <p className="font-medium py-2">{company.name}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="tagline">Tagline</Label>
