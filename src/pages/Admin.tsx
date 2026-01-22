@@ -186,11 +186,11 @@ const Admin = () => {
                   <Route path="/page-builder/company/:companyId/images-logos" element={<ImagesLogos />} />
                   <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
                   <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
+                  <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
                   <Route path="/logs/call" element={<CallLogAdd />} />
                   <Route path="/logs/list" element={<LogsList />} />
                   <Route path="/calendar/add" element={<CalendarAdd />} />
                   <Route path="/calendar/list" element={<CalendarList />} />
-                  <Route path="/my-company/profile" element={<CompanyWebsiteMockup />} />
                 </Routes>
               </main>
             </div>

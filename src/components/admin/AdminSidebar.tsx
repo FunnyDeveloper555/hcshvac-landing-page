@@ -116,7 +116,6 @@ const staticMenuItems: MenuItem[] = [
     title: "My Company", 
     icon: Building,
     children: [
-      { title: "Registration Profile", url: "/admin/my-company/profile", icon: FileCheck },
       { 
         title: "Employees", 
         url: "/admin/my-company/employees", 
@@ -250,6 +249,7 @@ export function AdminSidebar() {
 
   // Common submenus that appear under each company
   const companySubmenus: MenuItem[] = [
+    { title: "Registration Profile", url: "/admin/page-builder/profile", icon: FileCheck },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
     { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
     { 
