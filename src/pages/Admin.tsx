@@ -167,6 +167,25 @@ const Admin = () => {
                   <Route path="/page-builder/templates" element={<PageTemplates />} />
                   <Route path="/page-builder/templates/:templateId" element={<TemplateForm />} />
                   <Route path="/page-builder/templates/:templateId/link" element={<TemplateCampaignLink />} />
+                  {/* Company-specific page builder routes */}
+                  <Route path="/page-builder/company/:companyId" element={<CampaignDashboard />} />
+                  <Route path="/page-builder/company/:companyId/campaigns" element={<CampaignDashboard />} />
+                  <Route path="/page-builder/company/:companyId/campaigns/:campaignId" element={<CampaignForm />} />
+                  <Route path="/page-builder/company/:companyId/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
+                  <Route path="/page-builder/company/:companyId/templates" element={<PageTemplates />} />
+                  <Route path="/page-builder/company/:companyId/templates/:templateId" element={<TemplateForm />} />
+                  <Route path="/page-builder/company/:companyId/hvac-keywords" element={<HvacKeywords />} />
+                  <Route path="/page-builder/company/:companyId/positive-keywords" element={<HvacKeywords />} />
+                  <Route path="/page-builder/company/:companyId/negative-keywords" element={<NegativeKeywords />} />
+                  <Route path="/page-builder/company/:companyId/negative-search-terms" element={<NegativeKeywords />} />
+                  <Route path="/page-builder/company/:companyId/positive-search-terms" element={<HvacKeywords />} />
+                  <Route path="/page-builder/company/:companyId/hvac-parts" element={<HvacParts />} />
+                  <Route path="/page-builder/company/:companyId/equipment-brands" element={<EquipmentBrands />} />
+                  <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
+                  <Route path="/page-builder/company/:companyId/areas-service" element={<AreasService />} />
+                  <Route path="/page-builder/company/:companyId/images-logos" element={<ImagesLogos />} />
+                  <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
+                  <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
                   <Route path="/logs/call" element={<CallLogAdd />} />
                   <Route path="/logs/list" element={<LogsList />} />
                   <Route path="/calendar/add" element={<CalendarAdd />} />
