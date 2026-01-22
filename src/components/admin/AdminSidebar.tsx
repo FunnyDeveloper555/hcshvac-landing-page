@@ -249,7 +249,7 @@ export function AdminSidebar() {
 
   // Common submenus that appear under each company
   const companySubmenus: MenuItem[] = [
-    { title: "Registration Profile", url: "/admin/page-builder/profile", icon: FileCheck },
+    { title: "Website Preview", url: "/admin/page-builder/profile", icon: FileCheck },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
     { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
     { 
