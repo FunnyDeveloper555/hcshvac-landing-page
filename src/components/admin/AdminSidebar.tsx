@@ -255,16 +255,12 @@ export function AdminSidebar() {
     children: [
       { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
       { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
-      ...(companies.length > 0 ? [{
-        title: "Companies",
+      // Add company names directly as submenu items
+      ...companies.map(company => ({
+        title: company.name,
+        url: `/admin/page-builder/company/${company.id}`,
         icon: Building2,
-        isDynamic: true,
-        children: companies.map(company => ({
-          title: company.name,
-          url: `/admin/page-builder/company/${company.id}`,
-          icon: Building2,
-        })),
-      }] : []),
+      })),
       { 
         title: "HVAC Keywords", 
         url: "/admin/page-builder/hvac-keywords", 
