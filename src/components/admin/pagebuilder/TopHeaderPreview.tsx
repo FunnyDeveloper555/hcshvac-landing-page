@@ -3,7 +3,11 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Phone, Mail, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Phone, Mail, Building2, Save } from "lucide-react";
+import { toast } from "sonner";
 
 interface Company {
   id: string;
@@ -16,10 +20,28 @@ interface Company {
   primary_color: string | null;
 }
 
+interface FormData {
+  name: string;
+  website_tagline: string;
+  company_phone: string;
+  company_email_primary: string;
+  logo_url: string;
+  primary_color: string;
+}
+
 const TopHeaderPreview = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    website_tagline: "",
+    company_phone: "",
+    company_email_primary: "",
+    logo_url: "",
+    primary_color: "#0ea5e9",
+  });
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -36,12 +58,65 @@ const TopHeaderPreview = () => {
 
       if (!error && data) {
         setCompany(data as Company);
+        setFormData({
+          name: data.name || "",
+          website_tagline: data.website_tagline || "",
+          company_phone: data.company_phone || "",
+          company_email_primary: data.company_email_primary || "",
+          logo_url: data.logo_url || "",
+          primary_color: data.primary_color || "#0ea5e9",
+        });
       }
       setLoading(false);
     };
 
     fetchCompany();
   }, [companyId]);
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleUpdate = async () => {
+    if (!companyId) return;
+
+    setSaving(true);
+    const { error } = await supabase
+      .from("companies")
+      .update({
+        name: formData.name.trim(),
+        website_tagline: formData.website_tagline.trim() || null,
+        company_phone: formData.company_phone.trim() || null,
+        company_email_primary: formData.company_email_primary.trim() || null,
+        logo_url: formData.logo_url.trim() || null,
+        primary_color: formData.primary_color || null,
+      })
+      .eq("id", companyId);
+
+    setSaving(false);
+
+    if (error) {
+      toast.error("Failed to update header configuration");
+      return;
+    }
+
+    // Update local state to reflect changes in preview
+    setCompany((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: formData.name.trim(),
+            website_tagline: formData.website_tagline.trim() || null,
+            company_phone: formData.company_phone.trim() || null,
+            company_email_primary: formData.company_email_primary.trim() || null,
+            logo_url: formData.logo_url.trim() || null,
+            primary_color: formData.primary_color || null,
+          }
+        : null
+    );
+
+    toast.success("Header configuration updated successfully");
+  };
 
   if (loading) {
     return (
@@ -194,7 +269,7 @@ const TopHeaderPreview = () => {
         </CardContent>
       </Card>
 
-      {/* Header Data Summary */}
+      {/* Header Configuration Form */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Header Configuration</CardTitle>
@@ -202,35 +277,84 @@ const TopHeaderPreview = () => {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Company Name</p>
-              <p className="font-medium">{company.name}</p>
+              <Label htmlFor="name">Company Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="Enter company name"
+              />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Tagline</p>
-              <p className="font-medium">{company.website_tagline || "—"}</p>
+              <Label htmlFor="tagline">Tagline</Label>
+              <Input
+                id="tagline"
+                value={formData.website_tagline}
+                onChange={(e) => handleInputChange("website_tagline", e.target.value)}
+                placeholder="Enter tagline"
+              />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Phone</p>
-              <p className="font-medium">{company.company_phone || "—"}</p>
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={formData.company_phone}
+                onChange={(e) => handleInputChange("company_phone", e.target.value)}
+                placeholder="(555) 000-0000"
+              />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Email</p>
-              <p className="font-medium">{company.company_email_primary || "—"}</p>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.company_email_primary}
+                onChange={(e) => handleInputChange("company_email_primary", e.target.value)}
+                placeholder="info@company.com"
+              />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Logo</p>
-              <p className="font-medium">{company.logo_url ? "Configured" : "Not Set"}</p>
+              <Label htmlFor="logo">Logo URL</Label>
+              <Input
+                id="logo"
+                value={formData.logo_url}
+                onChange={(e) => handleInputChange("logo_url", e.target.value)}
+                placeholder="https://example.com/logo.png"
+              />
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Primary Color</p>
+              <Label htmlFor="color">Primary Color</Label>
               <div className="flex items-center gap-2">
-                <div 
-                  className="w-6 h-6 rounded border"
-                  style={{ backgroundColor: primaryColor }}
+                <Input
+                  id="color"
+                  type="color"
+                  value={formData.primary_color}
+                  onChange={(e) => handleInputChange("primary_color", e.target.value)}
+                  className="w-12 h-10 p-1 cursor-pointer"
                 />
-                <span className="font-mono text-sm">{primaryColor}</span>
+                <Input
+                  value={formData.primary_color}
+                  onChange={(e) => handleInputChange("primary_color", e.target.value)}
+                  placeholder="#0ea5e9"
+                  className="flex-1 font-mono"
+                />
               </div>
             </div>
+          </div>
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleUpdate} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Update Header
+                </>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
