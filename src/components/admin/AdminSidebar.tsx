@@ -1,6 +1,8 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Wand2 } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Wand2, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 import {
   Sidebar,
@@ -19,7 +21,15 @@ import {
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-const menuItems = [
+interface MenuItem {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  url?: string;
+  children?: MenuItem[];
+  isDynamic?: boolean;
+}
+
+const staticMenuItems: MenuItem[] = [
   { 
     title: "Hero Content", 
     icon: LayoutDashboard,
@@ -209,11 +219,52 @@ const menuItems = [
     ]
   },
   { 
-    title: "Page Builder", 
+    title: "Logs", 
+    icon: FileText,
+    children: [
+      { title: "Log Call", url: "/admin/logs/call", icon: Plus },
+      { title: "Activity Log", url: "/admin/logs/list", icon: List },
+    ]
+  },
+];
+
+export function AdminSidebar() {
+  const { open } = useSidebar();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentPath = location.pathname;
+
+  // Fetch active companies for Page Builder submenu
+  const { data: companies = [], isLoading: companiesLoading } = useQuery({
+    queryKey: ["sidebar-companies"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Build dynamic Page Builder menu with companies
+  const pageBuilderMenu: MenuItem = useMemo(() => ({
+    title: "Page Builder",
     icon: Layout,
     children: [
       { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
       { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
+      ...(companies.length > 0 ? [{
+        title: "Companies",
+        icon: Building2,
+        isDynamic: true,
+        children: companies.map(company => ({
+          title: company.name,
+          url: `/admin/page-builder/company/${company.id}`,
+          icon: Building2,
+        })),
+      }] : []),
       { 
         title: "HVAC Keywords", 
         url: "/admin/page-builder/hvac-keywords", 
@@ -232,36 +283,72 @@ const menuItems = [
       { title: "Images & Logos", url: "/admin/page-builder/images-logos", icon: ImageIcon },
       { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
       { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
-    ]
-  },
-  { 
-    title: "Logs", 
-    icon: FileText,
-    children: [
-      { title: "Log Call", url: "/admin/logs/call", icon: Plus },
-      { title: "Activity Log", url: "/admin/logs/list", icon: List },
-    ]
-  },
-];
+    ],
+  }), [companies]);
 
-export function AdminSidebar() {
-  const { open } = useSidebar();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const currentPath = location.pathname;
+  // Find index to insert Page Builder (before Logs which is at the end)
+  const menuItems = useMemo(() => {
+    const logsIndex = staticMenuItems.findIndex(item => item.title === "Logs");
+    const items = [...staticMenuItems];
+    items.splice(logsIndex, 0, pageBuilderMenu);
+    return items;
+  }, [pageBuilderMenu]);
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
-    menuItems.reduce((acc, item) => {
-      const isGroupActive = item.children.some(child => currentPath.startsWith(child.url));
-      acc[item.title] = isGroupActive;
-      return acc;
-    }, {} as Record<string, boolean>)
-  );
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  // Update open groups when menuItems or currentPath changes
+  useEffect(() => {
+    setOpenGroups(
+      menuItems.reduce((acc, item) => {
+        const isGroupActive = item.children?.some(child => 
+          child.url ? currentPath.startsWith(child.url) : 
+          child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url))
+        ) ?? false;
+        acc[item.title] = isGroupActive;
+        return acc;
+      }, {} as Record<string, boolean>)
+    );
+  }, [currentPath, menuItems]);
 
   const isActive = (path: string) => currentPath === path;
 
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
+  };
+
+  const renderMenuChildren = (children: MenuItem[], depth = 0) => {
+    return children.map((child) => (
+      <SidebarMenuSubItem key={child.url || child.title} className="w-full">
+        {child.children ? (
+          <Collapsible defaultOpen={child.children.some(subChild => subChild.url && isActive(subChild.url))}>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuSubButton
+                onClick={() => child.url && navigate(child.url)}
+                className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+              >
+                <child.icon className="h-4 w-4" />
+                <span>{child.title}</span>
+                <ChevronDown className="ml-auto h-3 w-3" />
+              </SidebarMenuSubButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenuSub>
+                {renderMenuChildren(child.children, depth + 1)}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </Collapsible>
+        ) : (
+          <SidebarMenuSubButton
+            onClick={() => child.url && navigate(child.url)}
+            className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+            style={{ paddingLeft: depth > 0 ? `${depth * 8}px` : undefined }}
+          >
+            <child.icon className="h-4 w-4" />
+            <span>{child.title}</span>
+          </SidebarMenuSubButton>
+        )}
+      </SidebarMenuSubItem>
+    ));
   };
 
   return (
@@ -284,55 +371,19 @@ export function AdminSidebar() {
                         {open && (
                           <>
                             <span>{item.title}</span>
-                            <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${openGroups[item.title] ? 'rotate-180' : ''}`} />
+                            {item.title === "Page Builder" && companiesLoading ? (
+                              <Loader2 className="ml-auto h-4 w-4 animate-spin" />
+                            ) : (
+                              <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${openGroups[item.title] ? 'rotate-180' : ''}`} />
+                            )}
                           </>
                         )}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
-                    {open && (
+                    {open && item.children && (
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.children.map((child) => (
-                            <SidebarMenuSubItem key={child.url} className="w-full">
-                              {child.children ? (
-                                <Collapsible defaultOpen={child.children.some(subChild => isActive(subChild.url))}>
-                                  <CollapsibleTrigger asChild>
-                                    <SidebarMenuSubButton
-                                      onClick={() => navigate(child.url)}
-                                      className={`cursor-pointer w-full ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-                                    >
-                                      <child.icon className="h-4 w-4" />
-                                      <span>{child.title}</span>
-                                      <ChevronDown className="ml-auto h-3 w-3" />
-                                    </SidebarMenuSubButton>
-                                  </CollapsibleTrigger>
-                                  <CollapsibleContent>
-                                    <SidebarMenuSub>
-                                      {child.children.map((subChild) => (
-                                        <SidebarMenuSubItem key={subChild.url} className="w-full">
-                                          <SidebarMenuSubButton
-                                            onClick={() => navigate(subChild.url)}
-                                            className={`cursor-pointer pl-2 w-full ${isActive(subChild.url) ? "bg-accent text-accent-foreground" : ""}`}
-                                          >
-                                            <subChild.icon className="h-4 w-4" />
-                                            <span>{subChild.title}</span>
-                                          </SidebarMenuSubButton>
-                                        </SidebarMenuSubItem>
-                                      ))}
-                                    </SidebarMenuSub>
-                                  </CollapsibleContent>
-                                </Collapsible>
-                              ) : (
-                                <SidebarMenuSubButton
-                                  onClick={() => navigate(child.url)}
-                                  className={`cursor-pointer w-full ${isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-                                >
-                                  <child.icon className="h-4 w-4" />
-                                  <span>{child.title}</span>
-                                </SidebarMenuSubButton>
-                              )}
-                            </SidebarMenuSubItem>
-                          ))}
+                          {renderMenuChildren(item.children)}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     )}
