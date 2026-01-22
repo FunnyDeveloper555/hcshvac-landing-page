@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award } from "lucide-react";
 
 interface Company {
@@ -57,37 +57,35 @@ interface Company {
 }
 
 const CompanyWebsiteMockup = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const { companyId } = useParams<{ companyId: string }>();
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCompanies = async () => {
+    const fetchCompany = async () => {
+      if (!companyId) {
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("companies")
         .select("*")
-        .eq("is_active", true)
-        .order("name");
+        .eq("id", companyId)
+        .single();
 
       if (!error && data) {
-        const companiesData = data.map(company => ({
-          ...company,
-          partner_companies: company.partner_companies as Array<{ name: string; url: string }> | null,
-        })) as Company[];
-        setCompanies(companiesData);
-        
-        // Auto-select first company if available
-        if (companiesData.length > 0) {
-          setSelectedCompanyId(companiesData[0].id);
-        }
+        const companyData = {
+          ...data,
+          partner_companies: data.partner_companies as Array<{ name: string; url: string }> | null,
+        } as Company;
+        setSelectedCompany(companyData);
       }
       setLoading(false);
     };
 
-    fetchCompanies();
-  }, []);
-
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+    fetchCompany();
+  }, [companyId]);
 
   if (loading) {
     return (
@@ -97,75 +95,34 @@ const CompanyWebsiteMockup = () => {
     );
   }
 
-  if (companies.length === 0) {
+  if (!selectedCompany) {
     return (
       <div className="text-center py-20">
         <Building2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-bold mb-2">No Companies Found</h2>
-        <p className="text-muted-foreground">Please add a company first to see the website preview.</p>
+        <h2 className="text-2xl font-bold mb-2">Company Not Found</h2>
+        <p className="text-muted-foreground">The selected company could not be loaded.</p>
       </div>
     );
   }
 
-  const primaryColor = selectedCompany?.primary_color || "#0ea5e9";
+  const primaryColor = selectedCompany.primary_color || "#0ea5e9";
 
   return (
     <div className="space-y-6">
-      {/* Company Selector */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            Select Company to Preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Select a company..." />
-            </SelectTrigger>
-            <SelectContent>
-              {companies.map((company) => (
-                <SelectItem key={company.id} value={company.id}>
-                  <div className="flex items-center gap-2">
-                    {company.logo_url ? (
-                      <img src={company.logo_url} alt="" className="w-5 h-5 object-contain" />
-                    ) : (
-                      <Building2 className="w-4 h-4 text-muted-foreground" />
-                    )}
-                    <span>{company.name}</span>
-                    {company.slug && (
-                      <Badge variant="outline" className="text-xs ml-2">
-                        /{company.slug}
-                      </Badge>
-                    )}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground mt-2">
-            {companies.length} active {companies.length === 1 ? 'company' : 'companies'} available
-          </p>
-        </CardContent>
-      </Card>
+      {/* Mockup Indicator */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
+        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+          MOCKUP PREVIEW
+        </Badge>
+        <p className="text-amber-800 text-sm">
+          This is a preview of <strong>{selectedCompany.name}</strong> website structure. Visit{" "}
+          <span className="font-mono font-medium">/company/{selectedCompany.slug}</span> to see the live site.
+        </p>
+      </div>
 
-      {selectedCompany && (
-        <>
-          {/* Mockup Indicator */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
-            <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-              MOCKUP PREVIEW
-            </Badge>
-            <p className="text-amber-800 text-sm">
-              This is a preview of your company website structure. Visit{" "}
-              <span className="font-mono font-medium">/company/{selectedCompany.slug}</span> to see the live site.
-            </p>
-          </div>
-
-          {/* Website Frame */}
-          <div className="border-4 border-muted rounded-xl overflow-hidden bg-background shadow-2xl">
-            {/* Browser Bar Mockup */}
+      {/* Website Frame */}
+      <div className="border-4 border-muted rounded-xl overflow-hidden bg-background shadow-2xl">
+        {/* Browser Bar Mockup */}
             <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-destructive/60" />
@@ -597,8 +554,8 @@ const CompanyWebsiteMockup = () => {
               </div>
             </CardContent>
           </Card>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };
