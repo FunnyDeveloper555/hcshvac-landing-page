@@ -248,38 +248,48 @@ export function AdminSidebar() {
     },
   });
 
-  // Build dynamic Page Builder menu with companies at the top
+  // Common submenus that appear under each company
+  const companySubmenus: MenuItem[] = [
+    { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
+    { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
+    { 
+      title: "HVAC Keywords", 
+      url: "/admin/page-builder/hvac-keywords", 
+      icon: Search,
+      children: [
+        { title: "Positive Keywords", url: "/admin/page-builder/positive-keywords", icon: CheckCircle },
+        { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
+        { title: "Negative Search Terms", url: "/admin/page-builder/negative-search-terms", icon: XCircle },
+        { title: "Positive Search Terms", url: "/admin/page-builder/positive-search-terms", icon: CheckCircle },
+      ]
+    },
+    { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
+    { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
+    { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
+    { title: "Areas We Service", url: "/admin/page-builder/areas-service", icon: Map },
+    { title: "Images & Logos", url: "/admin/page-builder/images-logos", icon: ImageIcon },
+    { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
+    { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
+  ];
+
+  // Build dynamic Page Builder menu with companies containing all submenus
   const pageBuilderMenu: MenuItem = useMemo(() => ({
     title: "Page Builder",
     icon: Layout,
-    children: [
-      // Company names at the top
-      ...companies.map(company => ({
-        title: company.name,
-        url: `/admin/page-builder/company/${company.id}`,
-        icon: Building2,
+    children: companies.map(company => ({
+      title: company.name,
+      url: `/admin/page-builder/company/${company.id}`,
+      icon: Building2,
+      children: companySubmenus.map(submenu => ({
+        ...submenu,
+        // Update URLs to include company ID
+        url: submenu.url ? `/admin/page-builder/company/${company.id}${submenu.url.replace('/admin/page-builder', '')}` : undefined,
+        children: submenu.children?.map(child => ({
+          ...child,
+          url: child.url ? `/admin/page-builder/company/${company.id}${child.url.replace('/admin/page-builder', '')}` : undefined,
+        })),
       })),
-      { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
-      { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
-      { 
-        title: "HVAC Keywords", 
-        url: "/admin/page-builder/hvac-keywords", 
-        icon: Search,
-        children: [
-          { title: "Positive Keywords", url: "/admin/page-builder/positive-keywords", icon: CheckCircle },
-          { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
-          { title: "Negative Search Terms", url: "/admin/page-builder/negative-search-terms", icon: XCircle },
-          { title: "Positive Search Terms", url: "/admin/page-builder/positive-search-terms", icon: CheckCircle },
-        ]
-      },
-      { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
-      { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
-      { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
-      { title: "Areas We Service", url: "/admin/page-builder/areas-service", icon: Map },
-      { title: "Images & Logos", url: "/admin/page-builder/images-logos", icon: ImageIcon },
-      { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
-      { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
-    ],
+    })),
   }), [companies]);
 
   // Build menu items with Page Builder inserted before Logs
