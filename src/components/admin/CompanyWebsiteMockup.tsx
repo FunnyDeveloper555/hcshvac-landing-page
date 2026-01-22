@@ -123,439 +123,437 @@ const CompanyWebsiteMockup = () => {
       {/* Website Frame */}
       <div className="border-4 border-muted rounded-xl overflow-hidden bg-background shadow-2xl">
         {/* Browser Bar Mockup */}
-            <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-destructive/60" />
-                <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="bg-background rounded-md px-3 py-1 text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="text-green-600">🔒</span>
-                  {selectedCompany.slug}.hcshvac.com
-                </div>
-              </div>
+        <div className="bg-muted px-4 py-2 flex items-center gap-2 border-b">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-destructive/60" />
+            <div className="w-3 h-3 rounded-full bg-yellow-400" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <div className="flex-1 mx-4">
+            <div className="bg-background rounded-md px-3 py-1 text-sm text-muted-foreground flex items-center gap-2">
+              <span className="text-green-600">🔒</span>
+              {selectedCompany.slug}.hcshvac.com
             </div>
+          </div>
+        </div>
 
-            {/* ======== HEADER SECTION ======== */}
-            <div 
-              className="p-4 flex items-center justify-between border-b"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <div className="flex items-center gap-3">
-                {selectedCompany.logo_url ? (
-                  <img src={selectedCompany.logo_url} alt="Logo" className="h-10 w-auto" />
-                ) : (
-                  <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white" />
-                  </div>
-                )}
-                <div className="text-white">
-                  <h1 className="font-bold text-lg">{selectedCompany.name}</h1>
-                  {selectedCompany.website_tagline && (
-                    <p className="text-white/80 text-xs">{selectedCompany.website_tagline}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-white text-sm">
-                {selectedCompany.company_email_primary && (
-                  <span className="flex items-center gap-1">
-                    <Mail className="w-4 h-4" />
-                    {selectedCompany.company_email_primary}
-                  </span>
-                )}
-                {selectedCompany.company_phone && (
-                  <span className="flex items-center gap-1 font-bold">
-                    <Phone className="w-4 h-4" />
-                    {selectedCompany.company_phone}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* ======== HERO SECTION ======== */}
-            <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
-              <div className="max-w-2xl">
-                <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
-                  {selectedCompany.theme_style?.toUpperCase() || "MODERN"} THEME
-                </Badge>
-                <h2 className="text-4xl font-bold mb-4">
-                  {selectedCompany.website_title || selectedCompany.name}
-                </h2>
-                <p className="text-xl mb-6 text-white/90">
-                  {selectedCompany.website_description || "Professional HVAC services for your home and business."}
-                </p>
-                <div className="flex gap-4">
-                  <div 
-                    className="px-6 py-3 rounded-lg font-semibold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Call {selectedCompany.company_phone || "(555) 000-0000"}
-                  </div>
-                  <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
-                    Get a Quote
-                  </div>
-                </div>
-              </div>
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
-                <Wrench className="w-48 h-48" />
-              </div>
-            </div>
-
-            {/* ======== COUPONS SECTION ======== */}
-            {(selectedCompany.coupon_1_title || selectedCompany.coupon_2_title || selectedCompany.coupon_3_title) && (
-              <div className="bg-muted/50 p-8">
-                <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                  <Tag className="w-6 h-6 text-primary" />
-                  Special Offers
-                </h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {selectedCompany.coupon_1_title && (
-                    <Card className="border-2 border-dashed border-primary">
-                      <CardContent className="p-4 text-center">
-                        <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_1_title}</p>
-                        <p className="text-muted-foreground text-sm">{selectedCompany.coupon_1_description}</p>
-                        {selectedCompany.coupon_1_code && (
-                          <Badge variant="outline" className="mt-2">{selectedCompany.coupon_1_code}</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.coupon_2_title && (
-                    <Card className="border-2 border-dashed border-primary">
-                      <CardContent className="p-4 text-center">
-                        <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_2_title}</p>
-                        <p className="text-muted-foreground text-sm">{selectedCompany.coupon_2_description}</p>
-                        {selectedCompany.coupon_2_code && (
-                          <Badge variant="outline" className="mt-2">{selectedCompany.coupon_2_code}</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.coupon_3_title && (
-                    <Card className="border-2 border-dashed border-primary">
-                      <CardContent className="p-4 text-center">
-                        <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_3_title}</p>
-                        <p className="text-muted-foreground text-sm">{selectedCompany.coupon_3_description}</p>
-                        {selectedCompany.coupon_3_code && (
-                          <Badge variant="outline" className="mt-2">{selectedCompany.coupon_3_code}</Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+        {/* ======== HEADER SECTION ======== */}
+        <div 
+          className="p-4 flex items-center justify-between border-b"
+          style={{ backgroundColor: primaryColor }}
+        >
+          <div className="flex items-center gap-3">
+            {selectedCompany.logo_url ? (
+              <img src={selectedCompany.logo_url} alt="Logo" className="h-10 w-auto" />
+            ) : (
+              <div className="w-10 h-10 rounded bg-white/20 flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-white" />
               </div>
             )}
-
-            {/* ======== SERVICES SECTION ======== */}
-            <div className="p-8">
-              <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                <Wrench className="w-6 h-6 text-primary" />
-                Our Services
-              </h3>
-              
-              {/* HVAC Equipment */}
-              {(selectedCompany.hvac_equipment_install?.length || selectedCompany.hvac_equipment_service?.length || selectedCompany.hvac_equipment_repair?.length) ? (
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  {selectedCompany.hvac_equipment_install && selectedCompany.hvac_equipment_install.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Shield className="w-5 h-5 text-primary" />
-                          HVAC Installation
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.hvac_equipment_install.map((item, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.hvac_equipment_service && selectedCompany.hvac_equipment_service.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Clock className="w-5 h-5 text-primary" />
-                          HVAC Service
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.hvac_equipment_service.map((item, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.hvac_equipment_repair && selectedCompany.hvac_equipment_repair.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Wrench className="w-5 h-5 text-primary" />
-                          HVAC Repair
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.hvac_equipment_repair.map((item, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              ) : (
-                <p className="text-center text-muted-foreground mb-8">No HVAC equipment services configured</p>
-              )}
-
-              {/* Plumbing Equipment */}
-              {(selectedCompany.plumbing_equipment_install?.length || selectedCompany.plumbing_equipment_service?.length || selectedCompany.plumbing_equipment_repair?.length) && (
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  {selectedCompany.plumbing_equipment_install && selectedCompany.plumbing_equipment_install.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Plumbing Installation</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.plumbing_equipment_install.map((item, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.plumbing_equipment_service && selectedCompany.plumbing_equipment_service.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Plumbing Service</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.plumbing_equipment_service.map((item, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {selectedCompany.plumbing_equipment_repair && selectedCompany.plumbing_equipment_repair.length > 0 && (
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Plumbing Repair</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCompany.plumbing_equipment_repair.map((item, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+            <div className="text-white">
+              <h1 className="font-bold text-lg">{selectedCompany.name}</h1>
+              {selectedCompany.website_tagline && (
+                <p className="text-white/80 text-xs">{selectedCompany.website_tagline}</p>
               )}
             </div>
-
-            {/* ======== BRANDS SECTION ======== */}
-            {(selectedCompany.hvac_brands_install?.length || selectedCompany.hvac_brands_service?.length || selectedCompany.hvac_brands_repair?.length) && (
-              <div className="bg-muted/30 p-8">
-                <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                  <Award className="w-6 h-6 text-primary" />
-                  Brands We Work With
-                </h3>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {selectedCompany.hvac_brands_install && selectedCompany.hvac_brands_install.length > 0 && (
-                    <div className="text-center">
-                      <h4 className="font-semibold mb-3">Brands We Install</h4>
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {selectedCompany.hvac_brands_install.map((brand, idx) => (
-                          <Badge key={idx} className="bg-primary text-primary-foreground">{brand}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectedCompany.hvac_brands_service && selectedCompany.hvac_brands_service.length > 0 && (
-                    <div className="text-center">
-                      <h4 className="font-semibold mb-3">Brands We Service</h4>
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {selectedCompany.hvac_brands_service.map((brand, idx) => (
-                          <Badge key={idx} variant="secondary">{brand}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectedCompany.hvac_brands_repair && selectedCompany.hvac_brands_repair.length > 0 && (
-                    <div className="text-center">
-                      <h4 className="font-semibold mb-3">Brands We Repair</h4>
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {selectedCompany.hvac_brands_repair.map((brand, idx) => (
-                          <Badge key={idx} variant="outline">{brand}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+          </div>
+          <div className="flex items-center gap-4 text-white text-sm">
+            {selectedCompany.company_email_primary && (
+              <span className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                {selectedCompany.company_email_primary}
+              </span>
             )}
-
-            {/* ======== SERVICE AREAS SECTION ======== */}
-            {selectedCompany.service_areas && selectedCompany.service_areas.length > 0 && (
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                  <MapPin className="w-6 h-6 text-primary" />
-                  Service Areas
-                </h3>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {selectedCompany.service_areas.map((area, idx) => (
-                    <Badge key={idx} variant="outline" className="text-sm py-1 px-3">{area}</Badge>
-                  ))}
-                </div>
-              </div>
+            {selectedCompany.company_phone && (
+              <span className="flex items-center gap-1 font-bold">
+                <Phone className="w-4 h-4" />
+                {selectedCompany.company_phone}
+              </span>
             )}
+          </div>
+        </div>
 
-            {/* ======== FINANCING SECTION ======== */}
-            {selectedCompany.financing_enabled && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-8 border-t border-b border-green-200">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-green-800 mb-2">Financing Available</h3>
-                  <p className="text-green-700">
-                    {selectedCompany.financing_provider 
-                      ? `We partner with ${selectedCompany.financing_provider} to offer flexible financing options.`
-                      : "We offer flexible financing options for your HVAC needs."
-                    }
-                  </p>
-                  {selectedCompany.financing_url && (
-                    <Badge className="mt-3 bg-green-600">Apply Now</Badge>
-                  )}
-                </div>
+        {/* ======== HERO SECTION ======== */}
+        <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
+          <div className="max-w-2xl">
+            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
+              {selectedCompany.theme_style?.toUpperCase() || "MODERN"} THEME
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4">
+              {selectedCompany.website_title || selectedCompany.name}
+            </h2>
+            <p className="text-xl mb-6 text-white/90">
+              {selectedCompany.website_description || "Professional HVAC services for your home and business."}
+            </p>
+            <div className="flex gap-4">
+              <div 
+                className="px-6 py-3 rounded-lg font-semibold text-white"
+                style={{ backgroundColor: primaryColor }}
+              >
+                Call {selectedCompany.company_phone || "(555) 000-0000"}
               </div>
-            )}
-
-            {/* ======== PARTNER COMPANIES SECTION ======== */}
-            {selectedCompany.partner_companies && selectedCompany.partner_companies.length > 0 && (
-              <div className="p-8 bg-muted/20">
-                <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-                  <Users className="w-6 h-6 text-primary" />
-                  Our Partners
-                </h3>
-                <div className="flex flex-wrap justify-center gap-4">
-                  {selectedCompany.partner_companies.map((partner, idx) => (
-                    <Badge key={idx} variant="outline" className="text-sm py-2 px-4">
-                      {partner.name}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
+                Get a Quote
               </div>
-            )}
+            </div>
+          </div>
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
+            <Wrench className="w-48 h-48" />
+          </div>
+        </div>
 
-            {/* ======== CONTACT SECTION ======== */}
-            <div className="p-8 bg-muted/50">
-              <h3 className="text-2xl font-bold text-center mb-6">Contact Us</h3>
-              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Phone className="w-8 h-8 mx-auto mb-3 text-primary" />
-                    <h4 className="font-semibold mb-1">Phone</h4>
-                    <p className="text-muted-foreground">{selectedCompany.company_phone || "Not set"}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Mail className="w-8 h-8 mx-auto mb-3 text-primary" />
-                    <h4 className="font-semibold mb-1">Email</h4>
-                    <p className="text-muted-foreground text-sm">{selectedCompany.company_email_primary || "Not set"}</p>
-                    {selectedCompany.company_support_email && (
-                      <p className="text-muted-foreground text-xs mt-1">Support: {selectedCompany.company_support_email}</p>
+        {/* ======== COUPONS SECTION ======== */}
+        {(selectedCompany.coupon_1_title || selectedCompany.coupon_2_title || selectedCompany.coupon_3_title) && (
+          <div className="bg-muted/50 p-8">
+            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <Tag className="w-6 h-6 text-primary" />
+              Special Offers
+            </h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {selectedCompany.coupon_1_title && (
+                <Card className="border-2 border-dashed border-primary">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_1_title}</p>
+                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_1_description}</p>
+                    {selectedCompany.coupon_1_code && (
+                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_1_code}</Badge>
                     )}
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <MapPin className="w-8 h-8 mx-auto mb-3 text-primary" />
-                    <h4 className="font-semibold mb-1">Address</h4>
-                    <p className="text-muted-foreground text-sm">
-                      {selectedCompany.company_address || "Not set"}
-                      {selectedCompany.company_city && <><br />{selectedCompany.company_city}, {selectedCompany.company_state} {selectedCompany.company_zip_code}</>}
-                    </p>
+              )}
+              {selectedCompany.coupon_2_title && (
+                <Card className="border-2 border-dashed border-primary">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_2_title}</p>
+                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_2_description}</p>
+                    {selectedCompany.coupon_2_code && (
+                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_2_code}</Badge>
+                    )}
                   </CardContent>
                 </Card>
-              </div>
-            </div>
-
-            {/* ======== POINT OF CONTACT ======== */}
-            {(selectedCompany.poc_first_name || selectedCompany.poc_email) && (
-              <div className="p-6 border-t">
-                <div className="text-center">
-                  <h4 className="font-semibold mb-2">Primary Contact</h4>
-                  <p className="text-muted-foreground">
-                    {selectedCompany.poc_first_name} {selectedCompany.poc_last_name}
-                    {selectedCompany.poc_title && <span className="text-sm"> ({selectedCompany.poc_title})</span>}
-                  </p>
-                  {selectedCompany.poc_email && <p className="text-sm text-muted-foreground">{selectedCompany.poc_email}</p>}
-                  {selectedCompany.poc_phone && <p className="text-sm text-muted-foreground">{selectedCompany.poc_phone}</p>}
-                </div>
-              </div>
-            )}
-
-            {/* ======== FOOTER SECTION ======== */}
-            <div 
-              className="p-6 text-center text-white"
-              style={{ backgroundColor: primaryColor }}
-            >
-              <p className="font-bold text-lg mb-2">{selectedCompany.name}</p>
-              <p className="text-white/80 text-sm">
-                © {new Date().getFullYear()} {selectedCompany.name}. All rights reserved.
-              </p>
-              <p className="text-white/60 text-xs mt-2">
-                Theme: {selectedCompany.theme_style || "modern"} | Color: {selectedCompany.primary_color || "Default"}
-              </p>
+              )}
+              {selectedCompany.coupon_3_title && (
+                <Card className="border-2 border-dashed border-primary">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_3_title}</p>
+                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_3_description}</p>
+                    {selectedCompany.coupon_3_code && (
+                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_3_code}</Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
+        )}
 
-          {/* Data Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Profile Data Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Service Areas:</span>
-                  <span className="ml-2 font-medium">{selectedCompany.service_areas?.length || 0}</span>
+        {/* ======== SERVICES SECTION ======== */}
+        <div className="p-8">
+          <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+            <Wrench className="w-6 h-6 text-primary" />
+            Our Services
+          </h3>
+          
+          {/* HVAC Equipment */}
+          {(selectedCompany.hvac_equipment_install?.length || selectedCompany.hvac_equipment_service?.length || selectedCompany.hvac_equipment_repair?.length) ? (
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {selectedCompany.hvac_equipment_install && selectedCompany.hvac_equipment_install.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-primary" />
+                      HVAC Installation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.hvac_equipment_install.map((item, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {selectedCompany.hvac_equipment_service && selectedCompany.hvac_equipment_service.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      HVAC Service
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.hvac_equipment_service.map((item, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {selectedCompany.hvac_equipment_repair && selectedCompany.hvac_equipment_repair.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-primary" />
+                      HVAC Repair
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.hvac_equipment_repair.map((item, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground mb-8">No HVAC equipment services configured</p>
+          )}
+
+          {/* Plumbing Equipment */}
+          {(selectedCompany.plumbing_equipment_install?.length || selectedCompany.plumbing_equipment_service?.length || selectedCompany.plumbing_equipment_repair?.length) && (
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {selectedCompany.plumbing_equipment_install && selectedCompany.plumbing_equipment_install.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Plumbing Installation</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.plumbing_equipment_install.map((item, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {selectedCompany.plumbing_equipment_service && selectedCompany.plumbing_equipment_service.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Plumbing Service</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.plumbing_equipment_service.map((item, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {selectedCompany.plumbing_equipment_repair && selectedCompany.plumbing_equipment_repair.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Plumbing Repair</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedCompany.plumbing_equipment_repair.map((item, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ======== BRANDS SECTION ======== */}
+        {(selectedCompany.hvac_brands_install?.length || selectedCompany.hvac_brands_service?.length || selectedCompany.hvac_brands_repair?.length) && (
+          <div className="bg-muted/30 p-8">
+            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <Award className="w-6 h-6 text-primary" />
+              Brands We Work With
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {selectedCompany.hvac_brands_install && selectedCompany.hvac_brands_install.length > 0 && (
+                <div className="text-center">
+                  <h4 className="font-semibold mb-3">Brands We Install</h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {selectedCompany.hvac_brands_install.map((brand, idx) => (
+                      <Badge key={idx} className="bg-primary text-primary-foreground">{brand}</Badge>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">HVAC Equipment Types:</span>
-                  <span className="ml-2 font-medium">
-                    {(selectedCompany.hvac_equipment_install?.length || 0) + 
-                     (selectedCompany.hvac_equipment_service?.length || 0) + 
-                     (selectedCompany.hvac_equipment_repair?.length || 0)}
-                  </span>
+              )}
+              {selectedCompany.hvac_brands_service && selectedCompany.hvac_brands_service.length > 0 && (
+                <div className="text-center">
+                  <h4 className="font-semibold mb-3">Brands We Service</h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {selectedCompany.hvac_brands_service.map((brand, idx) => (
+                      <Badge key={idx} variant="secondary">{brand}</Badge>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Brands:</span>
-                  <span className="ml-2 font-medium">
-                    {(selectedCompany.hvac_brands_install?.length || 0) + 
-                     (selectedCompany.hvac_brands_service?.length || 0) + 
-                     (selectedCompany.hvac_brands_repair?.length || 0)}
-                  </span>
+              )}
+              {selectedCompany.hvac_brands_repair && selectedCompany.hvac_brands_repair.length > 0 && (
+                <div className="text-center">
+                  <h4 className="font-semibold mb-3">Brands We Repair</h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {selectedCompany.hvac_brands_repair.map((brand, idx) => (
+                      <Badge key={idx} variant="outline">{brand}</Badge>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Coupons:</span>
-                  <span className="ml-2 font-medium">
-                    {[selectedCompany.coupon_1_title, selectedCompany.coupon_2_title, selectedCompany.coupon_3_title].filter(Boolean).length}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======== SERVICE AREAS SECTION ======== */}
+        {selectedCompany.service_areas && selectedCompany.service_areas.length > 0 && (
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <MapPin className="w-6 h-6 text-primary" />
+              Service Areas
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2">
+              {selectedCompany.service_areas.map((area, idx) => (
+                <Badge key={idx} variant="outline" className="text-sm py-1 px-3">{area}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ======== FINANCING SECTION ======== */}
+        {selectedCompany.financing_enabled && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-8 border-t border-b border-green-200">
+            <div className="text-center">
+              <h3 className="text-2xl font-bold text-green-800 mb-2">Financing Available</h3>
+              <p className="text-green-700">
+                {selectedCompany.financing_provider 
+                  ? `We partner with ${selectedCompany.financing_provider} to offer flexible financing options.`
+                  : "We offer flexible financing options for your HVAC needs."
+                }
+              </p>
+              {selectedCompany.financing_url && (
+                <Badge className="mt-3 bg-green-600">Apply Now</Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======== PARTNER COMPANIES SECTION ======== */}
+        {selectedCompany.partner_companies && selectedCompany.partner_companies.length > 0 && (
+          <div className="p-8 bg-muted/20">
+            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <Users className="w-6 h-6 text-primary" />
+              Our Partners
+            </h3>
+            <div className="flex flex-wrap justify-center gap-4">
+              {selectedCompany.partner_companies.map((partner, idx) => (
+                <Badge key={idx} variant="outline" className="text-sm py-2 px-4">
+                  {partner.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ======== CONTACT SECTION ======== */}
+        <div className="p-8 bg-muted/50">
+          <h3 className="text-2xl font-bold text-center mb-6">Contact Us</h3>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Phone className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <h4 className="font-semibold mb-1">Phone</h4>
+                <p className="text-muted-foreground">{selectedCompany.company_phone || "Not set"}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Mail className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <h4 className="font-semibold mb-1">Email</h4>
+                <p className="text-muted-foreground text-sm">{selectedCompany.company_email_primary || "Not set"}</p>
+                {selectedCompany.company_support_email && (
+                  <p className="text-muted-foreground text-xs mt-1">Support: {selectedCompany.company_support_email}</p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <MapPin className="w-8 h-8 mx-auto mb-3 text-primary" />
+                <h4 className="font-semibold mb-1">Address</h4>
+                <p className="text-muted-foreground text-sm">
+                  {selectedCompany.company_address || "Not set"}
+                  {selectedCompany.company_city && <><br />{selectedCompany.company_city}, {selectedCompany.company_state} {selectedCompany.company_zip_code}</>}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* ======== POINT OF CONTACT ======== */}
+        {(selectedCompany.poc_first_name || selectedCompany.poc_email) && (
+          <div className="p-6 border-t">
+            <div className="text-center">
+              <h4 className="font-semibold mb-2">Primary Contact</h4>
+              <p className="text-muted-foreground">
+                {selectedCompany.poc_first_name} {selectedCompany.poc_last_name}
+                {selectedCompany.poc_title && <span className="text-sm"> ({selectedCompany.poc_title})</span>}
+              </p>
+              {selectedCompany.poc_email && <p className="text-sm text-muted-foreground">{selectedCompany.poc_email}</p>}
+              {selectedCompany.poc_phone && <p className="text-sm text-muted-foreground">{selectedCompany.poc_phone}</p>}
+            </div>
+          </div>
+        )}
+
+        {/* ======== FOOTER SECTION ======== */}
+        <div 
+          className="p-6 text-center text-white"
+          style={{ backgroundColor: primaryColor }}
+        >
+          <p className="font-bold text-lg mb-2">{selectedCompany.name}</p>
+          <p className="text-white/80 text-sm">
+            © {new Date().getFullYear()} {selectedCompany.name}. All rights reserved.
+          </p>
+          <p className="text-white/60 text-xs mt-2">
+            Theme: {selectedCompany.theme_style || "modern"} | Color: {selectedCompany.primary_color || "Default"}
+          </p>
         </div>
       </div>
+
+      {/* Data Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Profile Data Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Service Areas:</span>
+              <span className="ml-2 font-medium">{selectedCompany.service_areas?.length || 0}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">HVAC Equipment Types:</span>
+              <span className="ml-2 font-medium">
+                {(selectedCompany.hvac_equipment_install?.length || 0) + 
+                 (selectedCompany.hvac_equipment_service?.length || 0) + 
+                 (selectedCompany.hvac_equipment_repair?.length || 0)}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Brands:</span>
+              <span className="ml-2 font-medium">
+                {(selectedCompany.hvac_brands_install?.length || 0) + 
+                 (selectedCompany.hvac_brands_service?.length || 0) + 
+                 (selectedCompany.hvac_brands_repair?.length || 0)}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Coupons:</span>
+              <span className="ml-2 font-medium">
+                {[selectedCompany.coupon_1_title, selectedCompany.coupon_2_title, selectedCompany.coupon_3_title].filter(Boolean).length}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
