@@ -1,6 +1,6 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Wand2, Loader2 } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -286,7 +286,7 @@ export function AdminSidebar() {
     ],
   }), [companies]);
 
-  // Find index to insert Page Builder (before Logs which is at the end)
+  // Build menu items with Page Builder inserted before Logs
   const menuItems = useMemo(() => {
     const logsIndex = staticMenuItems.findIndex(item => item.title === "Logs");
     const items = [...staticMenuItems];
@@ -294,21 +294,20 @@ export function AdminSidebar() {
     return items;
   }, [pageBuilderMenu]);
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
-  // Update open groups when menuItems or currentPath changes
-  useEffect(() => {
-    setOpenGroups(
-      menuItems.reduce((acc, item) => {
-        const isGroupActive = item.children?.some(child => 
-          child.url ? currentPath.startsWith(child.url) : 
-          child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url))
-        ) ?? false;
-        acc[item.title] = isGroupActive;
-        return acc;
-      }, {} as Record<string, boolean>)
-    );
+  // Initialize open groups based on current path - only runs once per path change
+  const getInitialOpenGroups = useCallback(() => {
+    return menuItems.reduce((acc, item) => {
+      const isGroupActive = item.children?.some(child => 
+        child.url ? currentPath.startsWith(child.url) : 
+        child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url))
+      ) ?? false;
+      acc[item.title] = isGroupActive;
+      return acc;
+    }, {} as Record<string, boolean>);
   }, [currentPath, menuItems]);
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => getInitialOpenGroups());
+  const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>({});
 
   const isActive = (path: string) => currentPath === path;
 
@@ -316,39 +315,48 @@ export function AdminSidebar() {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
   };
 
+  const toggleSubGroup = (title: string) => {
+    setOpenSubGroups(prev => ({ ...prev, [title]: !prev[title] }));
+  };
+
   const renderMenuChildren = (children: MenuItem[], depth = 0) => {
-    return children.map((child) => (
-      <SidebarMenuSubItem key={child.url || child.title} className="w-full">
-        {child.children ? (
-          <Collapsible defaultOpen={child.children.some(subChild => subChild.url && isActive(subChild.url))}>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuSubButton
-                onClick={() => child.url && navigate(child.url)}
-                className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-              >
-                <child.icon className="h-4 w-4" />
-                <span>{child.title}</span>
-                <ChevronDown className="ml-auto h-3 w-3" />
-              </SidebarMenuSubButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenuSub>
-                {renderMenuChildren(child.children, depth + 1)}
-              </SidebarMenuSub>
-            </CollapsibleContent>
-          </Collapsible>
-        ) : (
-          <SidebarMenuSubButton
-            onClick={() => child.url && navigate(child.url)}
-            className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-            style={{ paddingLeft: depth > 0 ? `${depth * 8}px` : undefined }}
-          >
-            <child.icon className="h-4 w-4" />
-            <span>{child.title}</span>
-          </SidebarMenuSubButton>
-        )}
-      </SidebarMenuSubItem>
-    ));
+    return children.map((child) => {
+      const hasChildren = child.children && child.children.length > 0;
+      const isSubGroupOpen = openSubGroups[child.title] ?? 
+        (hasChildren && child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url)));
+
+      return (
+        <SidebarMenuSubItem key={child.url || child.title} className="w-full">
+          {hasChildren ? (
+            <Collapsible open={isSubGroupOpen} onOpenChange={() => toggleSubGroup(child.title)}>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuSubButton
+                  className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                >
+                  <child.icon className="h-4 w-4" />
+                  <span>{child.title}</span>
+                  <ChevronDown className={`ml-auto h-3 w-3 transition-transform ${isSubGroupOpen ? 'rotate-180' : ''}`} />
+                </SidebarMenuSubButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {child.children && renderMenuChildren(child.children, depth + 1)}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : (
+            <SidebarMenuSubButton
+              onClick={() => child.url && navigate(child.url)}
+              className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+              style={{ paddingLeft: depth > 0 ? `${depth * 8}px` : undefined }}
+            >
+              <child.icon className="h-4 w-4" />
+              <span>{child.title}</span>
+            </SidebarMenuSubButton>
+          )}
+        </SidebarMenuSubItem>
+      );
+    });
   };
 
   return (
