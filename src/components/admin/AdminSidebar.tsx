@@ -366,7 +366,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="none" className="h-full border-none">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
@@ -381,20 +381,16 @@ export function AdminSidebar() {
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton className="w-full">
-                        <item.icon className="h-4 w-4" />
-                        {open && (
-                          <>
-                            <span>{item.title}</span>
-                            {item.title === "Page Builder" && companiesLoading ? (
-                              <Loader2 className="ml-auto h-4 w-4 animate-spin" />
-                            ) : (
-                              <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${openGroups[item.title] ? 'rotate-180' : ''}`} />
-                            )}
-                          </>
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.title}</span>
+                        {item.title === "Page Builder" && companiesLoading ? (
+                          <Loader2 className="ml-auto h-4 w-4 animate-spin shrink-0" />
+                        ) : (
+                          <ChevronDown className={`ml-auto h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
                         )}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
-                    {open && item.children && (
+                    {item.children && (
                       <CollapsibleContent>
                         <SidebarMenuSub>
                           {renderMenuChildren(item.children)}
