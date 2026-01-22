@@ -50,6 +50,7 @@ import CustomersList from "@/components/admin/CustomersList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
+import TopHeaderPreview from "@/components/admin/pagebuilder/TopHeaderPreview";
 
 const SIDEBAR_MIN_SIZE = 10;
 const SIDEBAR_MAX_SIZE = 30;
@@ -187,6 +188,7 @@ const Admin = () => {
                   <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
                   <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
                   <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
+                  <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
                   <Route path="/logs/call" element={<CallLogAdd />} />
                   <Route path="/logs/list" element={<LogsList />} />
                   <Route path="/calendar/add" element={<CalendarAdd />} />
