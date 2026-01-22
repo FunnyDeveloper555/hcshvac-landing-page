@@ -337,11 +337,11 @@ export function AdminSidebar() {
             <Collapsible open={isSubGroupOpen} onOpenChange={() => toggleSubGroup(child.title)}>
               <CollapsibleTrigger asChild>
                 <SidebarMenuSubButton
-                  className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                  className={`cursor-pointer w-full min-w-0 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
                 >
-                  <child.icon className="h-4 w-4" />
-                  <span>{child.title}</span>
-                  <ChevronDown className={`ml-auto h-3 w-3 transition-transform ${isSubGroupOpen ? 'rotate-180' : ''}`} />
+                  <child.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">{child.title}</span>
+                  <ChevronDown className={`ml-auto h-3 w-3 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
                 </SidebarMenuSubButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -353,11 +353,11 @@ export function AdminSidebar() {
           ) : (
             <SidebarMenuSubButton
               onClick={() => child.url && navigate(child.url)}
-              className={`cursor-pointer w-full ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+              className={`cursor-pointer w-full min-w-0 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
               style={{ paddingLeft: depth > 0 ? `${depth * 8}px` : undefined }}
             >
-              <child.icon className="h-4 w-4" />
-              <span>{child.title}</span>
+              <child.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate flex-1">{child.title}</span>
             </SidebarMenuSubButton>
           )}
         </SidebarMenuSubItem>
@@ -366,23 +366,23 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="none" className="h-full border-none">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
+    <Sidebar collapsible="none" className="h-full border-none w-full">
+      <SidebarContent className="overflow-x-hidden">
+        <SidebarGroup className="min-w-0">
+          <SidebarGroupLabel className="truncate">Admin Panel</SidebarGroupLabel>
+          <SidebarGroupContent className="min-w-0">
+            <SidebarMenu className="min-w-0">
               {menuItems.map((item) => (
                 <Collapsible
                   key={item.title}
                   open={openGroups[item.title]}
                   onOpenChange={() => toggleGroup(item.title)}
                 >
-                  <SidebarMenuItem>
+                  <SidebarMenuItem className="min-w-0">
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="w-full">
+                      <SidebarMenuButton className="w-full min-w-0">
                         <item.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{item.title}</span>
+                        <span className="truncate flex-1">{item.title}</span>
                         {item.title === "Page Builder" && companiesLoading ? (
                           <Loader2 className="ml-auto h-4 w-4 animate-spin shrink-0" />
                         ) : (
@@ -392,7 +392,7 @@ export function AdminSidebar() {
                     </CollapsibleTrigger>
                     {item.children && (
                       <CollapsibleContent>
-                        <SidebarMenuSub>
+                        <SidebarMenuSub className="min-w-0">
                           {renderMenuChildren(item.children)}
                         </SidebarMenuSub>
                       </CollapsibleContent>
@@ -404,7 +404,6 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   );
 }
