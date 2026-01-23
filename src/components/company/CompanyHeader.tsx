@@ -1,21 +1,48 @@
-import { Phone, Mail, Menu } from "lucide-react";
+import { useState } from "react";
+import { Phone, Mail, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeConfig } from "@/lib/companyThemes";
 import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+interface PageContent {
+  title: string;
+  subtitle: string;
+  content: string;
+  enabled: boolean;
+}
 
 interface Company {
   name: string;
   logo_url: string | null;
   company_phone: string | null;
   company_email_primary: string | null;
+  header_pages?: Record<string, PageContent> | null;
 }
 
 interface CompanyHeaderProps {
   company: Company;
   theme: ThemeConfig;
+  activePage?: string;
+  onPageChange?: (pageKey: string) => void;
 }
 
-const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
+const HEADER_PAGES = [
+  { key: "about-us", label: "About Us" },
+  { key: "financing", label: "Financing" },
+  { key: "services", label: "Services" },
+  { key: "residential", label: "Residential" },
+  { key: "commercial", label: "Commercial" },
+  { key: "air-quality", label: "Air Quality" },
+];
+
+const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHeaderProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const headerStyles = {
     standard: "bg-background/95 backdrop-blur-sm border-b border-border",
     centered: "bg-background border-b-2 border-primary/20",
@@ -25,7 +52,19 @@ const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
   };
 
   const isBoldHeader = theme.layout.headerStyle === 'bold';
-  const isTransparent = theme.layout.headerStyle === 'transparent' || theme.layout.headerStyle === 'minimal';
+
+  // Get enabled pages
+  const enabledPages = HEADER_PAGES.filter(page => {
+    const pageData = company.header_pages?.[page.key];
+    return pageData?.enabled !== false; // Show by default if not configured
+  });
+
+  const handlePageClick = (pageKey: string) => {
+    if (onPageChange) {
+      onPageChange(pageKey);
+    }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className={cn(
@@ -33,7 +72,7 @@ const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
       headerStyles[theme.layout.headerStyle]
     )}>
       <div className={cn(
-        "container mx-auto px-4 py-4",
+        "container mx-auto px-4 py-3",
         theme.layout.headerStyle === 'centered' && "text-center"
       )}>
         <div className={cn(
@@ -53,24 +92,42 @@ const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
               />
             ) : (
               <h1 className={cn(
-                "text-2xl",
+                "text-xl md:text-2xl",
                 isBoldHeader ? "text-primary-foreground font-black" : "text-primary font-bold"
               )}>
                 {company.name}
               </h1>
             )}
           </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {enabledPages.map(page => (
+              <button
+                key={page.key}
+                onClick={() => handlePageClick(page.key)}
+                className={cn(
+                  "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                  activePage === page.key 
+                    ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                    : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
+                )}
+              >
+                {company.header_pages?.[page.key]?.title || page.label}
+              </button>
+            ))}
+          </nav>
           
-          {/* Contact Info */}
+          {/* Contact Info & Mobile Menu */}
           <div className={cn(
-            "flex items-center gap-4",
+            "flex items-center gap-2",
             theme.layout.headerStyle === 'centered' && "justify-center"
           )}>
             {company.company_email_primary && (
               <a 
                 href={`mailto:${company.company_email_primary}`}
                 className={cn(
-                  "hidden lg:flex items-center gap-2 transition-colors",
+                  "hidden xl:flex items-center gap-2 transition-colors",
                   isBoldHeader 
                     ? "text-primary-foreground/80 hover:text-primary-foreground" 
                     : "text-foreground hover:text-primary"
@@ -83,7 +140,7 @@ const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
             
             {company.company_phone && (
               <Button 
-                variant={isBoldHeader ? "secondary" : "accent"}
+                variant={isBoldHeader ? "secondary" : "default"}
                 size="sm"
                 className={cn(
                   theme.typography.rounded === 'none' && "rounded-none",
@@ -94,9 +151,43 @@ const CompanyHeader = ({ company, theme }: CompanyHeaderProps) => {
               >
                 <Phone className="w-4 h-4" />
                 <span className="hidden sm:inline">{company.company_phone}</span>
-                <span className="sm:hidden">Call Now</span>
+                <span className="sm:hidden">Call</span>
               </Button>
             )}
+
+            {/* Mobile Menu */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={cn(
+                    "lg:hidden",
+                    isBoldHeader && "text-primary-foreground hover:bg-primary-foreground/10"
+                  )}
+                >
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+                <nav className="flex flex-col gap-2 mt-8">
+                  {enabledPages.map(page => (
+                    <button
+                      key={page.key}
+                      onClick={() => handlePageClick(page.key)}
+                      className={cn(
+                        "px-4 py-3 text-left text-base font-medium rounded-lg transition-colors",
+                        activePage === page.key 
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground hover:bg-muted"
+                      )}
+                    >
+                      {company.header_pages?.[page.key]?.title || page.label}
+                    </button>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

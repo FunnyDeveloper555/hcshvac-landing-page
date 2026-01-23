@@ -57,15 +57,16 @@ export default function HeaderPageEditor({ pageKey, pageTitle, pageDescription }
         return;
       }
 
-      setCompany(data as Company);
+      const companyData = data as unknown as Company;
+      setCompany(companyData);
       
       // Load existing page content if available
-      const headerPages = data.header_pages as Record<string, PageContent> | null;
+      const headerPages = companyData.header_pages as Record<string, PageContent> | null;
       if (headerPages && headerPages[pageKey]) {
         setFormData(headerPages[pageKey]);
       } else {
         // Set default content based on page type
-        setFormData(getDefaultContent(pageKey, data.name));
+        setFormData(getDefaultContent(pageKey, companyData.name));
       }
       
       setLoading(false);
@@ -130,7 +131,7 @@ export default function HeaderPageEditor({ pageKey, pageTitle, pageDescription }
 
     const { error } = await supabase
       .from("companies")
-      .update({ header_pages: updatedPages })
+      .update({ header_pages: updatedPages } as Record<string, unknown>)
       .eq("id", companyId);
 
     if (error) {
