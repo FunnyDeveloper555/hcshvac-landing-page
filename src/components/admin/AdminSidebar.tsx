@@ -251,6 +251,7 @@ export function AdminSidebar() {
   const companySubmenus: MenuItem[] = [
     { title: "Website Preview", url: "/admin/page-builder/profile", icon: FileCheck },
     { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
+    { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
     { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
     { 
