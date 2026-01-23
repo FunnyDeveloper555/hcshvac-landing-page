@@ -52,6 +52,12 @@ import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
 import TopHeaderPreview from "@/components/admin/pagebuilder/TopHeaderPreview";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
+import HeaderPageAboutUs from "@/components/admin/pagebuilder/HeaderPageAboutUs";
+import HeaderPageFinancing from "@/components/admin/pagebuilder/HeaderPageFinancing";
+import HeaderPageServices from "@/components/admin/pagebuilder/HeaderPageServices";
+import HeaderPageResidential from "@/components/admin/pagebuilder/HeaderPageResidential";
+import HeaderPageCommercial from "@/components/admin/pagebuilder/HeaderPageCommercial";
+import HeaderPageAirQuality from "@/components/admin/pagebuilder/HeaderPageAirQuality";
 
 const SIDEBAR_MIN_SIZE = 10;
 const SIDEBAR_MAX_SIZE = 30;
@@ -191,6 +197,13 @@ const Admin = () => {
                   <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
                   <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
                   <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
+                  {/* Header Pages routes */}
+                  <Route path="/page-builder/company/:companyId/header-pages/about-us" element={<HeaderPageAboutUs />} />
+                  <Route path="/page-builder/company/:companyId/header-pages/financing" element={<HeaderPageFinancing />} />
+                  <Route path="/page-builder/company/:companyId/header-pages/services" element={<HeaderPageServices />} />
+                  <Route path="/page-builder/company/:companyId/header-pages/residential" element={<HeaderPageResidential />} />
+                  <Route path="/page-builder/company/:companyId/header-pages/commercial" element={<HeaderPageCommercial />} />
+                  <Route path="/page-builder/company/:companyId/header-pages/air-quality" element={<HeaderPageAirQuality />} />
                   <Route path="/logs/call" element={<CallLogAdd />} />
                   <Route path="/logs/list" element={<LogsList />} />
                   <Route path="/calendar/add" element={<CalendarAdd />} />

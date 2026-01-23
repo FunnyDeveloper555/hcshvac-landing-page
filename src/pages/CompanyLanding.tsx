@@ -10,6 +10,13 @@ import CompanyFooter from "@/components/company/CompanyFooter";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 
+interface PageContent {
+  title: string;
+  subtitle: string;
+  content: string;
+  enabled: boolean;
+}
+
 interface Company {
   id: string;
   name: string;
@@ -33,6 +40,7 @@ interface Company {
   hero_image_url: string | null;
   affiliations: Record<string, string> | null;
   theme_style: ThemeStyle | null;
+  header_pages: Record<string, PageContent> | null;
 }
 
 const CompanyLanding = () => {
@@ -41,6 +49,7 @@ const CompanyLanding = () => {
   const [services, setServices] = useState<Array<{ id: string; title: string; description: string; icon: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [activePage, setActivePage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -63,7 +72,7 @@ const CompanyLanding = () => {
         return;
       }
 
-      setCompany(data as Company);
+      setCompany(data as unknown as Company);
 
       const servicesProvided = data.services_provided as string[] | null;
       if (servicesProvided && Array.isArray(servicesProvided) && servicesProvided.length > 0) {
@@ -106,6 +115,20 @@ const CompanyLanding = () => {
   const themeStyle = company.theme_style || 'modern';
   const theme = getThemeConfig(themeStyle);
 
+  const handlePageChange = (pageKey: string) => {
+    setActivePage(pageKey);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToHome = () => {
+    setActivePage(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Get active page content
+  const activePageContent = activePage ? company.header_pages?.[activePage] : null;
+
   return (
     <div 
       className="min-h-screen"
@@ -123,12 +146,47 @@ const CompanyLanding = () => {
         "--ring": theme.colors.primary,
       } as React.CSSProperties}
     >
-      <CompanyHeader company={company} theme={theme} />
+      <CompanyHeader 
+        company={company} 
+        theme={theme} 
+        activePage={activePage || undefined}
+        onPageChange={handlePageChange}
+      />
       <main>
-        <CompanyHero company={company} theme={theme} />
-        <CompanyServices company={company} services={services} theme={theme} />
-        <CompanyServiceAreas company={company} />
-        <CompanyContact company={company} theme={theme} />
+        {activePage && activePageContent ? (
+          // Show the selected page content
+          <section className="pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              <button 
+                onClick={handleBackToHome}
+                className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                ← Back to Home
+              </button>
+              <div className="max-w-4xl mx-auto">
+                <div className="text-center mb-12">
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4">{activePageContent.title}</h1>
+                  {activePageContent.subtitle && (
+                    <p className="text-xl text-muted-foreground">{activePageContent.subtitle}</p>
+                  )}
+                </div>
+                <div className="prose prose-lg max-w-none">
+                  <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                    {activePageContent.content}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : (
+          // Show the home page content
+          <>
+            <CompanyHero company={company} theme={theme} />
+            <CompanyServices company={company} services={services} theme={theme} />
+            <CompanyServiceAreas company={company} />
+            <CompanyContact company={company} theme={theme} />
+          </>
+        )}
       </main>
       <CompanyFooter company={company} theme={theme} />
     </div>

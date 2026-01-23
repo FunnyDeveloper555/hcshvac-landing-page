@@ -371,6 +371,7 @@ export type Database = {
           financing_enabled: boolean | null
           financing_provider: string | null
           financing_url: string | null
+          header_pages: Json | null
           hero_image_url: string | null
           hvac_brands_install: Json | null
           hvac_brands_repair: Json | null
@@ -433,6 +434,7 @@ export type Database = {
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
+          header_pages?: Json | null
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
           hvac_brands_repair?: Json | null
@@ -495,6 +497,7 @@ export type Database = {
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
+          header_pages?: Json | null
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
           hvac_brands_repair?: Json | null
