@@ -252,6 +252,19 @@ export function AdminSidebar() {
     { title: "Website Preview", url: "/admin/page-builder/profile", icon: FileCheck },
     { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
     { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
+    { 
+      title: "Header Pages", 
+      url: "/admin/page-builder/header-pages", 
+      icon: FileText,
+      children: [
+        { title: "About Us", url: "/admin/page-builder/header-pages/about-us", icon: FileText },
+        { title: "Financing", url: "/admin/page-builder/header-pages/financing", icon: FileText },
+        { title: "Services", url: "/admin/page-builder/header-pages/services", icon: Briefcase },
+        { title: "Contact Us", url: "/admin/page-builder/header-pages/contact-us", icon: FileText },
+        { title: "Careers", url: "/admin/page-builder/header-pages/careers", icon: Users },
+        { title: "FAQ", url: "/admin/page-builder/header-pages/faq", icon: FileText },
+      ]
+    },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
     { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
     { 
