@@ -253,8 +253,8 @@ export function AdminSidebar() {
     { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
     { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
     { 
-      title: "Header Pages", 
-      url: "/admin/page-builder/header-pages", 
+      title: "Header Menus", 
+      url: "/admin/page-builder/header-menus", 
       icon: FileText,
       children: [
         { title: "About Us", url: "/admin/page-builder/header-pages/about-us", icon: FileText },
