@@ -260,9 +260,9 @@ export function AdminSidebar() {
         { title: "About Us", url: "/admin/page-builder/header-pages/about-us", icon: FileText },
         { title: "Financing", url: "/admin/page-builder/header-pages/financing", icon: FileText },
         { title: "Services", url: "/admin/page-builder/header-pages/services", icon: Briefcase },
-        { title: "Contact Us", url: "/admin/page-builder/header-pages/contact-us", icon: FileText },
-        { title: "Careers", url: "/admin/page-builder/header-pages/careers", icon: Users },
-        { title: "FAQ", url: "/admin/page-builder/header-pages/faq", icon: FileText },
+        { title: "Residential", url: "/admin/page-builder/header-pages/residential", icon: Building2 },
+        { title: "Commercial", url: "/admin/page-builder/header-pages/commercial", icon: Building },
+        { title: "Air Quality", url: "/admin/page-builder/header-pages/air-quality", icon: Droplet },
       ]
     },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
