@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, Monitor, Smartphone, Save } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Monitor, Smartphone, Save, Phone, Image } from "lucide-react";
 import { toast } from "sonner";
+import hvacHero from "@/assets/hvac-hero.jpg";
 
 interface Company {
   id: string;
   name: string;
+  website_title: string | null;
   website_tagline: string | null;
+  website_description: string | null;
+  hero_image_url: string | null;
   company_phone: string | null;
-  company_email_primary: string | null;
-  logo_url: string | null;
   primary_color: string | null;
 }
 
@@ -24,11 +27,10 @@ const BannerPreview = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
+    website_title: "",
     website_tagline: "",
-    company_phone: "",
-    company_email_primary: "",
-    logo_url: "",
-    primary_color: "#1e40af",
+    website_description: "",
+    hero_image_url: "",
   });
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const BannerPreview = () => {
 
       const { data, error } = await supabase
         .from("companies")
-        .select("id, name, website_tagline, company_phone, company_email_primary, logo_url, primary_color")
+        .select("id, name, website_title, website_tagline, website_description, hero_image_url, company_phone, primary_color")
         .eq("id", companyId)
         .maybeSingle();
 
@@ -47,11 +49,10 @@ const BannerPreview = () => {
       } else if (data) {
         setCompany(data);
         setFormData({
+          website_title: data.website_title || "",
           website_tagline: data.website_tagline || "",
-          company_phone: data.company_phone || "",
-          company_email_primary: data.company_email_primary || "",
-          logo_url: data.logo_url || "",
-          primary_color: data.primary_color || "#1e40af",
+          website_description: data.website_description || "",
+          hero_image_url: data.hero_image_url || "",
         });
       }
       setLoading(false);
@@ -71,11 +72,10 @@ const BannerPreview = () => {
     const { error } = await supabase
       .from("companies")
       .update({
+        website_title: formData.website_title.trim() || null,
         website_tagline: formData.website_tagline.trim() || null,
-        company_phone: formData.company_phone.trim() || null,
-        company_email_primary: formData.company_email_primary.trim() || null,
-        logo_url: formData.logo_url.trim() || null,
-        primary_color: formData.primary_color || null,
+        website_description: formData.website_description.trim() || null,
+        hero_image_url: formData.hero_image_url.trim() || null,
       })
       .eq("id", companyId);
 
@@ -105,13 +105,18 @@ const BannerPreview = () => {
     );
   }
 
-  const primaryColor = formData.primary_color || "#1e40af";
+  const primaryColor = company.primary_color || "#1e40af";
+  const heroImage = formData.hero_image_url || hvacHero;
+  const displayTitle = formData.website_title || `${company.name} - Your Trusted HVAC Partner`;
+  const displayTagline = formData.website_tagline || "24/7 Emergency Service Available";
+  const displayDescription = formData.website_description || 
+    `Professional heating, ventilation, and air conditioning services for residential and commercial properties.`;
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Banner Preview</h2>
-        <p className="text-muted-foreground">Preview and configure the banner section for {company.name}</p>
+        <p className="text-muted-foreground">Preview and configure the hero banner section for {company.name}</p>
       </div>
 
       {/* Desktop Preview */}
@@ -124,39 +129,33 @@ const BannerPreview = () => {
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg overflow-hidden">
-            {/* Banner Section */}
+            {/* Hero Banner Section */}
             <div 
-              className="text-white px-6 py-3"
-              style={{ backgroundColor: primaryColor }}
+              className="relative h-80 bg-cover bg-center"
+              style={{ backgroundImage: `url(${heroImage})` }}
             >
-              <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {formData.logo_url && (
-                    <img 
-                      src={formData.logo_url} 
-                      alt={`${company.name} logo`}
-                      className="h-10 w-auto object-contain bg-white rounded p-1"
-                    />
-                  )}
-                  <div>
-                    <h1 className="font-bold text-lg">{company.name}</h1>
-                    {formData.website_tagline && (
-                      <p className="text-sm opacity-90">{formData.website_tagline}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-6 text-sm">
-                  {formData.company_phone && (
-                    <div className="flex items-center gap-2">
-                      <span>📞</span>
-                      <span className="font-medium">{formData.company_phone}</span>
-                    </div>
-                  )}
-                  {formData.company_email_primary && (
-                    <div className="flex items-center gap-2">
-                      <span>✉️</span>
-                      <span>{formData.company_email_primary}</span>
-                    </div>
+              <div className="absolute inset-0 bg-black/50" />
+              <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-8">
+                <h1 className="text-4xl font-bold mb-2">{displayTitle}</h1>
+                <p 
+                  className="text-xl font-medium mb-4"
+                  style={{ color: primaryColor }}
+                >
+                  {displayTagline}
+                </p>
+                <p className="text-lg max-w-2xl mb-6 opacity-90">{displayDescription}</p>
+                <div className="flex gap-4">
+                  <button 
+                    className="px-6 py-3 rounded-lg font-semibold text-white"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Schedule Service
+                  </button>
+                  {company.company_phone && (
+                    <button className="px-6 py-3 rounded-lg font-semibold bg-white text-gray-900 flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      {company.company_phone}
+                    </button>
                   )}
                 </div>
               </div>
@@ -175,32 +174,35 @@ const BannerPreview = () => {
         </CardHeader>
         <CardContent>
           <div className="max-w-sm mx-auto border rounded-lg overflow-hidden">
-            {/* Mobile Banner Section */}
+            {/* Mobile Hero Banner Section */}
             <div 
-              className="text-white px-4 py-3"
-              style={{ backgroundColor: primaryColor }}
+              className="relative h-64 bg-cover bg-center"
+              style={{ backgroundImage: `url(${heroImage})` }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {formData.logo_url && (
-                    <img 
-                      src={formData.logo_url} 
-                      alt={`${company.name} logo`}
-                      className="h-8 w-auto object-contain bg-white rounded p-1"
-                    />
+              <div className="absolute inset-0 bg-black/50" />
+              <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-4">
+                <h1 className="text-xl font-bold mb-1">{displayTitle}</h1>
+                <p 
+                  className="text-sm font-medium mb-2"
+                  style={{ color: primaryColor }}
+                >
+                  {displayTagline}
+                </p>
+                <p className="text-sm mb-4 opacity-90 line-clamp-2">{displayDescription}</p>
+                <div className="flex flex-col gap-2 w-full px-4">
+                  <button 
+                    className="w-full px-4 py-2 rounded-lg font-semibold text-white text-sm"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Schedule Service
+                  </button>
+                  {company.company_phone && (
+                    <button className="w-full px-4 py-2 rounded-lg font-semibold bg-white text-gray-900 flex items-center justify-center gap-2 text-sm">
+                      <Phone className="h-3 w-3" />
+                      Call Now
+                    </button>
                   )}
-                  <div>
-                    <h1 className="font-bold text-sm">{company.name}</h1>
-                    {formData.website_tagline && (
-                      <p className="text-xs opacity-90 truncate max-w-[150px]">{formData.website_tagline}</p>
-                    )}
-                  </div>
                 </div>
-                {formData.company_phone && (
-                  <a href={`tel:${formData.company_phone}`} className="bg-white/20 px-2 py-1 rounded text-xs">
-                    Call
-                  </a>
-                )}
               </div>
             </div>
           </div>
@@ -219,59 +221,46 @@ const BannerPreview = () => {
               <p className="font-medium py-2">{company.name}</p>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="hero_image">Hero Image URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="hero_image"
+                  value={formData.hero_image_url}
+                  onChange={(e) => handleInputChange("hero_image_url", e.target.value)}
+                  placeholder="Enter hero image URL (leave empty for default)"
+                />
+                <div className="flex items-center justify-center w-10 h-10 border rounded bg-muted">
+                  <Image className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="title">Website Title</Label>
+              <Input
+                id="title"
+                value={formData.website_title}
+                onChange={(e) => handleInputChange("website_title", e.target.value)}
+                placeholder={`${company.name} - Your Trusted HVAC Partner`}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="tagline">Tagline</Label>
               <Input
                 id="tagline"
                 value={formData.website_tagline}
                 onChange={(e) => handleInputChange("website_tagline", e.target.value)}
-                placeholder="Enter website tagline"
+                placeholder="24/7 Emergency Service Available"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Contact Phone</Label>
-              <Input
-                id="phone"
-                value={formData.company_phone}
-                onChange={(e) => handleInputChange("company_phone", e.target.value)}
-                placeholder="Enter phone number"
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.website_description}
+                onChange={(e) => handleInputChange("website_description", e.target.value)}
+                placeholder="Professional heating, ventilation, and air conditioning services..."
+                rows={3}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Primary Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.company_email_primary}
-                onChange={(e) => handleInputChange("company_email_primary", e.target.value)}
-                placeholder="Enter primary email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="logo">Logo URL</Label>
-              <Input
-                id="logo"
-                value={formData.logo_url}
-                onChange={(e) => handleInputChange("logo_url", e.target.value)}
-                placeholder="Enter logo URL"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="color">Primary Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="color"
-                  type="color"
-                  value={formData.primary_color}
-                  onChange={(e) => handleInputChange("primary_color", e.target.value)}
-                  className="w-16 h-10 p-1 cursor-pointer"
-                />
-                <Input
-                  value={formData.primary_color}
-                  onChange={(e) => handleInputChange("primary_color", e.target.value)}
-                  placeholder="#1e40af"
-                  className="flex-1"
-                />
-              </div>
             </div>
           </div>
           <div className="mt-6">
