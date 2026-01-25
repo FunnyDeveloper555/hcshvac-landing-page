@@ -537,6 +537,50 @@ export type Database = {
         }
         Relationships: []
       }
+      company_images: {
+        Row: {
+          alt_text: string
+          company_id: string
+          created_at: string
+          display_order: number
+          id: string
+          image_type: string
+          image_url: string
+          is_active: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string
+          company_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_type?: string
+          image_url: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string
+          company_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_type?: string
+          image_url?: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_images_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_registrations: {
         Row: {
           account_number: string | null
