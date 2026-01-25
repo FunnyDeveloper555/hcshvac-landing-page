@@ -3,7 +3,14 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award } from "lucide-react";
+import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText } from "lucide-react";
+
+interface PageContent {
+  title: string;
+  subtitle: string;
+  content: string;
+  enabled: boolean;
+}
 
 interface Company {
   id: string;
@@ -54,7 +61,17 @@ interface Company {
   poc_title: string | null;
   poc_phone: string | null;
   poc_email: string | null;
+  header_pages: Record<string, PageContent> | null;
 }
+
+const HEADER_MENUS = [
+  { key: "about-us", label: "About Us" },
+  { key: "financing", label: "Financing" },
+  { key: "services", label: "Services" },
+  { key: "residential", label: "Residential" },
+  { key: "commercial", label: "Commercial" },
+  { key: "air-quality", label: "Air Quality" },
+];
 
 const CompanyWebsiteMockup = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -78,6 +95,7 @@ const CompanyWebsiteMockup = () => {
         const companyData = {
           ...data,
           partner_companies: data.partner_companies as Array<{ name: string; url: string }> | null,
+          header_pages: data.header_pages as unknown as Record<string, PageContent> | null,
         } as Company;
         setSelectedCompany(companyData);
       }
@@ -170,6 +188,36 @@ const CompanyWebsiteMockup = () => {
                 {selectedCompany.company_phone}
               </span>
             )}
+          </div>
+        </div>
+
+        {/* ======== HEADER MENUS NAVIGATION ======== */}
+        <div className="bg-muted border-b px-4 py-2">
+          <div className="flex items-center gap-1 flex-wrap">
+            {HEADER_MENUS.map((menu) => {
+              const pageData = selectedCompany.header_pages?.[menu.key];
+              const isEnabled = pageData?.enabled !== false;
+              const title = pageData?.title || menu.label;
+              
+              return (
+                <div
+                  key={menu.key}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 ${
+                    isEnabled 
+                      ? "bg-background text-foreground" 
+                      : "bg-muted-foreground/10 text-muted-foreground"
+                  }`}
+                >
+                  <FileText className="w-3 h-3" />
+                  {title}
+                  {!isEnabled && (
+                    <Badge variant="outline" className="text-xs px-1 py-0 ml-1">
+                      Disabled
+                    </Badge>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
