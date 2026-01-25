@@ -5,6 +5,7 @@ import type { Json } from "@/integrations/supabase/types";
 type EntityType = 
   | "appointment" 
   | "company" 
+  | "company_image"
   | "employee" 
   | "vendor" 
   | "service" 

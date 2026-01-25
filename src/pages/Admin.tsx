@@ -29,6 +29,7 @@ import EquipmentBrands from "@/components/admin/pagebuilder/EquipmentBrands";
 import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
 import AreasService from "@/components/admin/pagebuilder/AreasService";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
+import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
@@ -191,7 +192,7 @@ const Admin = () => {
                   <Route path="/page-builder/company/:companyId/equipment-brands" element={<EquipmentBrands />} />
                   <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
                   <Route path="/page-builder/company/:companyId/areas-service" element={<AreasService />} />
-                  <Route path="/page-builder/company/:companyId/images-logos" element={<ImagesLogos />} />
+                  <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
                   <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
                   <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
                   <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
