@@ -77,6 +77,7 @@ const CompanyWebsiteMockup = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activePage, setActivePage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -193,33 +194,66 @@ const CompanyWebsiteMockup = () => {
 
         {/* ======== HEADER MENUS NAVIGATION ======== */}
         <div className="bg-muted border-b px-4 py-2">
-          <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center justify-center gap-1 flex-wrap">
+            <button
+              onClick={() => setActivePage(null)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 cursor-pointer transition-colors ${
+                activePage === null 
+                  ? "bg-primary text-primary-foreground" 
+                  : "bg-background text-foreground hover:bg-accent"
+              }`}
+            >
+              Home
+            </button>
             {HEADER_MENUS.map((menu) => {
               const pageData = selectedCompany.header_pages?.[menu.key];
               const isEnabled = pageData?.enabled !== false;
               const title = pageData?.title || menu.label;
+              const isActive = activePage === menu.key;
+              
+              if (!isEnabled) return null;
               
               return (
-                <div
+                <button
                   key={menu.key}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 ${
-                    isEnabled 
-                      ? "bg-background text-foreground" 
-                      : "bg-muted-foreground/10 text-muted-foreground"
+                  onClick={() => setActivePage(menu.key)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 cursor-pointer transition-colors ${
+                    isActive 
+                      ? "bg-primary text-primary-foreground" 
+                      : "bg-background text-foreground hover:bg-accent"
                   }`}
                 >
-                  <FileText className="w-3 h-3" />
                   {title}
-                  {!isEnabled && (
-                    <Badge variant="outline" className="text-xs px-1 py-0 ml-1">
-                      Disabled
-                    </Badge>
-                  )}
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
+
+        {/* ======== PAGE CONTENT ======== */}
+        {activePage && selectedCompany.header_pages?.[activePage] ? (
+          <div className="p-8 md:p-12">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  {selectedCompany.header_pages[activePage].title}
+                </h2>
+                {selectedCompany.header_pages[activePage].subtitle && (
+                  <p className="text-xl text-muted-foreground">
+                    {selectedCompany.header_pages[activePage].subtitle}
+                  </p>
+                )}
+              </div>
+              <div className="prose prose-lg max-w-none">
+                <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
+                  {selectedCompany.header_pages[activePage].content || "No content configured for this page yet."}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+        
 
         {/* ======== HERO SECTION ======== */}
         <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
@@ -564,6 +598,8 @@ const CompanyWebsiteMockup = () => {
             Theme: {selectedCompany.theme_style || "modern"} | Color: {selectedCompany.primary_color || "Default"}
           </p>
         </div>
+          </>
+        )}
       </div>
 
       {/* Data Summary */}
