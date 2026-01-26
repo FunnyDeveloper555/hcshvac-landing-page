@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, Trash2, Pencil, Image as ImageIcon, X } from "lucide-react";
+import { Loader2, Upload, Trash2, Pencil, Image as ImageIcon, X, Search, Eye } from "lucide-react";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -44,6 +44,9 @@ export default function CompanyImages() {
   const [uploading, setUploading] = useState(false);
   const [editingImage, setEditingImage] = useState<CompanyImage | null>(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [previewImage, setPreviewImage] = useState<CompanyImage | null>(null);
   
   const [formData, setFormData] = useState({
     alt_text: "",
@@ -84,6 +87,15 @@ export default function CompanyImages() {
     },
     enabled: !!companyId,
   });
+
+  // Filter images based on search and type filter
+  const filteredImages = images?.filter((image) => {
+    const matchesSearch = searchQuery === "" || 
+      image.alt_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      image.image_url.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === "all" || image.image_type === filterType;
+    return matchesSearch && matchesType;
+  }) || [];
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -272,21 +284,53 @@ export default function CompanyImages() {
         </Button>
       </div>
 
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by alt text or filename..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {IMAGE_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center items-center p-8">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
-      ) : images && images.length > 0 ? (
+      ) : filteredImages.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {images.map((image) => (
+          {filteredImages.map((image) => (
             <Card key={image.id} className={!image.is_active ? "opacity-60" : ""}>
               <CardContent className="p-4">
-                <div className="aspect-video relative mb-3 bg-muted rounded-md overflow-hidden">
+                <div 
+                  className="aspect-video relative mb-3 bg-muted rounded-md overflow-hidden cursor-pointer group"
+                  onClick={() => setPreviewImage(image)}
+                >
                   <img
                     src={image.image_url}
                     alt={image.alt_text}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                   {!image.is_active && (
                     <div className="absolute top-2 right-2 bg-muted-foreground/80 text-white px-2 py-1 rounded text-xs">
                       Inactive
@@ -329,6 +373,16 @@ export default function CompanyImages() {
             </Card>
           ))}
         </div>
+      ) : images && images.length > 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground mb-2">No images match your search</p>
+            <Button variant="outline" onClick={() => { setSearchQuery(""); setFilterType("all"); }}>
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
@@ -456,6 +510,45 @@ export default function CompanyImages() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{previewImage?.alt_text || "Image Preview"}</DialogTitle>
+            <DialogDescription>
+              Type: {previewImage?.image_type} | Order: {previewImage?.display_order}
+            </DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            <div className="flex flex-col gap-4">
+              <div className="relative bg-muted rounded-lg overflow-hidden flex items-center justify-center max-h-[60vh]">
+                <img
+                  src={previewImage.image_url}
+                  alt={previewImage.alt_text}
+                  className="max-w-full max-h-[60vh] object-contain"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => handleEdit(previewImage)}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    deleteMutation.mutate(previewImage);
+                    setPreviewImage(null);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
