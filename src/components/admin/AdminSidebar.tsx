@@ -352,15 +352,15 @@ export function AdminSidebar() {
             <Collapsible open={isSubGroupOpen} onOpenChange={() => toggleSubGroup(child.title)}>
               <CollapsibleTrigger asChild>
                 <SidebarMenuSubButton
-                  className={`cursor-pointer w-full min-w-0 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                  className={`cursor-pointer w-full min-w-0 gap-2 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
                 >
                   <child.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate flex-1">{child.title}</span>
-                  <ChevronDown className={`ml-auto h-3 w-3 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
+                  <span className="truncate flex-1 min-w-0">{child.title}</span>
+                  <ChevronDown className={`h-3 w-3 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
                 </SidebarMenuSubButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub>
+                <SidebarMenuSub className="pl-4 border-l border-sidebar-border ml-2">
                   {child.children && renderMenuChildren(child.children, depth + 1)}
                 </SidebarMenuSub>
               </CollapsibleContent>
@@ -368,11 +368,10 @@ export function AdminSidebar() {
           ) : (
             <SidebarMenuSubButton
               onClick={() => child.url && navigate(child.url)}
-              className={`cursor-pointer w-full min-w-0 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
-              style={{ paddingLeft: depth > 0 ? `${depth * 8}px` : undefined }}
+              className={`cursor-pointer w-full min-w-0 gap-2 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
             >
               <child.icon className="h-4 w-4 shrink-0" />
-              <span className="truncate flex-1">{child.title}</span>
+              <span className="truncate flex-1 min-w-0">{child.title}</span>
             </SidebarMenuSubButton>
           )}
         </SidebarMenuSubItem>
@@ -381,12 +380,12 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="none" className="h-full border-none w-full">
-      <SidebarContent className="overflow-x-hidden">
-        <SidebarGroup className="min-w-0">
-          <SidebarGroupLabel className="truncate">Admin Panel</SidebarGroupLabel>
+    <Sidebar collapsible="icon" className="h-full border-r border-sidebar-border">
+      <SidebarContent className="overflow-x-hidden py-2">
+        <SidebarGroup className="min-w-0 px-2">
+          <SidebarGroupLabel className="truncate px-2 mb-2">Admin Panel</SidebarGroupLabel>
           <SidebarGroupContent className="min-w-0">
-            <SidebarMenu className="min-w-0">
+            <SidebarMenu className="min-w-0 gap-1">
               {menuItems.map((item) => (
                 <Collapsible
                   key={item.title}
@@ -395,19 +394,19 @@ export function AdminSidebar() {
                 >
                   <SidebarMenuItem className="min-w-0">
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="w-full min-w-0">
+                      <SidebarMenuButton className="w-full min-w-0 gap-2" tooltip={item.title}>
                         <item.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate flex-1">{item.title}</span>
+                        <span className="truncate flex-1 min-w-0">{item.title}</span>
                         {item.title === "Page Builder" && companiesLoading ? (
-                          <Loader2 className="ml-auto h-4 w-4 animate-spin shrink-0" />
+                          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                         ) : (
-                          <ChevronDown className={`ml-auto h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
                         )}
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     {item.children && (
                       <CollapsibleContent>
-                        <SidebarMenuSub className="min-w-0">
+                        <SidebarMenuSub className="min-w-0 pl-4 border-l border-sidebar-border ml-2 mt-1">
                           {renderMenuChildren(item.children)}
                         </SidebarMenuSub>
                       </CollapsibleContent>
@@ -419,6 +418,7 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 }
