@@ -3,22 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarRail,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MenuItem {
@@ -228,7 +212,6 @@ const staticMenuItems: MenuItem[] = [
 ];
 
 export function AdminSidebar() {
-  const { open } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -357,78 +340,78 @@ export function AdminSidebar() {
         (hasChildren && child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url)));
 
       return (
-        <SidebarMenuSubItem key={child.url || child.title} className="w-full">
+        <div key={child.url || child.title} className="w-full min-w-0">
           {hasChildren ? (
             <Collapsible open={isSubGroupOpen} onOpenChange={() => toggleSubGroup(child.title)}>
               <CollapsibleTrigger asChild>
-                <SidebarMenuSubButton
-                  className={`cursor-pointer w-full min-w-0 gap-2 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+                <button
+                  className={`cursor-pointer w-full min-w-0 flex items-center gap-2 px-2 py-1 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
                 >
                   <child.icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate flex-1 min-w-0">{child.title}</span>
+                  <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
                   <ChevronDown className={`h-3 w-3 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
-                </SidebarMenuSubButton>
+                </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub className="pl-4 border-l border-sidebar-border ml-2">
+                <div className="pl-4 border-l border-sidebar-border ml-4 mt-1">
                   {child.children && renderMenuChildren(child.children, depth + 1)}
-                </SidebarMenuSub>
+                </div>
               </CollapsibleContent>
             </Collapsible>
           ) : (
-            <SidebarMenuSubButton
+            <button
               onClick={() => child.url && navigate(child.url)}
-              className={`cursor-pointer w-full min-w-0 gap-2 ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
+              className={`cursor-pointer w-full min-w-0 flex items-center gap-2 px-2 py-1 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
             >
               <child.icon className="h-4 w-4 shrink-0" />
-              <span className="truncate flex-1 min-w-0">{child.title}</span>
-            </SidebarMenuSubButton>
+              <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
+            </button>
           )}
-        </SidebarMenuSubItem>
+        </div>
       );
     });
   };
 
   return (
-    <Sidebar collapsible="icon" className="h-full border-r border-sidebar-border">
-      <SidebarContent className="overflow-x-hidden py-2">
-        <SidebarGroup className="min-w-0 px-2">
-          <SidebarGroupLabel className="truncate px-2 mb-2">Admin Panel</SidebarGroupLabel>
-          <SidebarGroupContent className="min-w-0">
-            <SidebarMenu className="min-w-0 gap-1">
-              {menuItems.map((item) => (
-                <Collapsible
-                  key={item.title}
-                  open={openGroups[item.title]}
-                  onOpenChange={() => toggleGroup(item.title)}
-                >
-                  <SidebarMenuItem className="min-w-0">
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton className="w-full min-w-0 gap-2" tooltip={item.title}>
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate flex-1 min-w-0">{item.title}</span>
-                        {item.title === "Page Builder" && companiesLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                        ) : (
-                          <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
-                        )}
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    {item.children && (
-                      <CollapsibleContent>
-                        <SidebarMenuSub className="min-w-0 pl-4 border-l border-sidebar-border ml-2 mt-1">
-                          {renderMenuChildren(item.children)}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    )}
-                  </SidebarMenuItem>
-                </Collapsible>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarRail />
-    </Sidebar>
+    <div className="h-full w-full flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
+        <div className="min-w-0 px-2">
+          <div className="truncate px-2 mb-2 text-sm font-semibold text-sidebar-foreground/70">Admin Panel</div>
+          <div className="min-w-0 space-y-1">
+            {menuItems.map((item) => (
+              <Collapsible
+                key={item.title}
+                open={openGroups[item.title]}
+                onOpenChange={() => toggleGroup(item.title)}
+              >
+                <div className="min-w-0">
+                  <CollapsibleTrigger asChild>
+                    <button
+                      className="w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                      title={item.title}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
+                      {item.title === "Page Builder" && companiesLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                      ) : (
+                        <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  {item.children && (
+                    <CollapsibleContent>
+                      <div className="min-w-0 pl-4 border-l border-sidebar-border ml-4 mt-1">
+                        {renderMenuChildren(item.children)}
+                      </div>
+                    </CollapsibleContent>
+                  )}
+                </div>
+              </Collapsible>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

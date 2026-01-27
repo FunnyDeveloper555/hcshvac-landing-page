@@ -3,8 +3,8 @@ import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import HeroAdd from "@/components/admin/HeroAdd";
 import HeroList from "@/components/admin/HeroList";
@@ -126,7 +126,7 @@ const Admin = () => {
             <header className="bg-background border-b sticky top-0 z-10">
               <div className="px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <SidebarTrigger />
+                  <Menu className="h-5 w-5 md:hidden" />
                   <h1 className="text-xl md:text-2xl font-bold truncate">Admin Panel</h1>
                 </div>
                 <div className="flex items-center gap-4">
@@ -226,11 +226,7 @@ const Admin = () => {
     );
   };
 
-  return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      {renderContent()}
-    </SidebarProvider>
-  );
+  return renderContent();
 };
 
 export default Admin;
