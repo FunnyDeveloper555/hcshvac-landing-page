@@ -7,6 +7,7 @@ import CompanyServices from "@/components/company/CompanyServices";
 import CompanyServiceAreas from "@/components/company/CompanyServiceAreas";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
+import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 
@@ -193,6 +194,8 @@ const CompanyLanding = () => {
                 </div>
               </div>
             </div>
+            {/* CTA Icons for this page */}
+            <CompanyCTAIcons companyId={company.id} pageName={activePage} />
           </section>
         ) : (
           // Show the home page content

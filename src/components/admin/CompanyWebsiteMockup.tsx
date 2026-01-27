@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
@@ -76,36 +77,58 @@ const HEADER_MENUS = [
 
 const CompanyWebsiteMockup = () => {
   const { companyId } = useParams<{ companyId: string }>();
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activePage, setActivePage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchCompany = async () => {
-      if (!companyId) {
-        setLoading(false);
-        return;
-      }
-
+  // Fetch company data
+  const { data: selectedCompany, isLoading: loading } = useQuery({
+    queryKey: ["company-mockup", companyId],
+    queryFn: async () => {
+      if (!companyId) return null;
       const { data, error } = await supabase
         .from("companies")
         .select("*")
         .eq("id", companyId)
         .single();
 
-      if (!error && data) {
-        const companyData = {
-          ...data,
-          partner_companies: data.partner_companies as Array<{ name: string; url: string }> | null,
-          header_pages: data.header_pages as unknown as Record<string, PageContent> | null,
-        } as Company;
-        setSelectedCompany(companyData);
-      }
-      setLoading(false);
-    };
+      if (error) throw error;
+      return {
+        ...data,
+        partner_companies: data.partner_companies as Array<{ name: string; url: string }> | null,
+        header_pages: data.header_pages as unknown as Record<string, PageContent> | null,
+      } as Company;
+    },
+    enabled: !!companyId,
+  });
 
-    fetchCompany();
-  }, [companyId]);
+  // Fetch CTA icons for active page
+  const normalizedPageName = activePage?.replace(/-/g, '_') || '';
+  const { data: ctaIcons = [] } = useQuery({
+    queryKey: ["cta-icons-mockup", companyId, normalizedPageName],
+    queryFn: async () => {
+      if (!companyId || !activePage) return [];
+      const { data, error } = await supabase
+        .from("page_cta_assignments")
+        .select(`
+          id,
+          position,
+          cta_icons (
+            id,
+            image_url,
+            alt_text,
+            custom_name,
+            is_active
+          )
+        `)
+        .eq("company_id", companyId)
+        .eq("page_name", normalizedPageName)
+        .eq("use_on_page", true)
+        .order("position", { ascending: true });
+
+      if (error) throw error;
+      return (data || []).filter((item: any) => item.cta_icons?.is_active !== false);
+    },
+    enabled: !!companyId && !!activePage,
+  });
 
   if (loading) {
     return (
@@ -264,6 +287,23 @@ const CompanyWebsiteMockup = () => {
                 </p>
               </div>
             </div>
+            
+            {/* CTA Icons for this page */}
+            {ctaIcons.length > 0 && (
+              <div className="mt-8 py-6 bg-muted/30 rounded-lg">
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  {ctaIcons.map((assignment: any) => (
+                    <div key={assignment.id} className="p-2">
+                      <img
+                        src={assignment.cta_icons.image_url}
+                        alt={assignment.cta_icons.alt_text || assignment.cta_icons.custom_name}
+                        className="h-12 w-auto object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <>
