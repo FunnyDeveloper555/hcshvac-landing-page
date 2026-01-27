@@ -349,7 +349,7 @@ export function AdminSidebar() {
                 >
                   <child.icon className="h-4 w-4 shrink-0" />
                   <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
-                  <ChevronDown className={`h-3 w-3 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${isSubGroupOpen ? 'rotate-180' : ''}`} />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
