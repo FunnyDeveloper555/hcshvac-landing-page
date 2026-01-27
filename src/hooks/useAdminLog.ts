@@ -6,6 +6,8 @@ type EntityType =
   | "appointment" 
   | "company" 
   | "company_image"
+  | "cta_icon"
+  | "cta_assignment"
   | "employee" 
   | "vendor" 
   | "service" 
