@@ -145,7 +145,7 @@ const CompanyLanding = () => {
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{
         "--primary": theme.colors.primary,
         "--secondary": theme.colors.secondary,
@@ -166,7 +166,7 @@ const CompanyLanding = () => {
         activePage={activePage || undefined}
         onPageChange={handlePageChange}
       />
-      <main>
+      <main className="flex-1">
         {activePage ? (
           // Show the selected page content
           <section className="pt-24 pb-16">
