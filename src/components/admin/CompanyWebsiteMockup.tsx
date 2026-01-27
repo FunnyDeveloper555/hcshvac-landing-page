@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText } from "lucide-react";
+import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface PageContent {
   title: string;
@@ -129,14 +130,26 @@ const CompanyWebsiteMockup = () => {
   return (
     <div className="space-y-6">
       {/* Mockup Indicator */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center gap-3">
-        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
-          MOCKUP PREVIEW
-        </Badge>
-        <p className="text-amber-800 text-sm">
-          This is a preview of <strong>{selectedCompany.name}</strong> website structure. Visit{" "}
-          <span className="font-mono font-medium">/company/{selectedCompany.slug}</span> to see the live site.
-        </p>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+            MOCKUP PREVIEW
+          </Badge>
+          <p className="text-amber-800 text-sm">
+            This is a preview of <strong>{selectedCompany.name}</strong> website structure.
+          </p>
+        </div>
+        {selectedCompany.slug && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`/company/${selectedCompany.slug}`, '_blank')}
+            className="shrink-0"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open Website
+          </Button>
+        )}
       </div>
 
       {/* Website Frame */}
