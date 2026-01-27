@@ -43,6 +43,15 @@ interface Company {
   header_pages: Record<string, PageContent> | null;
 }
 
+const HEADER_PAGES = [
+  { key: "about-us", label: "About Us" },
+  { key: "financing", label: "Financing" },
+  { key: "services", label: "Services" },
+  { key: "residential", label: "Residential" },
+  { key: "commercial", label: "Commercial" },
+  { key: "air-quality", label: "Air Quality" },
+];
+
 const CompanyLanding = () => {
   const { slug } = useParams<{ slug: string }>();
   const [company, setCompany] = useState<Company | null>(null);
@@ -126,6 +135,11 @@ const CompanyLanding = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Get page label for display
+  const getPageLabel = (pageKey: string) => {
+    return HEADER_PAGES.find(p => p.key === pageKey)?.label || pageKey;
+  };
+
   // Get active page content
   const activePageContent = activePage ? company.header_pages?.[activePage] : null;
 
@@ -153,7 +167,7 @@ const CompanyLanding = () => {
         onPageChange={handlePageChange}
       />
       <main>
-        {activePage && activePageContent ? (
+        {activePage ? (
           // Show the selected page content
           <section className="pt-24 pb-16">
             <div className="container mx-auto px-4">
@@ -165,14 +179,16 @@ const CompanyLanding = () => {
               </button>
               <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-12">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4">{activePageContent.title}</h1>
-                  {activePageContent.subtitle && (
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                    {activePageContent?.title || getPageLabel(activePage)}
+                  </h1>
+                  {activePageContent?.subtitle && (
                     <p className="text-xl text-muted-foreground">{activePageContent.subtitle}</p>
                   )}
                 </div>
                 <div className="prose prose-lg max-w-none">
                   <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                    {activePageContent.content}
+                    {activePageContent?.content || "Content for this page is coming soon."}
                   </p>
                 </div>
               </div>
