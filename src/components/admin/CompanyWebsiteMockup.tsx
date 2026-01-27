@@ -224,16 +224,17 @@ const CompanyWebsiteMockup = () => {
               const title = pageData?.title || menu.label;
               const isActive = activePage === menu.key;
               
-              if (!isEnabled) return null;
-              
               return (
                 <button
                   key={menu.key}
                   onClick={() => setActivePage(menu.key)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 cursor-pointer transition-colors ${
-                    isActive 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-background text-foreground hover:bg-accent"
+                  disabled={!isEnabled}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-1.5 transition-colors ${
+                    !isEnabled 
+                      ? "opacity-50 cursor-not-allowed bg-muted text-muted-foreground"
+                      : isActive 
+                        ? "bg-primary text-primary-foreground cursor-pointer" 
+                        : "bg-background text-foreground hover:bg-accent cursor-pointer"
                   }`}
                 >
                   {title}
@@ -244,14 +245,14 @@ const CompanyWebsiteMockup = () => {
         </div>
 
         {/* ======== PAGE CONTENT ======== */}
-        {activePage && selectedCompany.header_pages?.[activePage] ? (
+        {activePage ? (
           <div className="p-8 md:p-12">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  {selectedCompany.header_pages[activePage].title}
+                  {selectedCompany.header_pages?.[activePage]?.title || HEADER_MENUS.find(m => m.key === activePage)?.label || activePage}
                 </h2>
-                {selectedCompany.header_pages[activePage].subtitle && (
+                {selectedCompany.header_pages?.[activePage]?.subtitle && (
                   <p className="text-xl text-muted-foreground">
                     {selectedCompany.header_pages[activePage].subtitle}
                   </p>
@@ -259,7 +260,7 @@ const CompanyWebsiteMockup = () => {
               </div>
               <div className="prose prose-lg max-w-none">
                 <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                  {selectedCompany.header_pages[activePage].content || "No content configured for this page yet."}
+                  {selectedCompany.header_pages?.[activePage]?.content || "No content configured for this page yet. Configure it in the Header Menus section."}
                 </p>
               </div>
             </div>
