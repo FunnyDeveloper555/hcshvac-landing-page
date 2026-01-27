@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
 import HeroAdd from "@/components/admin/HeroAdd";
 import HeroList from "@/components/admin/HeroList";
@@ -68,6 +69,12 @@ const Admin = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // Get persisted sidebar size from localStorage - must be before early returns
+  const [sidebarSize, setSidebarSize] = useState(() => {
+    const saved = localStorage.getItem('admin-sidebar-size');
+    return saved ? parseFloat(saved) : 18;
+  });
+
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       navigate("/auth");
@@ -77,6 +84,12 @@ const Admin = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const handleSidebarResize = (sizes: number[]) => {
+    const newSize = sizes[0];
+    setSidebarSize(newSize);
+    localStorage.setItem('admin-sidebar-size', newSize.toString());
   };
 
   if (loading) {
@@ -93,108 +106,122 @@ const Admin = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-secondary/30">
-        <AdminSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="bg-background border-b sticky top-0 z-10">
-            <div className="px-4 py-3 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <h1 className="text-xl md:text-2xl font-bold truncate">Admin Panel</h1>
+      <ResizablePanelGroup 
+        direction="horizontal" 
+        className="min-h-screen w-full"
+        onLayout={handleSidebarResize}
+      >
+        <ResizablePanel 
+          defaultSize={sidebarSize} 
+          minSize={10} 
+          maxSize={30}
+          className="bg-sidebar"
+        >
+          <AdminSidebar />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={100 - sidebarSize} minSize={50}>
+          <div className="flex-1 flex flex-col min-w-0 h-full bg-secondary/30">
+            <header className="bg-background border-b sticky top-0 z-10">
+              <div className="px-4 py-3 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger />
+                  <h1 className="text-xl md:text-2xl font-bold truncate">Admin Panel</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="hidden md:block text-sm text-muted-foreground truncate max-w-[200px]">{user.email}</span>
+                  <Button onClick={handleSignOut} variant="outline" size="sm">
+                    Sign Out
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="hidden md:block text-sm text-muted-foreground truncate max-w-[200px]">{user.email}</span>
-                <Button onClick={handleSignOut} variant="outline" size="sm">
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          </header>
+            </header>
 
-          <main className="flex-1 p-4 md:p-8 overflow-auto">
-            <Routes>
-              <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
-              <Route path="/hero/add" element={<HeroAdd />} />
-              <Route path="/hero/list" element={<HeroList />} />
-              <Route path="/images/add" element={<HeroImagesAdd />} />
-              <Route path="/images/list" element={<HeroImagesList />} />
-              <Route path="/services/add" element={<ServicesAdd />} />
-              <Route path="/services/list" element={<ServicesList />} />
-              <Route path="/services/terms" element={<ServiceTermsList />} />
-              <Route path="/services/terms/add" element={<ServiceTermsAdd />} />
-              <Route path="/companies/add" element={<CompaniesAdd />} />
-              <Route path="/companies/active" element={<ActiveCompaniesList />} />
-              <Route path="/companies/deactive" element={<DeactiveCompaniesList />} />
-              <Route path="/companies/view/:id" element={<CompanyView />} />
-              <Route path="/vendors/add" element={<VendorsAdd />} />
-              <Route path="/vendors/list" element={<VendorsList />} />
-              <Route path="/employees/*" element={<EmployeesAdmin />} />
-              <Route path="/customers/add" element={<CustomersAdd />} />
-              <Route path="/customers/list" element={<CustomersList />} />
-              <Route path="/appointments/add" element={<AppointmentsAdd />} />
-              <Route path="/appointments/list" element={<AppointmentsList />} />
-              <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
-              <Route path="/sms-link/send" element={<SMSLinkSend />} />
-              <Route path="/sms-link/list" element={<SMSLinkList />} />
-              <Route path="/cities/import" element={<CitiesImport />} />
-              <Route path="/business/import" element={<BusinessImport />} />
-              <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
-              <Route path="/page-builder/negative-keywords" element={<NegativeKeywords />} />
-              <Route path="/page-builder/hvac-parts" element={<HvacParts />} />
-              <Route path="/page-builder/equipment-brands" element={<EquipmentBrands />} />
-              <Route path="/page-builder/plumbing-brands" element={<PlumbingBrands />} />
-              <Route path="/page-builder/areas-service" element={<AreasService />} />
-              <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
-              <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
-              <Route path="/page-builder/local-business" element={<LocalBusiness />} />
-              <Route path="/page-builder/campaigns" element={<CampaignDashboard />} />
-              <Route path="/page-builder/campaigns/:campaignId" element={<CampaignForm />} />
-              <Route path="/page-builder/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
-              <Route path="/page-builder/pages/:pageId/preview" element={<PagePreview />} />
-              <Route path="/page-builder/templates" element={<PageTemplates />} />
-              <Route path="/page-builder/templates/:templateId" element={<TemplateForm />} />
-              <Route path="/page-builder/templates/:templateId/link" element={<TemplateCampaignLink />} />
-              {/* Company-specific page builder routes */}
-              <Route path="/page-builder/company/:companyId" element={<CampaignDashboard />} />
-              <Route path="/page-builder/company/:companyId/campaigns" element={<CampaignDashboard />} />
-              <Route path="/page-builder/company/:companyId/campaigns/:campaignId" element={<CampaignForm />} />
-              <Route path="/page-builder/company/:companyId/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
-              <Route path="/page-builder/company/:companyId/templates" element={<PageTemplates />} />
-              <Route path="/page-builder/company/:companyId/templates/:templateId" element={<TemplateForm />} />
-              <Route path="/page-builder/company/:companyId/hvac-keywords" element={<HvacKeywords />} />
-              <Route path="/page-builder/company/:companyId/positive-keywords" element={<HvacKeywords />} />
-              <Route path="/page-builder/company/:companyId/negative-keywords" element={<NegativeKeywords />} />
-              <Route path="/page-builder/company/:companyId/negative-search-terms" element={<NegativeKeywords />} />
-              <Route path="/page-builder/company/:companyId/positive-search-terms" element={<HvacKeywords />} />
-              <Route path="/page-builder/company/:companyId/hvac-parts" element={<HvacParts />} />
-              <Route path="/page-builder/company/:companyId/equipment-brands" element={<EquipmentBrands />} />
-              <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
-              <Route path="/page-builder/company/:companyId/areas-service" element={<AreasService />} />
-              <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
-              <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
-              <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
-              <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
-              <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
-              <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
-              {/* Header Pages routes */}
-              <Route path="/page-builder/company/:companyId/header-pages/about-us" element={<HeaderPageAboutUs />} />
-              <Route path="/page-builder/company/:companyId/header-pages/financing" element={<HeaderPageFinancing />} />
-              <Route path="/page-builder/company/:companyId/header-pages/services" element={<HeaderPageServices />} />
-              <Route path="/page-builder/company/:companyId/header-pages/residential" element={<HeaderPageResidential />} />
-              <Route path="/page-builder/company/:companyId/header-pages/commercial" element={<HeaderPageCommercial />} />
-              <Route path="/page-builder/company/:companyId/header-pages/air-quality" element={<HeaderPageAirQuality />} />
-              {/* CTA Icons routes */}
-              <Route path="/page-builder/company/:companyId/cta-icons/add" element={<CTAIconsAdd />} />
-              <Route path="/page-builder/company/:companyId/cta-icons/library" element={<CTAIconsLibrary />} />
-              <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
-              <Route path="/logs/call" element={<CallLogAdd />} />
-              <Route path="/logs/list" element={<LogsList />} />
-              <Route path="/calendar/add" element={<CalendarAdd />} />
-              <Route path="/calendar/list" element={<CalendarList />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
+            <main className="flex-1 p-4 md:p-8 overflow-auto">
+              <Routes>
+                <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
+                <Route path="/hero/add" element={<HeroAdd />} />
+                <Route path="/hero/list" element={<HeroList />} />
+                <Route path="/images/add" element={<HeroImagesAdd />} />
+                <Route path="/images/list" element={<HeroImagesList />} />
+                <Route path="/services/add" element={<ServicesAdd />} />
+                <Route path="/services/list" element={<ServicesList />} />
+                <Route path="/services/terms" element={<ServiceTermsList />} />
+                <Route path="/services/terms/add" element={<ServiceTermsAdd />} />
+                <Route path="/companies/add" element={<CompaniesAdd />} />
+                <Route path="/companies/active" element={<ActiveCompaniesList />} />
+                <Route path="/companies/deactive" element={<DeactiveCompaniesList />} />
+                <Route path="/companies/view/:id" element={<CompanyView />} />
+                <Route path="/vendors/add" element={<VendorsAdd />} />
+                <Route path="/vendors/list" element={<VendorsList />} />
+                <Route path="/employees/*" element={<EmployeesAdmin />} />
+                <Route path="/customers/add" element={<CustomersAdd />} />
+                <Route path="/customers/list" element={<CustomersList />} />
+                <Route path="/appointments/add" element={<AppointmentsAdd />} />
+                <Route path="/appointments/list" element={<AppointmentsList />} />
+                <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
+                <Route path="/sms-link/send" element={<SMSLinkSend />} />
+                <Route path="/sms-link/list" element={<SMSLinkList />} />
+                <Route path="/cities/import" element={<CitiesImport />} />
+                <Route path="/business/import" element={<BusinessImport />} />
+                <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
+                <Route path="/page-builder/negative-keywords" element={<NegativeKeywords />} />
+                <Route path="/page-builder/hvac-parts" element={<HvacParts />} />
+                <Route path="/page-builder/equipment-brands" element={<EquipmentBrands />} />
+                <Route path="/page-builder/plumbing-brands" element={<PlumbingBrands />} />
+                <Route path="/page-builder/areas-service" element={<AreasService />} />
+                <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
+                <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
+                <Route path="/page-builder/local-business" element={<LocalBusiness />} />
+                <Route path="/page-builder/campaigns" element={<CampaignDashboard />} />
+                <Route path="/page-builder/campaigns/:campaignId" element={<CampaignForm />} />
+                <Route path="/page-builder/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
+                <Route path="/page-builder/pages/:pageId/preview" element={<PagePreview />} />
+                <Route path="/page-builder/templates" element={<PageTemplates />} />
+                <Route path="/page-builder/templates/:templateId" element={<TemplateForm />} />
+                <Route path="/page-builder/templates/:templateId/link" element={<TemplateCampaignLink />} />
+                {/* Company-specific page builder routes */}
+                <Route path="/page-builder/company/:companyId" element={<CampaignDashboard />} />
+                <Route path="/page-builder/company/:companyId/campaigns" element={<CampaignDashboard />} />
+                <Route path="/page-builder/company/:companyId/campaigns/:campaignId" element={<CampaignForm />} />
+                <Route path="/page-builder/company/:companyId/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
+                <Route path="/page-builder/company/:companyId/templates" element={<PageTemplates />} />
+                <Route path="/page-builder/company/:companyId/templates/:templateId" element={<TemplateForm />} />
+                <Route path="/page-builder/company/:companyId/hvac-keywords" element={<HvacKeywords />} />
+                <Route path="/page-builder/company/:companyId/positive-keywords" element={<HvacKeywords />} />
+                <Route path="/page-builder/company/:companyId/negative-keywords" element={<NegativeKeywords />} />
+                <Route path="/page-builder/company/:companyId/negative-search-terms" element={<NegativeKeywords />} />
+                <Route path="/page-builder/company/:companyId/positive-search-terms" element={<HvacKeywords />} />
+                <Route path="/page-builder/company/:companyId/hvac-parts" element={<HvacParts />} />
+                <Route path="/page-builder/company/:companyId/equipment-brands" element={<EquipmentBrands />} />
+                <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
+                <Route path="/page-builder/company/:companyId/areas-service" element={<AreasService />} />
+                <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
+                <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
+                <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
+                <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
+                <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
+                <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
+                {/* Header Pages routes */}
+                <Route path="/page-builder/company/:companyId/header-pages/about-us" element={<HeaderPageAboutUs />} />
+                <Route path="/page-builder/company/:companyId/header-pages/financing" element={<HeaderPageFinancing />} />
+                <Route path="/page-builder/company/:companyId/header-pages/services" element={<HeaderPageServices />} />
+                <Route path="/page-builder/company/:companyId/header-pages/residential" element={<HeaderPageResidential />} />
+                <Route path="/page-builder/company/:companyId/header-pages/commercial" element={<HeaderPageCommercial />} />
+                <Route path="/page-builder/company/:companyId/header-pages/air-quality" element={<HeaderPageAirQuality />} />
+                {/* CTA Icons routes */}
+                <Route path="/page-builder/company/:companyId/cta-icons/add" element={<CTAIconsAdd />} />
+                <Route path="/page-builder/company/:companyId/cta-icons/library" element={<CTAIconsLibrary />} />
+                <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
+                <Route path="/logs/call" element={<CallLogAdd />} />
+                <Route path="/logs/list" element={<LogsList />} />
+                <Route path="/calendar/add" element={<CalendarAdd />} />
+                <Route path="/calendar/list" element={<CalendarList />} />
+              </Routes>
+            </main>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </SidebarProvider>
   );
 };
