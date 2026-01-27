@@ -581,6 +581,56 @@ export type Database = {
           },
         ]
       }
+      cta_icons: {
+        Row: {
+          alt_text: string
+          company_id: string
+          created_at: string
+          custom_name: string
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean | null
+          is_usable: boolean | null
+          unique_id_number: string
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string
+          company_id: string
+          created_at?: string
+          custom_name?: string
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          is_usable?: boolean | null
+          unique_id_number: string
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string
+          company_id?: string
+          created_at?: string
+          custom_name?: string
+          display_order?: number
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          is_usable?: boolean | null
+          unique_id_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cta_icons_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_registrations: {
         Row: {
           account_number: string | null
@@ -1165,6 +1215,54 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_cta_assignments: {
+        Row: {
+          company_id: string
+          created_at: string
+          cta_icon_id: string
+          id: string
+          page_name: string
+          position: number | null
+          updated_at: string
+          use_on_page: boolean | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          cta_icon_id: string
+          id?: string
+          page_name: string
+          position?: number | null
+          updated_at?: string
+          use_on_page?: boolean | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          cta_icon_id?: string
+          id?: string
+          page_name?: string
+          position?: number | null
+          updated_at?: string
+          use_on_page?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_cta_assignments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "page_cta_assignments_cta_icon_id_fkey"
+            columns: ["cta_icon_id"]
+            isOneToOne: false
+            referencedRelation: "cta_icons"
             referencedColumns: ["id"]
           },
         ]

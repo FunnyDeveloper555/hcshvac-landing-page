@@ -59,6 +59,9 @@ import HeaderPageServices from "@/components/admin/pagebuilder/HeaderPageService
 import HeaderPageResidential from "@/components/admin/pagebuilder/HeaderPageResidential";
 import HeaderPageCommercial from "@/components/admin/pagebuilder/HeaderPageCommercial";
 import HeaderPageAirQuality from "@/components/admin/pagebuilder/HeaderPageAirQuality";
+import CTAIconsAdd from "@/components/admin/pagebuilder/CTAIconsAdd";
+import CTAIconsLibrary from "@/components/admin/pagebuilder/CTAIconsLibrary";
+import CTAIconsAssignments from "@/components/admin/pagebuilder/CTAIconsAssignments";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -180,6 +183,10 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/header-pages/residential" element={<HeaderPageResidential />} />
               <Route path="/page-builder/company/:companyId/header-pages/commercial" element={<HeaderPageCommercial />} />
               <Route path="/page-builder/company/:companyId/header-pages/air-quality" element={<HeaderPageAirQuality />} />
+              {/* CTA Icons routes */}
+              <Route path="/page-builder/company/:companyId/cta-icons/add" element={<CTAIconsAdd />} />
+              <Route path="/page-builder/company/:companyId/cta-icons/library" element={<CTAIconsLibrary />} />
+              <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
