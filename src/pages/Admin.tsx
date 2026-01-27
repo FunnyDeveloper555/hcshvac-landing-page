@@ -69,7 +69,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Get persisted sidebar size from localStorage - must be before early returns
+  // Get persisted sidebar size from localStorage - must be before any returns
   const [sidebarSize, setSidebarSize] = useState(() => {
     const saved = localStorage.getItem('admin-sidebar-size');
     return saved ? parseFloat(saved) : 18;
@@ -92,20 +92,21 @@ const Admin = () => {
     localStorage.setItem('admin-sidebar-size', newSize.toString());
   };
 
-  if (loading) {
+  // Render loading state or unauthorized state inside consistent wrapper
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center w-full">
+          <p>Loading...</p>
+        </div>
+      );
+    }
+
+    if (!user || !isAdmin) {
+      return null;
+    }
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
-    return null;
-  }
-
-  return (
-    <SidebarProvider defaultOpen={!isMobile}>
       <ResizablePanelGroup 
         direction="horizontal" 
         className="min-h-screen w-full"
@@ -222,6 +223,12 @@ const Admin = () => {
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
+    );
+  };
+
+  return (
+    <SidebarProvider defaultOpen={!isMobile}>
+      {renderContent()}
     </SidebarProvider>
   );
 };
