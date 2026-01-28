@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
 import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
 import CompanyBrandsAccordion from "@/components/company/CompanyBrandsAccordion";
+import CompanyBrandsServiceAccordion from "@/components/company/CompanyBrandsServiceAccordion";
+import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepairAccordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
@@ -343,7 +345,9 @@ const CompanyWebsiteMockup = () => {
 
         {/* ======== ACCORDION SECTION ======== */}
         {(selectedCompany.service_areas && selectedCompany.service_areas.length > 0) || 
-         (selectedCompany.hvac_brands_install && selectedCompany.hvac_brands_install.length > 0) ? (
+         (selectedCompany.hvac_brands_install && selectedCompany.hvac_brands_install.length > 0) ||
+         (selectedCompany.hvac_brands_service && selectedCompany.hvac_brands_service.length > 0) ||
+         (selectedCompany.hvac_brands_repair && selectedCompany.hvac_brands_repair.length > 0) ? (
           <section className="py-8 bg-muted/30">
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto">
@@ -358,7 +362,16 @@ const CompanyWebsiteMockup = () => {
                     brands={selectedCompany.hvac_brands_install}
                     primaryColor={primaryColor}
                   />
-                  {/* Additional accordions can be added here in the future */}
+                  <CompanyBrandsServiceAccordion 
+                    companyName={selectedCompany.name}
+                    brands={selectedCompany.hvac_brands_service}
+                    primaryColor={primaryColor}
+                  />
+                  <CompanyBrandsRepairAccordion 
+                    companyName={selectedCompany.name}
+                    brands={selectedCompany.hvac_brands_repair}
+                    primaryColor={primaryColor}
+                  />
                 </Accordion>
               </div>
             </div>

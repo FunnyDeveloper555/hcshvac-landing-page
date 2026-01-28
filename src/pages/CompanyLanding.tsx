@@ -6,6 +6,8 @@ import CompanyHero from "@/components/company/CompanyHero";
 import CompanyServices from "@/components/company/CompanyServices";
 import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
 import CompanyBrandsAccordion from "@/components/company/CompanyBrandsAccordion";
+import CompanyBrandsServiceAccordion from "@/components/company/CompanyBrandsServiceAccordion";
+import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepairAccordion";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
@@ -37,6 +39,8 @@ interface Company {
   brands_installed: string[] | null;
   brands_serviced: string[] | null;
   hvac_brands_install: string[] | null;
+  hvac_brands_service: string[] | null;
+  hvac_brands_repair: string[] | null;
   website_title: string | null;
   website_tagline: string | null;
   website_description: string | null;
@@ -206,7 +210,9 @@ const CompanyLanding = () => {
             <CompanyHero company={company} theme={theme} />
             {/* Accordion Section */}
             {((company.service_areas && company.service_areas.length > 0) || 
-              (company.hvac_brands_install && company.hvac_brands_install.length > 0)) && (
+              (company.hvac_brands_install && company.hvac_brands_install.length > 0) ||
+              (company.hvac_brands_service && company.hvac_brands_service.length > 0) ||
+              (company.hvac_brands_repair && company.hvac_brands_repair.length > 0)) && (
               <section className="py-8 bg-muted/30">
                 <div className="container mx-auto px-4">
                   <div className="max-w-4xl mx-auto">
@@ -221,7 +227,16 @@ const CompanyLanding = () => {
                         brands={company.hvac_brands_install}
                         primaryColor={theme.colors.primary}
                       />
-                      {/* Additional accordions can be added here in the future */}
+                      <CompanyBrandsServiceAccordion 
+                        companyName={company.name}
+                        brands={company.hvac_brands_service}
+                        primaryColor={theme.colors.primary}
+                      />
+                      <CompanyBrandsRepairAccordion 
+                        companyName={company.name}
+                        brands={company.hvac_brands_repair}
+                        primaryColor={theme.colors.primary}
+                      />
                     </Accordion>
                   </div>
                 </div>

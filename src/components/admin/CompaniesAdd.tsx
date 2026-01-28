@@ -1352,67 +1352,133 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* HVAC Brands - Service (with checkboxes from brands table) */}
       <Card>
         <CardHeader>
-          <CardTitle>We Service (Heating and Cooling)</CardTitle>
-          <CardDescription>HVAC equipment brands you service</CardDescription>
+          <CardTitle>Brands We Service (Heating and Cooling)</CardTitle>
+          <CardDescription>Select HVAC equipment brands you service from the master list ({formData.hvac_brands_service.length} selected)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={hvacBrandServiceInput}
-              onChange={(e) => setHvacBrandServiceInput(e.target.value)}
-              placeholder="Enter brand name"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('service'))}
-            />
-            <Button type="button" onClick={() => addHvacBrand('service')}>Add Brand</Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.hvac_brands_service.map((brand) => (
-              <Badge key={brand} variant="secondary" className="px-3 py-1">
-                {brand}
-                <button
-                  type="button"
-                  onClick={() => removeHvacBrand('service', brand)}
-                  className="ml-2 text-muted-foreground hover:text-foreground"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
+          {availableBrands.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Loading brands...</p>
+          ) : (
+            <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {availableBrands.map((brand) => (
+                  <div key={brand.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`brand-service-${brand.id}`}
+                      checked={formData.hvac_brands_service.includes(brand.name)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_service: [...prev.hvac_brands_service, brand.name]
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_service: prev.hvac_brands_service.filter(b => b !== brand.name)
+                          }));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`brand-service-${brand.id}`}
+                      className="text-sm cursor-pointer"
+                    >
+                      {brand.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {formData.hvac_brands_service.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">Selected:</span>
+              {formData.hvac_brands_service.map((brand) => (
+                <Badge key={brand} variant="secondary" className="px-3 py-1">
+                  {brand}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      hvac_brands_service: prev.hvac_brands_service.filter(b => b !== brand)
+                    }))}
+                    className="ml-2 text-muted-foreground hover:text-foreground"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
+      {/* HVAC Brands - Repair (with checkboxes from brands table) */}
       <Card>
         <CardHeader>
-          <CardTitle>Equipment Type We Repair (Heating and Cooling)</CardTitle>
-          <CardDescription>HVAC equipment brands you repair</CardDescription>
+          <CardTitle>Brands We Repair (Heating and Cooling)</CardTitle>
+          <CardDescription>Select HVAC equipment brands you repair from the master list ({formData.hvac_brands_repair.length} selected)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={hvacBrandRepairInput}
-              onChange={(e) => setHvacBrandRepairInput(e.target.value)}
-              placeholder="Enter brand name"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('repair'))}
-            />
-            <Button type="button" onClick={() => addHvacBrand('repair')}>Add Brand</Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.hvac_brands_repair.map((brand) => (
-              <Badge key={brand} variant="secondary" className="px-3 py-1">
-                {brand}
-                <button
-                  type="button"
-                  onClick={() => removeHvacBrand('repair', brand)}
-                  className="ml-2 text-muted-foreground hover:text-foreground"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
+          {availableBrands.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Loading brands...</p>
+          ) : (
+            <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {availableBrands.map((brand) => (
+                  <div key={brand.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`brand-repair-${brand.id}`}
+                      checked={formData.hvac_brands_repair.includes(brand.name)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_repair: [...prev.hvac_brands_repair, brand.name]
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_repair: prev.hvac_brands_repair.filter(b => b !== brand.name)
+                          }));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`brand-repair-${brand.id}`}
+                      className="text-sm cursor-pointer"
+                    >
+                      {brand.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {formData.hvac_brands_repair.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">Selected:</span>
+              {formData.hvac_brands_repair.map((brand) => (
+                <Badge key={brand} variant="secondary" className="px-3 py-1">
+                  {brand}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      hvac_brands_repair: prev.hvac_brands_repair.filter(b => b !== brand)
+                    }))}
+                    className="ml-2 text-muted-foreground hover:text-foreground"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

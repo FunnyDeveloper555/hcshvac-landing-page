@@ -260,8 +260,8 @@ export function AdminSidebar() {
           children: [
             { title: "Area's We Service", url: "/admin/page-builder/accordion-list/hvac/areas-service", icon: Map },
             { title: "Brands We Install", url: "/admin/page-builder/accordion-list/hvac/brands-install", icon: Package },
-            { title: "We Service", url: "/admin/page-builder/accordion-list/hvac/service", icon: Wrench },
-            { title: "We Repair", url: "/admin/page-builder/accordion-list/hvac/repair", icon: Wrench },
+            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/hvac/brands-service", icon: Wrench },
+            { title: "Brands We Repair", url: "/admin/page-builder/accordion-list/hvac/brands-repair", icon: Wrench },
             { title: "We Install", url: "/admin/page-builder/accordion-list/hvac/install", icon: Package },
             { title: "Parts We Install", url: "/admin/page-builder/accordion-list/hvac/parts-install", icon: Wrench },
             { title: "Comfort Accessories We Install", url: "/admin/page-builder/accordion-list/hvac/accessories-install", icon: Package },
