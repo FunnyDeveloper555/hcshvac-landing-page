@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import CompanyHeader from "@/components/company/CompanyHeader";
 import CompanyHero from "@/components/company/CompanyHero";
 import CompanyServices from "@/components/company/CompanyServices";
-import CompanyServiceAreas from "@/components/company/CompanyServiceAreas";
+import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
@@ -201,8 +201,12 @@ const CompanyLanding = () => {
           // Show the home page content
           <>
             <CompanyHero company={company} theme={theme} />
+            <CompanyServiceAreasAccordion 
+              companyName={company.name}
+              serviceAreas={company.service_areas}
+              primaryColor={theme.colors.primary}
+            />
             <CompanyServices company={company} services={services} theme={theme} />
-            <CompanyServiceAreas company={company} />
             <CompanyContact company={company} theme={theme} />
           </>
         )}
