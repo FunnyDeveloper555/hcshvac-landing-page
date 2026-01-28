@@ -9,6 +9,9 @@ import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAre
 import CompanyBrandsAccordion from "@/components/company/CompanyBrandsAccordion";
 import CompanyBrandsServiceAccordion from "@/components/company/CompanyBrandsServiceAccordion";
 import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepairAccordion";
+import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
+import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
+import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
@@ -347,7 +350,10 @@ const CompanyWebsiteMockup = () => {
         {(selectedCompany.service_areas && selectedCompany.service_areas.length > 0) || 
          (selectedCompany.hvac_brands_install && selectedCompany.hvac_brands_install.length > 0) ||
          (selectedCompany.hvac_brands_service && selectedCompany.hvac_brands_service.length > 0) ||
-         (selectedCompany.hvac_brands_repair && selectedCompany.hvac_brands_repair.length > 0) ? (
+         (selectedCompany.hvac_brands_repair && selectedCompany.hvac_brands_repair.length > 0) ||
+         (selectedCompany.plumbing_equipment_install && selectedCompany.plumbing_equipment_install.length > 0) ||
+         (selectedCompany.plumbing_equipment_service && selectedCompany.plumbing_equipment_service.length > 0) ||
+         (selectedCompany.plumbing_equipment_repair && selectedCompany.plumbing_equipment_repair.length > 0) ? (
           <section className="py-8 bg-muted/30">
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto">
@@ -370,6 +376,21 @@ const CompanyWebsiteMockup = () => {
                   <CompanyBrandsRepairAccordion 
                     companyName={selectedCompany.name}
                     brands={selectedCompany.hvac_brands_repair}
+                    primaryColor={primaryColor}
+                  />
+                  <PlumbingTypesInstallAccordion 
+                    companyName={selectedCompany.name}
+                    types={selectedCompany.plumbing_equipment_install}
+                    primaryColor={primaryColor}
+                  />
+                  <PlumbingTypesServiceAccordion 
+                    companyName={selectedCompany.name}
+                    types={selectedCompany.plumbing_equipment_service}
+                    primaryColor={primaryColor}
+                  />
+                  <PlumbingTypesRepairAccordion 
+                    companyName={selectedCompany.name}
+                    types={selectedCompany.plumbing_equipment_repair}
                     primaryColor={primaryColor}
                   />
                 </Accordion>
