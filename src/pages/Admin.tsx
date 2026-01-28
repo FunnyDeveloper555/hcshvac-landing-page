@@ -29,6 +29,7 @@ import HvacParts from "@/components/admin/pagebuilder/HvacParts";
 import EquipmentBrands from "@/components/admin/pagebuilder/EquipmentBrands";
 import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
 import AreasService from "@/components/admin/pagebuilder/AreasService";
+import BrandsInstall from "@/components/admin/pagebuilder/BrandsInstall";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
@@ -216,6 +217,7 @@ const Admin = () => {
                 <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
                 {/* Accordion List routes */}
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/areas-service" element={<AreasService />} />
+                <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-install" element={<BrandsInstall />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />

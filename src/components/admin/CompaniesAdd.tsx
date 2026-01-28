@@ -73,6 +73,7 @@ const CompaniesAdd = () => {
   const [selectedCounties, setSelectedCounties] = useState<Array<{county: string, stateCode: string}>>([]);
   const [availableStates, setAvailableStates] = useState<{code: string, name: string}[]>([]);
   const [availableServices, setAvailableServices] = useState<Array<{ id: string; title: string }>>([]);
+  const [availableBrands, setAvailableBrands] = useState<Array<{ id: string; name: string }>>([]);
   const [countiesByState, setCountiesByState] = useState<Map<string, string[]>>(new Map());
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
@@ -292,7 +293,7 @@ const CompaniesAdd = () => {
     loadCompanyData();
   }, [editId, toast]);
 
-  // Load services and states on mount
+  // Load services, states, and brands on mount
   useEffect(() => {
     const loadServices = async () => {
       try {
@@ -309,6 +310,26 @@ const CompaniesAdd = () => {
         toast({
           title: "Error",
           description: "Failed to load services",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const loadBrands = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('brands')
+          .select('id, name')
+          .eq('is_active', true)
+          .order('name');
+        
+        if (error) throw error;
+        setAvailableBrands(data || []);
+      } catch (error) {
+        console.error('Error fetching brands:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load brands",
           variant: "destructive",
         });
       }
@@ -355,6 +376,7 @@ const CompaniesAdd = () => {
     };
     
     loadServices();
+    loadBrands();
     loadStates();
   }, [toast]);
 
@@ -1265,36 +1287,68 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
-      {/* HVAC Brands - Install/Service/Repair */}
+      {/* HVAC Brands - Install (with checkboxes from brands table) */}
       <Card>
         <CardHeader>
           <CardTitle>Brands We Install (Heating and Cooling)</CardTitle>
-          <CardDescription>HVAC equipment brands you install</CardDescription>
+          <CardDescription>Select HVAC equipment brands you install from the master list ({formData.hvac_brands_install.length} selected)</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={hvacBrandInstallInput}
-              onChange={(e) => setHvacBrandInstallInput(e.target.value)}
-              placeholder="Enter brand name"
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHvacBrand('install'))}
-            />
-            <Button type="button" onClick={() => addHvacBrand('install')}>Add Brand</Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {formData.hvac_brands_install.map((brand) => (
-              <Badge key={brand} variant="secondary" className="px-3 py-1">
-                {brand}
-                <button
-                  type="button"
-                  onClick={() => removeHvacBrand('install', brand)}
-                  className="ml-2 text-muted-foreground hover:text-foreground"
-                >
-                  ×
-                </button>
-              </Badge>
-            ))}
-          </div>
+          {availableBrands.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Loading brands...</p>
+          ) : (
+            <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {availableBrands.map((brand) => (
+                  <div key={brand.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`brand-install-${brand.id}`}
+                      checked={formData.hvac_brands_install.includes(brand.name)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_install: [...prev.hvac_brands_install, brand.name]
+                          }));
+                        } else {
+                          setFormData(prev => ({
+                            ...prev,
+                            hvac_brands_install: prev.hvac_brands_install.filter(b => b !== brand.name)
+                          }));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`brand-install-${brand.id}`}
+                      className="text-sm cursor-pointer"
+                    >
+                      {brand.name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {formData.hvac_brands_install.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t">
+              <span className="text-sm text-muted-foreground">Selected:</span>
+              {formData.hvac_brands_install.map((brand) => (
+                <Badge key={brand} variant="secondary" className="px-3 py-1">
+                  {brand}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      hvac_brands_install: prev.hvac_brands_install.filter(b => b !== brand)
+                    }))}
+                    className="ml-2 text-muted-foreground hover:text-foreground"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
