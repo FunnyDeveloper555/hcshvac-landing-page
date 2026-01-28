@@ -258,6 +258,7 @@ export function AdminSidebar() {
           url: "/admin/page-builder/accordion-list/hvac", 
           icon: Cog,
           children: [
+            { title: "Area's We Service", url: "/admin/page-builder/accordion-list/hvac/areas-service", icon: Map },
             { title: "Brands We Install", url: "/admin/page-builder/accordion-list/hvac/brands-install", icon: Package },
             { title: "We Service", url: "/admin/page-builder/accordion-list/hvac/service", icon: Wrench },
             { title: "We Repair", url: "/admin/page-builder/accordion-list/hvac/repair", icon: Wrench },
