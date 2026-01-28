@@ -393,6 +393,7 @@ export type Database = {
           coupon_3_code: string | null
           coupon_3_description: string | null
           coupon_3_title: string | null
+          coupons: Json | null
           created_at: string
           display_order: number
           financing_enabled: boolean | null
@@ -456,6 +457,7 @@ export type Database = {
           coupon_3_code?: string | null
           coupon_3_description?: string | null
           coupon_3_title?: string | null
+          coupons?: Json | null
           created_at?: string
           display_order?: number
           financing_enabled?: boolean | null
@@ -519,6 +521,7 @@ export type Database = {
           coupon_3_code?: string | null
           coupon_3_description?: string | null
           coupon_3_title?: string | null
+          coupons?: Json | null
           created_at?: string
           display_order?: number
           financing_enabled?: boolean | null
