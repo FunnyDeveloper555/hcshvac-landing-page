@@ -8,6 +8,9 @@ import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAre
 import CompanyBrandsAccordion from "@/components/company/CompanyBrandsAccordion";
 import CompanyBrandsServiceAccordion from "@/components/company/CompanyBrandsServiceAccordion";
 import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepairAccordion";
+import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
+import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
+import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
@@ -41,6 +44,9 @@ interface Company {
   hvac_brands_install: string[] | null;
   hvac_brands_service: string[] | null;
   hvac_brands_repair: string[] | null;
+  plumbing_equipment_install: string[] | null;
+  plumbing_equipment_service: string[] | null;
+  plumbing_equipment_repair: string[] | null;
   website_title: string | null;
   website_tagline: string | null;
   website_description: string | null;
@@ -212,7 +218,10 @@ const CompanyLanding = () => {
             {((company.service_areas && company.service_areas.length > 0) || 
               (company.hvac_brands_install && company.hvac_brands_install.length > 0) ||
               (company.hvac_brands_service && company.hvac_brands_service.length > 0) ||
-              (company.hvac_brands_repair && company.hvac_brands_repair.length > 0)) && (
+              (company.hvac_brands_repair && company.hvac_brands_repair.length > 0) ||
+              (company.plumbing_equipment_install && company.plumbing_equipment_install.length > 0) ||
+              (company.plumbing_equipment_service && company.plumbing_equipment_service.length > 0) ||
+              (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0)) && (
               <section className="py-8 bg-muted/30">
                 <div className="container mx-auto px-4">
                   <div className="max-w-4xl mx-auto">
@@ -235,6 +244,21 @@ const CompanyLanding = () => {
                       <CompanyBrandsRepairAccordion 
                         companyName={company.name}
                         brands={company.hvac_brands_repair}
+                        primaryColor={theme.colors.primary}
+                      />
+                      <PlumbingTypesInstallAccordion 
+                        companyName={company.name}
+                        types={company.plumbing_equipment_install}
+                        primaryColor={theme.colors.primary}
+                      />
+                      <PlumbingTypesServiceAccordion 
+                        companyName={company.name}
+                        types={company.plumbing_equipment_service}
+                        primaryColor={theme.colors.primary}
+                      />
+                      <PlumbingTypesRepairAccordion 
+                        companyName={company.name}
+                        types={company.plumbing_equipment_repair}
                         primaryColor={theme.colors.primary}
                       />
                     </Accordion>

@@ -272,9 +272,10 @@ export function AdminSidebar() {
           url: "/admin/page-builder/accordion-list/plumbing", 
           icon: Droplet,
           children: [
-            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/plumbing/brands-service", icon: Package },
-            { title: "Types We Service", url: "/admin/page-builder/accordion-list/plumbing/types-service", icon: Wrench },
             { title: "Types We Install", url: "/admin/page-builder/accordion-list/plumbing/types-install", icon: Package },
+            { title: "Types We Service", url: "/admin/page-builder/accordion-list/plumbing/types-service", icon: Wrench },
+            { title: "Types We Repair", url: "/admin/page-builder/accordion-list/plumbing/types-repair", icon: Settings },
+            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/plumbing/brands-service", icon: Package },
             { title: "Water Quality We Install", url: "/admin/page-builder/accordion-list/plumbing/water-quality", icon: Droplet },
             { title: "Hot Water Boiler", url: "/admin/page-builder/accordion-list/plumbing/hot-water-boiler", icon: Droplet },
             { title: "Steam Boilers", url: "/admin/page-builder/accordion-list/plumbing/steam-boilers", icon: Droplet },

@@ -32,6 +32,9 @@ import AreasService from "@/components/admin/pagebuilder/AreasService";
 import BrandsInstall from "@/components/admin/pagebuilder/BrandsInstall";
 import BrandsService from "@/components/admin/pagebuilder/BrandsService";
 import BrandsRepair from "@/components/admin/pagebuilder/BrandsRepair";
+import PlumbingTypesInstall from "@/components/admin/pagebuilder/PlumbingTypesInstall";
+import PlumbingTypesService from "@/components/admin/pagebuilder/PlumbingTypesService";
+import PlumbingTypesRepair from "@/components/admin/pagebuilder/PlumbingTypesRepair";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
@@ -222,6 +225,10 @@ const Admin = () => {
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-install" element={<BrandsInstall />} />
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-service" element={<BrandsService />} />
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-repair" element={<BrandsRepair />} />
+                {/* Plumbing Accordion List routes */}
+                <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-install" element={<PlumbingTypesInstall />} />
+                <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-service" element={<PlumbingTypesService />} />
+                <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-repair" element={<PlumbingTypesRepair />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />
