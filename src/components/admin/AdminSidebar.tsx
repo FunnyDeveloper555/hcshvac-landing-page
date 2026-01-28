@@ -248,6 +248,41 @@ export function AdminSidebar() {
         { title: "Air Quality", url: "/admin/page-builder/header-pages/air-quality", icon: Droplet },
       ]
     },
+    { 
+      title: "Accordion List", 
+      url: "/admin/page-builder/accordion-list", 
+      icon: Layers,
+      children: [
+        { 
+          title: "HVAC", 
+          url: "/admin/page-builder/accordion-list/hvac", 
+          icon: Cog,
+          children: [
+            { title: "Brands We Install", url: "/admin/page-builder/accordion-list/hvac/brands-install", icon: Package },
+            { title: "We Service", url: "/admin/page-builder/accordion-list/hvac/service", icon: Wrench },
+            { title: "We Repair", url: "/admin/page-builder/accordion-list/hvac/repair", icon: Wrench },
+            { title: "We Install", url: "/admin/page-builder/accordion-list/hvac/install", icon: Package },
+            { title: "Parts We Install", url: "/admin/page-builder/accordion-list/hvac/parts-install", icon: Wrench },
+            { title: "Comfort Accessories We Install", url: "/admin/page-builder/accordion-list/hvac/accessories-install", icon: Package },
+          ]
+        },
+        { 
+          title: "Plumbing", 
+          url: "/admin/page-builder/accordion-list/plumbing", 
+          icon: Droplet,
+          children: [
+            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/plumbing/brands-service", icon: Package },
+            { title: "Types We Service", url: "/admin/page-builder/accordion-list/plumbing/types-service", icon: Wrench },
+            { title: "Types We Install", url: "/admin/page-builder/accordion-list/plumbing/types-install", icon: Package },
+            { title: "Water Quality We Install", url: "/admin/page-builder/accordion-list/plumbing/water-quality", icon: Droplet },
+            { title: "Hot Water Boiler", url: "/admin/page-builder/accordion-list/plumbing/hot-water-boiler", icon: Droplet },
+            { title: "Steam Boilers", url: "/admin/page-builder/accordion-list/plumbing/steam-boilers", icon: Droplet },
+            { title: "Tankless Water Heaters", url: "/admin/page-builder/accordion-list/plumbing/tankless-heaters", icon: Droplet },
+          ]
+        },
+        { title: "Coupon", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
+      ]
+    },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
     { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
     { 
