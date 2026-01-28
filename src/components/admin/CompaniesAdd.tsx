@@ -29,6 +29,12 @@ interface PartnerCompany {
   url: string;
 }
 
+interface Coupon {
+  title: string;
+  description: string;
+  code: string;
+}
+
 // HVAC Equipment types from the PDF document
 const HVAC_EQUIPMENT_TYPES = [
   "Air Conditioner",
@@ -143,15 +149,7 @@ const CompaniesAdd = () => {
     financing_enabled: false,
     financing_provider: "",
     financing_url: "",
-    coupon_1_title: "",
-    coupon_1_description: "",
-    coupon_1_code: "",
-    coupon_2_title: "",
-    coupon_2_description: "",
-    coupon_2_code: "",
-    coupon_3_title: "",
-    coupon_3_description: "",
-    coupon_3_code: "",
+    coupons: [] as Coupon[],
     partner_companies: [] as PartnerCompany[],
     hvac_brands_install: [] as string[],
     hvac_brands_service: [] as string[],
@@ -266,15 +264,14 @@ const CompaniesAdd = () => {
           financing_enabled: (companyData.financing_enabled as boolean) || false,
           financing_provider: (companyData.financing_provider as string) || "",
           financing_url: (companyData.financing_url as string) || "",
-          coupon_1_title: (companyData.coupon_1_title as string) || "",
-          coupon_1_description: (companyData.coupon_1_description as string) || "",
-          coupon_1_code: (companyData.coupon_1_code as string) || "",
-          coupon_2_title: (companyData.coupon_2_title as string) || "",
-          coupon_2_description: (companyData.coupon_2_description as string) || "",
-          coupon_2_code: (companyData.coupon_2_code as string) || "",
-          coupon_3_title: (companyData.coupon_3_title as string) || "",
-          coupon_3_description: (companyData.coupon_3_description as string) || "",
-          coupon_3_code: (companyData.coupon_3_code as string) || "",
+          // Convert legacy coupons to new format if they exist, or use new coupons array
+          coupons: Array.isArray(companyData.coupons) && (companyData.coupons as Coupon[]).length > 0
+            ? (companyData.coupons as Coupon[])
+            : [
+                ...(companyData.coupon_1_title ? [{ title: companyData.coupon_1_title as string, description: (companyData.coupon_1_description as string) || '', code: (companyData.coupon_1_code as string) || '' }] : []),
+                ...(companyData.coupon_2_title ? [{ title: companyData.coupon_2_title as string, description: (companyData.coupon_2_description as string) || '', code: (companyData.coupon_2_code as string) || '' }] : []),
+                ...(companyData.coupon_3_title ? [{ title: companyData.coupon_3_title as string, description: (companyData.coupon_3_description as string) || '', code: (companyData.coupon_3_code as string) || '' }] : []),
+              ],
           partner_companies: Array.isArray(companyData.partner_companies) ? companyData.partner_companies as PartnerCompany[] : [],
           hvac_brands_install: Array.isArray(companyData.hvac_brands_install) ? companyData.hvac_brands_install as string[] : [],
           hvac_brands_service: Array.isArray(companyData.hvac_brands_service) ? companyData.hvac_brands_service as string[] : [],
@@ -672,6 +669,30 @@ const CompaniesAdd = () => {
     }));
   };
 
+  // Coupon management functions
+  const addCoupon = () => {
+    setFormData(prev => ({
+      ...prev,
+      coupons: [...prev.coupons, { title: '', description: '', code: '' }]
+    }));
+  };
+
+  const updateCoupon = (index: number, field: keyof Coupon, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      coupons: prev.coupons.map((coupon, i) => 
+        i === index ? { ...coupon, [field]: value } : coupon
+      )
+    }));
+  };
+
+  const removeCoupon = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      coupons: prev.coupons.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSave = async () => {
     if (!formData.name?.trim()) {
       toast({
@@ -703,6 +724,7 @@ const CompaniesAdd = () => {
       brands_serviced: formData.brands_serviced,
       affiliations: formData.affiliations,
       // Cast arrays to JSON for Supabase
+      coupons: formData.coupons as unknown as Record<string, unknown>[],
       partner_companies: formData.partner_companies as unknown as Record<string, unknown>[],
       hvac_brands_install: formData.hvac_brands_install,
       hvac_brands_service: formData.hvac_brands_service,
@@ -1612,110 +1634,63 @@ const CompaniesAdd = () => {
       <Card>
         <CardHeader>
           <CardTitle>Home Page Coupons</CardTitle>
-          <CardDescription>Add up to 3 promotional coupons for your landing page</CardDescription>
+          <CardDescription>Add promotional coupons for your landing page ({formData.coupons.length} added)</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Coupon 1 */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h4 className="font-medium">Coupon 1</h4>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="coupon_1_title">Title</Label>
-                <Input
-                  id="coupon_1_title"
-                  value={formData.coupon_1_title}
-                  onChange={(e) => setFormData({ ...formData, coupon_1_title: e.target.value })}
-                  placeholder="e.g., $50 OFF"
-                />
+        <CardContent className="space-y-4">
+          {formData.coupons.map((coupon, index) => (
+            <div key={index} className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">Coupon {index + 1}</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeCoupon(index)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="coupon_1_code">Code</Label>
-                <Input
-                  id="coupon_1_code"
-                  value={formData.coupon_1_code}
-                  onChange={(e) => setFormData({ ...formData, coupon_1_code: e.target.value })}
-                  placeholder="e.g., SAVE50"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-1">
-                <Label htmlFor="coupon_1_description">Description</Label>
-                <Input
-                  id="coupon_1_description"
-                  value={formData.coupon_1_description}
-                  onChange={(e) => setFormData({ ...formData, coupon_1_description: e.target.value })}
-                  placeholder="e.g., Any HVAC Service"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Coupon 2 */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h4 className="font-medium">Coupon 2</h4>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="coupon_2_title">Title</Label>
-                <Input
-                  id="coupon_2_title"
-                  value={formData.coupon_2_title}
-                  onChange={(e) => setFormData({ ...formData, coupon_2_title: e.target.value })}
-                  placeholder="e.g., 10% OFF"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="coupon_2_code">Code</Label>
-                <Input
-                  id="coupon_2_code"
-                  value={formData.coupon_2_code}
-                  onChange={(e) => setFormData({ ...formData, coupon_2_code: e.target.value })}
-                  placeholder="e.g., SUMMER10"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-1">
-                <Label htmlFor="coupon_2_description">Description</Label>
-                <Input
-                  id="coupon_2_description"
-                  value={formData.coupon_2_description}
-                  onChange={(e) => setFormData({ ...formData, coupon_2_description: e.target.value })}
-                  placeholder="e.g., New AC Installation"
-                />
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor={`coupon_${index}_title`}>Title</Label>
+                  <Input
+                    id={`coupon_${index}_title`}
+                    value={coupon.title}
+                    onChange={(e) => updateCoupon(index, 'title', e.target.value)}
+                    placeholder="e.g., $50 OFF"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`coupon_${index}_code`}>Code</Label>
+                  <Input
+                    id={`coupon_${index}_code`}
+                    value={coupon.code}
+                    onChange={(e) => updateCoupon(index, 'code', e.target.value)}
+                    placeholder="e.g., SAVE50"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-1">
+                  <Label htmlFor={`coupon_${index}_description`}>Description</Label>
+                  <Input
+                    id={`coupon_${index}_description`}
+                    value={coupon.description}
+                    onChange={(e) => updateCoupon(index, 'description', e.target.value)}
+                    placeholder="e.g., Any HVAC Service"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Coupon 3 */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h4 className="font-medium">Coupon 3</h4>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="coupon_3_title">Title</Label>
-                <Input
-                  id="coupon_3_title"
-                  value={formData.coupon_3_title}
-                  onChange={(e) => setFormData({ ...formData, coupon_3_title: e.target.value })}
-                  placeholder="e.g., FREE"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="coupon_3_code">Code</Label>
-                <Input
-                  id="coupon_3_code"
-                  value={formData.coupon_3_code}
-                  onChange={(e) => setFormData({ ...formData, coupon_3_code: e.target.value })}
-                  placeholder="e.g., FREEDIAG"
-                />
-              </div>
-              <div className="space-y-2 md:col-span-1">
-                <Label htmlFor="coupon_3_description">Description</Label>
-                <Input
-                  id="coupon_3_description"
-                  value={formData.coupon_3_description}
-                  onChange={(e) => setFormData({ ...formData, coupon_3_description: e.target.value })}
-                  placeholder="e.g., Diagnostic with Repair"
-                />
-              </div>
-            </div>
-          </div>
+          ))}
+          
+          <Button type="button" variant="outline" onClick={addCoupon} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Coupon
+          </Button>
+          
+          {formData.coupons.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center">No coupons added yet. Click "Add Coupon" to create one.</p>
+          )}
         </CardContent>
       </Card>
 
