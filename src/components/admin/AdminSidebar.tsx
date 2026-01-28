@@ -335,11 +335,11 @@ export function AdminSidebar() {
     })),
   }), [companies]);
 
-  // Build menu items with Page Builder inserted before Logs
+  // Build menu items with Page Builder inserted after Companies
   const menuItems = useMemo(() => {
-    const logsIndex = staticMenuItems.findIndex(item => item.title === "Logs");
+    const companiesIndex = staticMenuItems.findIndex(item => item.title === "Companies");
     const items = [...staticMenuItems];
-    items.splice(logsIndex, 0, pageBuilderMenu);
+    items.splice(companiesIndex + 1, 0, pageBuilderMenu);
     return items;
   }, [pageBuilderMenu]);
 
