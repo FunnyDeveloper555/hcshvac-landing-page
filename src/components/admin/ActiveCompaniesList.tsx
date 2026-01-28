@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Eye } from "lucide-react";
+import { Loader2, Eye, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Company {
@@ -114,6 +114,14 @@ const ActiveCompaniesList = () => {
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/admin/companies/add?edit=${company.id}`)}
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit
                     </Button>
                     <Button
                       variant="destructive"
