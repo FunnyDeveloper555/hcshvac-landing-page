@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
+import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
 import { Button } from "@/components/ui/button";
 
 interface PageContent {
@@ -337,6 +338,13 @@ const CompanyWebsiteMockup = () => {
             <Wrench className="w-48 h-48" />
           </div>
         </div>
+
+        {/* ======== SERVICE AREAS ACCORDION ======== */}
+        <CompanyServiceAreasAccordion 
+          companyName={selectedCompany.name}
+          serviceAreas={selectedCompany.service_areas}
+          primaryColor={primaryColor}
+        />
 
         {/* ======== COUPONS SECTION ======== */}
         {(selectedCompany.coupon_1_title || selectedCompany.coupon_2_title || selectedCompany.coupon_3_title) && (
