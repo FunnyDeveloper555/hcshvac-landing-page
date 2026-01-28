@@ -214,6 +214,8 @@ const Admin = () => {
                 <Route path="/page-builder/company/:companyId/cta-icons/add" element={<CTAIconsAdd />} />
                 <Route path="/page-builder/company/:companyId/cta-icons/library" element={<CTAIconsLibrary />} />
                 <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
+                {/* Accordion List routes */}
+                <Route path="/page-builder/company/:companyId/accordion-list/hvac/areas-service" element={<AreasService />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />

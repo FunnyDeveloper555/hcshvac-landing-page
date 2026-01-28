@@ -317,6 +317,15 @@ export function AdminSidebar() {
   ];
 
   // Build dynamic Page Builder menu with companies containing all submenus
+  // Helper function to recursively update URLs with company ID
+  const updateUrlsWithCompanyId = (items: MenuItem[], companyId: string): MenuItem[] => {
+    return items.map(item => ({
+      ...item,
+      url: item.url ? `/admin/page-builder/company/${companyId}${item.url.replace('/admin/page-builder', '')}` : undefined,
+      children: item.children ? updateUrlsWithCompanyId(item.children, companyId) : undefined,
+    }));
+  };
+
   const pageBuilderMenu: MenuItem = useMemo(() => ({
     title: "Page Builder",
     icon: Layout,
@@ -324,15 +333,7 @@ export function AdminSidebar() {
       title: company.name,
       url: `/admin/page-builder/company/${company.id}`,
       icon: Building2,
-      children: companySubmenus.map(submenu => ({
-        ...submenu,
-        // Update URLs to include company ID
-        url: submenu.url ? `/admin/page-builder/company/${company.id}${submenu.url.replace('/admin/page-builder', '')}` : undefined,
-        children: submenu.children?.map(child => ({
-          ...child,
-          url: child.url ? `/admin/page-builder/company/${company.id}${child.url.replace('/admin/page-builder', '')}` : undefined,
-        })),
-      })),
+      children: updateUrlsWithCompanyId(companySubmenus, company.id),
     })),
   }), [companies]);
 
