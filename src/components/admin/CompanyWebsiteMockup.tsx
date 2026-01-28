@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
 import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
+import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
 interface PageContent {
@@ -339,12 +340,23 @@ const CompanyWebsiteMockup = () => {
           </div>
         </div>
 
-        {/* ======== SERVICE AREAS ACCORDION ======== */}
-        <CompanyServiceAreasAccordion 
-          companyName={selectedCompany.name}
-          serviceAreas={selectedCompany.service_areas}
-          primaryColor={primaryColor}
-        />
+        {/* ======== ACCORDION SECTION ======== */}
+        {selectedCompany.service_areas && selectedCompany.service_areas.length > 0 && (
+          <section className="py-8 bg-muted/30">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <Accordion type="multiple" className="w-full space-y-2">
+                  <CompanyServiceAreasAccordion 
+                    companyName={selectedCompany.name}
+                    serviceAreas={selectedCompany.service_areas}
+                    primaryColor={primaryColor}
+                  />
+                  {/* Additional accordions can be added here in the future */}
+                </Accordion>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ======== COUPONS SECTION ======== */}
         {(selectedCompany.coupon_1_title || selectedCompany.coupon_2_title || selectedCompany.coupon_3_title) && (
