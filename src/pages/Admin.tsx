@@ -30,6 +30,8 @@ import EquipmentBrands from "@/components/admin/pagebuilder/EquipmentBrands";
 import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
 import AreasService from "@/components/admin/pagebuilder/AreasService";
 import BrandsInstall from "@/components/admin/pagebuilder/BrandsInstall";
+import BrandsService from "@/components/admin/pagebuilder/BrandsService";
+import BrandsRepair from "@/components/admin/pagebuilder/BrandsRepair";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
@@ -218,6 +220,8 @@ const Admin = () => {
                 {/* Accordion List routes */}
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/areas-service" element={<AreasService />} />
                 <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-install" element={<BrandsInstall />} />
+                <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-service" element={<BrandsService />} />
+                <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-repair" element={<BrandsRepair />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />
