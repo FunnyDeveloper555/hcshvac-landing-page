@@ -8,6 +8,7 @@ import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAre
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
+import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 
@@ -201,11 +202,23 @@ const CompanyLanding = () => {
           // Show the home page content
           <>
             <CompanyHero company={company} theme={theme} />
-            <CompanyServiceAreasAccordion 
-              companyName={company.name}
-              serviceAreas={company.service_areas}
-              primaryColor={theme.colors.primary}
-            />
+            {/* Accordion Section */}
+            {company.service_areas && company.service_areas.length > 0 && (
+              <section className="py-8 bg-muted/30">
+                <div className="container mx-auto px-4">
+                  <div className="max-w-4xl mx-auto">
+                    <Accordion type="multiple" className="w-full space-y-2">
+                      <CompanyServiceAreasAccordion 
+                        companyName={company.name}
+                        serviceAreas={company.service_areas}
+                        primaryColor={theme.colors.primary}
+                      />
+                      {/* Additional accordions can be added here in the future */}
+                    </Accordion>
+                  </div>
+                </div>
+              </section>
+            )}
             <CompanyServices company={company} services={services} theme={theme} />
             <CompanyContact company={company} theme={theme} />
           </>
