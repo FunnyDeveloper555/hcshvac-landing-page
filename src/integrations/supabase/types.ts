@@ -1369,6 +1369,89 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_listings: {
+        Row: {
+          affiliates: Json | null
+          best_if_used_for: string | null
+          bg_alt_text: string | null
+          bg_custom_name: string | null
+          bg_image_url: string | null
+          business_name: string
+          business_phone: string | null
+          company_id: string
+          contact_email: string | null
+          created_at: string
+          display_order: number
+          first_bullets: Json | null
+          first_paragraph: string | null
+          id: string
+          is_active: boolean | null
+          logo_alt_text: string | null
+          logo_custom_name: string | null
+          logo_url: string | null
+          second_bullets: Json | null
+          second_paragraph: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          affiliates?: Json | null
+          best_if_used_for?: string | null
+          bg_alt_text?: string | null
+          bg_custom_name?: string | null
+          bg_image_url?: string | null
+          business_name: string
+          business_phone?: string | null
+          company_id: string
+          contact_email?: string | null
+          created_at?: string
+          display_order?: number
+          first_bullets?: Json | null
+          first_paragraph?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_alt_text?: string | null
+          logo_custom_name?: string | null
+          logo_url?: string | null
+          second_bullets?: Json | null
+          second_paragraph?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          affiliates?: Json | null
+          best_if_used_for?: string | null
+          bg_alt_text?: string | null
+          bg_custom_name?: string | null
+          bg_image_url?: string | null
+          business_name?: string
+          business_phone?: string | null
+          company_id?: string
+          contact_email?: string | null
+          created_at?: string
+          display_order?: number
+          first_bullets?: Json | null
+          first_paragraph?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_alt_text?: string | null
+          logo_custom_name?: string | null
+          logo_url?: string | null
+          second_bullets?: Json | null
+          second_paragraph?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_listings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           address: string | null
