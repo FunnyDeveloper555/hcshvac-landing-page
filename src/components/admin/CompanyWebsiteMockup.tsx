@@ -22,6 +22,12 @@ interface PageContent {
   enabled: boolean;
 }
 
+interface Coupon {
+  title: string;
+  description: string;
+  code: string;
+}
+
 interface Company {
   id: string;
   name: string;
@@ -47,15 +53,7 @@ interface Company {
   financing_enabled: boolean | null;
   financing_provider: string | null;
   financing_url: string | null;
-  coupon_1_title: string | null;
-  coupon_1_description: string | null;
-  coupon_1_code: string | null;
-  coupon_2_title: string | null;
-  coupon_2_description: string | null;
-  coupon_2_code: string | null;
-  coupon_3_title: string | null;
-  coupon_3_description: string | null;
-  coupon_3_code: string | null;
+  coupons: Coupon[] | null;
   partner_companies: Array<{ name: string; url: string }> | null;
   hvac_brands_install: string[] | null;
   hvac_brands_service: string[] | null;
@@ -103,6 +101,7 @@ const CompanyWebsiteMockup = () => {
         ...data,
         partner_companies: data.partner_companies as Array<{ name: string; url: string }> | null,
         header_pages: data.header_pages as unknown as Record<string, PageContent> | null,
+        coupons: (Array.isArray(data.coupons) ? data.coupons : []) as unknown as Coupon[],
       } as Company;
     },
     enabled: !!companyId,
@@ -400,46 +399,24 @@ const CompanyWebsiteMockup = () => {
         ) : null}
 
         {/* ======== COUPONS SECTION ======== */}
-        {(selectedCompany.coupon_1_title || selectedCompany.coupon_2_title || selectedCompany.coupon_3_title) && (
+        {selectedCompany.coupons && selectedCompany.coupons.length > 0 && (
           <div className="bg-muted/50 p-8">
             <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
               <Tag className="w-6 h-6 text-primary" />
               Special Offers
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
-              {selectedCompany.coupon_1_title && (
-                <Card className="border-2 border-dashed border-primary">
+              {selectedCompany.coupons.map((coupon, index) => (
+                <Card key={index} className="border-2 border-dashed border-primary">
                   <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_1_title}</p>
-                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_1_description}</p>
-                    {selectedCompany.coupon_1_code && (
-                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_1_code}</Badge>
+                    <p className="text-2xl font-bold text-primary">{coupon.title}</p>
+                    <p className="text-muted-foreground text-sm">{coupon.description}</p>
+                    {coupon.code && (
+                      <Badge variant="outline" className="mt-2">{coupon.code}</Badge>
                     )}
                   </CardContent>
                 </Card>
-              )}
-              {selectedCompany.coupon_2_title && (
-                <Card className="border-2 border-dashed border-primary">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_2_title}</p>
-                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_2_description}</p>
-                    {selectedCompany.coupon_2_code && (
-                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_2_code}</Badge>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-              {selectedCompany.coupon_3_title && (
-                <Card className="border-2 border-dashed border-primary">
-                  <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">{selectedCompany.coupon_3_title}</p>
-                    <p className="text-muted-foreground text-sm">{selectedCompany.coupon_3_description}</p>
-                    {selectedCompany.coupon_3_code && (
-                      <Badge variant="outline" className="mt-2">{selectedCompany.coupon_3_code}</Badge>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+              ))}
             </div>
           </div>
         )}
@@ -747,7 +724,7 @@ const CompanyWebsiteMockup = () => {
             <div>
               <span className="text-muted-foreground">Coupons:</span>
               <span className="ml-2 font-medium">
-                {[selectedCompany.coupon_1_title, selectedCompany.coupon_2_title, selectedCompany.coupon_3_title].filter(Boolean).length}
+                {selectedCompany.coupons?.length || 0}
               </span>
             </div>
           </div>

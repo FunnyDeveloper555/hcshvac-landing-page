@@ -69,6 +69,7 @@ import HeaderPageAirQuality from "@/components/admin/pagebuilder/HeaderPageAirQu
 import CTAIconsAdd from "@/components/admin/pagebuilder/CTAIconsAdd";
 import CTAIconsLibrary from "@/components/admin/pagebuilder/CTAIconsLibrary";
 import CTAIconsAssignments from "@/components/admin/pagebuilder/CTAIconsAssignments";
+import CouponList from "@/components/admin/pagebuilder/CouponList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -229,6 +230,8 @@ const Admin = () => {
                 <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-install" element={<PlumbingTypesInstall />} />
                 <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-service" element={<PlumbingTypesService />} />
                 <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-repair" element={<PlumbingTypesRepair />} />
+                {/* Coupon route */}
+                <Route path="/page-builder/company/:companyId/accordion-list/coupon" element={<CouponList />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />
