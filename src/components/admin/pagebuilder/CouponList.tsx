@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Tag, ExternalLink, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface Coupon {
   title: string;
@@ -138,21 +145,36 @@ const CouponList = () => {
                 <Tag className="w-5 h-5 text-primary" />
                 Special Offers
               </h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                {coupons.map((coupon, index) => (
-                  <div
-                    key={index}
-                    className="bg-background border-2 border-dashed border-primary rounded-lg p-4 text-center"
-                  >
-                    <p className="text-2xl font-bold text-primary">{coupon.title}</p>
-                    <p className="text-muted-foreground text-sm">{coupon.description}</p>
-                    {coupon.code && (
-                      <Badge variant="outline" className="mt-2">
-                        {coupon.code}
-                      </Badge>
-                    )}
-                  </div>
-                ))}
+              <div className="px-10">
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: coupons.length > 3,
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {coupons.map((coupon, index) => (
+                      <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                        <div className="bg-background border-2 border-dashed border-primary rounded-lg p-4 text-center h-full flex flex-col justify-center min-h-[120px]">
+                          <p className="text-2xl font-bold text-primary">{coupon.title}</p>
+                          <p className="text-muted-foreground text-sm mt-1">{coupon.description}</p>
+                          {coupon.code && (
+                            <Badge variant="outline" className="mt-2 mx-auto">
+                              {coupon.code}
+                            </Badge>
+                          )}
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {coupons.length > 1 && (
+                    <>
+                      <CarouselPrevious className="-left-4" />
+                      <CarouselNext className="-right-4" />
+                    </>
+                  )}
+                </Carousel>
               </div>
             </div>
           ) : (
