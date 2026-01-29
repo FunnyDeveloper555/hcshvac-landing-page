@@ -14,6 +14,7 @@ import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepa
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
+import CompanyCoupons from "@/components/company/CompanyCoupons";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -23,6 +24,12 @@ interface PageContent {
   subtitle: string;
   content: string;
   enabled: boolean;
+}
+
+interface Coupon {
+  title: string;
+  description: string;
+  code: string;
 }
 
 interface Company {
@@ -55,6 +62,7 @@ interface Company {
   affiliations: Record<string, string> | null;
   theme_style: ThemeStyle | null;
   header_pages: Record<string, PageContent> | null;
+  coupons: Coupon[] | null;
 }
 
 const HEADER_PAGES = [
@@ -95,7 +103,10 @@ const CompanyLanding = () => {
         return;
       }
 
-      setCompany(data as unknown as Company);
+      setCompany({
+        ...data,
+        coupons: (Array.isArray(data.coupons) ? data.coupons : []) as unknown as Coupon[],
+      } as unknown as Company);
 
       const servicesProvided = data.services_provided as string[] | null;
       if (servicesProvided && Array.isArray(servicesProvided) && servicesProvided.length > 0) {
@@ -266,6 +277,7 @@ const CompanyLanding = () => {
                 </div>
               </section>
             )}
+            <CompanyCoupons coupons={company.coupons || []} primaryColor={theme.colors.primary} />
             <CompanyServices company={company} services={services} theme={theme} />
             <CompanyContact company={company} theme={theme} />
           </>
