@@ -283,6 +283,7 @@ export function AdminSidebar() {
           ]
         },
         { title: "Coupon", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
+        { title: "Partner Listings", url: "/admin/page-builder/partner-listings", icon: Building2 },
       ]
     },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },

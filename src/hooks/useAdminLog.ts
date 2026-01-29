@@ -22,7 +22,8 @@ type EntityType =
   | "booking_invitation"
   | "call"
   | "location_profile"
-  | "photo";
+  | "photo"
+  | "partner_listing";
 
 type ActionType = 
   | "create" 

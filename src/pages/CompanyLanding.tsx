@@ -15,6 +15,7 @@ import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
+import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -277,6 +278,7 @@ const CompanyLanding = () => {
                 </div>
               </section>
             )}
+            <CompanyPartnerAccordion companyId={company.id} primaryColor={theme.colors.primary} />
             <CompanyCoupons coupons={company.coupons || []} primaryColor={theme.colors.primary} />
             <CompanyServices company={company} services={services} theme={theme} />
             <CompanyContact company={company} theme={theme} />
