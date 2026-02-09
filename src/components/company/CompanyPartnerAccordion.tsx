@@ -106,135 +106,184 @@ export default function CompanyPartnerAccordion({ companyId, primaryColor = "#0e
                 </AccordionTrigger>
 
                 <AccordionContent className="px-0 pb-0">
-                  {/* Micro-website content */}
-                  <div className="border-t">
-                    {/* Header with background */}
+                  {/* Micro-website layout */}
+                  <div className="border-t relative overflow-hidden">
+                    {/* Background image layer */}
                     {partner.bg_image_url && (
                       <div
-                        className="h-32 bg-cover bg-center relative"
+                        className="absolute inset-0 bg-cover bg-center opacity-15"
                         style={{ backgroundImage: `url(${partner.bg_image_url})` }}
-                      >
-                        <div className="absolute inset-0 bg-black/40" />
-                        <div className="absolute bottom-4 left-6 text-white">
-                          <h4 className="text-xl font-bold">{partner.business_name}</h4>
-                        </div>
-                      </div>
+                      />
                     )}
 
-                    <div className="p-6 space-y-6">
-                      {/* First Paragraph & Bullets */}
-                      {(partner.first_paragraph || (partner.first_bullets && partner.first_bullets.length > 0)) && (
-                        <div className="space-y-3">
-                          {partner.first_paragraph && (
-                            <p className="text-foreground/80 leading-relaxed">
+                    <div className="relative z-10">
+                      {/* Top Banner: Logo + Name + Phone */}
+                      <div
+                        className="flex items-center justify-between px-6 py-4 border-b"
+                        style={{ backgroundColor: `${primaryColor}15` }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-bold text-lg">{partner.business_name}</h4>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {partner.logo_url && (
+                            <img
+                              src={partner.logo_url}
+                              alt={partner.logo_alt_text || partner.business_name}
+                              className="h-10 w-auto object-contain"
+                            />
+                          )}
+                          {partner.business_phone && (
+                            <a
+                              href={`tel:${partner.business_phone}`}
+                              className="font-bold text-lg whitespace-nowrap"
+                              style={{ color: primaryColor }}
+                            >
+                              {partner.business_phone}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Text Box 1: Introduction */}
+                      {partner.first_paragraph && (
+                        <div className="mx-6 mt-5">
+                          <div
+                            className="rounded-lg border-2 p-4 text-center"
+                            style={{ borderColor: `${primaryColor}60`, backgroundColor: `${primaryColor}08` }}
+                          >
+                            <p className="text-sm font-semibold mb-1" style={{ color: primaryColor }}>
+                              Introduction
+                            </p>
+                            <p className="text-foreground/80 text-sm leading-relaxed">
                               {partner.first_paragraph}
                             </p>
-                          )}
-                          {partner.first_bullets && partner.first_bullets.length > 0 && (
-                            <ul className="space-y-2">
-                              {partner.first_bullets.map((bullet, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <CheckCircle 
-                                    className="h-5 w-5 mt-0.5 shrink-0" 
-                                    style={{ color: primaryColor }} 
-                                  />
-                                  <span>{bullet}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                          </div>
                         </div>
                       )}
 
-                      {/* Second Paragraph & Bullets */}
-                      {(partner.second_paragraph || (partner.second_bullets && partner.second_bullets.length > 0)) && (
-                        <div className="space-y-3">
-                          {partner.second_paragraph && (
-                            <p className="text-foreground/80 leading-relaxed">
-                              {partner.second_paragraph}
-                            </p>
-                          )}
-                          {partner.second_bullets && partner.second_bullets.length > 0 && (
-                            <ul className="space-y-2">
-                              {partner.second_bullets.map((bullet, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <CheckCircle 
-                                    className="h-5 w-5 mt-0.5 shrink-0" 
-                                    style={{ color: primaryColor }} 
-                                  />
-                                  <span>{bullet}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Affiliates */}
+                      {/* Affiliates row (brand logos) */}
                       {partner.affiliates && partner.affiliates.length > 0 && (
-                        <div className="space-y-3">
-                          <h5 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
-                            Affiliations
-                          </h5>
-                          <div className="flex flex-wrap gap-4">
-                            {partner.affiliates.map((affiliate, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2"
-                              >
-                                {affiliate.logo_url ? (
-                                  <img
-                                    src={affiliate.logo_url}
-                                    alt={affiliate.alt_text || affiliate.business_name}
-                                    className="h-8 w-8 object-contain"
-                                  />
-                                ) : (
-                                  <Building2 className="h-6 w-6 text-muted-foreground" />
+                        <div className="mx-6 mt-4 flex flex-wrap items-center justify-center gap-4">
+                          {partner.affiliates.map((affiliate, idx) => (
+                            <div key={idx} className="flex flex-col items-center gap-1">
+                              {affiliate.logo_url ? (
+                                <img
+                                  src={affiliate.logo_url}
+                                  alt={affiliate.alt_text || affiliate.business_name}
+                                  className="h-12 w-auto object-contain"
+                                />
+                              ) : (
+                                <div className="bg-muted rounded px-3 py-2 flex items-center gap-2">
+                                  <Building2 className="h-5 w-5 text-muted-foreground" />
+                                  <span className="text-xs font-medium">{affiliate.custom_name || affiliate.business_name}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Text Box 2: Details with two-column bullets */}
+                      {(partner.second_paragraph || (partner.first_bullets && partner.first_bullets.length > 0) || (partner.second_bullets && partner.second_bullets.length > 0)) && (
+                        <div className="mx-6 mt-4">
+                          <div
+                            className="rounded-lg border-2 p-4"
+                            style={{ borderColor: `${primaryColor}60`, backgroundColor: `${primaryColor}08` }}
+                          >
+                            {partner.second_paragraph && (
+                              <p className="text-foreground/80 text-sm leading-relaxed text-center mb-3">
+                                {partner.second_paragraph}
+                              </p>
+                            )}
+
+                            {/* Two-column bullet layout */}
+                            {((partner.first_bullets && partner.first_bullets.length > 0) || (partner.second_bullets && partner.second_bullets.length > 0)) && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                                {partner.first_bullets && partner.first_bullets.length > 0 && (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: primaryColor }}>
+                                      Services
+                                    </p>
+                                    <ul className="space-y-1">
+                                      {partner.first_bullets.map((bullet, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm">
+                                          <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: primaryColor }} />
+                                          <span>{bullet}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
                                 )}
-                                <span className="text-sm font-medium">{affiliate.business_name}</span>
+                                {partner.second_bullets && partner.second_bullets.length > 0 && (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: primaryColor }}>
+                                      Features
+                                    </p>
+                                    <ul className="space-y-1">
+                                      {partner.second_bullets.map((bullet, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm">
+                                          <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: primaryColor }} />
+                                          <span>{bullet}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
-                            ))}
+                            )}
                           </div>
                         </div>
                       )}
 
                       {/* Best If Used For */}
                       {partner.best_if_used_for && (
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <h5 className="font-semibold text-sm mb-2">Best If Used For</h5>
-                          <p className="text-sm text-foreground/80">{partner.best_if_used_for}</p>
+                        <div className="mx-6 mt-4">
+                          <div className="bg-muted/50 rounded-lg p-3">
+                            <h5 className="font-semibold text-xs uppercase tracking-wide mb-1" style={{ color: primaryColor }}>
+                              Best If Used For
+                            </h5>
+                            <p className="text-sm text-foreground/80">{partner.best_if_used_for}</p>
+                          </div>
                         </div>
                       )}
 
-                      {/* Contact Section */}
-                      <div className="flex flex-wrap gap-3 pt-4 border-t">
-                        {partner.business_phone && (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={`tel:${partner.business_phone}`}>
-                              <Phone className="mr-2 h-4 w-4" />
-                              Call
-                            </a>
-                          </Button>
-                        )}
+                      {/* Contact Footer */}
+                      <div
+                        className="mx-6 mt-4 mb-5 rounded-lg p-4 flex flex-wrap items-center justify-center gap-4"
+                        style={{ backgroundColor: `${primaryColor}15` }}
+                      >
                         {partner.contact_email && (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={`mailto:${partner.contact_email}`}>
-                              <Mail className="mr-2 h-4 w-4" />
-                              Email
-                            </a>
-                          </Button>
+                          <a
+                            href={`mailto:${partner.contact_email}`}
+                            className="flex items-center gap-2 text-sm font-medium hover:underline"
+                            style={{ color: primaryColor }}
+                          >
+                            <Mail className="h-4 w-4" />
+                            {partner.contact_email}
+                          </a>
                         )}
                         {partner.website_url && (
-                          <Button
-                            size="sm"
-                            style={{ backgroundColor: primaryColor }}
-                            asChild
+                          <a
+                            href={partner.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm font-medium hover:underline"
+                            style={{ color: primaryColor }}
                           >
-                            <a href={partner.website_url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="mr-2 h-4 w-4" />
-                              Visit Website
-                            </a>
-                          </Button>
+                            <ExternalLink className="h-4 w-4" />
+                            {partner.website_url}
+                          </a>
+                        )}
+                        {partner.business_phone && (
+                          <a
+                            href={`tel:${partner.business_phone}`}
+                            className="flex items-center gap-2 text-sm font-medium hover:underline"
+                            style={{ color: primaryColor }}
+                          >
+                            <Phone className="h-4 w-4" />
+                            {partner.business_phone}
+                          </a>
                         )}
                       </div>
                     </div>
