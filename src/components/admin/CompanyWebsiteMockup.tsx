@@ -12,6 +12,7 @@ import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepa
 import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
+import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
@@ -637,21 +638,7 @@ const CompanyWebsiteMockup = () => {
         )}
 
         {/* ======== PARTNER COMPANIES SECTION ======== */}
-        {selectedCompany.partner_companies && selectedCompany.partner_companies.length > 0 && (
-          <div className="p-8 bg-muted/20">
-            <h3 className="text-2xl font-bold text-center mb-6 flex items-center justify-center gap-2">
-              <Users className="w-6 h-6 text-primary" />
-              Our Partners
-            </h3>
-            <div className="flex flex-wrap justify-center gap-4">
-              {selectedCompany.partner_companies.map((partner, idx) => (
-                <Badge key={idx} variant="outline" className="text-sm py-2 px-4">
-                  {partner.name}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+        <CompanyPartnerAccordion companyId={selectedCompany.id} primaryColor={primaryColor} />
 
         {/* ======== CONTACT SECTION ======== */}
         <div className="p-8 bg-muted/50">
