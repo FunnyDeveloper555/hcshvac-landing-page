@@ -40,7 +40,19 @@ interface BannerFormData {
   description: string;
   image_url: string;
   is_active: boolean;
+  animation_style: string;
 }
+
+const ANIMATION_STYLES = [
+  { value: "fade", label: "Fade", description: "Smooth opacity transition" },
+  { value: "slide-left", label: "Slide Left", description: "Slides in from right to left" },
+  { value: "slide-right", label: "Slide Right", description: "Slides in from left to right" },
+  { value: "slide-up", label: "Slide Up", description: "Slides in from bottom to top" },
+  { value: "zoom-in", label: "Zoom In", description: "Scales up from center" },
+  { value: "zoom-out", label: "Zoom Out", description: "Scales down into view" },
+  { value: "flip", label: "Flip", description: "3D flip transition" },
+  { value: "none", label: "None", description: "No animation" },
+];
 
 const emptyForm: BannerFormData = {
   title: "",
@@ -48,6 +60,7 @@ const emptyForm: BannerFormData = {
   description: "",
   image_url: "",
   is_active: true,
+  animation_style: "fade",
 };
 
 const BannerPreview = () => {
@@ -133,6 +146,7 @@ const BannerPreview = () => {
       description: banner.description,
       image_url: banner.image_url,
       is_active: banner.is_active ?? true,
+      animation_style: (banner as any).animation_style || "fade",
     });
     setShowForm(true);
   };
@@ -160,6 +174,7 @@ const BannerPreview = () => {
           description: formData.description.trim(),
           image_url: formData.image_url.trim(),
           is_active: formData.is_active,
+          animation_style: formData.animation_style,
         })
         .eq("id", editingId);
 
@@ -180,6 +195,7 @@ const BannerPreview = () => {
         image_url: formData.image_url.trim(),
         display_order: nextOrder,
         is_active: formData.is_active,
+        animation_style: formData.animation_style,
       });
 
       if (error) {
@@ -376,6 +392,26 @@ const BannerPreview = () => {
                 <div className="flex items-center gap-2">
                   <Switch checked={formData.is_active} onCheckedChange={(val) => handleInputChange("is_active", val)} />
                   <Label>Active</Label>
+                </div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Animation Style</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {ANIMATION_STYLES.map((style) => (
+                    <button
+                      key={style.value}
+                      type="button"
+                      onClick={() => handleInputChange("animation_style", style.value)}
+                      className={`p-3 rounded-lg border text-left transition-all ${
+                        formData.animation_style === style.value
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <p className="font-medium text-sm">{style.label}</p>
+                      <p className="text-xs text-muted-foreground">{style.description}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

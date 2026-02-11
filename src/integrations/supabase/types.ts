@@ -572,6 +572,7 @@ export type Database = {
       }
       company_banners: {
         Row: {
+          animation_style: string
           company_id: string
           created_at: string
           description: string
@@ -584,6 +585,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          animation_style?: string
           company_id: string
           created_at?: string
           description?: string
@@ -596,6 +598,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          animation_style?: string
           company_id?: string
           created_at?: string
           description?: string
