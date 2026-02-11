@@ -211,7 +211,7 @@ const staticMenuItems: MenuItem[] = [
   },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -400,7 +400,7 @@ export function AdminSidebar() {
             </Collapsible>
           ) : (
             <button
-              onClick={() => child.url && navigate(child.url)}
+              onClick={() => { child.url && navigate(child.url); onNavigate?.(); }}
               className={`cursor-pointer w-full min-w-0 flex items-center gap-2 px-2 py-1 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${child.url && isActive(child.url) ? "bg-accent text-accent-foreground" : ""}`}
             >
               <child.icon className="h-4 w-4 shrink-0" />
