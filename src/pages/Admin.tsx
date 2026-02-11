@@ -72,6 +72,8 @@ import CTAIconsAssignments from "@/components/admin/pagebuilder/CTAIconsAssignme
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
 import PartnerListingsAdd from "@/components/admin/pagebuilder/PartnerListingsAdd";
+import MarqueeList from "@/components/admin/pagebuilder/MarqueeList";
+import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -238,6 +240,10 @@ const Admin = () => {
                 <Route path="/page-builder/company/:companyId/partner-listings" element={<PartnerListingsList />} />
                 <Route path="/page-builder/company/:companyId/partner-listings/add" element={<PartnerListingsAdd />} />
                 <Route path="/page-builder/company/:companyId/partner-listings/edit" element={<PartnerListingsAdd />} />
+                {/* Marquee routes */}
+                <Route path="/page-builder/company/:companyId/marquee" element={<MarqueeList />} />
+                <Route path="/page-builder/company/:companyId/marquee/add" element={<MarqueeAdd />} />
+                <Route path="/page-builder/company/:companyId/marquee/edit" element={<MarqueeAdd />} />
                 <Route path="/logs/call" element={<CallLogAdd />} />
                 <Route path="/logs/list" element={<LogsList />} />
                 <Route path="/calendar/add" element={<CalendarAdd />} />

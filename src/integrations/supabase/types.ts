@@ -611,6 +611,47 @@ export type Database = {
           },
         ]
       }
+      company_marquees: {
+        Row: {
+          company_id: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_marquees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cta_icons: {
         Row: {
           alt_text: string
