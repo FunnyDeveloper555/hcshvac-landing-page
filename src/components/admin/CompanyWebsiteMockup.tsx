@@ -12,7 +12,7 @@ import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepa
 import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
-
+import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
@@ -638,23 +638,7 @@ const CompanyWebsiteMockup = () => {
         )}
 
         {/* ======== PARTNER COMPANIES SECTION ======== */}
-        {selectedCompany.partner_companies && Array.isArray(selectedCompany.partner_companies) && (selectedCompany.partner_companies as Array<{name?: string}>).length > 0 && (
-          <section className="py-12 bg-muted/30">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold mb-2">Our Partners</h2>
-                <p className="text-muted-foreground">Trusted companies we work with</p>
-              </div>
-              <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-                {(selectedCompany.partner_companies as Array<{name?: string}>).map((p, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-sm px-4 py-2">
-                    {p.name || `Partner ${idx + 1}`}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        <CompanyPartnerAccordion companyId={selectedCompany.id} primaryColor={primaryColor} />
 
         {/* ======== CONTACT SECTION ======== */}
         <div className="p-8 bg-muted/50">
