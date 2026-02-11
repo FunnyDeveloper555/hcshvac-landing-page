@@ -60,6 +60,7 @@ const BannerPreview = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
   const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
 
   useEffect(() => {
     if (!companyId) return;
@@ -249,34 +250,64 @@ const BannerPreview = () => {
         </Button>
       </div>
 
-      {/* Desktop Preview */}
+      {/* Preview with Desktop/Mobile toggle */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Monitor className="h-5 w-5" /> Desktop Preview
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              {previewMode === "desktop" ? <Monitor className="h-5 w-5" /> : <Smartphone className="h-5 w-5" />}
+              {previewMode === "desktop" ? "Desktop" : "Mobile"} Preview
+            </CardTitle>
+            <div className="flex items-center border rounded-lg p-1">
+              <Button variant={previewMode === "desktop" ? "default" : "ghost"} size="sm" className="h-8 px-3" onClick={() => setPreviewMode("desktop")}>
+                <Monitor className="h-4 w-4 mr-1" /> Desktop
+              </Button>
+              <Button variant={previewMode === "mobile" ? "default" : "ghost"} size="sm" className="h-8 px-3" onClick={() => setPreviewMode("mobile")}>
+                <Smartphone className="h-4 w-4 mr-1" /> Mobile
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg overflow-hidden">
-            <div className="relative h-80 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-8">
-                <h1 className="text-4xl font-bold mb-2">{displayTitle}</h1>
-                <p className="text-xl font-medium mb-4" style={{ color: primaryColor }}>{displayTagline}</p>
-                <p className="text-lg max-w-2xl mb-6 opacity-90">{displayDescription}</p>
-                <div className="flex gap-4">
-                  <button className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
-                    Schedule Service
-                  </button>
-                  {company.company_phone && (
-                    <button className="px-6 py-3 rounded-lg font-semibold bg-white text-gray-900 flex items-center gap-2">
-                      <Phone className="h-4 w-4" /> {company.company_phone}
-                    </button>
-                  )}
+          {previewMode === "desktop" ? (
+            <div className="border rounded-lg overflow-hidden">
+              <div className="relative h-80 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
+                <div className="absolute inset-0 bg-black/50" />
+                <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-8">
+                  <h1 className="text-4xl font-bold mb-2">{displayTitle}</h1>
+                  <p className="text-xl font-medium mb-4" style={{ color: primaryColor }}>{displayTagline}</p>
+                  <p className="text-lg max-w-2xl mb-6 opacity-90">{displayDescription}</p>
+                  <div className="flex gap-4">
+                    <button className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>Schedule Service</button>
+                    {company.company_phone && (
+                      <button className="px-6 py-3 rounded-lg font-semibold bg-white text-gray-900 flex items-center gap-2">
+                        <Phone className="h-4 w-4" /> {company.company_phone}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="max-w-sm mx-auto border rounded-lg overflow-hidden">
+              <div className="relative h-64 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
+                <div className="absolute inset-0 bg-black/50" />
+                <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-4">
+                  <h1 className="text-xl font-bold mb-1">{displayTitle}</h1>
+                  <p className="text-sm font-medium mb-2" style={{ color: primaryColor }}>{displayTagline}</p>
+                  <p className="text-sm mb-4 opacity-90 line-clamp-2">{displayDescription}</p>
+                  <div className="flex flex-col gap-2 w-full px-4">
+                    <button className="w-full px-4 py-2 rounded-lg font-semibold text-white text-sm" style={{ backgroundColor: primaryColor }}>Schedule Service</button>
+                    {company.company_phone && (
+                      <button className="w-full px-4 py-2 rounded-lg font-semibold bg-white text-gray-900 flex items-center justify-center gap-2 text-sm">
+                        <Phone className="h-3 w-3" /> Call Now
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {banners.filter((b) => b.is_active).length > 1 && (
             <div className="flex justify-center gap-2 mt-3">
               {banners.filter((b) => b.is_active).map((b) => (
@@ -291,36 +322,7 @@ const BannerPreview = () => {
         </CardContent>
       </Card>
 
-      {/* Mobile Preview */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Smartphone className="h-5 w-5" /> Mobile Preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-sm mx-auto border rounded-lg overflow-hidden">
-            <div className="relative h-64 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-4">
-                <h1 className="text-xl font-bold mb-1">{displayTitle}</h1>
-                <p className="text-sm font-medium mb-2" style={{ color: primaryColor }}>{displayTagline}</p>
-                <p className="text-sm mb-4 opacity-90 line-clamp-2">{displayDescription}</p>
-                <div className="flex flex-col gap-2 w-full px-4">
-                  <button className="w-full px-4 py-2 rounded-lg font-semibold text-white text-sm" style={{ backgroundColor: primaryColor }}>
-                    Schedule Service
-                  </button>
-                  {company.company_phone && (
-                    <button className="w-full px-4 py-2 rounded-lg font-semibold bg-white text-gray-900 flex items-center justify-center gap-2 text-sm">
-                      <Phone className="h-3 w-3" /> Call Now
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Add / Edit Form */}
       {showForm && (
