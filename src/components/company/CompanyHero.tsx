@@ -1,11 +1,7 @@
+import { useState, useEffect, useCallback } from "react";
 import { Phone, Calendar, ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import { supabase } from "@/integrations/supabase/client";
 import { ThemeConfig } from "@/lib/companyThemes";
 import { cn } from "@/lib/utils";
 
@@ -15,12 +11,24 @@ import hvacHero2 from "@/assets/hvac-hero-2.jpg";
 import hvacHero3 from "@/assets/hvac-hero-3.jpg";
 
 const DEFAULT_BANNERS = [
-  { url: hvacHero1, alt: "Professional HVAC technician at work" },
-  { url: hvacHero2, alt: "Modern heating and cooling equipment" },
-  { url: hvacHero3, alt: "HVAC service and maintenance" },
+  { url: hvacHero1, alt: "Professional HVAC technician at work", animation_style: "fade" },
+  { url: hvacHero2, alt: "Modern heating and cooling equipment", animation_style: "fade" },
+  { url: hvacHero3, alt: "HVAC service and maintenance", animation_style: "fade" },
 ];
 
+interface CompanyBanner {
+  id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  image_url: string;
+  display_order: number;
+  is_active: boolean | null;
+  animation_style: string;
+}
+
 interface Company {
+  id: string;
   name: string;
   company_phone: string | null;
   website_title: string | null;
@@ -35,14 +43,72 @@ interface CompanyHeroProps {
   theme: ThemeConfig;
 }
 
+const getAnimationClass = (animationStyle: string, isActive: boolean) => {
+  if (!isActive) return "opacity-0 absolute inset-0";
+  
+  const base = "absolute inset-0 transition-all duration-700 ease-in-out";
+  switch (animationStyle) {
+    case "slide-left":
+      return `${base} ${isActive ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`;
+    case "slide-right":
+      return `${base} ${isActive ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`;
+    case "slide-up":
+      return `${base} ${isActive ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`;
+    case "zoom-in":
+      return `${base} ${isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"}`;
+    case "zoom-out":
+      return `${base} ${isActive ? "scale-100 opacity-100" : "scale-110 opacity-0"}`;
+    case "flip":
+      return `${base} ${isActive ? "rotateY-0 opacity-100" : "[transform:rotateY(90deg)] opacity-0"}`;
+    case "none":
+      return `absolute inset-0 ${isActive ? "opacity-100" : "opacity-0"}`;
+    case "fade":
+    default:
+      return `${base} ${isActive ? "opacity-100" : "opacity-0"}`;
+  }
+};
+
 const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
+  const [banners, setBanners] = useState<CompanyBanner[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [bannersLoaded, setBannersLoaded] = useState(false);
+
   const title = company.website_title || `${company.name} - Your Trusted HVAC Partner`;
   const tagline = company.website_tagline || "24/7 Emergency Service Available";
   const description = company.website_description || 
     `Professional heating, ventilation, and air conditioning services for residential and commercial properties. Trust ${company.name} for all your HVAC needs.`;
   
   const primaryAreas = company.service_areas?.slice(0, 3).join(", ") || "Your Area";
-  const hasCustomImage = !!company.hero_image_url;
+
+  // Fetch company banners
+  useEffect(() => {
+    const fetchBanners = async () => {
+      const { data } = await supabase
+        .from("company_banners")
+        .select("*")
+        .eq("company_id", company.id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (data && data.length > 0) {
+        setBanners(data);
+      }
+      setBannersLoaded(true);
+    };
+    fetchBanners();
+  }, [company.id]);
+
+  // Auto-slide
+  useEffect(() => {
+    const items = banners.length > 0 ? banners : DEFAULT_BANNERS;
+    if (items.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % items.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [banners]);
 
   const roundedClass = {
     'none': 'rounded-none',
@@ -54,37 +120,53 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
     'full': 'rounded-full',
   }[theme.typography.rounded];
 
-  // Render background based on hero style
+  const hasCompanyBanners = banners.length > 0;
+  const displayItems = hasCompanyBanners ? banners : DEFAULT_BANNERS;
+  const currentBanner = hasCompanyBanners ? banners[currentIndex] : null;
+  const currentAnimationStyle = hasCompanyBanners 
+    ? banners[currentIndex]?.animation_style || "fade" 
+    : "fade";
+
+  // Use banner content if available, otherwise company defaults
+  const displayTitle = currentBanner?.title || title;
+  const displayTagline = currentBanner?.tagline || tagline;
+  const displayDescription = currentBanner?.description || description;
+
+  // Render background with animation
   const renderBackground = () => {
-    const imageContent = hasCustomImage ? (
-      <img 
-        src={company.hero_image_url!} 
-        alt="HVAC Services"
-        className="w-full h-full object-cover"
-      />
-    ) : (
-      <Carousel
-        opts={{ loop: true }}
-        plugins={[Autoplay({ delay: 5000 })]}
-        className="w-full h-full"
-      >
-        <CarouselContent className="h-screen">
-          {DEFAULT_BANNERS.map((banner, index) => (
-            <CarouselItem key={index} className="h-full">
-              <img 
-                src={banner.url} 
-                alt={banner.alt}
-                className="w-full h-screen object-cover"
-              />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
-    );
+    const hasCustomImage = !hasCompanyBanners && !!company.hero_image_url;
 
     return (
-      <div className="absolute inset-0 z-0">
-        {imageContent}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {hasCustomImage ? (
+          <img 
+            src={company.hero_image_url!} 
+            alt="HVAC Services"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="relative w-full h-full">
+            {displayItems.map((item, index) => {
+              const imageUrl = 'image_url' in item ? item.image_url : item.url;
+              const altText = 'image_url' in item ? item.title : item.alt;
+              const animStyle = item.animation_style || "fade";
+              const isActive = index === currentIndex;
+
+              return (
+                <div
+                  key={index}
+                  className={getAnimationClass(animStyle, isActive)}
+                >
+                  <img 
+                    src={imageUrl} 
+                    alt={altText}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
         <div className={cn(
           "absolute inset-0",
           theme.layout.heroStyle === 'overlay' && "bg-black/60",
@@ -93,6 +175,25 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
           theme.layout.heroStyle === 'split' && "bg-gradient-to-l from-background/95 via-transparent to-transparent",
           theme.layout.heroStyle === 'minimal' && "bg-background/80"
         )} />
+      </div>
+    );
+  };
+
+  // Dot indicators
+  const renderDots = () => {
+    if (displayItems.length <= 1) return null;
+    return (
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {displayItems.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={cn(
+              "w-3 h-3 rounded-full transition-all",
+              index === currentIndex ? "bg-white scale-110" : "bg-white/40 hover:bg-white/60"
+            )}
+          />
+        ))}
       </div>
     );
   };
@@ -108,14 +209,14 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
               "inline-block px-4 py-2 bg-accent/20 backdrop-blur-sm border border-accent/30 mb-6",
               roundedClass === 'rounded-full' ? 'rounded-full' : roundedClass
             )}>
-              <span className="text-accent font-semibold">{tagline}</span>
+              <span className="text-accent font-semibold">{displayTagline}</span>
             </div>
             
             <h1 className={cn(
               "text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-6 leading-tight",
               `font-${theme.typography.headingWeight}`
             )}>
-              {title}
+              {displayTitle}
             </h1>
             
             <p className={cn(
@@ -123,7 +224,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
               theme.effects.blur && "bg-background/30 backdrop-blur-sm",
               roundedClass
             )}>
-              {description}
+              {displayDescription}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -155,6 +256,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
             </div>
           </div>
         </div>
+        {renderDots()}
       </section>
     );
   }
@@ -171,7 +273,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
               roundedClass
             )}>
               <Star className="w-5 h-5" />
-              <span className="font-semibold">{tagline}</span>
+              <span className="font-semibold">{displayTagline}</span>
               <Star className="w-5 h-5" />
             </div>
             
@@ -179,14 +281,14 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
               "text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-8 leading-tight",
               `font-${theme.typography.headingWeight}`
             )}>
-              {title}
+              {displayTitle}
             </h1>
             
             <p className={cn(
               "text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto",
               theme.typography.bodySize === 'lg' && "text-xl md:text-2xl"
             )}>
-              {description}
+              {displayDescription}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
@@ -205,6 +307,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
             </div>
           </div>
         </div>
+        {renderDots()}
       </section>
     );
   }
@@ -220,18 +323,18 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
               "inline-block px-6 py-3 bg-accent text-accent-foreground font-bold uppercase tracking-wider mb-8",
               roundedClass
             )}>
-              {tagline}
+              {displayTagline}
             </div>
             
             <h1 className={cn(
               "text-5xl sm:text-6xl md:text-7xl lg:text-8xl mb-8 leading-none tracking-tight",
               `font-${theme.typography.headingWeight}`
             )}>
-              {title}
+              {displayTitle}
             </h1>
             
             <p className="text-xl md:text-2xl text-white/80 mb-12 leading-relaxed max-w-3xl mx-auto">
-              {description}
+              {displayDescription}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -255,6 +358,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
             </div>
           </div>
         </div>
+        {renderDots()}
       </section>
     );
   }
@@ -272,18 +376,18 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
                 "inline-block px-4 py-2 text-sm font-medium text-accent bg-accent/10 mb-6",
                 roundedClass
               )}>
-                {tagline}
+                {displayTagline}
               </span>
               
               <h1 className={cn(
                 "text-4xl sm:text-5xl lg:text-6xl mb-6 leading-tight",
                 `font-${theme.typography.headingWeight}`
               )}>
-                {title}
+                {displayTitle}
               </h1>
               
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                {description}
+                {displayDescription}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -307,6 +411,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
             </div>
           </div>
         </div>
+        {renderDots()}
       </section>
     );
   }
@@ -317,17 +422,17 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
       {renderBackground()}
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl">
-          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">{tagline}</p>
+          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">{displayTagline}</p>
           
           <h1 className={cn(
             "text-4xl sm:text-5xl md:text-6xl mb-8 leading-tight tracking-tight",
             `font-${theme.typography.headingWeight}`
           )}>
-            {title}
+            {displayTitle}
           </h1>
           
           <p className="text-lg text-muted-foreground mb-10 leading-relaxed border-l-2 border-primary pl-6">
-            {description}
+            {displayDescription}
           </p>
           
           <div className="flex gap-4">
@@ -344,6 +449,7 @@ const CompanyHero = ({ company, theme }: CompanyHeroProps) => {
           </div>
         </div>
       </div>
+      {renderDots()}
     </section>
   );
 };

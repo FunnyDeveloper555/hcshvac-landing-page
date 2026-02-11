@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Phone, Mail, MapPin, Wrench, Building2, Tag, Users, Clock, Shield, Award, FileText, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 import CompanyServiceAreasAccordion from "@/components/company/CompanyServiceAreasAccordion";
 import CompanyBrandsAccordion from "@/components/company/CompanyBrandsAccordion";
 import CompanyBrandsServiceAccordion from "@/components/company/CompanyBrandsServiceAccordion";
@@ -88,6 +89,138 @@ const HEADER_MENUS = [
   { key: "commercial", label: "Commercial" },
   { key: "air-quality", label: "Air Quality" },
 ];
+
+// Hero section with company banners
+const MockupHeroSection = ({ companyId, company, primaryColor }: { companyId: string; company: any; primaryColor: string }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { data: banners = [] } = useQuery({
+    queryKey: ["company-banners-mockup", companyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("company_banners")
+        .select("*")
+        .eq("company_id", companyId)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [banners]);
+
+  const currentBanner = banners[currentIndex];
+  const displayTitle = currentBanner?.title || company.website_title || company.name;
+  const displayTagline = currentBanner?.tagline || company.website_tagline || "24/7 Emergency Service";
+  const displayDescription = currentBanner?.description || company.website_description || "Professional HVAC services for your home and business.";
+  const heroImage = currentBanner?.image_url;
+  const animStyle = currentBanner?.animation_style || "fade";
+
+  const getAnimClass = (isActive: boolean) => {
+    if (!isActive) return "opacity-0 absolute inset-0";
+    const base = "absolute inset-0 transition-all duration-700 ease-in-out";
+    switch (animStyle) {
+      case "slide-left": return `${base} translate-x-0 opacity-100`;
+      case "slide-right": return `${base} translate-x-0 opacity-100`;
+      case "slide-up": return `${base} translate-y-0 opacity-100`;
+      case "zoom-in": return `${base} scale-100 opacity-100`;
+      case "zoom-out": return `${base} scale-100 opacity-100`;
+      case "none": return "absolute inset-0 opacity-100";
+      default: return `${base} opacity-100`;
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden" style={{ minHeight: "300px" }}>
+      {banners.length > 0 ? (
+        <>
+          {banners.map((banner: any, index: number) => (
+            <div
+              key={banner.id}
+              className={cn(
+                "transition-all duration-700 ease-in-out",
+                index === currentIndex ? "relative opacity-100" : "absolute inset-0 opacity-0 pointer-events-none"
+              )}
+            >
+              <div
+                className="relative text-white p-12"
+                style={{
+                  backgroundImage: banner.image_url ? `url(${banner.image_url})` : undefined,
+                  backgroundColor: !banner.image_url ? primaryColor : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  minHeight: "300px",
+                }}
+              >
+                {banner.image_url && <div className="absolute inset-0 bg-black/50" />}
+                <div className="relative max-w-2xl z-10">
+                  <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
+                    {banner.animation_style?.toUpperCase() || "FADE"} ANIMATION
+                  </Badge>
+                  <h2 className="text-4xl font-bold mb-2">{banner.title}</h2>
+                  <p className="text-xl font-medium mb-4" style={{ color: banner.image_url ? "#fff" : undefined }}>
+                    {banner.tagline}
+                  </p>
+                  <p className="text-lg max-w-2xl mb-6 opacity-90">{banner.description}</p>
+                  <div className="flex gap-4">
+                    <div className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
+                      Schedule Service
+                    </div>
+                    {company.company_phone && (
+                      <div className="px-6 py-3 rounded-lg font-semibold bg-white text-gray-900 flex items-center gap-2">
+                        <Phone className="h-4 w-4" /> {company.company_phone}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          {banners.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              {banners.map((_: any, index: number) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={cn(
+                    "w-3 h-3 rounded-full transition-all",
+                    index === currentIndex ? "bg-white" : "bg-white/40"
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
+          <div className="max-w-2xl">
+            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
+              {company.theme_style?.toUpperCase() || "MODERN"} THEME
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4">{displayTitle}</h2>
+            <p className="text-xl mb-6 text-white/90">{displayDescription}</p>
+            <div className="flex gap-4">
+              <div className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
+                Call {company.company_phone || "(555) 000-0000"}
+              </div>
+              <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">Get a Quote</div>
+            </div>
+          </div>
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
+            <Wrench className="w-48 h-48" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CompanyWebsiteMockup = () => {
   const { companyId } = useParams<{ companyId: string }>();
@@ -324,34 +457,7 @@ const CompanyWebsiteMockup = () => {
           <>
         
 
-        {/* ======== HERO SECTION ======== */}
-        <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
-          <div className="max-w-2xl">
-            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
-              {selectedCompany.theme_style?.toUpperCase() || "MODERN"} THEME
-            </Badge>
-            <h2 className="text-4xl font-bold mb-4">
-              {selectedCompany.website_title || selectedCompany.name}
-            </h2>
-            <p className="text-xl mb-6 text-white/90">
-              {selectedCompany.website_description || "Professional HVAC services for your home and business."}
-            </p>
-            <div className="flex gap-4">
-              <div 
-                className="px-6 py-3 rounded-lg font-semibold text-white"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Call {selectedCompany.company_phone || "(555) 000-0000"}
-              </div>
-              <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
-                Get a Quote
-              </div>
-            </div>
-          </div>
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
-            <Wrench className="w-48 h-48" />
-          </div>
-        </div>
+        <MockupHeroSection companyId={selectedCompany.id} company={selectedCompany} primaryColor={primaryColor} />
 
         {/* ======== ACCORDION SECTION ======== */}
         {(selectedCompany.service_areas && selectedCompany.service_areas.length > 0) || 

@@ -30,6 +30,7 @@ interface Banner {
   image_url: string;
   display_order: number;
   is_active: boolean | null;
+  animation_style: string;
   created_at: string;
   updated_at: string;
 }
@@ -146,7 +147,7 @@ const BannerPreview = () => {
       description: banner.description,
       image_url: banner.image_url,
       is_active: banner.is_active ?? true,
-      animation_style: (banner as any).animation_style || "fade",
+      animation_style: banner.animation_style || "fade",
     });
     setShowForm(true);
   };
