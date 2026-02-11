@@ -619,6 +619,8 @@ export type Database = {
           id: string
           is_active: boolean | null
           link_url: string | null
+          marquee_type: string
+          reference_id: string | null
           text: string
           updated_at: string
         }
@@ -629,6 +631,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           link_url?: string | null
+          marquee_type?: string
+          reference_id?: string | null
           text: string
           updated_at?: string
         }
@@ -639,6 +643,8 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           link_url?: string | null
+          marquee_type?: string
+          reference_id?: string | null
           text?: string
           updated_at?: string
         }

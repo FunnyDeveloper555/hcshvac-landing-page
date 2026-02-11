@@ -9,16 +9,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
+const MARQUEE_TYPES = [
+  { value: "text", label: "Text" },
+  { value: "brands", label: "Brands" },
+  { value: "partners", label: "Partners" },
+  { value: "services", label: "Services" },
+] as const;
+
 const marqueeSchema = z.object({
-  text: z.string().min(1, "Text is required"),
+  marquee_type: z.string().min(1, "Type is required"),
+  text: z.string().optional(),
   link_url: z.string().optional(),
+  reference_id: z.string().optional(),
   display_order: z.number(),
   is_active: z.boolean(),
+}).refine((data) => {
+  if (data.marquee_type === "text") return !!data.text && data.text.length > 0;
+  return !!data.reference_id;
+}, {
+  message: "Please provide text or select an item",
+  path: ["text"],
 });
 
 type MarqueeFormData = z.infer<typeof marqueeSchema>;
@@ -36,12 +52,16 @@ export default function MarqueeAdd() {
   const form = useForm<MarqueeFormData>({
     resolver: zodResolver(marqueeSchema),
     defaultValues: {
+      marquee_type: "text",
       text: "",
       link_url: "",
+      reference_id: "",
       display_order: 0,
       is_active: true,
     },
   });
+
+  const marqueeType = form.watch("marquee_type");
 
   const { data: company } = useQuery({
     queryKey: ["company", companyId],
@@ -49,13 +69,60 @@ export default function MarqueeAdd() {
       if (!companyId) return null;
       const { data, error } = await supabase
         .from("companies")
-        .select("name")
+        .select("name, brands_installed, brands_serviced, services_provided")
         .eq("id", companyId)
         .single();
       if (error) throw error;
       return data;
     },
     enabled: !!companyId,
+  });
+
+  // Fetch brands for this company
+  const { data: brands = [] } = useQuery({
+    queryKey: ["company-brands", companyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("brands")
+        .select("id, name")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: marqueeType === "brands",
+  });
+
+  // Fetch partner listings for this company
+  const { data: partners = [] } = useQuery({
+    queryKey: ["company-partners", companyId],
+    queryFn: async () => {
+      if (!companyId) return [];
+      const { data, error } = await supabase
+        .from("partner_listings")
+        .select("id, business_name")
+        .eq("company_id", companyId)
+        .eq("is_active", true)
+        .order("business_name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: marqueeType === "partners" && !!companyId,
+  });
+
+  // Fetch services
+  const { data: services = [] } = useQuery({
+    queryKey: ["services-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("id, title")
+        .eq("is_active", true)
+        .order("title");
+      if (error) throw error;
+      return data;
+    },
+    enabled: marqueeType === "services",
   });
 
   const { data: existingItem, isLoading: loadingItem } = useQuery({
@@ -76,20 +143,47 @@ export default function MarqueeAdd() {
   useEffect(() => {
     if (existingItem) {
       form.reset({
+        marquee_type: existingItem.marquee_type || "text",
         text: existingItem.text || "",
         link_url: existingItem.link_url || "",
+        reference_id: existingItem.reference_id || "",
         display_order: existingItem.display_order || 0,
         is_active: existingItem.is_active ?? true,
       });
     }
   }, [existingItem, form]);
 
+  const getReferenceItems = () => {
+    switch (marqueeType) {
+      case "brands":
+        return brands.map((b) => ({ id: b.id, label: b.name }));
+      case "partners":
+        return partners.map((p) => ({ id: p.id, label: p.business_name }));
+      case "services":
+        return services.map((s) => ({ id: s.id, label: s.title }));
+      default:
+        return [];
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async (data: MarqueeFormData) => {
+      // For non-text types, auto-set the text from the selected item
+      let finalText = data.text || "";
+      if (data.marquee_type !== "text" && data.reference_id) {
+        const items = getReferenceItems();
+        const item = items.find((i) => i.id === data.reference_id);
+        if (item) finalText = item.label;
+      }
+
       const payload = {
-        ...data,
+        text: finalText,
+        marquee_type: data.marquee_type,
+        reference_id: data.marquee_type !== "text" ? data.reference_id || null : null,
         company_id: companyId,
         link_url: data.link_url || null,
+        display_order: data.display_order,
+        is_active: data.is_active,
       };
 
       if (isEditMode && editId) {
@@ -113,6 +207,7 @@ export default function MarqueeAdd() {
       queryClient.invalidateQueries({ queryKey: ["company-marquees", companyId] });
       logAction(isEditMode ? "update" : "create", "company_marquee", id, {
         text: form.getValues("text"),
+        marquee_type: form.getValues("marquee_type"),
       });
       toast.success(`Marquee item ${isEditMode ? "updated" : "created"} successfully`);
       navigate(`/admin/page-builder/company/${companyId}/marquee`);
@@ -143,6 +238,8 @@ export default function MarqueeAdd() {
     );
   }
 
+  const referenceItems = getReferenceItems();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -158,7 +255,7 @@ export default function MarqueeAdd() {
             {isEditMode ? "Edit Marquee Item" : "Add Marquee Item"}
           </h2>
           <p className="text-muted-foreground">
-            {company?.name || "..."} - Scrolling marquee text
+            {company?.name || "..."} - Scrolling marquee content
           </p>
         </div>
       </div>
@@ -168,23 +265,94 @@ export default function MarqueeAdd() {
           <Card>
             <CardHeader>
               <CardTitle>Marquee Details</CardTitle>
-              <CardDescription>Configure the scrolling text and optional link</CardDescription>
+              <CardDescription>Configure the marquee type and content</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="text"
+                name="marquee_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Marquee Text *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter scrolling text..." {...field} />
-                    </FormControl>
-                    <FormDescription>This text will scroll across the marquee banner</FormDescription>
+                    <FormLabel>Marquee Type *</FormLabel>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        form.setValue("reference_id", "");
+                        form.setValue("text", "");
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {MARQUEE_TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Choose what type of content to display in the marquee</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {marqueeType === "text" ? (
+                <FormField
+                  control={form.control}
+                  name="text"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Marquee Text *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter scrolling text..." {...field} />
+                      </FormControl>
+                      <FormDescription>This text will scroll across the marquee banner</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="reference_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Select {marqueeType === "brands" ? "Brand" : marqueeType === "partners" ? "Partner" : "Service"} *
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={`Select a ${marqueeType.slice(0, -1)}...`} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {referenceItems.length === 0 ? (
+                            <SelectItem value="__empty" disabled>
+                              No items available
+                            </SelectItem>
+                          ) : (
+                            referenceItems.map((item) => (
+                              <SelectItem key={item.id} value={item.id}>
+                                {item.label}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Select from existing {marqueeType} added to this company
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

@@ -155,6 +155,7 @@ export default function MarqueeList() {
                 <TableRow>
                   <TableHead className="w-12"></TableHead>
                   <TableHead>Order</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Text</TableHead>
                   <TableHead>Link</TableHead>
                   <TableHead>Status</TableHead>
@@ -168,6 +169,11 @@ export default function MarqueeList() {
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                     </TableCell>
                     <TableCell>{item.display_order}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">
+                        {(item as any).marquee_type || "text"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="font-medium max-w-xs truncate">{item.text}</TableCell>
                     <TableCell>
                       {item.link_url ? (

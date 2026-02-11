@@ -284,15 +284,7 @@ export function AdminSidebar() {
         },
         { title: "Coupon", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
         { title: "Partner Listings", url: "/admin/page-builder/partner-listings", icon: Building2 },
-        { 
-          title: "Marquee", 
-          url: "/admin/page-builder/marquee", 
-          icon: Layout,
-          children: [
-            { title: "List", url: "/admin/page-builder/marquee", icon: List },
-            { title: "Add", url: "/admin/page-builder/marquee/add", icon: Plus },
-          ]
-        },
+        { title: "Marquee", url: "/admin/page-builder/marquee", icon: Layout },
       ]
     },
     { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
