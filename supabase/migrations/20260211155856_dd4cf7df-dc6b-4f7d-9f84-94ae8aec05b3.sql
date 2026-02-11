@@ -1,0 +1,1 @@
+ALTER TABLE public.company_banners ADD COLUMN animation_style text NOT NULL DEFAULT 'fade';
