@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,22 @@ const BannerPreview = () => {
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
   const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Auto-slide through active banners
+  useEffect(() => {
+    const activeBanners = banners.filter((b) => b.is_active);
+    if (activeBanners.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setPreviewBanner((current) => {
+        const currentIdx = activeBanners.findIndex((b) => b.id === current?.id);
+        const nextIdx = (currentIdx + 1) % activeBanners.length;
+        return activeBanners[nextIdx];
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [banners]);
 
   useEffect(() => {
     if (!companyId) return;
