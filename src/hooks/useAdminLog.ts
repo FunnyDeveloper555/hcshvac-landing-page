@@ -23,7 +23,8 @@ type EntityType =
   | "call"
   | "location_profile"
   | "photo"
-  | "partner_listing";
+  | "partner_listing"
+  | "company_marquee";
 
 type ActionType = 
   | "create" 
