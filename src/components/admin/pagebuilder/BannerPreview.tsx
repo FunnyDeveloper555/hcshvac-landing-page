@@ -6,87 +6,210 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Monitor, Smartphone, Save, Phone, Image } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import {
+  Loader2, Monitor, Smartphone, Save, Phone, Image, Plus, Trash2,
+  ArrowUp, ArrowDown, Edit, X, Eye, EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import hvacHero from "@/assets/hvac-hero.jpg";
 
 interface Company {
   id: string;
   name: string;
-  website_title: string | null;
-  website_tagline: string | null;
-  website_description: string | null;
-  hero_image_url: string | null;
   company_phone: string | null;
   primary_color: string | null;
 }
 
+interface Banner {
+  id: string;
+  company_id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  image_url: string;
+  display_order: number;
+  is_active: boolean | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface BannerFormData {
+  title: string;
+  tagline: string;
+  description: string;
+  image_url: string;
+  is_active: boolean;
+}
+
+const emptyForm: BannerFormData = {
+  title: "",
+  tagline: "",
+  description: "",
+  image_url: "",
+  is_active: true,
+};
+
 const BannerPreview = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const [company, setCompany] = useState<Company | null>(null);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    website_title: "",
-    website_tagline: "",
-    website_description: "",
-    hero_image_url: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState<BannerFormData>(emptyForm);
+  const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
 
   useEffect(() => {
-    const fetchCompany = async () => {
-      if (!companyId) return;
-
-      const { data, error } = await supabase
-        .from("companies")
-        .select("id, name, website_title, website_tagline, website_description, hero_image_url, company_phone, primary_color")
-        .eq("id", companyId)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error fetching company:", error);
-        toast.error("Failed to load company data");
-      } else if (data) {
-        setCompany(data);
-        setFormData({
-          website_title: data.website_title || "",
-          website_tagline: data.website_tagline || "",
-          website_description: data.website_description || "",
-          hero_image_url: data.hero_image_url || "",
-        });
-      }
-      setLoading(false);
-    };
-
-    fetchCompany();
+    if (!companyId) return;
+    fetchData();
   }, [companyId]);
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const fetchData = async () => {
+    setLoading(true);
+    const [companyRes, bannersRes] = await Promise.all([
+      supabase
+        .from("companies")
+        .select("id, name, company_phone, primary_color")
+        .eq("id", companyId!)
+        .maybeSingle(),
+      supabase
+        .from("company_banners")
+        .select("*")
+        .eq("company_id", companyId!)
+        .order("display_order", { ascending: true }),
+    ]);
+
+    if (companyRes.error) {
+      toast.error("Failed to load company data");
+    } else if (companyRes.data) {
+      setCompany(companyRes.data);
+    }
+
+    if (bannersRes.error) {
+      toast.error("Failed to load banners");
+    } else {
+      setBanners(bannersRes.data || []);
+      if (bannersRes.data && bannersRes.data.length > 0) {
+        setPreviewBanner(bannersRes.data.find((b) => b.is_active) || bannersRes.data[0]);
+      }
+    }
+    setLoading(false);
   };
 
-  const handleUpdate = async () => {
+  const handleInputChange = (field: keyof BannerFormData, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const openAddForm = () => {
+    setEditingId(null);
+    setFormData(emptyForm);
+    setShowForm(true);
+  };
+
+  const openEditForm = (banner: Banner) => {
+    setEditingId(banner.id);
+    setFormData({
+      title: banner.title,
+      tagline: banner.tagline,
+      description: banner.description,
+      image_url: banner.image_url,
+      is_active: banner.is_active ?? true,
+    });
+    setShowForm(true);
+  };
+
+  const cancelForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setFormData(emptyForm);
+  };
+
+  const handleSave = async () => {
     if (!companyId) return;
-
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
     setSaving(true);
-    const { error } = await supabase
-      .from("companies")
-      .update({
-        website_title: formData.website_title.trim() || null,
-        website_tagline: formData.website_tagline.trim() || null,
-        website_description: formData.website_description.trim() || null,
-        hero_image_url: formData.hero_image_url.trim() || null,
-      })
-      .eq("id", companyId);
 
-    if (error) {
-      console.error("Error updating company:", error);
-      toast.error("Failed to update banner configuration");
+    if (editingId) {
+      const { error } = await supabase
+        .from("company_banners")
+        .update({
+          title: formData.title.trim(),
+          tagline: formData.tagline.trim(),
+          description: formData.description.trim(),
+          image_url: formData.image_url.trim(),
+          is_active: formData.is_active,
+        })
+        .eq("id", editingId);
+
+      if (error) {
+        toast.error("Failed to update banner");
+      } else {
+        toast.success("Banner updated");
+        cancelForm();
+        fetchData();
+      }
     } else {
-      setCompany(prev => prev ? { ...prev, ...formData } : null);
-      toast.success("Banner configuration updated successfully");
+      const nextOrder = banners.length > 0 ? Math.max(...banners.map((b) => b.display_order)) + 1 : 0;
+      const { error } = await supabase.from("company_banners").insert({
+        company_id: companyId,
+        title: formData.title.trim(),
+        tagline: formData.tagline.trim(),
+        description: formData.description.trim(),
+        image_url: formData.image_url.trim(),
+        display_order: nextOrder,
+        is_active: formData.is_active,
+      });
+
+      if (error) {
+        toast.error("Failed to add banner");
+      } else {
+        toast.success("Banner added");
+        cancelForm();
+        fetchData();
+      }
     }
     setSaving(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this banner?")) return;
+    const { error } = await supabase.from("company_banners").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete banner");
+    } else {
+      toast.success("Banner deleted");
+      fetchData();
+    }
+  };
+
+  const handleReorder = async (id: string, direction: "up" | "down") => {
+    const idx = banners.findIndex((b) => b.id === id);
+    if ((direction === "up" && idx === 0) || (direction === "down" && idx === banners.length - 1)) return;
+
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    const updates = [
+      supabase.from("company_banners").update({ display_order: banners[swapIdx].display_order }).eq("id", banners[idx].id),
+      supabase.from("company_banners").update({ display_order: banners[idx].display_order }).eq("id", banners[swapIdx].id),
+    ];
+    await Promise.all(updates);
+    fetchData();
+  };
+
+  const toggleActive = async (banner: Banner) => {
+    const { error } = await supabase
+      .from("company_banners")
+      .update({ is_active: !banner.is_active })
+      .eq("id", banner.id);
+    if (error) {
+      toast.error("Failed to update banner");
+    } else {
+      fetchData();
+    }
   };
 
   if (loading) {
@@ -106,61 +229,65 @@ const BannerPreview = () => {
   }
 
   const primaryColor = company.primary_color || "#1e40af";
-  const heroImage = formData.hero_image_url || hvacHero;
-  const displayTitle = formData.website_title || `${company.name} - Your Trusted HVAC Partner`;
-  const displayTagline = formData.website_tagline || "24/7 Emergency Service Available";
-  const displayDescription = formData.website_description || 
-    `Professional heating, ventilation, and air conditioning services for residential and commercial properties.`;
+  const activeBanner = previewBanner;
+  const heroImage = activeBanner?.image_url || hvacHero;
+  const displayTitle = activeBanner?.title || `${company.name} - Your Trusted HVAC Partner`;
+  const displayTagline = activeBanner?.tagline || "24/7 Emergency Service Available";
+  const displayDescription = activeBanner?.description || "Professional heating, ventilation, and air conditioning services.";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Banner Preview</h2>
-        <p className="text-muted-foreground">Preview and configure the hero banner section for {company.name}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Banner Management</h2>
+          <p className="text-muted-foreground">
+            Manage hero banners for {company.name} ({banners.length} banner{banners.length !== 1 ? "s" : ""})
+          </p>
+        </div>
+        <Button onClick={openAddForm} disabled={showForm}>
+          <Plus className="mr-2 h-4 w-4" /> Add Banner
+        </Button>
       </div>
 
       {/* Desktop Preview */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Monitor className="h-5 w-5" />
-            Desktop Banner Preview
+            <Monitor className="h-5 w-5" /> Desktop Preview
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg overflow-hidden">
-            {/* Hero Banner Section */}
-            <div 
-              className="relative h-80 bg-cover bg-center"
-              style={{ backgroundImage: `url(${heroImage})` }}
-            >
+            <div className="relative h-80 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
               <div className="absolute inset-0 bg-black/50" />
               <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-8">
                 <h1 className="text-4xl font-bold mb-2">{displayTitle}</h1>
-                <p 
-                  className="text-xl font-medium mb-4"
-                  style={{ color: primaryColor }}
-                >
-                  {displayTagline}
-                </p>
+                <p className="text-xl font-medium mb-4" style={{ color: primaryColor }}>{displayTagline}</p>
                 <p className="text-lg max-w-2xl mb-6 opacity-90">{displayDescription}</p>
                 <div className="flex gap-4">
-                  <button 
-                    className="px-6 py-3 rounded-lg font-semibold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
+                  <button className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
                     Schedule Service
                   </button>
                   {company.company_phone && (
                     <button className="px-6 py-3 rounded-lg font-semibold bg-white text-gray-900 flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      {company.company_phone}
+                      <Phone className="h-4 w-4" /> {company.company_phone}
                     </button>
                   )}
                 </div>
               </div>
             </div>
           </div>
+          {banners.filter((b) => b.is_active).length > 1 && (
+            <div className="flex justify-center gap-2 mt-3">
+              {banners.filter((b) => b.is_active).map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => setPreviewBanner(b)}
+                  className={`w-3 h-3 rounded-full transition-colors ${previewBanner?.id === b.id ? "bg-primary" : "bg-muted-foreground/30"}`}
+                />
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -168,38 +295,24 @@ const BannerPreview = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Smartphone className="h-5 w-5" />
-            Mobile Banner Preview
+            <Smartphone className="h-5 w-5" /> Mobile Preview
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="max-w-sm mx-auto border rounded-lg overflow-hidden">
-            {/* Mobile Hero Banner Section */}
-            <div 
-              className="relative h-64 bg-cover bg-center"
-              style={{ backgroundImage: `url(${heroImage})` }}
-            >
+            <div className="relative h-64 bg-cover bg-center" style={{ backgroundImage: `url(${heroImage})` }}>
               <div className="absolute inset-0 bg-black/50" />
               <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-4">
                 <h1 className="text-xl font-bold mb-1">{displayTitle}</h1>
-                <p 
-                  className="text-sm font-medium mb-2"
-                  style={{ color: primaryColor }}
-                >
-                  {displayTagline}
-                </p>
+                <p className="text-sm font-medium mb-2" style={{ color: primaryColor }}>{displayTagline}</p>
                 <p className="text-sm mb-4 opacity-90 line-clamp-2">{displayDescription}</p>
                 <div className="flex flex-col gap-2 w-full px-4">
-                  <button 
-                    className="w-full px-4 py-2 rounded-lg font-semibold text-white text-sm"
-                    style={{ backgroundColor: primaryColor }}
-                  >
+                  <button className="w-full px-4 py-2 rounded-lg font-semibold text-white text-sm" style={{ backgroundColor: primaryColor }}>
                     Schedule Service
                   </button>
                   {company.company_phone && (
                     <button className="w-full px-4 py-2 rounded-lg font-semibold bg-white text-gray-900 flex items-center justify-center gap-2 text-sm">
-                      <Phone className="h-3 w-3" />
-                      Call Now
+                      <Phone className="h-3 w-3" /> Call Now
                     </button>
                   )}
                 </div>
@@ -209,75 +322,112 @@ const BannerPreview = () => {
         </CardContent>
       </Card>
 
-      {/* Banner Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Banner Configuration</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Company Name</Label>
-              <p className="font-medium py-2">{company.name}</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hero_image">Hero Image URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="hero_image"
-                  value={formData.hero_image_url}
-                  onChange={(e) => handleInputChange("hero_image_url", e.target.value)}
-                  placeholder="Enter hero image URL (leave empty for default)"
-                />
-                <div className="flex items-center justify-center w-10 h-10 border rounded bg-muted">
-                  <Image className="h-4 w-4 text-muted-foreground" />
+      {/* Add / Edit Form */}
+      {showForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>{editingId ? "Edit Banner" : "Add New Banner"}</span>
+              <Button variant="ghost" size="icon" onClick={cancelForm}><X className="h-4 w-4" /></Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="banner-title">Title *</Label>
+                <Input id="banner-title" value={formData.title} onChange={(e) => handleInputChange("title", e.target.value)} placeholder="Banner title" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="banner-tagline">Tagline</Label>
+                <Input id="banner-tagline" value={formData.tagline} onChange={(e) => handleInputChange("tagline", e.target.value)} placeholder="Tagline text" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="banner-description">Description</Label>
+                <Textarea id="banner-description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} placeholder="Description text" rows={3} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="banner-image">Image URL</Label>
+                <div className="flex gap-2">
+                  <Input id="banner-image" value={formData.image_url} onChange={(e) => handleInputChange("image_url", e.target.value)} placeholder="Enter image URL" />
+                  <div className="flex items-center justify-center w-10 h-10 border rounded bg-muted">
+                    <Image className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2 flex items-end gap-3 pb-1">
+                <div className="flex items-center gap-2">
+                  <Switch checked={formData.is_active} onCheckedChange={(val) => handleInputChange("is_active", val)} />
+                  <Label>Active</Label>
                 </div>
               </div>
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="title">Website Title</Label>
-              <Input
-                id="title"
-                value={formData.website_title}
-                onChange={(e) => handleInputChange("website_title", e.target.value)}
-                placeholder={`${company.name} - Your Trusted HVAC Partner`}
-              />
+            <div className="mt-6">
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> {editingId ? "Update Banner" : "Add Banner"}</>}
+              </Button>
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="tagline">Tagline</Label>
-              <Input
-                id="tagline"
-                value={formData.website_tagline}
-                onChange={(e) => handleInputChange("website_tagline", e.target.value)}
-                placeholder="24/7 Emergency Service Available"
-              />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Banners List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Banners ({banners.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {banners.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No banners yet. Click "Add Banner" to create one.</p>
+          ) : (
+            <div className="space-y-3">
+              {banners.map((banner, idx) => (
+                <div
+                  key={banner.id}
+                  className={`flex items-center gap-4 p-4 border rounded-lg transition-colors ${previewBanner?.id === banner.id ? "border-primary bg-primary/5" : ""}`}
+                >
+                  <div className="flex flex-col gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleReorder(banner.id, "up")} disabled={idx === 0}>
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleReorder(banner.id, "down")} disabled={idx === banners.length - 1}>
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {banner.image_url ? (
+                    <img src={banner.image_url} alt={banner.title} className="w-24 h-16 object-cover rounded" />
+                  ) : (
+                    <div className="w-24 h-16 bg-muted rounded flex items-center justify-center">
+                      <Image className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{banner.title || "Untitled"}</p>
+                      {!banner.is_active && (
+                        <span className="text-xs bg-muted px-2 py-0.5 rounded">Inactive</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{banner.tagline}</p>
+                    <p className="text-xs text-muted-foreground">Order: {banner.display_order}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => setPreviewBanner(banner)} title="Preview">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => toggleActive(banner)} title={banner.is_active ? "Deactivate" : "Activate"}>
+                      {banner.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => openEditForm(banner)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(banner.id)} className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.website_description}
-                onChange={(e) => handleInputChange("website_description", e.target.value)}
-                placeholder="Professional heating, ventilation, and air conditioning services..."
-                rows={3}
-              />
-            </div>
-          </div>
-          <div className="mt-6">
-            <Button onClick={handleUpdate} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Update Banner Configuration
-                </>
-              )}
-            </Button>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
