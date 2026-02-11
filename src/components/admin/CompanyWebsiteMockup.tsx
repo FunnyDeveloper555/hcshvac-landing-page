@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -92,7 +92,6 @@ const HEADER_MENUS = [
 const CompanyWebsiteMockup = () => {
   const { companyId } = useParams<{ companyId: string }>();
   const [activePage, setActivePage] = useState<string | null>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   // Fetch company data
   const { data: selectedCompany, isLoading: loading } = useQuery({
@@ -145,32 +144,6 @@ const CompanyWebsiteMockup = () => {
     },
     enabled: !!companyId && !!activePage,
   });
-
-  // Fetch company banners
-  const { data: companyBanners = [] } = useQuery({
-    queryKey: ["company-banners-mockup", companyId],
-    queryFn: async () => {
-      if (!companyId) return [];
-      const { data, error } = await supabase
-        .from("company_banners")
-        .select("*")
-        .eq("company_id", companyId)
-        .eq("is_active", true)
-        .order("display_order", { ascending: true });
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!companyId,
-  });
-
-  // Auto-slide banners
-  useEffect(() => {
-    if (companyBanners.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentBannerIndex((prev) => (prev + 1) % companyBanners.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [companyBanners.length]);
 
   if (loading) {
     return (
@@ -352,76 +325,33 @@ const CompanyWebsiteMockup = () => {
         
 
         {/* ======== HERO SECTION ======== */}
-        {companyBanners.length > 0 ? (
-          <div className="relative overflow-hidden">
-            {companyBanners.map((banner, index) => (
-              <div
-                key={banner.id}
-                className={`relative transition-opacity duration-700 ${
-                  index === currentBannerIndex ? "opacity-100" : "opacity-0 absolute inset-0"
-                }`}
+        <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
+          <div className="max-w-2xl">
+            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
+              {selectedCompany.theme_style?.toUpperCase() || "MODERN"} THEME
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4">
+              {selectedCompany.website_title || selectedCompany.name}
+            </h2>
+            <p className="text-xl mb-6 text-white/90">
+              {selectedCompany.website_description || "Professional HVAC services for your home and business."}
+            </p>
+            <div className="flex gap-4">
+              <div 
+                className="px-6 py-3 rounded-lg font-semibold text-white"
+                style={{ backgroundColor: primaryColor }}
               >
-                <div
-                  className="relative h-80 bg-cover bg-center"
-                  style={{ backgroundImage: banner.image_url ? `url(${banner.image_url})` : undefined }}
-                >
-                  <div className="absolute inset-0 bg-black/50" />
-                  <div className="relative h-full flex flex-col items-center justify-center text-white text-center px-8">
-                    <h2 className="text-4xl font-bold mb-2">{banner.title}</h2>
-                    <p className="text-xl font-medium mb-4" style={{ color: primaryColor }}>{banner.tagline}</p>
-                    <p className="text-lg max-w-2xl mb-6 opacity-90">{banner.description}</p>
-                    <div className="flex gap-4">
-                      <div className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
-                        Call {selectedCompany.company_phone || "(555) 000-0000"}
-                      </div>
-                      <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
-                        Get a Quote
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                Call {selectedCompany.company_phone || "(555) 000-0000"}
               </div>
-            ))}
-            {companyBanners.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                {companyBanners.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentBannerIndex(idx)}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      idx === currentBannerIndex ? "bg-white" : "bg-white/40"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="relative bg-gradient-to-r from-slate-900 to-slate-700 text-white p-12">
-            <div className="max-w-2xl">
-              <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
-                {selectedCompany.theme_style?.toUpperCase() || "MODERN"} THEME
-              </Badge>
-              <h2 className="text-4xl font-bold mb-4">
-                {selectedCompany.website_title || selectedCompany.name}
-              </h2>
-              <p className="text-xl mb-6 text-white/90">
-                {selectedCompany.website_description || "Professional HVAC services for your home and business."}
-              </p>
-              <div className="flex gap-4">
-                <div className="px-6 py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: primaryColor }}>
-                  Call {selectedCompany.company_phone || "(555) 000-0000"}
-                </div>
-                <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
-                  Get a Quote
-                </div>
+              <div className="px-6 py-3 rounded-lg font-semibold bg-white text-slate-900">
+                Get a Quote
               </div>
             </div>
-            <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
-              <Wrench className="w-48 h-48" />
-            </div>
           </div>
-        )}
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-20">
+            <Wrench className="w-48 h-48" />
+          </div>
+        </div>
 
         {/* ======== ACCORDION SECTION ======== */}
         {(selectedCompany.service_areas && selectedCompany.service_areas.length > 0) || 
