@@ -433,35 +433,44 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             </button>
 
             {menuItems.map((item) => (
-              <Collapsible
-                key={item.title}
-                open={openGroups[item.title]}
-                onOpenChange={() => toggleGroup(item.title)}
-              >
-                <div className="min-w-0">
-                  <CollapsibleTrigger asChild>
-                    <button
-                      className="w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                      title={item.title}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
-                      {item.title === "Page Builder" && companiesLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                      ) : (
-                        <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  {item.children && (
+              item.children ? (
+                <Collapsible
+                  key={item.title}
+                  open={openGroups[item.title]}
+                  onOpenChange={() => toggleGroup(item.title)}
+                >
+                  <div className="min-w-0">
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className="w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                        title={item.title}
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
+                        {item.title === "Page Builder" && companiesLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                        ) : (
+                          <ChevronDown className={`h-4 w-4 transition-transform shrink-0 ${openGroups[item.title] ? 'rotate-180' : ''}`} />
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="min-w-0 pl-4 border-l border-sidebar-border ml-4 mt-1">
                         {renderMenuChildren(item.children)}
                       </div>
                     </CollapsibleContent>
-                  )}
-                </div>
-              </Collapsible>
+                  </div>
+                </Collapsible>
+              ) : (
+                <button
+                  key={item.title}
+                  onClick={() => { item.url && navigate(item.url); onNavigate?.(); }}
+                  className={`w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${item.url && isActive(item.url) ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}`}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
+                </button>
+              )
             ))}
           </div>
         </div>
