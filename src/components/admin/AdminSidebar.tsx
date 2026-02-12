@@ -418,6 +418,15 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <div className="min-w-0 px-2">
           <div className="truncate px-2 mb-2 text-sm font-semibold text-sidebar-foreground/70">Admin Panel</div>
           <div className="min-w-0 space-y-1">
+            {/* Dashboard Link */}
+            <button
+              onClick={() => { navigate("/admin"); onNavigate?.(); }}
+              className={`w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${currentPath === "/admin" ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}`}
+            >
+              <LayoutDashboard className="h-4 w-4 shrink-0" />
+              <span className="truncate flex-1 min-w-0 text-left">Dashboard</span>
+            </button>
+
             {menuItems.map((item) => (
               <Collapsible
                 key={item.title}
