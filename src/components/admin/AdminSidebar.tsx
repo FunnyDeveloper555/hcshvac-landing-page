@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +10,6 @@ interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
   url?: string;
   children?: MenuItem[];
-  isDynamic?: boolean;
 }
 
 const staticMenuItems: MenuItem[] = [
@@ -216,12 +215,34 @@ const staticMenuItems: MenuItem[] = [
   },
 ];
 
+// Simplified company submenus - cascading items merged into single tabbed entries
+const companySubmenus: MenuItem[] = [
+  { title: "Website Preview", url: "/admin/page-builder/profile", icon: Eye },
+  { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
+  { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
+  { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
+  { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
+  { title: "Plumbing", url: "/admin/page-builder/plumbing", icon: Droplet },
+  { title: "Coupons", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
+  { title: "Partner Listings", url: "/admin/page-builder/partner-listings", icon: Building2 },
+  { title: "Marquee", url: "/admin/page-builder/marquee", icon: Layout },
+  { title: "CTA Icons", url: "/admin/page-builder/cta-icons", icon: MousePointer },
+  { title: "Campaigns", url: "/admin/page-builder/campaigns", icon: Layers },
+  { title: "Templates", url: "/admin/page-builder/templates", icon: PageStack },
+  { title: "Keywords", url: "/admin/page-builder/hvac-keywords", icon: Search },
+  { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
+  { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
+  { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
+  { title: "Images", url: "/admin/page-builder/images-logos", icon: ImageIcon },
+  { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
+  { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
+];
+
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
 
-  // Fetch active companies for Page Builder submenu
   const { data: companies = [], isLoading: companiesLoading } = useQuery({
     queryKey: ["sidebar-companies"],
     queryFn: async () => {
@@ -235,97 +256,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     },
   });
 
-  // Common submenus that appear under each company
-  const companySubmenus: MenuItem[] = [
-    { title: "Website Preview", url: "/admin/page-builder/profile", icon: FileCheck },
-    { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
-    { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
-    { 
-      title: "Header Menus", 
-      url: "/admin/page-builder/header-menus", 
-      icon: FileText,
-      children: [
-        { title: "About Us", url: "/admin/page-builder/header-pages/about-us", icon: FileText },
-        { title: "Financing", url: "/admin/page-builder/header-pages/financing", icon: FileText },
-        { title: "Services", url: "/admin/page-builder/header-pages/services", icon: Briefcase },
-        { title: "Residential", url: "/admin/page-builder/header-pages/residential", icon: Building2 },
-        { title: "Commercial", url: "/admin/page-builder/header-pages/commercial", icon: Building },
-        { title: "Air Quality", url: "/admin/page-builder/header-pages/air-quality", icon: Droplet },
-      ]
-    },
-    { 
-      title: "Accordion List", 
-      url: "/admin/page-builder/accordion-list", 
-      icon: Layers,
-      children: [
-        { 
-          title: "HVAC", 
-          url: "/admin/page-builder/accordion-list/hvac", 
-          icon: Cog,
-          children: [
-            { title: "Area's We Service", url: "/admin/page-builder/accordion-list/hvac/areas-service", icon: Map },
-            { title: "Brands We Install", url: "/admin/page-builder/accordion-list/hvac/brands-install", icon: Package },
-            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/hvac/brands-service", icon: Wrench },
-            { title: "Brands We Repair", url: "/admin/page-builder/accordion-list/hvac/brands-repair", icon: Wrench },
-            { title: "We Install", url: "/admin/page-builder/accordion-list/hvac/install", icon: Package },
-            { title: "Parts We Install", url: "/admin/page-builder/accordion-list/hvac/parts-install", icon: Wrench },
-            { title: "Comfort Accessories We Install", url: "/admin/page-builder/accordion-list/hvac/accessories-install", icon: Package },
-          ]
-        },
-        { 
-          title: "Plumbing", 
-          url: "/admin/page-builder/accordion-list/plumbing", 
-          icon: Droplet,
-          children: [
-            { title: "Types We Install", url: "/admin/page-builder/accordion-list/plumbing/types-install", icon: Package },
-            { title: "Types We Service", url: "/admin/page-builder/accordion-list/plumbing/types-service", icon: Wrench },
-            { title: "Types We Repair", url: "/admin/page-builder/accordion-list/plumbing/types-repair", icon: Settings },
-            { title: "Brands We Service", url: "/admin/page-builder/accordion-list/plumbing/brands-service", icon: Package },
-            { title: "Water Quality We Install", url: "/admin/page-builder/accordion-list/plumbing/water-quality", icon: Droplet },
-            { title: "Hot Water Boiler", url: "/admin/page-builder/accordion-list/plumbing/hot-water-boiler", icon: Droplet },
-            { title: "Steam Boilers", url: "/admin/page-builder/accordion-list/plumbing/steam-boilers", icon: Droplet },
-            { title: "Tankless Water Heaters", url: "/admin/page-builder/accordion-list/plumbing/tankless-heaters", icon: Droplet },
-          ]
-        },
-        { title: "Coupon", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
-        { title: "Partner Listings", url: "/admin/page-builder/partner-listings", icon: Building2 },
-        { title: "Marquee", url: "/admin/page-builder/marquee", icon: Layout },
-      ]
-    },
-    { title: "Campaign Dashboard", url: "/admin/page-builder/campaigns", icon: Layers },
-    { title: "Page Templates", url: "/admin/page-builder/templates", icon: PageStack },
-    { 
-      title: "CTA Icons", 
-      url: "/admin/page-builder/cta-icons", 
-      icon: MousePointer,
-      children: [
-        { title: "Add Icon", url: "/admin/page-builder/cta-icons/add", icon: Plus },
-        { title: "Library", url: "/admin/page-builder/cta-icons/library", icon: Library },
-        { title: "Assignments", url: "/admin/page-builder/cta-icons/assignments", icon: Settings },
-      ]
-    },
-    { 
-      title: "HVAC Keywords", 
-      url: "/admin/page-builder/hvac-keywords", 
-      icon: Search,
-      children: [
-        { title: "Positive Keywords", url: "/admin/page-builder/positive-keywords", icon: CheckCircle },
-        { title: "Negative Keywords", url: "/admin/page-builder/negative-keywords", icon: XCircle },
-        { title: "Negative Search Terms", url: "/admin/page-builder/negative-search-terms", icon: XCircle },
-        { title: "Positive Search Terms", url: "/admin/page-builder/positive-search-terms", icon: CheckCircle },
-      ]
-    },
-    { title: "HVAC Parts", url: "/admin/page-builder/hvac-parts", icon: Wrench },
-    { title: "Equipment Brands", url: "/admin/page-builder/equipment-brands", icon: Package },
-    { title: "Plumbing Brands", url: "/admin/page-builder/plumbing-brands", icon: Droplet },
-    { title: "Areas We Service", url: "/admin/page-builder/areas-service", icon: Map },
-    { title: "Images", url: "/admin/page-builder/images-logos", icon: ImageIcon },
-    { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
-    { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
-  ];
-
-  // Build dynamic Page Builder menu with companies containing all submenus
-  // Helper function to recursively update URLs with company ID
   const updateUrlsWithCompanyId = (items: MenuItem[], companyId: string): MenuItem[] => {
     return items.map(item => ({
       ...item,
@@ -345,7 +275,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     })),
   }), [companies]);
 
-  // Build menu items with Page Builder inserted after Companies
   const menuItems = useMemo(() => {
     const companiesIndex = staticMenuItems.findIndex(item => item.title === "Companies");
     const items = [...staticMenuItems];
@@ -353,7 +282,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     return items;
   }, [pageBuilderMenu]);
 
-  // Initialize open groups based on current path - only runs once per path change
   const getInitialOpenGroups = useCallback(() => {
     return menuItems.reduce((acc, item) => {
       const isGroupActive = item.children?.some(child => 
@@ -423,7 +351,6 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <div className="min-w-0 px-2">
           <div className="truncate px-2 mb-2 text-sm font-semibold text-sidebar-foreground/70">Admin Panel</div>
           <div className="min-w-0 space-y-1">
-            {/* Dashboard Link */}
             <button
               onClick={() => { navigate("/admin"); onNavigate?.(); }}
               className={`w-full min-w-0 flex items-center gap-2 px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ${currentPath === "/admin" ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}`}

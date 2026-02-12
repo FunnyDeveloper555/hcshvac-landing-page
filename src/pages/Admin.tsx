@@ -28,13 +28,6 @@ import NegativeKeywords from "@/components/admin/pagebuilder/NegativeKeywords";
 import HvacParts from "@/components/admin/pagebuilder/HvacParts";
 import EquipmentBrands from "@/components/admin/pagebuilder/EquipmentBrands";
 import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
-import AreasService from "@/components/admin/pagebuilder/AreasService";
-import BrandsInstall from "@/components/admin/pagebuilder/BrandsInstall";
-import BrandsService from "@/components/admin/pagebuilder/BrandsService";
-import BrandsRepair from "@/components/admin/pagebuilder/BrandsRepair";
-import PlumbingTypesInstall from "@/components/admin/pagebuilder/PlumbingTypesInstall";
-import PlumbingTypesService from "@/components/admin/pagebuilder/PlumbingTypesService";
-import PlumbingTypesRepair from "@/components/admin/pagebuilder/PlumbingTypesRepair";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
@@ -60,15 +53,6 @@ import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
 import TopHeaderPreview from "@/components/admin/pagebuilder/TopHeaderPreview";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
-import HeaderPageAboutUs from "@/components/admin/pagebuilder/HeaderPageAboutUs";
-import HeaderPageFinancing from "@/components/admin/pagebuilder/HeaderPageFinancing";
-import HeaderPageServices from "@/components/admin/pagebuilder/HeaderPageServices";
-import HeaderPageResidential from "@/components/admin/pagebuilder/HeaderPageResidential";
-import HeaderPageCommercial from "@/components/admin/pagebuilder/HeaderPageCommercial";
-import HeaderPageAirQuality from "@/components/admin/pagebuilder/HeaderPageAirQuality";
-import CTAIconsAdd from "@/components/admin/pagebuilder/CTAIconsAdd";
-import CTAIconsLibrary from "@/components/admin/pagebuilder/CTAIconsLibrary";
-import CTAIconsAssignments from "@/components/admin/pagebuilder/CTAIconsAssignments";
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
 import PartnerListingsAdd from "@/components/admin/pagebuilder/PartnerListingsAdd";
@@ -76,6 +60,12 @@ import MarqueeList from "@/components/admin/pagebuilder/MarqueeList";
 import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import UserRolesList from "@/components/admin/UserRolesList";
+// Consolidated tabbed components
+import CompanyDashboard from "@/components/admin/pagebuilder/CompanyDashboard";
+import HvacTabbed from "@/components/admin/pagebuilder/HvacTabbed";
+import PlumbingTabbed from "@/components/admin/pagebuilder/PlumbingTabbed";
+import HeaderMenusTabbed from "@/components/admin/pagebuilder/HeaderMenusTabbed";
+import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -171,12 +161,12 @@ const Admin = () => {
               <Route path="/sms-link/list" element={<SMSLinkList />} />
               <Route path="/cities/import" element={<CitiesImport />} />
               <Route path="/business/import" element={<BusinessImport />} />
+              {/* Global page builder routes */}
               <Route path="/page-builder/hvac-keywords" element={<HvacKeywords />} />
               <Route path="/page-builder/negative-keywords" element={<NegativeKeywords />} />
               <Route path="/page-builder/hvac-parts" element={<HvacParts />} />
               <Route path="/page-builder/equipment-brands" element={<EquipmentBrands />} />
               <Route path="/page-builder/plumbing-brands" element={<PlumbingBrands />} />
-              <Route path="/page-builder/areas-service" element={<AreasService />} />
               <Route path="/page-builder/images-logos" element={<ImagesLogos />} />
               <Route path="/page-builder/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/local-business" element={<LocalBusiness />} />
@@ -188,7 +178,16 @@ const Admin = () => {
               <Route path="/page-builder/templates/:templateId" element={<TemplateForm />} />
               <Route path="/page-builder/templates/:templateId/link" element={<TemplateCampaignLink />} />
               {/* Company-specific page builder routes */}
-              <Route path="/page-builder/company/:companyId" element={<CampaignDashboard />} />
+              <Route path="/page-builder/company/:companyId" element={<CompanyDashboard />} />
+              <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
+              <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
+              <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
+              {/* Consolidated tabbed routes */}
+              <Route path="/page-builder/company/:companyId/header-menus" element={<HeaderMenusTabbed />} />
+              <Route path="/page-builder/company/:companyId/hvac" element={<HvacTabbed />} />
+              <Route path="/page-builder/company/:companyId/plumbing" element={<PlumbingTabbed />} />
+              <Route path="/page-builder/company/:companyId/cta-icons" element={<CTAIconsTabbed />} />
+              {/* Other company routes */}
               <Route path="/page-builder/company/:companyId/campaigns" element={<CampaignDashboard />} />
               <Route path="/page-builder/company/:companyId/campaigns/:campaignId" element={<CampaignForm />} />
               <Route path="/page-builder/company/:companyId/campaigns/:campaignId/pages" element={<GeneratedPagesList />} />
@@ -202,40 +201,13 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/hvac-parts" element={<HvacParts />} />
               <Route path="/page-builder/company/:companyId/equipment-brands" element={<EquipmentBrands />} />
               <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
-              <Route path="/page-builder/company/:companyId/areas-service" element={<AreasService />} />
               <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
               <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
-              <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
-              <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
-              <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
-              {/* Header Pages routes */}
-              <Route path="/page-builder/company/:companyId/header-pages/about-us" element={<HeaderPageAboutUs />} />
-              <Route path="/page-builder/company/:companyId/header-pages/financing" element={<HeaderPageFinancing />} />
-              <Route path="/page-builder/company/:companyId/header-pages/services" element={<HeaderPageServices />} />
-              <Route path="/page-builder/company/:companyId/header-pages/residential" element={<HeaderPageResidential />} />
-              <Route path="/page-builder/company/:companyId/header-pages/commercial" element={<HeaderPageCommercial />} />
-              <Route path="/page-builder/company/:companyId/header-pages/air-quality" element={<HeaderPageAirQuality />} />
-              {/* CTA Icons routes */}
-              <Route path="/page-builder/company/:companyId/cta-icons/add" element={<CTAIconsAdd />} />
-              <Route path="/page-builder/company/:companyId/cta-icons/library" element={<CTAIconsLibrary />} />
-              <Route path="/page-builder/company/:companyId/cta-icons/assignments" element={<CTAIconsAssignments />} />
-              {/* Accordion List routes */}
-              <Route path="/page-builder/company/:companyId/accordion-list/hvac/areas-service" element={<AreasService />} />
-              <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-install" element={<BrandsInstall />} />
-              <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-service" element={<BrandsService />} />
-              <Route path="/page-builder/company/:companyId/accordion-list/hvac/brands-repair" element={<BrandsRepair />} />
-              {/* Plumbing Accordion List routes */}
-              <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-install" element={<PlumbingTypesInstall />} />
-              <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-service" element={<PlumbingTypesService />} />
-              <Route path="/page-builder/company/:companyId/accordion-list/plumbing/types-repair" element={<PlumbingTypesRepair />} />
-              {/* Coupon route */}
               <Route path="/page-builder/company/:companyId/accordion-list/coupon" element={<CouponList />} />
-              {/* Partner Listings routes */}
               <Route path="/page-builder/company/:companyId/partner-listings" element={<PartnerListingsList />} />
               <Route path="/page-builder/company/:companyId/partner-listings/add" element={<PartnerListingsAdd />} />
               <Route path="/page-builder/company/:companyId/partner-listings/edit" element={<PartnerListingsAdd />} />
-              {/* Marquee routes */}
               <Route path="/page-builder/company/:companyId/marquee" element={<MarqueeList />} />
               <Route path="/page-builder/company/:companyId/marquee/add" element={<MarqueeAdd />} />
               <Route path="/page-builder/company/:companyId/marquee/edit" element={<MarqueeAdd />} />
