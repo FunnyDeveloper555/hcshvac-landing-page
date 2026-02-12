@@ -75,6 +75,7 @@ import PartnerListingsAdd from "@/components/admin/pagebuilder/PartnerListingsAd
 import MarqueeList from "@/components/admin/pagebuilder/MarqueeList";
 import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
 import AdminDashboard from "@/components/admin/AdminDashboard";
+import UserRolesList from "@/components/admin/UserRolesList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -242,6 +243,7 @@ const Admin = () => {
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
+              <Route path="/users" element={<UserRolesList />} />
             </Routes>
           </main>
         </div>

@@ -74,7 +74,7 @@ export default function UserRolesList() {
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
       const { error } = await supabase
         .from("user_roles")
-        .insert({ user_id: userId, role });
+        .insert({ user_id: userId, role: role as any });
       if (error) throw error;
     },
     onSuccess: (_, { userId, role }) => {
@@ -92,7 +92,7 @@ export default function UserRolesList() {
         .from("user_roles")
         .delete()
         .eq("user_id", userId)
-        .eq("role", role);
+        .eq("role", role as any);
       if (error) throw error;
     },
     onSuccess: (_, { userId, role }) => {
