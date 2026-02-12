@@ -47,48 +47,18 @@ export default function LocalBusiness() {
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
-  // Load states on mount
+  // Load states on mount using RPC function
   useEffect(() => {
     const loadStates = async () => {
       setLoading(true);
       try {
-        // Fetch all cities to get unique states
-        // We'll paginate through all results
-        let allCities: { state: string; state_code: string }[] = [];
-        let hasMore = true;
-        let page = 0;
-        const pageSize = 1000;
+        const { data, error } = await supabase.rpc('get_distinct_states');
+        if (error) throw error;
         
-        while (hasMore) {
-          const { data, error } = await supabase
-            .from('cities')
-            .select('state, state_code')
-            .range(page * pageSize, (page + 1) * pageSize - 1);
-          
-          if (error) throw error;
-          
-          if (data && data.length > 0) {
-            allCities = [...allCities, ...data];
-            page++;
-            hasMore = data.length === pageSize;
-          } else {
-            hasMore = false;
-          }
-        }
-        
-        // Create unique states map
-        const statesMap = new Map<string, { code: string; name: string }>();
-        allCities.forEach(city => {
-          if (!statesMap.has(city.state_code)) {
-            statesMap.set(city.state_code, {
-              code: city.state_code,
-              name: city.state
-            });
-          }
-        });
-        
-        const uniqueStates = Array.from(statesMap.values())
-          .sort((a, b) => a.name.localeCompare(b.name));
+        const uniqueStates = (data || []).map((s: { state: string; state_code: string }) => ({
+          code: s.state_code,
+          name: s.state,
+        }));
         
         setAvailableStates(uniqueStates);
       } catch (error) {
@@ -106,7 +76,7 @@ export default function LocalBusiness() {
     loadStates();
   }, [toast]);
 
-  // Load counties when states are selected
+  // Load counties when states are selected using RPC function
   useEffect(() => {
     if (selectedStates.length === 0) {
       setCountiesByState(new Map());
@@ -115,40 +85,17 @@ export default function LocalBusiness() {
 
     const loadCounties = async () => {
       try {
-        // Fetch all counties for selected states with pagination
-        let allCounties: { county: string | null; state_code: string }[] = [];
-        let hasMore = true;
-        let page = 0;
-        const pageSize = 1000;
-        
-        while (hasMore) {
-          const { data, error } = await supabase
-            .from('cities')
-            .select('county, state_code')
-            .in('state_code', selectedStates)
-            .not('county', 'is', null)
-            .range(page * pageSize, (page + 1) * pageSize - 1);
+        const { data, error } = await supabase.rpc('get_counties_by_states', {
+          state_codes: selectedStates
+        });
 
-          if (error) throw error;
-
-          if (data && data.length > 0) {
-            allCounties = [...allCounties, ...data];
-            page++;
-            hasMore = data.length === pageSize;
-          } else {
-            hasMore = false;
-          }
-        }
+        if (error) throw error;
 
         const countyMap = new Map<string, string[]>();
-        allCounties.forEach(item => {
-          if (item.county) {
-            const counties = countyMap.get(item.state_code) || [];
-            if (!counties.includes(item.county)) {
-              counties.push(item.county);
-            }
-            countyMap.set(item.state_code, counties.sort());
-          }
+        (data || []).forEach((item: { county: string; state_code: string }) => {
+          const counties = countyMap.get(item.state_code) || [];
+          counties.push(item.county);
+          countyMap.set(item.state_code, counties);
         });
 
         setCountiesByState(countyMap);
@@ -160,7 +107,7 @@ export default function LocalBusiness() {
     loadCounties();
   }, [selectedStates]);
 
-  // Load cities when counties are selected
+  // Load cities when counties are selected - single batched query
   useEffect(() => {
     if (selectedCounties.length === 0) {
       setCitiesByCounty(new Map());
@@ -169,21 +116,29 @@ export default function LocalBusiness() {
 
     const loadCities = async () => {
       try {
+        const counties = selectedCounties.map(c => c.county);
+        const stateCodes = [...new Set(selectedCounties.map(c => c.stateCode))];
+
+        const { data, error } = await supabase
+          .from('cities')
+          .select('id, name, state, state_code, county, zip_codes')
+          .in('state_code', stateCodes)
+          .in('county', counties)
+          .order('name');
+
+        if (error) throw error;
+
         const cityMap = new Map<string, City[]>();
-        
-        for (const {county, stateCode} of selectedCounties) {
-          const { data, error } = await supabase
-            .from('cities')
-            .select('*')
-            .eq('state_code', stateCode)
-            .eq('county', county)
-            .order('name');
-
-          if (error) throw error;
-
-          const key = `${county}-${stateCode}`;
-          cityMap.set(key, data || []);
-        }
+        (data || []).forEach(city => {
+          if (!city.county) return;
+          const key = `${city.county}-${city.state_code}`;
+          // Only include if this county-state combo was actually selected
+          if (selectedCounties.some(c => c.county === city.county && c.stateCode === city.state_code)) {
+            const existing = cityMap.get(key) || [];
+            existing.push(city);
+            cityMap.set(key, existing);
+          }
+        });
 
         setCitiesByCounty(cityMap);
       } catch (error) {

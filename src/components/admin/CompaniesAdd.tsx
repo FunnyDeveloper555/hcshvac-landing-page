@@ -333,43 +333,19 @@ const CompaniesAdd = () => {
     };
 
     const loadStates = async () => {
-      const allStates = new Map<string, {code: string, name: string}>();
-      let offset = 0;
-      const batchSize = 1000;
-      let hasMore = true;
-      
-      while (hasMore) {
-        const { data: batch, error: batchError } = await supabase
-          .from("cities")
-          .select("state, state_code")
-          .order("state")
-          .range(offset, offset + batchSize - 1);
+      try {
+        const { data, error } = await supabase.rpc('get_distinct_states');
+        if (error) throw error;
         
-        if (batchError) {
-          console.error("Error loading states batch:", batchError);
-          break;
-        }
+        const uniqueStates = (data || []).map((s: { state: string; state_code: string }) => ({
+          code: s.state_code,
+          name: s.state,
+        }));
         
-        if (batch && batch.length > 0) {
-          batch.forEach(item => {
-            if (!allStates.has(item.state_code)) {
-              allStates.set(item.state_code, { code: item.state_code, name: item.state });
-            }
-          });
-          
-          if (batch.length < batchSize) {
-            hasMore = false;
-          } else {
-            offset += batchSize;
-          }
-        } else {
-          hasMore = false;
-        }
+        setAvailableStates(uniqueStates);
+      } catch (error) {
+        console.error("Error loading states:", error);
       }
-      
-      const uniqueStates = Array.from(allStates.values()).sort((a, b) => a.name.localeCompare(b.name));
-      console.log("Total unique states loaded:", uniqueStates.length);
-      setAvailableStates(uniqueStates);
     };
     
     loadServices();
@@ -377,7 +353,7 @@ const CompaniesAdd = () => {
     loadStates();
   }, [toast]);
 
-  // Load counties when states are selected
+  // Load counties when states are selected using RPC
   useEffect(() => {
     const loadCounties = async () => {
       if (selectedStates.length === 0) {
@@ -386,30 +362,30 @@ const CompaniesAdd = () => {
         return;
       }
 
-      const newCountiesByState = new Map<string, string[]>();
+      try {
+        const { data, error } = await supabase.rpc('get_counties_by_states', {
+          state_codes: selectedStates
+        });
 
-      for (const stateCode of selectedStates) {
-        const { data, error } = await supabase
-          .from("cities")
-          .select("county")
-          .eq("state_code", stateCode)
-          .not("county", "is", null);
-        
-        if (!error && data) {
-          const uniqueCounties = Array.from(new Set(data.map(item => item.county).filter(Boolean))) as string[];
-          newCountiesByState.set(stateCode, uniqueCounties.sort());
-        }
+        if (error) throw error;
+
+        const newCountiesByState = new Map<string, string[]>();
+        (data || []).forEach((item: { county: string; state_code: string }) => {
+          const counties = newCountiesByState.get(item.state_code) || [];
+          counties.push(item.county);
+          newCountiesByState.set(item.state_code, counties);
+        });
+
+        setCountiesByState(newCountiesByState);
+        setSelectedCounties(prev => prev.filter(c => selectedStates.includes(c.stateCode)));
+      } catch (error) {
+        console.error("Error loading counties:", error);
       }
-
-      setCountiesByState(newCountiesByState);
-      
-      // Remove selected counties that are no longer in selected states
-      setSelectedCounties(prev => prev.filter(c => selectedStates.includes(c.stateCode)));
     };
     loadCounties();
   }, [selectedStates]);
 
-  // Load cities when counties are selected
+  // Load cities when counties are selected - single batched query
   useEffect(() => {
     const loadCities = async () => {
       if (selectedCounties.length === 0) {
@@ -418,29 +394,36 @@ const CompaniesAdd = () => {
         return;
       }
 
-      const newCitiesByCounty = new Map<string, City[]>();
+      try {
+        const counties = selectedCounties.map(c => c.county);
+        const stateCodes = [...new Set(selectedCounties.map(c => c.stateCode))];
 
-      for (const countyObj of selectedCounties) {
-        const countyKey = `${countyObj.county}|${countyObj.stateCode}`;
         const { data, error } = await supabase
           .from("cities")
           .select("id, name, state, state_code, county, zip_codes")
-          .eq("county", countyObj.county)
-          .eq("state_code", countyObj.stateCode)
+          .in("state_code", stateCodes)
+          .in("county", counties)
           .order("name");
 
-        if (!error && data) {
-          newCitiesByCounty.set(countyKey, data);
-        }
-      }
+        if (error) throw error;
 
-      setCitiesByCounty(newCitiesByCounty);
-      
-      // Remove selected cities that are no longer available
-      const allAvailableCityIds = Array.from(newCitiesByCounty.values())
-        .flat()
-        .map(c => c.id);
-      setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        const newCitiesByCounty = new Map<string, City[]>();
+        (data || []).forEach(city => {
+          if (!city.county) return;
+          const countyKey = `${city.county}|${city.state_code}`;
+          if (selectedCounties.some(c => c.county === city.county && c.stateCode === city.state_code)) {
+            const existing = newCitiesByCounty.get(countyKey) || [];
+            existing.push(city);
+            newCitiesByCounty.set(countyKey, existing);
+          }
+        });
+
+        setCitiesByCounty(newCitiesByCounty);
+        const allAvailableCityIds = Array.from(newCitiesByCounty.values()).flat().map(c => c.id);
+        setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+      } catch (error) {
+        console.error("Error loading cities:", error);
+      }
     };
     loadCities();
   }, [selectedCounties]);
