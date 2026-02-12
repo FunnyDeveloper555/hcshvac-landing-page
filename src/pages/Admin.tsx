@@ -74,6 +74,7 @@ import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsL
 import PartnerListingsAdd from "@/components/admin/pagebuilder/PartnerListingsAdd";
 import MarqueeList from "@/components/admin/pagebuilder/MarqueeList";
 import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -144,7 +145,7 @@ const Admin = () => {
 
           <main className="flex-1 p-4 md:p-8 overflow-auto">
             <Routes>
-              <Route path="/" element={<Navigate to="/admin/hero/list" replace />} />
+              <Route path="/" element={<AdminDashboard />} />
               <Route path="/hero/add" element={<HeroAdd />} />
               <Route path="/hero/list" element={<HeroList />} />
               <Route path="/images/add" element={<HeroImagesAdd />} />
