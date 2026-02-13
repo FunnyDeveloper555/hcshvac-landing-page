@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, Save, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import ContentBlockEditor, { type ContentBlock } from "./ContentBlockEditor";
@@ -79,8 +80,31 @@ function PageEditor({ pageKey, companyName, headerPages, onSave }: {
     <div className="space-y-6">
       {/* Settings Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Page Settings</CardTitle>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Page Settings</CardTitle>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Eye className="w-4 h-4 mr-2" /> Preview
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Page Preview</DialogTitle>
+                </DialogHeader>
+                <div className="border rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background p-8">
+                  <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold mb-2">{formData.title || "Page Title"}</h1>
+                    {formData.subtitle && <p className="text-lg text-muted-foreground">{formData.subtitle}</p>}
+                  </div>
+                  <div className="max-w-2xl mx-auto">
+                    <ContentBlockPreview blocks={blocks} />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
@@ -109,31 +133,13 @@ function PageEditor({ pageKey, companyName, headerPages, onSave }: {
         </CardContent>
       </Card>
 
-      {/* Content Blocks Editor */}
+      {/* Content Blocks Editor — Split Layout */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="text-base">Content Blocks</CardTitle>
         </CardHeader>
         <CardContent>
           <ContentBlockEditor blocks={blocks} onChange={(newBlocks) => setFormData({ ...formData, blocks: newBlocks })} />
-        </CardContent>
-      </Card>
-
-      {/* Live Preview */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2"><Eye className="w-4 h-4" /> Live Preview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="border rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">{formData.title || "Page Title"}</h1>
-              {formData.subtitle && <p className="text-lg text-muted-foreground">{formData.subtitle}</p>}
-            </div>
-            <div className="max-w-2xl mx-auto">
-              <ContentBlockPreview blocks={blocks} />
-            </div>
-          </div>
         </CardContent>
       </Card>
 

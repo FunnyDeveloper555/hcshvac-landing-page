@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, Type, Image, HelpCircle, MousePointerClick, MessageSquareQuote, List } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface ContentBlock {
   id: string;
@@ -34,20 +35,13 @@ function generateId() {
 
 function getDefaultData(type: ContentBlock["type"]): Record<string, unknown> {
   switch (type) {
-    case "text":
-      return { heading: "", body: "" };
-    case "image":
-      return { url: "", alt: "", caption: "" };
-    case "faq":
-      return { items: [{ question: "Question?", answer: "Answer." }] };
-    case "cta":
-      return { heading: "", description: "", buttonText: "Learn More", buttonUrl: "#" };
-    case "testimonial":
-      return { quote: "", author: "", role: "" };
-    case "list":
-      return { heading: "", items: ["Item 1"] };
-    default:
-      return {};
+    case "text": return { heading: "", body: "" };
+    case "image": return { url: "", alt: "", caption: "" };
+    case "faq": return { items: [{ question: "Question?", answer: "Answer." }] };
+    case "cta": return { heading: "", description: "", buttonText: "Learn More", buttonUrl: "#" };
+    case "testimonial": return { quote: "", author: "", role: "" };
+    case "list": return { heading: "", items: ["Item 1"] };
+    default: return {};
   }
 }
 
@@ -57,6 +51,8 @@ function BlockIcon({ type }: { type: ContentBlock["type"] }) {
   const Icon = found.icon;
   return <Icon className="w-4 h-4" />;
 }
+
+// --- Block Field Editors ---
 
 function TextBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
   const data = rawData || { heading: "", body: "" };
@@ -68,7 +64,7 @@ function TextBlockFields({ data: rawData, onChange }: { data: Record<string, unk
       </div>
       <div className="space-y-1">
         <Label className="text-xs">Body</Label>
-        <Textarea value={(data.body as string) || ""} onChange={e => onChange({ ...data, body: e.target.value })} rows={4} placeholder="Paragraph text..." />
+        <Textarea value={(data.body as string) || ""} onChange={e => onChange({ ...data, body: e.target.value })} rows={6} placeholder="Paragraph text..." />
       </div>
     </div>
   );
@@ -210,8 +206,24 @@ function BlockFieldsRouter({ block, onChange }: { block: ContentBlock; onChange:
   }
 }
 
+function getBlockLabel(block: ContentBlock): string {
+  const data = block.data || {};
+  switch (block.type) {
+    case "text": return (data.heading as string) || (data.body as string)?.slice(0, 30) || "Text Block";
+    case "image": return (data.alt as string) || "Image Block";
+    case "faq": return `FAQ (${((data.items as unknown[]) || []).length} items)`;
+    case "cta": return (data.heading as string) || "Call to Action";
+    case "testimonial": return (data.author as string) ? `"${(data.author as string)}"` : "Testimonial";
+    case "list": return (data.heading as string) || "Bullet List";
+    default: return "Block";
+  }
+}
+
 export default function ContentBlockEditor({ blocks, onChange }: ContentBlockEditorProps) {
   const [addType, setAddType] = useState<ContentBlock["type"]>("text");
+  const [selectedId, setSelectedId] = useState<string | null>(blocks[0]?.id || null);
+
+  const selectedBlock = blocks.find(b => b.id === selectedId) || null;
 
   const addBlock = () => {
     const newBlock: ContentBlock = {
@@ -221,10 +233,15 @@ export default function ContentBlockEditor({ blocks, onChange }: ContentBlockEdi
       order: blocks.length,
     };
     onChange([...blocks, newBlock]);
+    setSelectedId(newBlock.id);
   };
 
   const removeBlock = (id: string) => {
-    onChange(blocks.filter(b => b.id !== id).map((b, i) => ({ ...b, order: i })));
+    const newBlocks = blocks.filter(b => b.id !== id).map((b, i) => ({ ...b, order: i }));
+    onChange(newBlocks);
+    if (selectedId === id) {
+      setSelectedId(newBlocks[0]?.id || null);
+    }
   };
 
   const moveBlock = (index: number, direction: "up" | "down") => {
@@ -240,61 +257,89 @@ export default function ContentBlockEditor({ blocks, onChange }: ContentBlockEdi
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Select value={addType} onValueChange={(v) => setAddType(v as ContentBlock["type"])}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {BLOCK_TYPES.map(bt => (
-              <SelectItem key={bt.value} value={bt.value}>
-                <span className="flex items-center gap-2">
-                  <bt.icon className="w-3.5 h-3.5" /> {bt.label}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button variant="outline" size="sm" onClick={addBlock}>
-          <Plus className="w-4 h-4 mr-1" /> Add Block
-        </Button>
-      </div>
-
-      {blocks.length === 0 && (
-        <div className="text-center py-8 border-2 border-dashed rounded-lg text-muted-foreground">
-          <p className="text-sm">No content blocks yet. Add one above to get started.</p>
+    <div className="flex gap-4 min-h-[350px]">
+      {/* Left Panel: Block List */}
+      <div className="w-[280px] shrink-0 flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Select value={addType} onValueChange={(v) => setAddType(v as ContentBlock["type"])}>
+            <SelectTrigger className="flex-1 h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {BLOCK_TYPES.map(bt => (
+                <SelectItem key={bt.value} value={bt.value}>
+                  <span className="flex items-center gap-2">
+                    <bt.icon className="w-3.5 h-3.5" /> {bt.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" className="h-8 text-xs shrink-0" onClick={addBlock}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> Add
+          </Button>
         </div>
-      )}
 
-      {blocks.map((block, index) => (
-        <Card key={block.id} className="relative">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-muted-foreground" />
-                <BlockIcon type={block.type} />
-                <span className="capitalize">{block.type}</span>
-                <span className="text-xs text-muted-foreground font-normal">Block {index + 1}</span>
-              </CardTitle>
-              <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveBlock(index, "up")} disabled={index === 0}>
-                  <ChevronUp className="w-3.5 h-3.5" />
+        <div className="flex-1 overflow-y-auto space-y-1 border rounded-lg p-2 bg-muted/30">
+          {blocks.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-6">No blocks yet. Add one above.</p>
+          )}
+          {blocks.map((block, index) => (
+            <div
+              key={block.id}
+              onClick={() => setSelectedId(block.id)}
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors group text-sm",
+                selectedId === block.id
+                  ? "bg-primary/10 border border-primary/30"
+                  : "hover:bg-muted border border-transparent"
+              )}
+            >
+              <GripVertical className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <BlockIcon type={block.type} />
+              <span className="flex-1 truncate text-xs">{getBlockLabel(block)}</span>
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); moveBlock(index, "up"); }} disabled={index === 0}>
+                  <ChevronUp className="w-3 h-3" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveBlock(index, "down")} disabled={index === blocks.length - 1}>
-                  <ChevronDown className="w-3.5 h-3.5" />
+                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => { e.stopPropagation(); moveBlock(index, "down"); }} disabled={index === blocks.length - 1}>
+                  <ChevronDown className="w-3 h-3" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => removeBlock(block.id)}>
-                  <Trash2 className="w-3.5 h-3.5" />
+                <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }}>
+                  <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <BlockFieldsRouter block={block} onChange={(data) => updateBlockData(block.id, data)} />
-          </CardContent>
-        </Card>
-      ))}
+          ))}
+        </div>
+      </div>
+
+      {/* Right Panel: Selected Block Form */}
+      <div className="flex-1 min-w-0">
+        {selectedBlock ? (
+          <Card className="h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <BlockIcon type={selectedBlock.type} />
+                <span className="capitalize">{selectedBlock.type}</span>
+                <span className="text-xs text-muted-foreground font-normal">
+                  Block {blocks.findIndex(b => b.id === selectedBlock.id) + 1}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BlockFieldsRouter
+                block={selectedBlock}
+                onChange={(data) => updateBlockData(selectedBlock.id, data)}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="h-full flex items-center justify-center border-2 border-dashed rounded-lg text-muted-foreground">
+            <p className="text-sm">Select a block to edit, or add one to get started.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
