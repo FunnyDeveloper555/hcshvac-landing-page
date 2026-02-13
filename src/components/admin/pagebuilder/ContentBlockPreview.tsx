@@ -3,7 +3,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
-function TextBlockPreview({ data }: { data: Record<string, unknown> }) {
+function TextBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   return (
     <div className="space-y-2">
       {(data.heading as string) && <h3 className="text-xl font-semibold">{data.heading as string}</h3>}
@@ -12,7 +13,8 @@ function TextBlockPreview({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function ImageBlockPreview({ data }: { data: Record<string, unknown> }) {
+function ImageBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   if (!(data.url as string)) return <div className="h-40 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">No image URL</div>;
   return (
     <figure className="space-y-2">
@@ -22,7 +24,8 @@ function ImageBlockPreview({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function FaqBlockPreview({ data }: { data: Record<string, unknown> }) {
+function FaqBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   const items = (data.items as Array<{ question: string; answer: string }>) || [];
   if (items.length === 0) return null;
   return (
@@ -37,7 +40,8 @@ function FaqBlockPreview({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function CtaBlockPreview({ data }: { data: Record<string, unknown> }) {
+function CtaBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   return (
     <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 text-center space-y-4">
       {(data.heading as string) && <h3 className="text-2xl font-bold">{data.heading as string}</h3>}
@@ -49,7 +53,8 @@ function CtaBlockPreview({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function TestimonialBlockPreview({ data }: { data: Record<string, unknown> }) {
+function TestimonialBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   return (
     <blockquote className="border-l-4 border-primary pl-6 py-2 space-y-2">
       <p className="text-lg italic text-foreground/80">"{data.quote as string}"</p>
@@ -61,7 +66,8 @@ function TestimonialBlockPreview({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-function ListBlockPreview({ data }: { data: Record<string, unknown> }) {
+function ListBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
   const items = (data.items as string[]) || [];
   return (
     <div className="space-y-2">
