@@ -58,7 +58,8 @@ function BlockIcon({ type }: { type: ContentBlock["type"] }) {
   return <Icon className="w-4 h-4" />;
 }
 
-function TextBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function TextBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { heading: "", body: "" };
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -73,7 +74,8 @@ function TextBlockFields({ data, onChange }: { data: Record<string, unknown>; on
   );
 }
 
-function ImageBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function ImageBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { url: "", alt: "", caption: "" };
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -97,7 +99,8 @@ function ImageBlockFields({ data, onChange }: { data: Record<string, unknown>; o
   );
 }
 
-function FaqBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function FaqBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { items: [] };
   const items = (data.items as Array<{ question: string; answer: string }>) || [];
   const updateItem = (i: number, field: string, val: string) => {
     const updated = items.map((item, idx) => idx === i ? { ...item, [field]: val } : item);
@@ -123,7 +126,8 @@ function FaqBlockFields({ data, onChange }: { data: Record<string, unknown>; onC
   );
 }
 
-function CtaBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function CtaBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { heading: "", description: "", buttonText: "", buttonUrl: "" };
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -148,7 +152,8 @@ function CtaBlockFields({ data, onChange }: { data: Record<string, unknown>; onC
   );
 }
 
-function TestimonialBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function TestimonialBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { quote: "", author: "", role: "" };
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -169,7 +174,8 @@ function TestimonialBlockFields({ data, onChange }: { data: Record<string, unkno
   );
 }
 
-function ListBlockFields({ data, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+function ListBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { heading: "", items: [] };
   const items = (data.items as string[]) || [];
   const updateItem = (i: number, val: string) => onChange({ ...data, items: items.map((item, idx) => idx === i ? val : item) });
   const addItem = () => onChange({ ...data, items: [...items, ""] });
