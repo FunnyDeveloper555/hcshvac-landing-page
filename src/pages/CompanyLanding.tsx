@@ -16,6 +16,7 @@ import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
+import CompanyPageContent from "@/components/company/CompanyPageContent";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -203,21 +204,10 @@ const CompanyLanding = () => {
               >
                 ← Back to Home
               </button>
-              <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                    {activePageContent?.title || getPageLabel(activePage)}
-                  </h1>
-                  {activePageContent?.subtitle && (
-                    <p className="text-xl text-muted-foreground">{activePageContent.subtitle}</p>
-                  )}
-                </div>
-                <div className="prose prose-lg max-w-none">
-                  <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                    {activePageContent?.content || "Content for this page is coming soon."}
-                  </p>
-                </div>
-              </div>
+              <CompanyPageContent
+                pageContent={activePageContent as any}
+                pageLabel={getPageLabel(activePage)}
+              />
             </div>
             {/* CTA Icons for this page */}
             <CompanyCTAIcons companyId={company.id} pageName={activePage} />
