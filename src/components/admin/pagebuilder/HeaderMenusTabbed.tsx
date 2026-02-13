@@ -2,20 +2,22 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import ContentBlockEditor, { type ContentBlock } from "./ContentBlockEditor";
+import ContentBlockPreview from "./ContentBlockPreview";
 
 interface PageContent {
   title: string;
   subtitle: string;
   content: string;
   enabled: boolean;
+  blocks?: ContentBlock[];
 }
 
 const PAGE_TABS = [
@@ -27,30 +29,42 @@ const PAGE_TABS = [
   { key: "air-quality", label: "Air Quality" },
 ];
 
-function PageEditor({ pageKey, companyId, companyName, headerPages, onSave }: {
+function migrateToBlocks(page: PageContent): ContentBlock[] {
+  if (page.blocks && page.blocks.length > 0) return page.blocks;
+  if (!page.content) return [];
+  return [{
+    id: Math.random().toString(36).substring(2, 10),
+    type: "text",
+    data: { heading: "", body: page.content },
+    order: 0,
+  }];
+}
+
+function PageEditor({ pageKey, companyName, headerPages, onSave }: {
   pageKey: string;
-  companyId: string;
   companyName: string;
   headerPages: Record<string, PageContent>;
   onSave: (key: string, data: PageContent) => Promise<void>;
 }) {
   const getDefault = (key: string): PageContent => {
     const defaults: Record<string, PageContent> = {
-      "about-us": { title: `About ${companyName}`, subtitle: "Your Trusted HVAC Partner", content: `${companyName} has been serving the community with reliable HVAC services.`, enabled: true },
-      "financing": { title: "Financing Options", subtitle: "Flexible Payment Solutions", content: "We offer flexible financing options to make your HVAC investment affordable.", enabled: true },
-      "services": { title: "Our Services", subtitle: "Comprehensive HVAC Solutions", content: "From installation to maintenance and repair, we provide a full range of HVAC services.", enabled: true },
-      "residential": { title: "Residential Services", subtitle: "Home Comfort Solutions", content: "We specialize in residential HVAC services.", enabled: true },
-      "commercial": { title: "Commercial Services", subtitle: "Business HVAC Solutions", content: "Our commercial HVAC services ensure your business stays comfortable.", enabled: true },
-      "air-quality": { title: "Air Quality Solutions", subtitle: "Breathe Cleaner, Healthier Air", content: "Improve your indoor air quality with our comprehensive solutions.", enabled: true },
+      "about-us": { title: `About ${companyName}`, subtitle: "Your Trusted HVAC Partner", content: "", enabled: true, blocks: [] },
+      "financing": { title: "Financing Options", subtitle: "Flexible Payment Solutions", content: "", enabled: true, blocks: [] },
+      "services": { title: "Our Services", subtitle: "Comprehensive HVAC Solutions", content: "", enabled: true, blocks: [] },
+      "residential": { title: "Residential Services", subtitle: "Home Comfort Solutions", content: "", enabled: true, blocks: [] },
+      "commercial": { title: "Commercial Services", subtitle: "Business HVAC Solutions", content: "", enabled: true, blocks: [] },
+      "air-quality": { title: "Air Quality Solutions", subtitle: "Breathe Cleaner, Healthier Air", content: "", enabled: true, blocks: [] },
     };
-    return defaults[key] || { title: "", subtitle: "", content: "", enabled: true };
+    return defaults[key] || { title: "", subtitle: "", content: "", enabled: true, blocks: [] };
   };
 
-  const [formData, setFormData] = useState<PageContent>(headerPages[pageKey] || getDefault(pageKey));
+  const existing = headerPages[pageKey] || getDefault(pageKey);
+  const [formData, setFormData] = useState<PageContent>({ ...existing, blocks: migrateToBlocks(existing) });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setFormData(headerPages[pageKey] || getDefault(pageKey));
+    const page = headerPages[pageKey] || getDefault(pageKey);
+    setFormData({ ...page, blocks: migrateToBlocks(page) });
   }, [pageKey]);
 
   const handleSave = async () => {
@@ -59,61 +73,75 @@ function PageEditor({ pageKey, companyId, companyName, headerPages, onSave }: {
     setSaving(false);
   };
 
+  const blocks = formData.blocks || [];
+
   return (
     <div className="space-y-6">
+      {/* Settings Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Eye className="w-5 h-5" /> Preview</CardTitle>
+          <CardTitle className="text-base">Page Settings</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="border rounded-lg overflow-hidden bg-gradient-to-b from-primary/10 to-background">
-            <div className="p-8 text-center">
-              <h1 className="text-3xl font-bold mb-2">{formData.title || "Page Title"}</h1>
-              <p className="text-lg text-muted-foreground mb-6">{formData.subtitle || "Subtitle"}</p>
-              <div className="max-w-2xl mx-auto text-left bg-card p-6 rounded-lg shadow-sm">
-                <p className="text-foreground whitespace-pre-wrap">{formData.content || "Content..."}</p>
-              </div>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div>
+              <Label className="text-sm font-medium">Show in Menu</Label>
+              <p className="text-xs text-muted-foreground">Display this page in the website navigation</p>
+            </div>
+            <Switch checked={formData.enabled} onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <Label className="text-xs">Page Title</Label>
+              <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Subtitle</Label>
+              <Input value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} />
             </div>
           </div>
           {!formData.enabled && (
-            <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center gap-2">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center gap-2">
               <EyeOff className="w-4 h-4 text-yellow-600" />
-              <span className="text-sm text-yellow-700 dark:text-yellow-400">This page is hidden from the website menu</span>
+              <span className="text-xs text-yellow-700 dark:text-yellow-400">This page is hidden from the website menu</span>
             </div>
           )}
         </CardContent>
       </Card>
 
+      {/* Content Blocks Editor */}
       <Card>
         <CardHeader>
-          <CardTitle>Page Configuration</CardTitle>
+          <CardTitle className="text-base">Content Blocks</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div>
-              <Label className="text-base font-medium">Show in Menu</Label>
-              <p className="text-sm text-muted-foreground">Display this page in the website navigation</p>
-            </div>
-            <Switch checked={formData.enabled} onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })} />
-          </div>
-          <div className="space-y-2">
-            <Label>Page Title</Label>
-            <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label>Subtitle</Label>
-            <Input value={formData.subtitle} onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label>Content</Label>
-            <Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={8} />
-          </div>
-          <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Save Changes
-          </Button>
+        <CardContent>
+          <ContentBlockEditor blocks={blocks} onChange={(newBlocks) => setFormData({ ...formData, blocks: newBlocks })} />
         </CardContent>
       </Card>
+
+      {/* Live Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2"><Eye className="w-4 h-4" /> Live Preview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="border rounded-lg overflow-hidden bg-gradient-to-b from-primary/5 to-background p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold mb-2">{formData.title || "Page Title"}</h1>
+              {formData.subtitle && <p className="text-lg text-muted-foreground">{formData.subtitle}</p>}
+            </div>
+            <div className="max-w-2xl mx-auto">
+              <ContentBlockPreview blocks={blocks} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <Button onClick={handleSave} disabled={saving} className="w-full">
+        {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+        Save Changes
+      </Button>
     </div>
   );
 }
@@ -124,7 +152,7 @@ export default function HeaderMenusTabbed() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       if (!companyId) return;
       const { data, error } = await supabase
         .from("companies")
@@ -135,7 +163,7 @@ export default function HeaderMenusTabbed() {
       setCompany({ id: data.id, name: data.name, header_pages: (data.header_pages as unknown as Record<string, PageContent>) || {} });
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [companyId]);
 
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -166,7 +194,7 @@ export default function HeaderMenusTabbed() {
         </TabsList>
         {PAGE_TABS.map(tab => (
           <TabsContent key={tab.key} value={tab.key}>
-            <PageEditor pageKey={tab.key} companyId={company.id} companyName={company.name} headerPages={company.header_pages} onSave={handleSave} />
+            <PageEditor pageKey={tab.key} companyName={company.name} headerPages={company.header_pages} onSave={handleSave} />
           </TabsContent>
         ))}
       </Tabs>
