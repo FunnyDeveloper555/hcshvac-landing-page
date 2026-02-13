@@ -14,6 +14,7 @@ import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesIns
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
+import CompanyPageContent from "@/components/company/CompanyPageContent";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
@@ -418,23 +419,10 @@ const CompanyWebsiteMockup = () => {
         {/* ======== PAGE CONTENT ======== */}
         {activePage ? (
           <div className="p-8 md:p-12">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  {selectedCompany.header_pages?.[activePage]?.title || HEADER_MENUS.find(m => m.key === activePage)?.label || activePage}
-                </h2>
-                {selectedCompany.header_pages?.[activePage]?.subtitle && (
-                  <p className="text-xl text-muted-foreground">
-                    {selectedCompany.header_pages[activePage].subtitle}
-                  </p>
-                )}
-              </div>
-              <div className="prose prose-lg max-w-none">
-                <p className="whitespace-pre-wrap text-foreground/80 leading-relaxed">
-                  {selectedCompany.header_pages?.[activePage]?.content || "No content configured for this page yet. Configure it in the Header Menus section."}
-                </p>
-              </div>
-            </div>
+              <CompanyPageContent
+                pageContent={selectedCompany.header_pages?.[activePage] as any}
+                pageLabel={HEADER_MENUS.find(m => m.key === activePage)?.label || activePage}
+              />
             
             {/* CTA Icons for this page */}
             {ctaIcons.length > 0 && (
