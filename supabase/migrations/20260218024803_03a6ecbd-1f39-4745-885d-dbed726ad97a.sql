@@ -1,1 +1,0 @@
-ALTER TABLE public.company_popups ADD COLUMN images jsonb DEFAULT '[]'::jsonb;

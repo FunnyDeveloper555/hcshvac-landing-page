@@ -25,7 +25,6 @@ interface PopupForm {
   bg_color: string;
   text_color: string;
   is_active: boolean;
-  images: string[];
 }
 
 const defaultForm: PopupForm = {
@@ -37,7 +36,6 @@ const defaultForm: PopupForm = {
   bg_color: "",
   text_color: "",
   is_active: true,
-  images: [],
 };
 
 export default function PopupsList() {
@@ -71,7 +69,6 @@ export default function PopupsList() {
         bg_color: formData.bg_color || null,
         text_color: formData.text_color || null,
         button_url: formData.button_url || null,
-        images: formData.images.filter(Boolean),
       };
       if (editingId) {
         const { error } = await supabase.from("company_popups").update(payload).eq("id", editingId);
@@ -127,7 +124,6 @@ export default function PopupsList() {
       bg_color: popup.bg_color || "",
       text_color: popup.text_color || "",
       is_active: popup.is_active,
-      images: Array.isArray(popup.images) ? popup.images : [],
     });
     setDialogOpen(true);
   };
@@ -190,30 +186,6 @@ export default function PopupsList() {
                   <Label>Text Color (optional)</Label>
                   <Input type="color" value={form.text_color || "#000000"} onChange={(e) => setForm({ ...form, text_color: e.target.value })} />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Images</Label>
-                {form.images.map((url, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      value={url}
-                      onChange={(e) => {
-                        const updated = [...form.images];
-                        updated[idx] = e.target.value;
-                        setForm({ ...form, images: updated });
-                      }}
-                      placeholder="https://image-url..."
-                    />
-                    <Button type="button" size="icon" variant="ghost" onClick={() => {
-                      setForm({ ...form, images: form.images.filter((_, i) => i !== idx) });
-                    }}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-                <Button type="button" variant="outline" size="sm" onClick={() => setForm({ ...form, images: [...form.images, ""] })}>
-                  <Plus className="h-4 w-4 mr-1" /> Add Image
-                </Button>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
