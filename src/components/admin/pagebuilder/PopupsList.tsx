@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, FileDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -146,9 +147,10 @@ export default function PopupsList() {
                 <TableRow>
                   <TableHead>Order</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Content</TableHead>
                   <TableHead>Title</TableHead>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Button</TableHead>
+                  <TableHead>Publish Range</TableHead>
+                  <TableHead>Links</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -162,9 +164,37 @@ export default function PopupsList() {
                         {item.popup_type}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">
+                        {item.content_type || "text"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="font-medium max-w-[150px] truncate">{item.title}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{item.message}</TableCell>
-                    <TableCell>{item.button_text || "-"}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {item.publish_start_date || item.publish_end_date ? (
+                        <div>
+                          {item.publish_start_date && <div>From: {format(new Date(item.publish_start_date), "MMM d, yyyy")}</div>}
+                          {item.publish_end_date && <div>To: {format(new Date(item.publish_end_date), "MMM d, yyyy")}</div>}
+                        </div>
+                      ) : (
+                        <span>Always</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        {item.file_url && (
+                          <a href={item.file_url} target="_blank" rel="noopener noreferrer" title="Attached file">
+                            <FileDown className="h-4 w-4 text-muted-foreground" />
+                          </a>
+                        )}
+                        {item.redirect_url && (
+                          <a href={item.redirect_url} target="_blank" rel="noopener noreferrer" title={`Opens in ${item.destination_window || 'self'} window`}>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </a>
+                        )}
+                        {!item.file_url && !item.redirect_url && "-"}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Switch

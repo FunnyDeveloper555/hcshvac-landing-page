@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, Mail, MailOpen, X } from "lucide-react";
+import { ChevronDown, Download, ExternalLink, Mail, MailOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Popup {
@@ -9,12 +9,18 @@ interface Popup {
   title: string;
   message: string;
   popup_type: string;
+  content_type: string;
   button_text: string | null;
   button_url: string | null;
   background_color: string | null;
   text_color: string | null;
   image_urls: string[] | null;
   display_order: number | null;
+  publish_start_date: string | null;
+  publish_end_date: string | null;
+  file_url: string | null;
+  redirect_url: string | null;
+  destination_window: string;
 }
 
 const STORAGE_KEY_PREFIX = "popup-read-";
@@ -31,6 +37,111 @@ function persistReadIds(companyId: string, ids: Set<string>) {
   localStorage.setItem(`${STORAGE_KEY_PREFIX}${companyId}`, JSON.stringify([...ids]));
 }
 
+function isWithinPublishRange(popup: Popup): boolean {
+  const now = new Date();
+  if (popup.publish_start_date && new Date(popup.publish_start_date) > now) return false;
+  if (popup.publish_end_date && new Date(popup.publish_end_date) < now) return false;
+  return true;
+}
+
+function openUrl(url: string, destination: string) {
+  if (destination === "new") {
+    window.open(url, "_blank", "noopener,noreferrer");
+  } else {
+    window.location.href = url;
+  }
+}
+
+function PopupContent({ popup }: { popup: Popup }) {
+  const images = Array.isArray(popup.image_urls) ? popup.image_urls : [];
+
+  const renderMessage = () => {
+    switch (popup.content_type) {
+      case "html":
+        return <div className="prose prose-sm max-w-none mb-3" dangerouslySetInnerHTML={{ __html: popup.message }} />;
+      case "image":
+        return (
+          <div className="flex flex-col gap-2 mb-3">
+            {images.length > 0 ? (
+              images.map((url, i) => (
+                <img key={i} src={url} alt={`Popup image ${i + 1}`} className="w-full rounded-md object-cover max-h-48" />
+              ))
+            ) : (
+              <p className="whitespace-pre-wrap mb-3">{popup.message}</p>
+            )}
+          </div>
+        );
+      case "video":
+        return (
+          <div className="mb-3">
+            {images.length > 0 ? (
+              images.map((url, i) => (
+                <video key={i} src={url} controls className="w-full rounded-md max-h-48" />
+              ))
+            ) : (
+              <p className="whitespace-pre-wrap">{popup.message}</p>
+            )}
+          </div>
+        );
+      default: // text
+        return <p className="whitespace-pre-wrap mb-3">{popup.message}</p>;
+    }
+  };
+
+  return (
+    <>
+      {renderMessage()}
+
+      {/* Show images for non-image content types that still have images */}
+      {popup.content_type !== "image" && popup.content_type !== "video" && images.length > 0 && (
+        <div className="flex flex-col gap-2 mb-3">
+          {images.map((url, i) => (
+            <img key={i} src={url} alt={`Popup image ${i + 1}`} className="w-full rounded-md object-cover max-h-48" />
+          ))}
+        </div>
+      )}
+
+      {popup.file_url && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full mb-2"
+          onClick={() => openUrl(popup.file_url!, "new")}
+        >
+          <Download className="mr-2 h-3 w-3" />
+          Download Attachment
+        </Button>
+      )}
+
+      {popup.redirect_url && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full mb-2"
+          onClick={() => openUrl(popup.redirect_url!, popup.destination_window)}
+        >
+          <ExternalLink className="mr-2 h-3 w-3" />
+          View More
+        </Button>
+      )}
+
+      {popup.button_text && (
+        <Button
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            if (popup.button_url) {
+              openUrl(popup.button_url, popup.destination_window);
+            }
+          }}
+        >
+          {popup.button_text}
+        </Button>
+      )}
+    </>
+  );
+}
+
 export default function CompanyPopup({ companyId }: { companyId: string }) {
   const [visible, setVisible] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -41,12 +152,12 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("company_popups")
-        .select("id, title, message, popup_type, button_text, button_url, background_color, text_color, image_urls, display_order")
+        .select("id, title, message, popup_type, content_type, button_text, button_url, background_color, text_color, image_urls, display_order, publish_start_date, publish_end_date, file_url, redirect_url, destination_window")
         .eq("company_id", companyId)
         .eq("is_active", true)
         .order("display_order");
       if (error) throw error;
-      return (data || []) as Popup[];
+      return ((data || []) as Popup[]).filter(isWithinPublishRange);
     },
     enabled: !!companyId,
   });
@@ -109,7 +220,6 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
           {popups.map((popup) => {
             const isRead = readIds.has(popup.id);
             const isOpen = expandedId === popup.id;
-            const images = Array.isArray(popup.image_urls) ? popup.image_urls : [];
 
             return (
               <div key={popup.id}>
@@ -145,34 +255,7 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
                       color: popup.text_color || undefined,
                     }}
                   >
-                    <p className="whitespace-pre-wrap mb-3">{popup.message}</p>
-
-                    {images.length > 0 && (
-                      <div className="flex flex-col gap-2 mb-3">
-                        {images.map((url, i) => (
-                          <img
-                            key={i}
-                            src={url}
-                            alt={`Popup image ${i + 1}`}
-                            className="w-full rounded-md object-cover max-h-48"
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {popup.button_text && (
-                      <Button
-                        size="sm"
-                        className="w-full"
-                        onClick={() => {
-                          if (popup.button_url) {
-                            window.open(popup.button_url, "_blank", "noopener,noreferrer");
-                          }
-                        }}
-                      >
-                        {popup.button_text}
-                      </Button>
-                    )}
+                    <PopupContent popup={popup} />
                   </div>
                 )}
               </div>
