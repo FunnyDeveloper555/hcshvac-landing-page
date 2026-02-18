@@ -717,13 +717,19 @@ export type Database = {
           button_text: string | null
           button_url: string | null
           company_id: string
+          content_type: string
           created_at: string
+          destination_window: string
           display_order: number | null
+          file_url: string | null
           id: string
           image_urls: Json | null
           is_active: boolean | null
           message: string
           popup_type: string
+          publish_end_date: string | null
+          publish_start_date: string | null
+          redirect_url: string | null
           text_color: string | null
           title: string
           updated_at: string
@@ -733,13 +739,19 @@ export type Database = {
           button_text?: string | null
           button_url?: string | null
           company_id: string
+          content_type?: string
           created_at?: string
+          destination_window?: string
           display_order?: number | null
+          file_url?: string | null
           id?: string
           image_urls?: Json | null
           is_active?: boolean | null
           message?: string
           popup_type?: string
+          publish_end_date?: string | null
+          publish_start_date?: string | null
+          redirect_url?: string | null
           text_color?: string | null
           title?: string
           updated_at?: string
@@ -749,13 +761,19 @@ export type Database = {
           button_text?: string | null
           button_url?: string | null
           company_id?: string
+          content_type?: string
           created_at?: string
+          destination_window?: string
           display_order?: number | null
+          file_url?: string | null
           id?: string
           image_urls?: Json | null
           is_active?: boolean | null
           message?: string
           popup_type?: string
+          publish_end_date?: string | null
+          publish_start_date?: string | null
+          redirect_url?: string | null
           text_color?: string | null
           title?: string
           updated_at?: string
