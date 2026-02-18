@@ -66,7 +66,6 @@ import HvacTabbed from "@/components/admin/pagebuilder/HvacTabbed";
 import PlumbingTabbed from "@/components/admin/pagebuilder/PlumbingTabbed";
 import HeaderMenusTabbed from "@/components/admin/pagebuilder/HeaderMenusTabbed";
 import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
-import PopupsList from "@/components/admin/pagebuilder/PopupsList";
 
 const Admin = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -212,7 +211,6 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/marquee" element={<MarqueeList />} />
               <Route path="/page-builder/company/:companyId/marquee/add" element={<MarqueeAdd />} />
               <Route path="/page-builder/company/:companyId/marquee/edit" element={<MarqueeAdd />} />
-              <Route path="/page-builder/company/:companyId/popups" element={<PopupsList />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />

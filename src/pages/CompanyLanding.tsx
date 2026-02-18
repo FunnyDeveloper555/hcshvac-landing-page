@@ -17,7 +17,6 @@ import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
-import CompanyPopup from "@/components/company/CompanyPopup";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -277,7 +276,6 @@ const CompanyLanding = () => {
         )}
       </main>
       <CompanyFooter company={company} theme={theme} />
-      <CompanyPopup companyId={company.id} />
     </div>
   );
 };
