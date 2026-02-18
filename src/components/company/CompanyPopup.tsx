@@ -13,6 +13,7 @@ interface Popup {
   button_url: string | null;
   bg_color: string | null;
   text_color: string | null;
+  images: string[] | null;
 }
 
 export default function CompanyPopup({ companyId }: { companyId: string }) {
@@ -24,12 +25,16 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
     const fetchPopups = async () => {
       const { data } = await supabase
         .from("company_popups")
-        .select("id, popup_type, title, message, button_text, button_url, bg_color, text_color")
+        .select("id, popup_type, title, message, button_text, button_url, bg_color, text_color, images")
         .eq("company_id", companyId)
         .eq("is_active", true)
         .order("display_order");
       if (data && data.length > 0) {
-        setPopups(data);
+        const mapped: Popup[] = data.map((d) => ({
+          ...d,
+          images: Array.isArray(d.images) ? (d.images as string[]) : [],
+        }));
+        setPopups(mapped);
         setOpen(true);
       }
     };
@@ -75,6 +80,13 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
           >
             {popup.message}
           </DialogDescription>
+          {Array.isArray(popup.images) && popup.images.length > 0 && (
+            <div className="flex flex-col gap-2 pt-2">
+              {popup.images.filter(Boolean).map((url, i) => (
+                <img key={i} src={url} alt={`Popup image ${i + 1}`} className="w-full rounded-md object-cover max-h-48" />
+              ))}
+            </div>
+          )}
         </DialogHeader>
         <DialogFooter>
           {popup.button_url ? (
