@@ -1,0 +1,1 @@
+ALTER TABLE public.company_popups RENAME COLUMN images TO image_urls;
