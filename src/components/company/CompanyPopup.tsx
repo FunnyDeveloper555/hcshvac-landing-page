@@ -1,14 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ChevronDown, Mail, MailOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Popup {
@@ -24,9 +17,24 @@ interface Popup {
   display_order: number | null;
 }
 
+const STORAGE_KEY_PREFIX = "popup-read-";
+
+function getReadIds(companyId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEY_PREFIX}${companyId}`);
+    if (raw) return new Set(JSON.parse(raw));
+  } catch {}
+  return new Set();
+}
+
+function persistReadIds(companyId: string, ids: Set<string>) {
+  localStorage.setItem(`${STORAGE_KEY_PREFIX}${companyId}`, JSON.stringify([...ids]));
+}
+
 export default function CompanyPopup({ companyId }: { companyId: string }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [readIds, setReadIds] = useState<Set<string>>(() => getReadIds(companyId));
 
   const { data: popups = [] } = useQuery({
     queryKey: ["company-popups-live", companyId],
@@ -44,81 +52,134 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
   });
 
   useEffect(() => {
-    if (popups.length > 0) {
-      setCurrentIndex(0);
-      setOpen(true);
-    }
+    if (popups.length > 0) setVisible(true);
   }, [popups]);
 
-  const handleDismiss = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < popups.length) {
-      setCurrentIndex(nextIndex);
+  const markRead = useCallback(
+    (id: string) => {
+      setReadIds((prev) => {
+        const next = new Set(prev);
+        next.add(id);
+        persistReadIds(companyId, next);
+        return next;
+      });
+    },
+    [companyId],
+  );
+
+  const toggleItem = (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
     } else {
-      setOpen(false);
+      setExpandedId(id);
+      markRead(id);
     }
   };
 
-  const handleButtonClick = (url: string | null) => {
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
-    handleDismiss();
-  };
+  if (!visible || popups.length === 0) return null;
 
-  if (popups.length === 0 || !open) return null;
-
-  const popup = popups[currentIndex];
-  const images = Array.isArray(popup.image_urls) ? popup.image_urls : [];
+  const unreadCount = popups.filter((p) => !readIds.has(p.id)).length;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!val) handleDismiss(); }}>
-      <DialogContent
-        className="sm:max-w-md"
-        style={{
-          backgroundColor: popup.background_color || undefined,
-          color: popup.text_color || undefined,
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle style={{ color: popup.text_color || undefined }}>
-            {popup.title}
-          </DialogTitle>
-          <DialogDescription
-            className="whitespace-pre-wrap"
-            style={{ color: popup.text_color ? `${popup.text_color}cc` : undefined }}
-          >
-            {popup.message}
-          </DialogDescription>
-        </DialogHeader>
-
-        {images.length > 0 && (
-          <div className="flex flex-col gap-2 my-2">
-            {images.map((url, i) => (
-              <img
-                key={i}
-                src={url}
-                alt={`Popup image ${i + 1}`}
-                className="w-full rounded-md object-cover max-h-60"
-              />
-            ))}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="w-full max-w-lg mx-4 rounded-xl border bg-card text-card-foreground shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b bg-muted/40">
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm">
+              Alerts{unreadCount > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5">
+                  {unreadCount}
+                </span>
+              )}
+            </span>
           </div>
-        )}
-
-        <DialogFooter>
-          <Button
-            onClick={() => handleButtonClick(popup.button_url)}
-            className="w-full"
+          <button
+            onClick={() => setVisible(false)}
+            className="rounded-md p-1 hover:bg-muted transition-colors"
+            aria-label="Close alerts"
           >
-            {popup.button_text || "Got it"}
-          </Button>
-          {popups.length > 1 && (
-            <p className="text-xs text-center w-full mt-1 opacity-60">
-              {currentIndex + 1} of {popups.length}
-            </p>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Accordion list */}
+        <div className="max-h-[60vh] overflow-y-auto divide-y">
+          {popups.map((popup) => {
+            const isRead = readIds.has(popup.id);
+            const isOpen = expandedId === popup.id;
+            const images = Array.isArray(popup.image_urls) ? popup.image_urls : [];
+
+            return (
+              <div key={popup.id}>
+                {/* Trigger */}
+                <button
+                  onClick={() => toggleItem(popup.id)}
+                  className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/50 ${
+                    !isRead ? "bg-primary/5 font-semibold" : ""
+                  }`}
+                >
+                  {isRead ? (
+                    <MailOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  ) : (
+                    <Mail className="h-4 w-4 shrink-0 text-primary" />
+                  )}
+                  <span className="flex-1 text-sm truncate">{popup.title}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-2">
+                    {popup.popup_type}
+                  </span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Content */}
+                {isOpen && (
+                  <div
+                    className="px-5 pb-4 pt-1 text-sm animate-in fade-in slide-in-from-top-1 duration-200"
+                    style={{
+                      backgroundColor: popup.background_color || undefined,
+                      color: popup.text_color || undefined,
+                    }}
+                  >
+                    <p className="whitespace-pre-wrap mb-3">{popup.message}</p>
+
+                    {images.length > 0 && (
+                      <div className="flex flex-col gap-2 mb-3">
+                        {images.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`Popup image ${i + 1}`}
+                            className="w-full rounded-md object-cover max-h-48"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {popup.button_text && (
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          if (popup.button_url) {
+                            window.open(popup.button_url, "_blank", "noopener,noreferrer");
+                          }
+                        }}
+                      >
+                        {popup.button_text}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
