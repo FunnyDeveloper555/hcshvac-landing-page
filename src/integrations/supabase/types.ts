@@ -720,7 +720,7 @@ export type Database = {
           created_at: string
           display_order: number | null
           id: string
-          images: Json | null
+          image_urls: Json | null
           is_active: boolean | null
           message: string
           popup_type: string
@@ -736,7 +736,7 @@ export type Database = {
           created_at?: string
           display_order?: number | null
           id?: string
-          images?: Json | null
+          image_urls?: Json | null
           is_active?: boolean | null
           message?: string
           popup_type?: string
@@ -752,7 +752,7 @@ export type Database = {
           created_at?: string
           display_order?: number | null
           id?: string
-          images?: Json | null
+          image_urls?: Json | null
           is_active?: boolean | null
           message?: string
           popup_type?: string
