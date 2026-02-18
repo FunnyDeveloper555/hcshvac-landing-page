@@ -713,7 +713,7 @@ export type Database = {
       }
       company_popups: {
         Row: {
-          bg_color: string | null
+          background_color: string | null
           button_text: string | null
           button_url: string | null
           company_id: string
@@ -729,7 +729,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          bg_color?: string | null
+          background_color?: string | null
           button_text?: string | null
           button_url?: string | null
           company_id: string
@@ -745,7 +745,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          bg_color?: string | null
+          background_color?: string | null
           button_text?: string | null
           button_url?: string | null
           company_id?: string

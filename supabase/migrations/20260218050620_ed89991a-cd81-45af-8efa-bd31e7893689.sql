@@ -1,0 +1,1 @@
+ALTER TABLE public.company_popups RENAME COLUMN bg_color TO background_color;
