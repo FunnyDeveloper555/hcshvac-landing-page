@@ -16,6 +16,7 @@ import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
+import CompanyPopup from "@/components/company/CompanyPopup";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
@@ -187,6 +188,7 @@ const CompanyLanding = () => {
         "--ring": theme.colors.primary,
       } as React.CSSProperties}
     >
+      <CompanyPopup companyId={company.id} />
       <CompanyHeader 
         company={company} 
         theme={theme} 
