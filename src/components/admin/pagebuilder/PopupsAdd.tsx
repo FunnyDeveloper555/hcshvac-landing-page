@@ -12,9 +12,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowLeft, CalendarIcon, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const POPUP_TYPES = [
   { value: "promotional", label: "Promotional" },
@@ -23,8 +29,16 @@ const POPUP_TYPES = [
   { value: "seasonal", label: "Seasonal" },
 ] as const;
 
+const CONTENT_TYPES = [
+  { value: "text", label: "Text" },
+  { value: "image", label: "Image" },
+  { value: "video", label: "Video" },
+  { value: "html", label: "HTML" },
+] as const;
+
 const popupSchema = z.object({
   popup_type: z.string().min(1, "Type is required"),
+  content_type: z.string().min(1, "Content type is required"),
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
   button_text: z.string().optional(),
@@ -34,6 +48,11 @@ const popupSchema = z.object({
   image_urls: z.string().optional(),
   display_order: z.number(),
   is_active: z.boolean(),
+  publish_start_date: z.date().optional().nullable(),
+  publish_end_date: z.date().optional().nullable(),
+  file_url: z.string().optional(),
+  redirect_url: z.string().optional(),
+  destination_window: z.string(),
 });
 
 type PopupFormData = z.infer<typeof popupSchema>;
@@ -52,6 +71,7 @@ export default function PopupsAdd() {
     resolver: zodResolver(popupSchema),
     defaultValues: {
       popup_type: "promotional",
+      content_type: "text",
       title: "",
       message: "",
       button_text: "Got it",
@@ -61,6 +81,11 @@ export default function PopupsAdd() {
       image_urls: "",
       display_order: 0,
       is_active: true,
+      publish_start_date: null,
+      publish_end_date: null,
+      file_url: "",
+      redirect_url: "",
+      destination_window: "self",
     },
   });
 
@@ -106,6 +131,7 @@ export default function PopupsAdd() {
 
       form.reset({
         popup_type: existingItem.popup_type || "promotional",
+        content_type: existingItem.content_type || "text",
         title: existingItem.title || "",
         message: existingItem.message || "",
         button_text: existingItem.button_text || "Got it",
@@ -115,13 +141,17 @@ export default function PopupsAdd() {
         image_urls: imageUrlsStr,
         display_order: existingItem.display_order ?? 0,
         is_active: existingItem.is_active ?? true,
+        publish_start_date: existingItem.publish_start_date ? new Date(existingItem.publish_start_date) : null,
+        publish_end_date: existingItem.publish_end_date ? new Date(existingItem.publish_end_date) : null,
+        file_url: existingItem.file_url || "",
+        redirect_url: existingItem.redirect_url || "",
+        destination_window: existingItem.destination_window || "self",
       });
     }
   }, [existingItem, form]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: PopupFormData) => {
-      // Parse image_urls from comma-separated string to JSON array
       const imageUrlsArray = data.image_urls
         ? data.image_urls.split(",").map((url) => url.trim()).filter(Boolean)
         : [];
@@ -129,6 +159,7 @@ export default function PopupsAdd() {
       const payload = {
         company_id: companyId!,
         popup_type: data.popup_type,
+        content_type: data.content_type,
         title: data.title,
         message: data.message,
         button_text: data.button_text || "Got it",
@@ -138,6 +169,11 @@ export default function PopupsAdd() {
         image_urls: imageUrlsArray as any,
         display_order: data.display_order,
         is_active: data.is_active,
+        publish_start_date: data.publish_start_date ? data.publish_start_date.toISOString() : null,
+        publish_end_date: data.publish_end_date ? data.publish_end_date.toISOString() : null,
+        file_url: data.file_url || null,
+        redirect_url: data.redirect_url || null,
+        destination_window: data.destination_window,
       };
 
       if (isEditMode && editId) {
@@ -220,30 +256,58 @@ export default function PopupsAdd() {
               <CardDescription>Configure the popup type, content, and appearance</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="popup_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Popup Type *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {POPUP_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="popup_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Popup Type *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {POPUP_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="content_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Content Type *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select content type..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {CONTENT_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>
+                              {t.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>How the message content will be rendered</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -319,6 +383,158 @@ export default function PopupsAdd() {
                       />
                     </FormControl>
                     <FormDescription>Add one or more image URLs separated by commas</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Publish Date Range */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Publish Schedule</CardTitle>
+              <CardDescription>Set a date range for when this popup should be visible</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="publish_start_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Start Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? format(field.value, "PPP") : <span>Pick a start date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ?? undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Leave empty for no start restriction</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="publish_end_date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>End Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? format(field.value, "PPP") : <span>Pick an end date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ?? undefined}
+                            onSelect={field.onChange}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormDescription>Leave empty for no end restriction</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Links & Files */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Links & Attachments</CardTitle>
+              <CardDescription>Configure file attachments and redirect behavior</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="file_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Attach File URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/document.pdf" {...field} />
+                    </FormControl>
+                    <FormDescription>URL to a downloadable file attachment</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="redirect_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Redirect URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/page" {...field} />
+                    </FormControl>
+                    <FormDescription>URL to redirect when the popup action is triggered</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="destination_window"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Destination Window</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        className="flex gap-6"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="self" id="dest-self" />
+                          <Label htmlFor="dest-self">Same Window</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="new" id="dest-new" />
+                          <Label htmlFor="dest-new">New Window</Label>
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormDescription>Where redirect and button URLs will open</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
