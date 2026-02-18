@@ -226,6 +226,7 @@ const companySubmenus: MenuItem[] = [
   { title: "Coupons", url: "/admin/page-builder/accordion-list/coupon", icon: FileText },
   { title: "Partner Listings", url: "/admin/page-builder/partner-listings", icon: Building2 },
   { title: "Marquee", url: "/admin/page-builder/marquee", icon: Layout },
+  { title: "Popups", url: "/admin/page-builder/popups", icon: Eye },
   { title: "CTA Icons", url: "/admin/page-builder/cta-icons", icon: MousePointer },
   { title: "Campaigns", url: "/admin/page-builder/campaigns", icon: Layers },
   { title: "Templates", url: "/admin/page-builder/templates", icon: PageStack },
