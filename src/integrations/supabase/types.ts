@@ -711,6 +711,62 @@ export type Database = {
           },
         ]
       }
+      company_popups: {
+        Row: {
+          bg_color: string | null
+          button_text: string | null
+          button_url: string | null
+          company_id: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          message: string
+          popup_type: string
+          text_color: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bg_color?: string | null
+          button_text?: string | null
+          button_url?: string | null
+          company_id: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          popup_type?: string
+          text_color?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          bg_color?: string | null
+          button_text?: string | null
+          button_url?: string | null
+          company_id?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          popup_type?: string
+          text_color?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_popups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cta_icons: {
         Row: {
           alt_text: string
