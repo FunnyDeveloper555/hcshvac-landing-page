@@ -58,6 +58,8 @@ import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsL
 import PartnerListingsAdd from "@/components/admin/pagebuilder/PartnerListingsAdd";
 import MarqueeList from "@/components/admin/pagebuilder/MarqueeList";
 import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
+import PopupsList from "@/components/admin/pagebuilder/PopupsList";
+import PopupsAdd from "@/components/admin/pagebuilder/PopupsAdd";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import UserRolesList from "@/components/admin/UserRolesList";
 // Consolidated tabbed components
@@ -211,6 +213,9 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/marquee" element={<MarqueeList />} />
               <Route path="/page-builder/company/:companyId/marquee/add" element={<MarqueeAdd />} />
               <Route path="/page-builder/company/:companyId/marquee/edit" element={<MarqueeAdd />} />
+              <Route path="/page-builder/company/:companyId/popups" element={<PopupsList />} />
+              <Route path="/page-builder/company/:companyId/popups/add" element={<PopupsAdd />} />
+              <Route path="/page-builder/company/:companyId/popups/edit" element={<PopupsAdd />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
