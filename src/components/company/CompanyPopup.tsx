@@ -55,6 +55,18 @@ function openUrl(url: string, destination: string) {
 function PopupContent({ popup }: { popup: Popup }) {
   const images = Array.isArray(popup.image_urls) ? popup.image_urls : [];
 
+  // For video type, prefer file_url as the video source, then fall back to image_urls
+  const videoSources = popup.file_url
+    ? [popup.file_url]
+    : images;
+
+  // For image type, use image_urls first, then fall back to file_url as a single image
+  const imageSources = images.length > 0
+    ? images
+    : popup.file_url
+      ? [popup.file_url]
+      : [];
+
   const renderMessage = () => {
     switch (popup.content_type) {
       case "html":
@@ -62,8 +74,8 @@ function PopupContent({ popup }: { popup: Popup }) {
       case "image":
         return (
           <div className="flex flex-col gap-2 mb-3">
-            {images.length > 0 ? (
-              images.map((url, i) => (
+            {imageSources.length > 0 ? (
+              imageSources.map((url, i) => (
                 <img key={i} src={url} alt={`Popup image ${i + 1}`} className="w-full rounded-md object-cover max-h-48" />
               ))
             ) : (
@@ -74,9 +86,9 @@ function PopupContent({ popup }: { popup: Popup }) {
       case "video":
         return (
           <div className="mb-3">
-            {images.length > 0 ? (
-              images.map((url, i) => (
-                <video key={i} src={url} controls className="w-full rounded-md max-h-48" />
+            {videoSources.length > 0 ? (
+              videoSources.map((url, i) => (
+                <video key={i} src={url} controls playsInline className="w-full rounded-md max-h-64" />
               ))
             ) : (
               <p className="whitespace-pre-wrap">{popup.message}</p>
