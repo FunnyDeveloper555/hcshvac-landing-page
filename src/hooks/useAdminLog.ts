@@ -24,7 +24,8 @@ type EntityType =
   | "location_profile"
   | "photo"
   | "partner_listing"
-  | "company_marquee";
+  | "company_marquee"
+  | "company_popup";
 
 type ActionType = 
   | "create" 
