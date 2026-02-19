@@ -50,6 +50,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_modules: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          label: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_type: Database["public"]["Enums"]["appointment_type"]
@@ -1655,6 +1691,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      role_module_assignments: {
+        Row: {
+          can_edit: boolean | null
+          can_view: boolean | null
+          created_at: string
+          id: string
+          module_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_module_assignments_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "admin_modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_bookings: {
         Row: {
