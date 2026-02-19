@@ -25,7 +25,9 @@ type EntityType =
   | "photo"
   | "partner_listing"
   | "company_marquee"
-  | "company_popup";
+  | "company_popup"
+  | "admin_module"
+  | "role_module_assignment";
 
 type ActionType = 
   | "create" 

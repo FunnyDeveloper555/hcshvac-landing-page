@@ -2,7 +2,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from "react-router-dom";
 import UsersList from "./UsersList";
 import UserGroupsList from "./UserGroupsList";
-import { Users, FolderOpen } from "lucide-react";
+import UserRolesModules from "./UserRolesModules";
+import { Users, FolderOpen, Shield } from "lucide-react";
 
 export default function UsersAdmin() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -23,12 +24,19 @@ export default function UsersAdmin() {
           <FolderOpen className="h-4 w-4" />
           Groups
         </TabsTrigger>
+        <TabsTrigger value="roles" className="gap-2">
+          <Shield className="h-4 w-4" />
+          Roles & Modules
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="users">
         <UsersList />
       </TabsContent>
       <TabsContent value="groups">
         <UserGroupsList />
+      </TabsContent>
+      <TabsContent value="roles">
+        <UserRolesModules />
       </TabsContent>
     </Tabs>
   );
