@@ -61,7 +61,7 @@ import MarqueeAdd from "@/components/admin/pagebuilder/MarqueeAdd";
 import PopupsList from "@/components/admin/pagebuilder/PopupsList";
 import PopupsAdd from "@/components/admin/pagebuilder/PopupsAdd";
 import AdminDashboard from "@/components/admin/AdminDashboard";
-import UserRolesList from "@/components/admin/UserRolesList";
+import UsersAdmin from "@/components/admin/users/UsersAdmin";
 // Consolidated tabbed components
 import CompanyDashboard from "@/components/admin/pagebuilder/CompanyDashboard";
 import HvacTabbed from "@/components/admin/pagebuilder/HvacTabbed";
@@ -220,7 +220,7 @@ const Admin = () => {
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
-              <Route path="/users" element={<UserRolesList />} />
+              <Route path="/users" element={<UsersAdmin />} />
             </Routes>
           </main>
         </div>
