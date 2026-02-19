@@ -208,6 +208,14 @@ const staticMenuItems: MenuItem[] = [
       { title: "Activity Log", url: "/admin/logs/list", icon: List },
     ]
   },
+  {
+    title: "User Management",
+    icon: Shield,
+    children: [
+      { title: "Users & Roles", url: "/admin/users", icon: Users },
+      { title: "User Groups", url: "/admin/users?tab=groups", icon: FolderOpen },
+    ],
+  },
 ];
 
 // Simplified company submenus - cascading items merged into single tabbed entries
