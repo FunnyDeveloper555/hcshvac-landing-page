@@ -62,6 +62,7 @@ import PopupsList from "@/components/admin/pagebuilder/PopupsList";
 import PopupsAdd from "@/components/admin/pagebuilder/PopupsAdd";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import UsersAdmin from "@/components/admin/users/UsersAdmin";
+import FileManager from "@/components/admin/filemanager/FileManager";
 // Consolidated tabbed components
 import CompanyDashboard from "@/components/admin/pagebuilder/CompanyDashboard";
 import HvacTabbed from "@/components/admin/pagebuilder/HvacTabbed";
@@ -221,6 +222,7 @@ const Admin = () => {
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
               <Route path="/users" element={<UsersAdmin />} />
+              <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>
         </div>
