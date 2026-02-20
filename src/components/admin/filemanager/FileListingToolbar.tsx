@@ -1,5 +1,9 @@
-import { Upload, Grid3X3, List, ClipboardPaste, Trash2 } from "lucide-react";
+import {
+  Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
+  ArrowUpDown, ArrowUp, ArrowDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,7 +12,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import React from "react";
+import type { SortField, SortDirection } from "@/hooks/useFileManager";
 
 interface FileListingToolbarProps {
   breadcrumbs: { id: string | null; name: string }[];
@@ -20,6 +31,14 @@ interface FileListingToolbarProps {
   onPaste: () => void;
   selectedCount: number;
   onDeleteSelected: () => void;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSortChange: (field: SortField) => void;
+  onSortDirectionToggle: () => void;
+  canUndo: boolean;
+  onUndo: () => void;
 }
 
 export function FileListingToolbar({
@@ -32,7 +51,17 @@ export function FileListingToolbar({
   onPaste,
   selectedCount,
   onDeleteSelected,
+  searchQuery,
+  onSearchChange,
+  sortField,
+  sortDirection,
+  onSortChange,
+  onSortDirectionToggle,
+  canUndo,
+  onUndo,
 }: FileListingToolbarProps) {
+  const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
+
   return (
     <div className="flex flex-col gap-2 px-4 py-2 border-b">
       <div className="flex items-center justify-between">
@@ -60,11 +89,7 @@ export function FileListingToolbar({
 
         <div className="flex items-center gap-1">
           {selectedCount > 0 && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onDeleteSelected}
-            >
+            <Button variant="destructive" size="sm" onClick={onDeleteSelected}>
               <Trash2 className="h-4 w-4 mr-1" />
               Delete ({selectedCount})
             </Button>
@@ -75,10 +100,41 @@ export function FileListingToolbar({
               Paste
             </Button>
           )}
+          {canUndo && (
+            <Button variant="outline" size="sm" onClick={onUndo} title="Undo last action">
+              <Undo2 className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={onUploadClick}>
             <Upload className="h-4 w-4 mr-1" />
             Upload
           </Button>
+
+          {/* Sort dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <ArrowUpDown className="h-4 w-4 mr-1" />
+                Sort
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {(["name", "date", "size"] as SortField[]).map((field) => (
+                <DropdownMenuItem
+                  key={field}
+                  onClick={() => onSortChange(field)}
+                  className={sortField === field ? "font-semibold" : ""}
+                >
+                  {field === "name" ? "Name" : field === "date" ? "Date Modified" : "Size"}
+                  {sortField === field && <SortIcon className="h-3 w-3 ml-auto" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem onClick={onSortDirectionToggle}>
+                {sortDirection === "asc" ? "↓ Descending" : "↑ Ascending"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <div className="flex border rounded-md">
             <button
               onClick={() => onViewModeChange("grid")}
@@ -94,6 +150,17 @@ export function FileListingToolbar({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Search bar */}
+      <div className="relative max-w-xs">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search files…"
+          className="pl-8 h-8 text-sm"
+        />
       </div>
     </div>
   );

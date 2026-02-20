@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminLog } from "./useAdminLog";
@@ -33,12 +33,47 @@ export interface ClipboardItem {
   action: ClipboardAction;
 }
 
+export type SortField = "name" | "date" | "size";
+export type SortDirection = "asc" | "desc";
+
+export interface UndoEntry {
+  label: string;
+  undo: () => Promise<void>;
+}
+
+export type ConflictResolution = "replace" | "rename" | null;
+export interface PasteConflict {
+  existingFile: FileItem;
+  incomingName: string;
+}
+
 export function useFileManager() {
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [clipboard, setClipboard] = useState<ClipboardItem | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+
+  // Search & Sort
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Undo stack
+  const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
+  const pushUndo = useCallback((entry: UndoEntry) => {
+    setUndoStack((prev) => [entry, ...prev].slice(0, 20));
+  }, []);
+
+  // Paste conflict
+  const [pasteConflict, setPasteConflict] = useState<PasteConflict | null>(null);
+  const pasteConflictResolveRef = useRef<((resolution: ConflictResolution) => void) | null>(null);
+
+  const resolvePasteConflict = useCallback((resolution: ConflictResolution) => {
+    pasteConflictResolveRef.current?.(resolution);
+    pasteConflictResolveRef.current = null;
+    setPasteConflict(null);
+  }, []);
 
   // Fetch all folders (for tree)
   const { data: allFolders = [], isLoading: foldersLoading } = useQuery({
@@ -54,7 +89,7 @@ export function useFileManager() {
   });
 
   // Fetch files in current folder
-  const { data: files = [], isLoading: filesLoading } = useQuery({
+  const { data: rawFiles = [], isLoading: filesLoading } = useQuery({
     queryKey: ["file-manager-files", currentFolderId],
     queryFn: async () => {
       let query = supabase.from("file_items").select("*");
@@ -68,6 +103,23 @@ export function useFileManager() {
       return data as FileItem[];
     },
   });
+
+  // Filter & sort files
+  const files = (() => {
+    let result = rawFiles;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((f) => f.name.toLowerCase().includes(q));
+    }
+    result = [...result].sort((a, b) => {
+      let cmp = 0;
+      if (sortField === "name") cmp = a.name.localeCompare(b.name);
+      else if (sortField === "date") cmp = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+      else if (sortField === "size") cmp = (a.file_size ?? 0) - (b.file_size ?? 0);
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+    return result;
+  })();
 
   // Get subfolders of current folder
   const currentSubfolders = allFolders.filter(
@@ -108,6 +160,14 @@ export function useFileManager() {
       queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
       logAction("create", "settings", data.id, { folder_name: data.name });
       toast.success(`Folder "${data.name}" created`);
+      pushUndo({
+        label: `Create folder "${data.name}"`,
+        undo: async () => {
+          await supabase.from("file_folders").delete().eq("id", data.id);
+          queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
+          toast.success(`Undid create folder "${data.name}"`);
+        },
+      });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -115,16 +175,26 @@ export function useFileManager() {
   // Rename folder
   const renameFolder = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data: old } = await supabase.from("file_folders").select("name").eq("id", id).single();
       const { error } = await supabase
         .from("file_folders")
         .update({ name })
         .eq("id", id);
       if (error) throw error;
+      return { oldName: old?.name ?? name };
     },
-    onSuccess: (_, { id, name }) => {
+    onSuccess: ({ oldName }, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
       logAction("update", "settings", id, { folder_name: name, action_detail: "rename_folder" });
       toast.success(`Folder renamed to "${name}"`);
+      pushUndo({
+        label: `Rename folder to "${name}"`,
+        undo: async () => {
+          await supabase.from("file_folders").update({ name: oldName }).eq("id", id);
+          queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
+          toast.success(`Undid rename, restored "${oldName}"`);
+        },
+      });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -132,7 +202,6 @@ export function useFileManager() {
   // Delete folder
   const deleteFolder = useMutation({
     mutationFn: async (id: string) => {
-      // Recursively collect all file storage paths in this folder tree
       const pathsToDelete: string[] = [];
       const collectPaths = async (folderId: string) => {
         const { data: files } = await supabase
@@ -149,11 +218,9 @@ export function useFileManager() {
         }
       };
       await collectPaths(id);
-      // Delete storage files
       if (pathsToDelete.length > 0) {
         await supabase.storage.from("file-manager").remove(pathsToDelete);
       }
-      // CASCADE will handle DB children
       const { error } = await supabase
         .from("file_folders")
         .delete()
@@ -227,16 +294,26 @@ export function useFileManager() {
   // Rename file
   const renameFile = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data: old } = await supabase.from("file_items").select("name").eq("id", id).single();
       const { error } = await supabase
         .from("file_items")
         .update({ name })
         .eq("id", id);
       if (error) throw error;
+      return { oldName: old?.name ?? name };
     },
-    onSuccess: (_, { id, name }) => {
+    onSuccess: ({ oldName }, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
       logAction("update", "settings", id, { file_name: name, action_detail: "rename_file" });
       toast.success(`File renamed to "${name}"`);
+      pushUndo({
+        label: `Rename file to "${name}"`,
+        undo: async () => {
+          await supabase.from("file_items").update({ name: oldName }).eq("id", id);
+          queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
+          toast.success(`Undid rename, restored "${oldName}"`);
+        },
+      });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -266,13 +343,67 @@ export function useFileManager() {
     onError: (err: Error) => toast.error(err.message),
   });
 
-  // Paste (copy or move)
+  // Helper: generate unique name
+  const generateUniqueName = (name: string, existingNames: string[]) => {
+    const dotIdx = name.lastIndexOf(".");
+    const base = dotIdx > 0 ? name.slice(0, dotIdx) : name;
+    const ext = dotIdx > 0 ? name.slice(dotIdx) : "";
+    let counter = 1;
+    let newName = `${base} (${counter})${ext}`;
+    while (existingNames.includes(newName)) {
+      counter++;
+      newName = `${base} (${counter})${ext}`;
+    }
+    return newName;
+  };
+
+  // Paste (copy or move) with conflict detection
   const pasteFile = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (resolution?: ConflictResolution | void) => {
       if (!clipboard) throw new Error("Nothing in clipboard");
       const { item, action } = clipboard;
+
+      // Check for name conflict in destination
+      const { data: destFiles } = await supabase
+        .from("file_items")
+        .select("id, name")
+        .eq("folder_id", currentFolderId ?? "")
+        .or(currentFolderId ? `folder_id.eq.${currentFolderId}` : "folder_id.is.null");
+
+      // Re-query properly
+      let queryBuilder = supabase.from("file_items").select("id, name");
+      if (currentFolderId) {
+        queryBuilder = queryBuilder.eq("folder_id", currentFolderId);
+      } else {
+        queryBuilder = queryBuilder.is("folder_id", null);
+      }
+      const { data: filesInDest } = await queryBuilder;
+      const existingFile = filesInDest?.find((f) => f.name === item.name && f.id !== item.id);
+
+      if (existingFile && !resolution) {
+        // Ask the user
+        const userChoice = await new Promise<ConflictResolution>((resolve) => {
+          pasteConflictResolveRef.current = resolve;
+          setPasteConflict({ existingFile: existingFile as unknown as FileItem, incomingName: item.name });
+        });
+        if (!userChoice) throw new Error("Paste cancelled");
+        resolution = userChoice;
+      }
+
+      let finalName = item.name;
+      if (resolution === "replace" && existingFile) {
+        // Delete the existing file first
+        const { data: fullExisting } = await supabase.from("file_items").select("storage_path").eq("id", existingFile.id).single();
+        if (fullExisting) {
+          await supabase.storage.from("file-manager").remove([fullExisting.storage_path]);
+        }
+        await supabase.from("file_items").delete().eq("id", existingFile.id);
+      } else if (resolution === "rename" || (existingFile && resolution !== "replace")) {
+        const names = filesInDest?.map((f) => f.name) ?? [];
+        finalName = generateUniqueName(item.name, names);
+      }
+
       if (action === "copy") {
-        // Duplicate storage file
         const ext = item.name.split(".").pop() || "";
         const newPath = `${crypto.randomUUID()}.${ext}`;
         const { data: blob } = await supabase.storage
@@ -288,7 +419,7 @@ export function useFileManager() {
           .getPublicUrl(newPath);
         const { data: { user } } = await supabase.auth.getUser();
         const { error: dbErr } = await supabase.from("file_items").insert({
-          name: item.name,
+          name: finalName,
           folder_id: currentFolderId,
           storage_path: newPath,
           file_url: urlData.publicUrl,
@@ -298,25 +429,29 @@ export function useFileManager() {
         });
         if (dbErr) throw dbErr;
       } else {
-        // Move: update folder_id
+        // Move: update folder_id and possibly name
+        const updateData: Record<string, unknown> = { folder_id: currentFolderId };
+        if (finalName !== item.name) updateData.name = finalName;
         const { error } = await supabase
           .from("file_items")
-          .update({ folder_id: currentFolderId })
+          .update(updateData)
           .eq("id", item.id);
         if (error) throw error;
       }
+      return { action, finalName };
     },
-    onSuccess: () => {
-      const action = clipboard?.action;
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
       logAction("update", "settings", clipboard?.item.id, {
         file_name: clipboard?.item.name || "",
-        action_detail: action === "copy" ? "copy_file" : "move_file",
+        action_detail: result?.action === "copy" ? "copy_file" : "move_file",
       });
       setClipboard(null);
-      toast.success(action === "copy" ? "File copied" : "File moved");
+      toast.success(result?.action === "copy" ? "File copied" : "File moved");
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      if (err.message !== "Paste cancelled") toast.error(err.message);
+    },
   });
 
   // Move file via drag-drop
@@ -328,15 +463,26 @@ export function useFileManager() {
       fileId: string;
       targetFolderId: string | null;
     }) => {
+      const { data: file } = await supabase.from("file_items").select("folder_id").eq("id", fileId).single();
+      const oldFolderId = file?.folder_id ?? null;
       const { error } = await supabase
         .from("file_items")
         .update({ folder_id: targetFolderId })
         .eq("id", fileId);
       if (error) throw error;
+      return { oldFolderId };
     },
-    onSuccess: () => {
+    onSuccess: ({ oldFolderId }, { fileId }) => {
       queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
       toast.success("File moved");
+      pushUndo({
+        label: "Move file",
+        undo: async () => {
+          await supabase.from("file_items").update({ folder_id: oldFolderId }).eq("id", fileId);
+          queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
+          toast.success("Undid file move");
+        },
+      });
     },
     onError: (err: Error) => toast.error(err.message),
   });
@@ -351,25 +497,50 @@ export function useFileManager() {
       targetParentId: string | null;
     }) => {
       if (folderId === targetParentId) throw new Error("Cannot move folder into itself");
-      // Check for circular reference
       let check = targetParentId;
       while (check) {
         if (check === folderId) throw new Error("Cannot move folder into its own descendant");
         const parent = allFolders.find((f) => f.id === check);
         check = parent?.parent_id ?? null;
       }
+      const { data: folder } = await supabase.from("file_folders").select("parent_id").eq("id", folderId).single();
+      const oldParentId = folder?.parent_id ?? null;
       const { error } = await supabase
         .from("file_folders")
         .update({ parent_id: targetParentId })
         .eq("id", folderId);
       if (error) throw error;
+      return { oldParentId };
     },
-    onSuccess: () => {
+    onSuccess: ({ oldParentId }, { folderId }) => {
       queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
       toast.success("Folder moved");
+      pushUndo({
+        label: "Move folder",
+        undo: async () => {
+          await supabase.from("file_folders").update({ parent_id: oldParentId }).eq("id", folderId);
+          queryClient.invalidateQueries({ queryKey: ["file-manager-folders"] });
+          toast.success("Undid folder move");
+        },
+      });
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  // Undo
+  const performUndo = useCallback(async () => {
+    const entry = undoStack[0];
+    if (!entry) {
+      toast.info("Nothing to undo");
+      return;
+    }
+    setUndoStack((prev) => prev.slice(1));
+    try {
+      await entry.undo();
+    } catch (err: unknown) {
+      toast.error(`Undo failed: ${(err as Error).message}`);
+    }
+  }, [undoStack]);
 
   const copyToClipboard = (item: FileItem) => {
     setClipboard({ type: "file", item, action: "copy" });
@@ -412,6 +583,18 @@ export function useFileManager() {
 
   const clearSelection = () => setSelectedFiles(new Set());
 
+  // Check if any mutation is pending
+  const isProcessing =
+    createFolder.isPending ||
+    renameFolder.isPending ||
+    deleteFolder.isPending ||
+    uploadFiles.isPending ||
+    renameFile.isPending ||
+    deleteFiles.isPending ||
+    pasteFile.isPending ||
+    moveFileToFolder.isPending ||
+    moveFolderToFolder.isPending;
+
   return {
     currentFolderId,
     setCurrentFolderId,
@@ -436,5 +619,17 @@ export function useFileManager() {
     selectedFiles,
     toggleFileSelection,
     clearSelection,
+    // New
+    searchQuery,
+    setSearchQuery,
+    sortField,
+    setSortField,
+    sortDirection,
+    setSortDirection,
+    undoStack,
+    performUndo,
+    pasteConflict,
+    resolvePasteConflict,
+    isProcessing,
   };
 }

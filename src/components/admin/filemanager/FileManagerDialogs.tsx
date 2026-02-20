@@ -21,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Upload } from "lucide-react";
-import type { FileItem, FileFolder } from "@/hooks/useFileManager";
+import type { FileItem } from "@/hooks/useFileManager";
+import type { ConflictResolution, PasteConflict } from "@/hooks/useFileManager";
 
 // --- New Folder Dialog ---
 export function NewFolderDialog({
@@ -310,5 +311,39 @@ export function PreviewDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// --- Paste Conflict Dialog ---
+export function PasteConflictDialog({
+  open,
+  conflict,
+  onResolve,
+}: {
+  open: boolean;
+  conflict: PasteConflict | null;
+  onResolve: (resolution: ConflictResolution) => void;
+}) {
+  if (!conflict) return null;
+  return (
+    <AlertDialog open={open} onOpenChange={(o) => { if (!o) onResolve(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>File Already Exists</AlertDialogTitle>
+          <AlertDialogDescription>
+            A file named <strong>"{conflict.incomingName}"</strong> already exists in this folder. What would you like to do?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => onResolve(null)}>Cancel</AlertDialogCancel>
+          <Button variant="outline" onClick={() => onResolve("rename")}>
+            Keep Both (Rename)
+          </Button>
+          <Button variant="destructive" onClick={() => onResolve("replace")}>
+            Replace
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

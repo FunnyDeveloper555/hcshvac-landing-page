@@ -9,8 +9,10 @@ import {
   DeleteConfirmDialog,
   UploadDialog,
   PreviewDialog,
+  PasteConflictDialog,
 } from "./FileManagerDialogs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -39,6 +41,10 @@ export default function FileManager() {
   const handleFileClick = (fileId: string, e: React.MouseEvent) => {
     const allIds = fm.files.map((f) => f.id);
     fm.toggleFileSelection(fileId, e.ctrlKey || e.metaKey, e.shiftKey, allIds);
+  };
+
+  const handleFileDoubleClick = (file: FileItem) => {
+    setPreviewFile(file);
   };
 
   const handleDownload = (file: FileItem) => {
@@ -78,16 +84,13 @@ export default function FileManager() {
     [fm.moveFileToFolder, fm.moveFolderToFolder]
   );
 
-  // Handle drop on file listing area (for OS drag-drop upload)
   const handleDropOnListing = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      // Check if it's an OS file drop
       if (e.dataTransfer.files.length > 0) {
         fm.uploadFiles.mutate(Array.from(e.dataTransfer.files));
         return;
       }
-      // Internal drag: move to current folder
       handleDropOnFolder(fm.currentFolderId, e.dataTransfer);
     },
     [fm.currentFolderId, fm.uploadFiles, handleDropOnFolder]
@@ -133,10 +136,20 @@ export default function FileManager() {
         {/* File Listing Panel */}
         <ResizablePanel defaultSize={78}>
           <div
-            className="h-full flex flex-col bg-card"
+            className="h-full flex flex-col bg-card relative"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDropOnListing}
           >
+            {/* Global processing overlay */}
+            {fm.isProcessing && (
+              <div className="absolute inset-0 bg-background/50 z-50 flex items-center justify-center">
+                <div className="flex items-center gap-2 bg-card px-4 py-3 rounded-lg shadow-lg border">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <span className="text-sm font-medium">Processing…</span>
+                </div>
+              </div>
+            )}
+
             <FileListingToolbar
               breadcrumbs={fm.getBreadcrumbs()}
               onNavigate={fm.setCurrentFolderId}
@@ -147,6 +160,23 @@ export default function FileManager() {
               onPaste={() => fm.pasteFile.mutate()}
               selectedCount={fm.selectedFiles.size}
               onDeleteSelected={handleDeleteSelected}
+              searchQuery={fm.searchQuery}
+              onSearchChange={fm.setSearchQuery}
+              sortField={fm.sortField}
+              sortDirection={fm.sortDirection}
+              onSortChange={(field) => {
+                if (fm.sortField === field) {
+                  fm.setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+                } else {
+                  fm.setSortField(field);
+                  fm.setSortDirection("asc");
+                }
+              }}
+              onSortDirectionToggle={() =>
+                fm.setSortDirection((d) => (d === "asc" ? "desc" : "asc"))
+              }
+              canUndo={fm.undoStack.length > 0}
+              onUndo={fm.performUndo}
             />
             {fm.filesLoading ? (
               <div className="p-4 grid grid-cols-6 gap-3">
@@ -161,6 +191,7 @@ export default function FileManager() {
                 selectedFiles={fm.selectedFiles}
                 viewMode={viewMode}
                 onFileClick={handleFileClick}
+                onFileDoubleClick={handleFileDoubleClick}
                 onFolderClick={fm.setCurrentFolderId}
                 onCopy={fm.copyToClipboard}
                 onCut={fm.cutToClipboard}
@@ -248,6 +279,12 @@ export default function FileManager() {
         open={!!previewFile}
         onOpenChange={(open) => !open && setPreviewFile(null)}
         file={previewFile}
+      />
+
+      <PasteConflictDialog
+        open={!!fm.pasteConflict}
+        conflict={fm.pasteConflict}
+        onResolve={fm.resolvePasteConflict}
       />
     </div>
   );
