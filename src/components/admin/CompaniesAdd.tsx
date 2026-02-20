@@ -7,13 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { Loader2, Upload, X, ChevronDown, ChevronUp, Plus, FolderOpen } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
 import { Textarea } from "@/components/ui/textarea";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 
 interface City {
   id: string;
@@ -164,6 +165,7 @@ const CompaniesAdd = () => {
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoPickerOpen, setLogoPickerOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -761,6 +763,7 @@ const CompaniesAdd = () => {
   }
 
   return (
+    <>
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Company" : "Add New Company"}</h2>
       
@@ -915,7 +918,7 @@ const CompaniesAdd = () => {
                   className="w-16 h-16 object-contain border rounded"
                 />
               )}
-              <div className="flex-1">
+              <div className="flex-1 flex gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -940,6 +943,14 @@ const CompaniesAdd = () => {
                       Upload Logo
                     </>
                   )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLogoPickerOpen(true)}
+                >
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  Browse Files
                 </Button>
               </div>
             </div>
@@ -2002,6 +2013,17 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
     </div>
+
+      <FileManagerPicker
+        open={logoPickerOpen}
+        onOpenChange={setLogoPickerOpen}
+        accept="image/*"
+        title="Select Logo from File Manager"
+        onSelect={(fileUrl) => {
+          setFormData({ ...formData, logo_url: fileUrl });
+        }}
+      />
+    </>
   );
 };
 

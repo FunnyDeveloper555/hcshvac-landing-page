@@ -8,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { Plus, Trash2, Loader2, FolderOpen } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 
 const industrySchema = z.object({
   id: z.string().optional(),

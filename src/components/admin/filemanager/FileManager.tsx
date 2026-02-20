@@ -177,6 +177,26 @@ export default function FileManager() {
               }
               canUndo={fm.undoStack.length > 0}
               onUndo={fm.performUndo}
+              onPreviewSelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) setPreviewFile(selected);
+              }}
+              onDownloadSelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) handleDownload(selected);
+              }}
+              onCopySelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) fm.copyToClipboard(selected);
+              }}
+              onCutSelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) fm.cutToClipboard(selected);
+              }}
+              onRenameSelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) setRenameTarget({ type: "file", id: selected.id, name: selected.name });
+              }}
             />
             {fm.filesLoading ? (
               <div className="p-4 grid grid-cols-6 gap-3">
