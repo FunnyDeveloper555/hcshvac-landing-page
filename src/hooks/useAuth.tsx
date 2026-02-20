@@ -25,6 +25,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasLoggedLogin = useRef(false);
 
@@ -43,13 +44,14 @@ export const useAuth = () => {
           }, 0);
         }
         
-        // Check admin status after state is set
+        // Check roles after state is set
         if (session?.user) {
           setTimeout(() => {
-            checkAdminStatus(session.user.id);
+            checkUserRoles(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsModerator(false);
           setLoading(false);
         }
       }
@@ -61,7 +63,7 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminStatus(session.user.id);
+        checkUserRoles(session.user.id);
       } else {
         setLoading(false);
       }
@@ -70,22 +72,24 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId: string) => {
+  const checkUserRoles = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
+        .eq("user_id", userId);
 
       if (!error && data) {
-        setIsAdmin(true);
+        const roles = data.map((r) => r.role);
+        setIsAdmin(roles.includes("admin"));
+        setIsModerator(roles.includes("moderator"));
       } else {
         setIsAdmin(false);
+        setIsModerator(false);
       }
     } catch (error) {
       setIsAdmin(false);
+      setIsModerator(false);
     } finally {
       setLoading(false);
     }
@@ -100,5 +104,7 @@ export const useAuth = () => {
     await supabase.auth.signOut();
   };
 
-  return { user, session, isAdmin, loading, signOut };
+  const hasAdminAccess = isAdmin || isModerator;
+
+  return { user, session, isAdmin, isModerator, hasAdminAccess, loading, signOut };
 };

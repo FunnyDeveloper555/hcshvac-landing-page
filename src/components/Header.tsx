@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, hasAdminAccess, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleAuthClick = () => {
@@ -32,7 +32,7 @@ const Header = () => {
               <span className="font-semibold">(555) 123-4567</span>
             </a>
             
-            {isAdmin && (
+            {hasAdminAccess && (
               <Button 
                 variant="outline" 
                 size="sm"
