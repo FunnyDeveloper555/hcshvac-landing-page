@@ -16,6 +16,7 @@ interface FileGridProps {
   selectedFiles: Set<string>;
   viewMode: "grid" | "list";
   onFileClick: (fileId: string, e: React.MouseEvent) => void;
+  onFileDoubleClick: (file: FileItem) => void;
   onFolderClick: (folderId: string) => void;
   onCopy: (file: FileItem) => void;
   onCut: (file: FileItem) => void;
@@ -54,6 +55,7 @@ export function FileGrid({
   selectedFiles,
   viewMode,
   onFileClick,
+  onFileDoubleClick,
   onFolderClick,
   onCopy,
   onCut,
@@ -126,6 +128,7 @@ export function FileGrid({
                     selected ? "bg-primary/10" : "hover:bg-muted/50"
                   )}
                   onClick={(e) => onFileClick(file.id, e)}
+                  onDoubleClick={() => onFileDoubleClick(file)}
                   draggable
                   onDragStart={(e) => {
                     e.dataTransfer.setData("application/fm-file", file.id);
@@ -215,6 +218,7 @@ export function FileGrid({
                       : "hover:bg-muted border-transparent hover:border-border"
                   )}
                   onClick={(e) => onFileClick(file.id, e)}
+                  onDoubleClick={() => onFileDoubleClick(file)}
                   draggable
                   onDragStart={(e) => {
                     e.dataTransfer.setData("application/fm-file", file.id);
