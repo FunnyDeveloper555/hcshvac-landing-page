@@ -656,6 +656,65 @@ export type Database = {
           },
         ]
       }
+      company_domains: {
+        Row: {
+          company_id: string
+          created_at: string
+          domain_name: string
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          record_type: string
+          ssl_status: string
+          status: string
+          subdomain: string | null
+          target_ip: string
+          txt_verify_value: string | null
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          domain_name: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          record_type?: string
+          ssl_status?: string
+          status?: string
+          subdomain?: string | null
+          target_ip?: string
+          txt_verify_value?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          domain_name?: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          record_type?: string
+          ssl_status?: string
+          status?: string
+          subdomain?: string | null
+          target_ip?: string
+          txt_verify_value?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_domains_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_images: {
         Row: {
           alt_text: string
