@@ -71,17 +71,17 @@ import HeaderMenusTabbed from "@/components/admin/pagebuilder/HeaderMenusTabbed"
 import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
 
 const Admin = () => {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, hasAdminAccess, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && (!user || !hasAdminAccess)) {
       navigate("/auth");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, hasAdminAccess, loading, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -98,7 +98,7 @@ const Admin = () => {
       );
     }
 
-    if (!user || !isAdmin) {
+    if (!user || !hasAdminAccess) {
       return null;
     }
 

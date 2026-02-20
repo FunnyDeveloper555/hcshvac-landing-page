@@ -39,7 +39,6 @@ export default function CTAIconsAdd() {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [selectedLibraryIcon, setSelectedLibraryIcon] = useState<string | null>(null);
   const [fmPickerOpen, setFmPickerOpen] = useState(false);
-  const [selectedLibraryIcon, setSelectedLibraryIcon] = useState<string | null>(null);
 
   // Fetch existing icon if editing
   const { data: existingIcon } = useQuery({
