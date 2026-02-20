@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive, Globe } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -245,7 +245,6 @@ const companySubmenus: MenuItem[] = [
   { title: "Images", url: "/admin/page-builder/images-logos", icon: ImageIcon },
   { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
   { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
-  { title: "Domain Settings", url: "/admin/page-builder/domain-settings", icon: Globe },
 ];
 
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {

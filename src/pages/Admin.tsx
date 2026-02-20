@@ -69,7 +69,6 @@ import HvacTabbed from "@/components/admin/pagebuilder/HvacTabbed";
 import PlumbingTabbed from "@/components/admin/pagebuilder/PlumbingTabbed";
 import HeaderMenusTabbed from "@/components/admin/pagebuilder/HeaderMenusTabbed";
 import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
-import DomainSettings from "@/components/admin/pagebuilder/DomainSettings";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -218,7 +217,6 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/popups" element={<PopupsList />} />
               <Route path="/page-builder/company/:companyId/popups/add" element={<PopupsAdd />} />
               <Route path="/page-builder/company/:companyId/popups/edit" element={<PopupsAdd />} />
-              <Route path="/page-builder/company/:companyId/domain-settings" element={<DomainSettings />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
