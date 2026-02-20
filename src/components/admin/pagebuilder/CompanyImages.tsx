@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, Trash2, Pencil, Image as ImageIcon, X, Search, Eye } from "lucide-react";
+import { Loader2, Upload, Trash2, Pencil, Image as ImageIcon, X, Search, Eye, FolderOpen } from "lucide-react";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 
 interface CompanyImage {
   id: string;
@@ -47,6 +48,7 @@ export default function CompanyImages() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [previewImage, setPreviewImage] = useState<CompanyImage | null>(null);
+  const [fmPickerOpen, setFmPickerOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     alt_text: "",
@@ -269,7 +271,7 @@ export default function CompanyImages() {
     );
   }
 
-  return (
+  return (<>
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
@@ -429,14 +431,20 @@ export default function CompanyImages() {
               <Label htmlFor="image-upload">
                 {formData.image_url ? "Replace Image" : "Select Image"}
               </Label>
-              <Input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                disabled={uploading}
-                className="mt-2"
-              />
+              <div className="flex gap-2 mt-2">
+                <Input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  className="flex-1"
+                />
+                <Button variant="outline" onClick={() => setFmPickerOpen(true)} type="button">
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Browse Files
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Max 5MB. Accepts JPG, PNG, GIF, WebP
               </p>
@@ -552,5 +560,20 @@ export default function CompanyImages() {
         </DialogContent>
       </Dialog>
     </div>
+
+      <FileManagerPicker
+        open={fmPickerOpen}
+        onOpenChange={setFmPickerOpen}
+        accept="image/*"
+        title="Select Image from File Manager"
+        onSelect={(fileUrl, fileName) => {
+          setFormData(prev => ({
+            ...prev,
+            image_url: fileUrl,
+            alt_text: prev.alt_text || fileName.split(".")[0],
+          }));
+        }}
+      />
+    </>
   );
 }

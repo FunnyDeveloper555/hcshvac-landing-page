@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Upload, ArrowLeft, Library, FileUp, Loader2 } from "lucide-react";
+import { Upload, ArrowLeft, Library, FileUp, Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import {
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 
 export default function CTAIconsAdd() {
   const { companyId } = useParams();
@@ -36,6 +37,8 @@ export default function CTAIconsAdd() {
   const [uploading, setUploading] = useState(false);
   const [uploadMode, setUploadMode] = useState<"file" | "library">("file");
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [selectedLibraryIcon, setSelectedLibraryIcon] = useState<string | null>(null);
+  const [fmPickerOpen, setFmPickerOpen] = useState(false);
   const [selectedLibraryIcon, setSelectedLibraryIcon] = useState<string | null>(null);
 
   // Fetch existing icon if editing
@@ -233,6 +236,14 @@ export default function CTAIconsAdd() {
               >
                 <Library className="h-4 w-4 mr-2" />
                 From Library
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setFmPickerOpen(true)}
+                className="flex-1"
+              >
+                <FolderOpen className="h-4 w-4 mr-2" />
+                From File Manager
               </Button>
             </div>
 

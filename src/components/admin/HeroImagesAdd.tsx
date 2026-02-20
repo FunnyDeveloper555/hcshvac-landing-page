@@ -6,13 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, FolderOpen } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 
 const HeroImagesAdd = () => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -199,7 +201,7 @@ const HeroImagesAdd = () => {
     );
   }
 
-  return (
+  return (<>
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Hero Image" : "Add Hero Image"}</h2>
       <Card>
@@ -223,14 +225,19 @@ const HeroImagesAdd = () => {
 
           <div>
             <Label htmlFor="image-upload">{isEditing ? "Replace Image (optional)" : "Select Image"}</Label>
-            <div className="mt-2">
+            <div className="mt-2 flex gap-2">
               <Input
                 id="image-upload"
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
                 disabled={uploading}
+                className="flex-1"
               />
+              <Button variant="outline" onClick={() => setPickerOpen(true)} type="button">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Browse Files
+              </Button>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
               Maximum file size: 5MB. Accepted formats: JPG, PNG, GIF, WebP
@@ -278,7 +285,21 @@ const HeroImagesAdd = () => {
         </CardContent>
       </Card>
     </div>
-  );
+
+    <FileManagerPicker
+      open={pickerOpen}
+      onOpenChange={setPickerOpen}
+      accept="image/*"
+      title="Select Hero Image from File Manager"
+      onSelect={(fileUrl, fileName) => {
+        setFormData(prev => ({
+          ...prev,
+          image_url: fileUrl,
+          alt_text: prev.alt_text || fileName.split(".")[0],
+        }));
+      }}
+    />
+  </>);
 };
 
 export default HeroImagesAdd;

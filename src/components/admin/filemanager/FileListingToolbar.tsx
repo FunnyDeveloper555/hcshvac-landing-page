@@ -1,6 +1,6 @@
 import {
   Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
-  ArrowUpDown, ArrowUp, ArrowDown,
+  ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,11 @@ interface FileListingToolbarProps {
   onSortDirectionToggle: () => void;
   canUndo: boolean;
   onUndo: () => void;
+  onPreviewSelected?: () => void;
+  onDownloadSelected?: () => void;
+  onCopySelected?: () => void;
+  onCutSelected?: () => void;
+  onRenameSelected?: () => void;
 }
 
 export function FileListingToolbar({
@@ -59,8 +64,15 @@ export function FileListingToolbar({
   onSortDirectionToggle,
   canUndo,
   onUndo,
+  onPreviewSelected,
+  onDownloadSelected,
+  onCopySelected,
+  onCutSelected,
+  onRenameSelected,
 }: FileListingToolbarProps) {
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
+  const hasSelection = selectedCount > 0;
+  const hasSingleSelection = selectedCount === 1;
 
   return (
     <div className="flex flex-col gap-2 px-4 py-2 border-b">
@@ -88,12 +100,42 @@ export function FileListingToolbar({
         </Breadcrumb>
 
         <div className="flex items-center gap-1">
-          {selectedCount > 0 && (
+          {/* File actions - shown when files are selected */}
+          {hasSingleSelection && onPreviewSelected && (
+            <Button variant="outline" size="sm" onClick={onPreviewSelected} title="Preview">
+              <Eye className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSingleSelection && onDownloadSelected && (
+            <Button variant="outline" size="sm" onClick={onDownloadSelected} title="Download">
+              <Download className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSelection && onCopySelected && (
+            <Button variant="outline" size="sm" onClick={onCopySelected} title="Copy">
+              <Copy className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSelection && onCutSelected && (
+            <Button variant="outline" size="sm" onClick={onCutSelected} title="Cut">
+              <Scissors className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSingleSelection && onRenameSelected && (
+            <Button variant="outline" size="sm" onClick={onRenameSelected} title="Rename">
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSelection && (
             <Button variant="destructive" size="sm" onClick={onDeleteSelected}>
               <Trash2 className="h-4 w-4 mr-1" />
               Delete ({selectedCount})
             </Button>
           )}
+
+          {/* Separator between file actions and general actions */}
+          {hasSelection && <div className="w-px h-6 bg-border mx-1" />}
+
           {hasClipboard && (
             <Button variant="outline" size="sm" onClick={onPaste}>
               <ClipboardPaste className="h-4 w-4 mr-1" />
