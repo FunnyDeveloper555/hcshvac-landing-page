@@ -364,13 +364,6 @@ export function useFileManager() {
       const { item, action } = clipboard;
 
       // Check for name conflict in destination
-      const { data: destFiles } = await supabase
-        .from("file_items")
-        .select("id, name")
-        .eq("folder_id", currentFolderId ?? "")
-        .or(currentFolderId ? `folder_id.eq.${currentFolderId}` : "folder_id.is.null");
-
-      // Re-query properly
       let queryBuilder = supabase.from("file_items").select("id, name");
       if (currentFolderId) {
         queryBuilder = queryBuilder.eq("folder_id", currentFolderId);
