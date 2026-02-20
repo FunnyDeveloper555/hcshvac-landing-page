@@ -371,7 +371,7 @@ export function useFileManager() {
         queryBuilder = queryBuilder.is("folder_id", null);
       }
       const { data: filesInDest } = await queryBuilder;
-      const existingFile = filesInDest?.find((f) => f.name === item.name && f.id !== item.id);
+      const existingFile = filesInDest?.find((f) => f.name === item.name && (action === "copy" || f.id !== item.id));
 
       if (existingFile && !resolution) {
         // Ask the user
