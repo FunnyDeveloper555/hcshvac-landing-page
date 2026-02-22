@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.invite-user]
 verify_jwt = false
+
+[functions.check-domain-dns]
+verify_jwt = false
