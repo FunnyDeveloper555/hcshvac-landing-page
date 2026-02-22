@@ -1103,6 +1103,148 @@ export type Database = {
           },
         ]
       }
+      email_list_groups: {
+        Row: {
+          created_at: string
+          email_list_id: string
+          group_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email_list_id: string
+          group_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email_list_id?: string
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_list_groups_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_list_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_list_posts: {
+        Row: {
+          body: string
+          created_at: string
+          display_order: number
+          email_list_id: string
+          id: string
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          display_order?: number
+          email_list_id: string
+          id?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          display_order?: number
+          email_list_id?: string
+          id?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_list_posts_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_list_unsubscribes: {
+        Row: {
+          email_list_id: string
+          id: string
+          unsubscribed_at: string
+          unsubscribed_by: string | null
+          user_id: string
+        }
+        Insert: {
+          email_list_id: string
+          id?: string
+          unsubscribed_at?: string
+          unsubscribed_by?: string | null
+          user_id: string
+        }
+        Update: {
+          email_list_id?: string
+          id?: string
+          unsubscribed_at?: string
+          unsubscribed_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_list_unsubscribes_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_lists: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           address: string
