@@ -1106,74 +1106,65 @@ export type Database = {
       email_list_groups: {
         Row: {
           created_at: string
-          email_list_id: string
-          group_id: string
+          description: string | null
           id: string
-        }
-        Insert: {
-          created_at?: string
-          email_list_id: string
-          group_id: string
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          email_list_id?: string
-          group_id?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_list_groups_email_list_id_fkey"
-            columns: ["email_list_id"]
-            isOneToOne: false
-            referencedRelation: "email_lists"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "email_list_groups_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "user_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_list_posts: {
-        Row: {
-          body: string
-          created_at: string
-          display_order: number
-          email_list_id: string
-          id: string
-          scheduled_at: string | null
-          sent_at: string | null
-          status: string
-          subject: string
+          is_active: boolean | null
+          name: string
           updated_at: string
         }
         Insert: {
-          body?: string
           created_at?: string
-          display_order?: number
-          email_list_id: string
+          description?: string | null
           id?: string
-          scheduled_at?: string | null
-          sent_at?: string | null
-          status?: string
-          subject: string
+          is_active?: boolean | null
+          name: string
           updated_at?: string
         }
         Update: {
-          body?: string
           created_at?: string
-          display_order?: number
-          email_list_id?: string
+          description?: string | null
           id?: string
-          scheduled_at?: string | null
-          sent_at?: string | null
-          status?: string
-          subject?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_list_posts: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email: string
+          email_list_id: string
+          first_name: string | null
+          id: string
+          is_active: boolean | null
+          last_name: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email: string
+          email_list_id: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          email_list_id?: string
+          first_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_name?: string | null
+          notes?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1188,25 +1179,34 @@ export type Database = {
       }
       email_list_unsubscribes: {
         Row: {
+          created_at: string
+          email: string
           email_list_id: string
+          email_list_post_id: string | null
           id: string
+          reason: string | null
           unsubscribed_at: string
           unsubscribed_by: string | null
-          user_id: string
         }
         Insert: {
+          created_at?: string
+          email: string
           email_list_id: string
+          email_list_post_id?: string | null
           id?: string
+          reason?: string | null
           unsubscribed_at?: string
           unsubscribed_by?: string | null
-          user_id: string
         }
         Update: {
+          created_at?: string
+          email?: string
           email_list_id?: string
+          email_list_post_id?: string | null
           id?: string
+          reason?: string | null
           unsubscribed_at?: string
           unsubscribed_by?: string | null
-          user_id?: string
         }
         Relationships: [
           {
@@ -1216,34 +1216,52 @@ export type Database = {
             referencedRelation: "email_lists"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "email_list_unsubscribes_email_list_post_id_fkey"
+            columns: ["email_list_post_id"]
+            isOneToOne: false
+            referencedRelation: "email_list_posts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       email_lists: {
         Row: {
           created_at: string
-          created_by: string | null
+          description: string | null
+          email_list_group_id: string | null
           id: string
-          status: string
-          title: string
+          is_active: boolean | null
+          name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          description?: string | null
+          email_list_group_id?: string | null
           id?: string
-          status?: string
-          title: string
+          is_active?: boolean | null
+          name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          description?: string | null
+          email_list_group_id?: string | null
           id?: string
-          status?: string
-          title?: string
+          is_active?: boolean | null
+          name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "email_lists_email_list_group_id_fkey"
+            columns: ["email_list_group_id"]
+            isOneToOne: false
+            referencedRelation: "email_list_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employees: {
         Row: {
