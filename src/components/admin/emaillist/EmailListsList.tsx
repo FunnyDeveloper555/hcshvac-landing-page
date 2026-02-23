@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Edit, Trash2, Loader2, Mail, Search, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Mail, Search, ChevronRight, ArrowUpDown, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
@@ -307,6 +307,14 @@ export default function EmailListsList() {
                           <TableCell>{new Date(list.created_at).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => toast.info("Email sending will be configured when an email service is set up.")}
+                                title="Submit / Send emails"
+                              >
+                                <Send className="h-4 w-4" />
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
