@@ -1225,6 +1225,42 @@ export type Database = {
           },
         ]
       }
+      email_list_user_groups: {
+        Row: {
+          created_at: string
+          email_list_id: string
+          id: string
+          user_group_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_list_id: string
+          id?: string
+          user_group_id: string
+        }
+        Update: {
+          created_at?: string
+          email_list_id?: string
+          id?: string
+          user_group_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_list_user_groups_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_list_user_groups_user_group_id_fkey"
+            columns: ["user_group_id"]
+            isOneToOne: false
+            referencedRelation: "user_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_lists: {
         Row: {
           created_at: string
