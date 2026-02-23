@@ -306,7 +306,7 @@ export default function EmailListForm() {
       <Tabs defaultValue="basic">
         <TabsList>
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
-          <TabsTrigger value="posts" disabled={!isEditMode}>Posts</TabsTrigger>
+          <TabsTrigger value="posts" disabled={!isEditMode}>Manual Post</TabsTrigger>
           <TabsTrigger value="subscribers" disabled={!isEditMode}>Subscribers</TabsTrigger>
         </TabsList>
 
