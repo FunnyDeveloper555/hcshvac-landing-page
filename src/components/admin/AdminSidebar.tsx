@@ -217,6 +217,14 @@ const staticMenuItems: MenuItem[] = [
     ],
   },
   {
+    title: "Email Lists",
+    icon: Send,
+    children: [
+      { title: "All Lists", url: "/admin/email-lists", icon: List },
+      { title: "New List", url: "/admin/email-lists/add", icon: Plus },
+    ],
+  },
+  {
     title: "File Manager",
     icon: HardDrive,
     url: "/admin/file-manager",
