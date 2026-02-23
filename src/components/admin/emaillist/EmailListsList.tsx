@@ -9,7 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Edit, Trash2, Loader2, Mail, Search, ChevronRight, ArrowUpDown, Send } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, Edit, Trash2, Loader2, Mail, ChevronRight, ArrowUpDown, Send, Copy, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
@@ -27,6 +31,7 @@ export default function EmailListsList() {
   const [sortField, setSortField] = useState<SortField>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Fetch email lists with their group name
   const { data: lists = [], isLoading } = useQuery({
@@ -67,6 +72,65 @@ export default function EmailListsList() {
     },
   });
 
+  // Fetch manual post counts per email list
+  const { data: postCounts = {} } = useQuery({
+    queryKey: ["email-list-post-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_list_posts")
+        .select("email_list_id")
+        .eq("is_active", true);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((row) => {
+        counts[row.email_list_id] = (counts[row.email_list_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
+  // Fetch group member counts per email list (via user_group_members through email_list_user_groups)
+  const { data: groupMemberCounts = {} } = useQuery({
+    queryKey: ["email-list-group-member-counts"],
+    queryFn: async () => {
+      // Get all email_list_user_groups assignments
+      const { data: assignments, error: aErr } = await supabase
+        .from("email_list_user_groups")
+        .select("email_list_id, user_group_id");
+      if (aErr) throw aErr;
+      if (!assignments || assignments.length === 0) return {};
+
+      // Get unique group ids
+      const groupIds = [...new Set(assignments.map((a) => a.user_group_id))];
+      const { data: members, error: mErr } = await supabase
+        .from("user_group_members")
+        .select("group_id, user_id")
+        .in("group_id", groupIds);
+      if (mErr) throw mErr;
+
+      // Count unique members per group
+      const groupMemberMap: Record<string, Set<string>> = {};
+      (members || []).forEach((m) => {
+        if (!groupMemberMap[m.group_id]) groupMemberMap[m.group_id] = new Set();
+        groupMemberMap[m.group_id].add(m.user_id);
+      });
+
+      // Map to email list -> unique member count
+      const listMembers: Record<string, Set<string>> = {};
+      assignments.forEach((a) => {
+        if (!listMembers[a.email_list_id]) listMembers[a.email_list_id] = new Set();
+        const members = groupMemberMap[a.user_group_id];
+        if (members) members.forEach((uid) => listMembers[a.email_list_id].add(uid));
+      });
+
+      const counts: Record<string, number> = {};
+      Object.entries(listMembers).forEach(([listId, members]) => {
+        counts[listId] = members.size;
+      });
+      return counts;
+    },
+  });
+
   // Fetch emails for expanded row
   const { data: expandedEmails = [], isLoading: emailsLoading } = useQuery({
     queryKey: ["email-list-emails-expand", expandedId],
@@ -100,7 +164,6 @@ export default function EmailListsList() {
   const filteredLists = useMemo(() => {
     let result = [...lists];
 
-    // Search
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       result = result.filter(
@@ -110,13 +173,11 @@ export default function EmailListsList() {
       );
     }
 
-    // Status filter
     if (statusFilter !== "all") {
       const isActive = statusFilter === "active";
       result = result.filter((l) => l.is_active === isActive);
     }
 
-    // Group filter
     if (groupFilter !== "all") {
       result = result.filter((l) => {
         const groups = groupsByListId[l.id] || [];
@@ -127,7 +188,6 @@ export default function EmailListsList() {
       });
     }
 
-    // Sort
     result.sort((a, b) => {
       let cmp = 0;
       if (sortField === "name") {
@@ -153,8 +213,65 @@ export default function EmailListsList() {
       queryClient.invalidateQueries({ queryKey: ["email-lists"] });
       logAction("delete", "email_list", id);
       toast.success("Email list deleted");
+      setDeleteTarget(null);
     },
     onError: () => toast.error("Failed to delete email list"),
+  });
+
+  // Clone mutation
+  const cloneMutation = useMutation({
+    mutationFn: async (sourceId: string) => {
+      // 1. Get source list
+      const { data: source, error: sErr } = await supabase
+        .from("email_lists")
+        .select("*")
+        .eq("id", sourceId)
+        .single();
+      if (sErr) throw sErr;
+
+      // 2. Create new list
+      const { data: newList, error: nErr } = await supabase
+        .from("email_lists")
+        .insert({
+          name: `${source.name} (Copy)`,
+          description: source.description,
+          is_active: source.is_active,
+          email_list_group_id: source.email_list_group_id,
+        })
+        .select("id")
+        .single();
+      if (nErr) throw nErr;
+
+      // 3. Copy user group assignments
+      const { data: groups } = await supabase
+        .from("email_list_user_groups")
+        .select("user_group_id")
+        .eq("email_list_id", sourceId);
+      if (groups && groups.length > 0) {
+        await supabase.from("email_list_user_groups").insert(
+          groups.map((g) => ({ email_list_id: newList.id, user_group_id: g.user_group_id }))
+        );
+      }
+
+      // 4. Copy emails
+      const { data: emails } = await supabase
+        .from("email_list_emails")
+        .select("subject, html_content, is_active, display_order")
+        .eq("email_list_id", sourceId);
+      if (emails && emails.length > 0) {
+        await supabase.from("email_list_emails").insert(
+          emails.map((e) => ({ ...e, email_list_id: newList.id }))
+        );
+      }
+
+      return newList.id;
+    },
+    onSuccess: (id) => {
+      queryClient.invalidateQueries({ queryKey: ["email-lists"] });
+      logAction("create", "email_list", id, { action: "cloned" });
+      toast.success("Email list cloned successfully");
+    },
+    onError: () => toast.error("Failed to clone email list"),
   });
 
   const toggleSort = (field: SortField) => {
@@ -254,6 +371,7 @@ export default function EmailListsList() {
                       Name <ArrowUpDown className="h-3 w-3" />
                     </button>
                   </TableHead>
+                  <TableHead>Subscribers</TableHead>
                   <TableHead>User Groups</TableHead>
                   <TableHead>
                     <button className="flex items-center gap-1 hover:text-foreground" onClick={() => toggleSort("is_active")}>
@@ -272,6 +390,9 @@ export default function EmailListsList() {
                 {filteredLists.map((list) => {
                   const userGroups = groupsByListId[list.id] || [];
                   const isExpanded = expandedId === list.id;
+                  const manualCount = (postCounts as Record<string, number>)[list.id] || 0;
+                  const groupCount = (groupMemberCounts as Record<string, number>)[list.id] || 0;
+                  const totalSubscribers = manualCount + groupCount;
                   return (
                     <Collapsible key={list.id} asChild open={isExpanded} onOpenChange={(open) => setExpandedId(open ? list.id : null)}>
                       <>
@@ -287,6 +408,12 @@ export default function EmailListsList() {
                             <CollapsibleTrigger asChild>
                               <span className="cursor-pointer hover:underline">{list.name}</span>
                             </CollapsibleTrigger>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="gap-1">
+                              <Users className="h-3 w-3" />
+                              {totalSubscribers}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             {userGroups.length > 0 ? (
@@ -318,6 +445,15 @@ export default function EmailListsList() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={() => cloneMutation.mutate(list.id)}
+                                disabled={cloneMutation.isPending}
+                                title="Clone this list"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => navigate(`/admin/email-lists/edit?id=${list.id}`)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -325,9 +461,7 @@ export default function EmailListsList() {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => {
-                                  if (confirm("Delete this email list?")) deleteMutation.mutate(list.id);
-                                }}
+                                onClick={() => setDeleteTarget({ id: list.id, name: list.name })}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -336,7 +470,7 @@ export default function EmailListsList() {
                         </TableRow>
                         <CollapsibleContent asChild>
                           <tr>
-                            <td colSpan={6} className="p-0">
+                            <td colSpan={7} className="p-0">
                               <div className="bg-muted/30 border-t px-8 py-4">
                                 <h4 className="text-sm font-semibold mb-2">Emails in this list</h4>
                                 {emailsLoading ? (
@@ -384,6 +518,28 @@ export default function EmailListsList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Email List</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{deleteTarget?.name}"</strong>? This will also remove all associated emails, posts, and subscriber data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+            >
+              {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

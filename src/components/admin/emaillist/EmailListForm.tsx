@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import DualListSelector from "./DualListSelector";
@@ -24,6 +28,7 @@ export default function EmailListForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,6 +41,10 @@ export default function EmailListForm() {
   const [postLastName, setPostLastName] = useState("");
   const [postCompanyName, setPostCompanyName] = useState("");
   const [postNotes, setPostNotes] = useState("");
+
+  // Confirmation dialog state
+  const [deletePostTarget, setDeletePostTarget] = useState<{ id: string; email: string } | null>(null);
+  const [unsubTarget, setUnsubTarget] = useState<{ id: string; email: string } | null>(null);
 
   // Fetch all user groups
   const { data: allGroups = [] } = useQuery({
@@ -114,7 +123,7 @@ export default function EmailListForm() {
     enabled: !!editId,
   });
 
-  // Fetch subscribers from selected user groups (via user_group_members + profiles)
+  // Fetch subscribers from selected user groups
   const { data: groupSubscribers = [], isLoading: loadingGroupSubs } = useQuery({
     queryKey: ["email-list-group-subscribers", selectedGroupIds],
     queryFn: async () => {
@@ -134,7 +143,6 @@ export default function EmailListForm() {
       if (pErr) throw pErr;
 
       const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
-      // Deduplicate by user_id, collect group names
       const userMap = new Map<string, { user_id: string; email: string; display_name: string; groups: string[] }>();
       for (const m of data) {
         const profile = profileMap.get(m.user_id);
@@ -174,12 +182,7 @@ export default function EmailListForm() {
   // Save list + group assignments
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
-        name,
-        description: description || null,
-        is_active: isActive,
-      };
-
+      const payload = { name, description: description || null, is_active: isActive };
       let listId: string;
       if (isEditMode && editId) {
         const { error } = await supabase.from("email_lists").update(payload).eq("id", editId);
@@ -190,18 +193,12 @@ export default function EmailListForm() {
         if (error) throw error;
         listId = data.id;
       }
-
-      // Sync group assignments: delete all, re-insert selected
       await supabase.from("email_list_user_groups").delete().eq("email_list_id", listId);
       if (selectedGroupIds.length > 0) {
-        const rows = selectedGroupIds.map((gid) => ({
-          email_list_id: listId,
-          user_group_id: gid,
-        }));
+        const rows = selectedGroupIds.map((gid) => ({ email_list_id: listId, user_group_id: gid }));
         const { error: gErr } = await supabase.from("email_list_user_groups").insert(rows);
         if (gErr) throw gErr;
       }
-
       return listId;
     },
     onSuccess: (id) => {
@@ -210,9 +207,7 @@ export default function EmailListForm() {
       queryClient.invalidateQueries({ queryKey: ["email-list-user-groups", id] });
       logAction(isEditMode ? "update" : "create", "email_list", id, { name });
       toast.success(`Email list ${isEditMode ? "updated" : "created"} successfully`);
-      if (!isEditMode) {
-        navigate(`/admin/email-lists/edit?id=${id}`);
-      }
+      if (!isEditMode) navigate(`/admin/email-lists/edit?id=${id}`);
     },
     onError: () => toast.error("Failed to save email list"),
   });
@@ -233,11 +228,7 @@ export default function EmailListForm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["email-list-posts", editId] });
-      setPostEmail("");
-      setPostFirstName("");
-      setPostLastName("");
-      setPostCompanyName("");
-      setPostNotes("");
+      setPostEmail(""); setPostFirstName(""); setPostLastName(""); setPostCompanyName(""); setPostNotes("");
       toast.success("Email added to list");
     },
     onError: () => toast.error("Failed to add email"),
@@ -252,11 +243,12 @@ export default function EmailListForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["email-list-posts", editId] });
       toast.success("Email removed from list");
+      setDeletePostTarget(null);
     },
     onError: () => toast.error("Failed to remove email"),
   });
 
-  // Unsubscribe mutation (for manually added posts)
+  // Unsubscribe mutation
   const unsubscribeMutation = useMutation({
     mutationFn: async (post: { id: string; email: string }) => {
       if (!editId) throw new Error("No list");
@@ -273,9 +265,81 @@ export default function EmailListForm() {
       queryClient.invalidateQueries({ queryKey: ["email-list-posts", editId] });
       queryClient.invalidateQueries({ queryKey: ["email-list-unsubscribes", editId] });
       toast.success("User unsubscribed");
+      setUnsubTarget(null);
     },
     onError: () => toast.error("Failed to unsubscribe"),
   });
+
+  // CSV import mutation
+  const csvImportMutation = useMutation({
+    mutationFn: async (rows: { email: string; first_name?: string; last_name?: string; company_name?: string }[]) => {
+      if (!editId) throw new Error("Save the list first");
+      const insertRows = rows.map((r) => ({
+        email_list_id: editId,
+        email: r.email.trim(),
+        first_name: r.first_name?.trim() || null,
+        last_name: r.last_name?.trim() || null,
+        company_name: r.company_name?.trim() || null,
+      }));
+      // Insert in chunks of 500
+      for (let i = 0; i < insertRows.length; i += 500) {
+        const chunk = insertRows.slice(i, i + 500);
+        const { error } = await supabase.from("email_list_posts").insert(chunk);
+        if (error) throw error;
+      }
+      return insertRows.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["email-list-posts", editId] });
+      toast.success(`${count} emails imported successfully`);
+    },
+    onError: (err) => toast.error(`CSV import failed: ${(err as Error).message}`),
+  });
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      if (!text) return;
+      const lines = text.split(/\r?\n/).filter((l) => l.trim());
+      if (lines.length < 2) {
+        toast.error("CSV must have a header row and at least one data row");
+        return;
+      }
+      const header = lines[0].split(",").map((h) => h.trim().toLowerCase().replace(/['"]/g, ""));
+      const emailIdx = header.findIndex((h) => h === "email" || h === "e-mail" || h === "email_address");
+      if (emailIdx === -1) {
+        toast.error("CSV must have an 'email' column");
+        return;
+      }
+      const fnIdx = header.findIndex((h) => h === "first_name" || h === "firstname" || h === "first name");
+      const lnIdx = header.findIndex((h) => h === "last_name" || h === "lastname" || h === "last name");
+      const coIdx = header.findIndex((h) => h === "company_name" || h === "company" || h === "companyname");
+
+      const rows: { email: string; first_name?: string; last_name?: string; company_name?: string }[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim().replace(/^['"]|['"]$/g, ""));
+        const email = cols[emailIdx];
+        if (!email || !email.includes("@")) continue;
+        rows.push({
+          email,
+          first_name: fnIdx >= 0 ? cols[fnIdx] : undefined,
+          last_name: lnIdx >= 0 ? cols[lnIdx] : undefined,
+          company_name: coIdx >= 0 ? cols[coIdx] : undefined,
+        });
+      }
+      if (rows.length === 0) {
+        toast.error("No valid email rows found in CSV");
+        return;
+      }
+      csvImportMutation.mutate(rows);
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  };
 
   if (isEditMode && loadingList) {
     return (
@@ -328,8 +392,6 @@ export default function EmailListForm() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." />
               </div>
-
-              {/* Dual-list selector for User Groups */}
               <div className="space-y-2">
                 <Label>User Groups</Label>
                 <p className="text-sm text-muted-foreground mb-2">
@@ -341,7 +403,6 @@ export default function EmailListForm() {
                   onSelectionChange={setSelectedGroupIds}
                 />
               </div>
-
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <Label className="text-base">Active</Label>
@@ -367,11 +428,37 @@ export default function EmailListForm() {
         {/* TAB: Posts */}
         <TabsContent value="posts">
           <Card>
-            <CardHeader>
-              <CardTitle>Add Email</CardTitle>
-              <CardDescription>Add a new email entry to this list</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Add Email</CardTitle>
+                <CardDescription>Add a new email entry or import from CSV</CardDescription>
+              </div>
+              <div>
+                <input
+                  ref={csvInputRef}
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleCsvUpload}
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => csvInputRef.current?.click()}
+                  disabled={csvImportMutation.isPending}
+                >
+                  {csvImportMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Import CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                CSV format: <code>email, first_name, last_name, company_name</code> (header row required, only email is mandatory)
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Email *</Label>
@@ -438,9 +525,7 @@ export default function EmailListForm() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => {
-                              if (confirm("Remove this email?")) deletePostMutation.mutate(post.id);
-                            }}
+                            onClick={() => setDeletePostTarget({ id: post.id, email: post.email })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -456,7 +541,6 @@ export default function EmailListForm() {
 
         {/* TAB: Subscribers */}
         <TabsContent value="subscribers">
-          {/* Group-based subscribers */}
           <Card>
             <CardHeader>
               <CardTitle>Group Subscribers ({groupSubscribers.length})</CardTitle>
@@ -498,7 +582,6 @@ export default function EmailListForm() {
             </CardContent>
           </Card>
 
-          {/* Manually added active subscribers */}
           <Card className="mt-4">
             <CardHeader>
               <CardTitle>Manual Subscribers ({activePosts.length})</CardTitle>
@@ -529,10 +612,7 @@ export default function EmailListForm() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              if (confirm(`Unsubscribe ${post.email}?`))
-                                unsubscribeMutation.mutate({ id: post.id, email: post.email });
-                            }}
+                            onClick={() => setUnsubTarget({ id: post.id, email: post.email })}
                           >
                             <UserMinus className="mr-1 h-4 w-4" /> Unsubscribe
                           </Button>
@@ -545,7 +625,6 @@ export default function EmailListForm() {
             </CardContent>
           </Card>
 
-          {/* Unsubscribed */}
           <Card className="mt-4">
             <CardHeader>
               <CardTitle>Unsubscribed ({unsubscribes.length})</CardTitle>
@@ -580,6 +659,45 @@ export default function EmailListForm() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Post Confirmation */}
+      <AlertDialog open={!!deletePostTarget} onOpenChange={(open) => !open && setDeletePostTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Email</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{deletePostTarget?.email}</strong> from this list?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deletePostTarget && deletePostMutation.mutate(deletePostTarget.id)}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unsubscribe Confirmation */}
+      <AlertDialog open={!!unsubTarget} onOpenChange={(open) => !open && setUnsubTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsubscribe User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unsubscribe <strong>{unsubTarget?.email}</strong>? They will be moved to the unsubscribed list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => unsubTarget && unsubscribeMutation.mutate(unsubTarget)}>
+              Unsubscribe
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
