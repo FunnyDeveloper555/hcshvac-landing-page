@@ -72,6 +72,7 @@ import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
 import DomainSettings from "@/components/admin/pagebuilder/DomainSettings";
 import EmailListsList from "@/components/admin/emaillist/EmailListsList";
 import EmailListForm from "@/components/admin/emaillist/EmailListForm";
+import EmailTemplatesList from "@/components/admin/emaillist/EmailTemplatesList";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -229,6 +230,7 @@ const Admin = () => {
               <Route path="/email-lists" element={<EmailListsList />} />
               <Route path="/email-lists/add" element={<EmailListForm />} />
               <Route path="/email-lists/edit" element={<EmailListForm />} />
+              <Route path="/email-templates" element={<EmailTemplatesList />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>

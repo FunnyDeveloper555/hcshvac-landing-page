@@ -15,9 +15,11 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Pencil, Trash2, Eye, Code, Save, Monitor, Tablet, Smartphone, GripVertical } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Plus, Pencil, Trash2, Eye, Code, Save, Monitor, Tablet, Smartphone, GripVertical, SendHorizonal, Library } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -73,6 +75,7 @@ function SortableEmailRow({ email, onEdit, onDelete }: {
 
 export default function EmailsTab({ emailListId }: EmailsTabProps) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingEmail, setEditingEmail] = useState<any>(null);
   const [subject, setSubject] = useState("");
@@ -82,11 +85,62 @@ export default function EmailsTab({ emailListId }: EmailsTabProps) {
   const [editorTab, setEditorTab] = useState<string>("editor");
   const [previewDevice, setPreviewDevice] = useState<string>("desktop");
   const [deleteEmailId, setDeleteEmailId] = useState<string | null>(null);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  // Fetch email templates for picker
+  const { data: templates = [] } = useQuery({
+    queryKey: ["email-templates-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_templates")
+        .select("id, name, html_content")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleLoadTemplate = () => {
+    if (!selectedTemplateId) return;
+    const tmpl = templates.find((t) => t.id === selectedTemplateId);
+    if (tmpl) {
+      setHtmlContent(tmpl.html_content);
+      setTemplatePickerOpen(false);
+      setSelectedTemplateId("");
+      toast.success(`Template "${tmpl.name}" loaded`);
+    }
+  };
+
+  const handleSendTest = async () => {
+    if (!subject || !htmlContent) {
+      toast.error("Subject and HTML content are required");
+      return;
+    }
+    setSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-test-email", {
+        body: { subject, html_content: htmlContent },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.info(data.message || data.error);
+      } else {
+        toast.success(data?.message || "Test email sent!");
+      }
+    } catch (err) {
+      toast.error("Failed to send test email");
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   const { data: emails = [], isLoading } = useQuery({
     queryKey: ["email-list-emails", emailListId],
@@ -329,12 +383,56 @@ export default function EmailsTab({ emailListId }: EmailsTabProps) {
               </TabsContent>
             </Tabs>
 
+            <div className="flex justify-between gap-2">
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setTemplatePickerOpen(true)}>
+                  <Library className="mr-1 h-4 w-4" /> Load Template
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendTest}
+                  disabled={!subject || !htmlContent || sendingTest}
+                >
+                  {sendingTest ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <SendHorizonal className="mr-1 h-4 w-4" />}
+                  Send Test
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={closeEditor}>Cancel</Button>
+                <Button onClick={() => saveMutation.mutate()} disabled={!subject || saveMutation.isPending}>
+                  {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  {editingEmail ? "Update" : "Create"} Email
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Picker Dialog */}
+      <Dialog open={templatePickerOpen} onOpenChange={setTemplatePickerOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Load Template</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                {templates.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {templates.length === 0 && (
+              <p className="text-sm text-muted-foreground">No templates available. Create templates in the Email Templates section.</p>
+            )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={closeEditor}>Cancel</Button>
-              <Button onClick={() => saveMutation.mutate()} disabled={!subject || saveMutation.isPending}>
-                {saveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                {editingEmail ? "Update" : "Create"} Email
-              </Button>
+              <Button variant="outline" onClick={() => setTemplatePickerOpen(false)}>Cancel</Button>
+              <Button onClick={handleLoadTemplate} disabled={!selectedTemplateId}>Load</Button>
             </div>
           </div>
         </DialogContent>

@@ -1340,6 +1340,190 @@ export type Database = {
           },
         ]
       }
+      email_send_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          email_id: string
+          email_list_id: string
+          failed_count: number | null
+          id: string
+          scheduled_at: string
+          sent_count: number | null
+          started_at: string | null
+          status: string
+          total_recipients: number | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email_id: string
+          email_list_id: string
+          failed_count?: number | null
+          id?: string
+          scheduled_at: string
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          email_id?: string
+          email_list_id?: string
+          failed_count?: number | null
+          id?: string
+          scheduled_at?: string
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_send_jobs_email_id_fkey"
+            columns: ["email_id"]
+            isOneToOne: false
+            referencedRelation: "email_list_emails"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_send_jobs_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_send_recipients: {
+        Row: {
+          bounced_at: string | null
+          click_count: number | null
+          clicked_at: string | null
+          created_at: string
+          email: string
+          id: string
+          open_count: number | null
+          opened_at: string | null
+          send_job_id: string
+          sent_at: string | null
+          status: string
+          tracking_id: string
+        }
+        Insert: {
+          bounced_at?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          open_count?: number | null
+          opened_at?: string | null
+          send_job_id: string
+          sent_at?: string | null
+          status?: string
+          tracking_id?: string
+        }
+        Update: {
+          bounced_at?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          open_count?: number | null
+          opened_at?: string | null
+          send_job_id?: string
+          sent_at?: string | null
+          status?: string
+          tracking_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_send_recipients_send_job_id_fkey"
+            columns: ["send_job_id"]
+            isOneToOne: false
+            referencedRelation: "email_send_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          html_content: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_tracking_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          recipient_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          recipient_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          recipient_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_tracking_events_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "email_send_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string
