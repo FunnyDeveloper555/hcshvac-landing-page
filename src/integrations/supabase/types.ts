@@ -1103,6 +1103,47 @@ export type Database = {
           },
         ]
       }
+      email_list_emails: {
+        Row: {
+          created_at: string
+          display_order: number
+          email_list_id: string
+          html_content: string
+          id: string
+          is_active: boolean
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          email_list_id: string
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          email_list_id?: string
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_list_emails_email_list_id_fkey"
+            columns: ["email_list_id"]
+            isOneToOne: false
+            referencedRelation: "email_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_list_groups: {
         Row: {
           created_at: string
