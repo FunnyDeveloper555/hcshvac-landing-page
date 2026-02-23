@@ -70,6 +70,8 @@ import PlumbingTabbed from "@/components/admin/pagebuilder/PlumbingTabbed";
 import HeaderMenusTabbed from "@/components/admin/pagebuilder/HeaderMenusTabbed";
 import CTAIconsTabbed from "@/components/admin/pagebuilder/CTAIconsTabbed";
 import DomainSettings from "@/components/admin/pagebuilder/DomainSettings";
+import EmailListsList from "@/components/admin/emaillist/EmailListsList";
+import EmailListForm from "@/components/admin/emaillist/EmailListForm";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -224,6 +226,9 @@ const Admin = () => {
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
               <Route path="/users" element={<UsersAdmin />} />
+              <Route path="/email-lists" element={<EmailListsList />} />
+              <Route path="/email-lists/add" element={<EmailListForm />} />
+              <Route path="/email-lists/edit" element={<EmailListForm />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>

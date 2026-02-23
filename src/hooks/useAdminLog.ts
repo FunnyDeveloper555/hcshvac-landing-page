@@ -27,7 +27,8 @@ type EntityType =
   | "company_marquee"
   | "company_popup"
   | "admin_module"
-  | "role_module_assignment";
+  | "role_module_assignment"
+  | "email_list";
 
 type ActionType = 
   | "create" 
