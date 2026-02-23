@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, Pencil, Trash2, Eye, Code, Save } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Eye, Code, Save, Monitor, Tablet, Smartphone } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
 
 interface EmailsTabProps {
@@ -27,7 +28,7 @@ export default function EmailsTab({ emailListId }: EmailsTabProps) {
   const [isActive, setIsActive] = useState(true);
   const [displayOrder, setDisplayOrder] = useState(0);
   const [editorTab, setEditorTab] = useState<string>("editor");
-
+  const [previewDevice, setPreviewDevice] = useState<string>("desktop");
   const { data: emails = [], isLoading } = useQuery({
     queryKey: ["email-list-emails", emailListId],
     queryFn: async () => {
@@ -222,19 +223,40 @@ export default function EmailsTab({ emailListId }: EmailsTabProps) {
                 />
               </TabsContent>
               <TabsContent value="preview">
-                <div className="border rounded-lg bg-white min-h-[400px] p-1">
-                  {htmlContent ? (
-                    <iframe
-                      srcDoc={htmlContent}
-                      title="Email Preview"
-                      className="w-full min-h-[400px] border-0"
-                      sandbox="allow-same-origin"
-                    />
-                  ) : (
-                    <p className="text-muted-foreground text-center py-16">
-                      Enter HTML content to see a preview
-                    </p>
-                  )}
+                <div className="flex justify-center mb-3">
+                  <ToggleGroup type="single" value={previewDevice} onValueChange={(v) => v && setPreviewDevice(v)}>
+                    <ToggleGroupItem value="desktop" aria-label="Desktop">
+                      <Monitor className="h-4 w-4 mr-1" /> Desktop
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="tablet" aria-label="Tablet">
+                      <Tablet className="h-4 w-4 mr-1" /> Tablet
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="mobile" aria-label="Mobile">
+                      <Smartphone className="h-4 w-4 mr-1" /> Mobile
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+                <div className="flex justify-center">
+                  <div
+                    className="border rounded-lg bg-white min-h-[400px] p-1 transition-all duration-300"
+                    style={{
+                      width: previewDevice === "desktop" ? "100%" : previewDevice === "tablet" ? "768px" : "375px",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {htmlContent ? (
+                      <iframe
+                        srcDoc={htmlContent}
+                        title="Email Preview"
+                        className="w-full min-h-[400px] border-0"
+                        sandbox="allow-same-origin"
+                      />
+                    ) : (
+                      <p className="text-muted-foreground text-center py-16">
+                        Enter HTML content to see a preview
+                      </p>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
