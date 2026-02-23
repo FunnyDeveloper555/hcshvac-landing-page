@@ -15,6 +15,7 @@ import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus } from "lucide-react"
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import DualListSelector from "./DualListSelector";
+import EmailsTab from "./EmailsTab";
 
 export default function EmailListForm() {
   const [searchParams] = useSearchParams();
@@ -306,6 +307,7 @@ export default function EmailListForm() {
       <Tabs defaultValue="basic">
         <TabsList>
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
+          <TabsTrigger value="emails" disabled={!isEditMode}>Emails</TabsTrigger>
           <TabsTrigger value="posts" disabled={!isEditMode}>Manual Post</TabsTrigger>
           <TabsTrigger value="subscribers" disabled={!isEditMode}>Subscribers</TabsTrigger>
         </TabsList>
@@ -355,6 +357,11 @@ export default function EmailListForm() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* TAB: Emails */}
+        <TabsContent value="emails">
+          {editId && <EmailsTab emailListId={editId} />}
         </TabsContent>
 
         {/* TAB: Posts */}
