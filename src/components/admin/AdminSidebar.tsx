@@ -222,6 +222,7 @@ const staticMenuItems: MenuItem[] = [
     children: [
       { title: "All Lists", url: "/admin/email-lists", icon: List },
       { title: "New List", url: "/admin/email-lists/add", icon: Plus },
+      { title: "Templates", url: "/admin/email-templates", icon: Library },
     ],
   },
   {

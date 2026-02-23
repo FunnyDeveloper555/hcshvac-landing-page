@@ -15,11 +15,14 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus, Upload, CalendarClock, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import DualListSelector from "./DualListSelector";
 import EmailsTab from "./EmailsTab";
+import EmailAnalyticsDashboard from "./EmailAnalyticsDashboard";
+import ScheduleSendDialog from "./ScheduleSendDialog";
+import ScheduledJobsList from "./ScheduledJobsList";
 
 export default function EmailListForm() {
   const [searchParams] = useSearchParams();
@@ -45,6 +48,8 @@ export default function EmailListForm() {
   // Confirmation dialog state
   const [deletePostTarget, setDeletePostTarget] = useState<{ id: string; email: string } | null>(null);
   const [unsubTarget, setUnsubTarget] = useState<{ id: string; email: string } | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [subscriberSearch, setSubscriberSearch] = useState("");
 
   // Fetch all user groups
   const { data: allGroups = [] } = useQuery({
@@ -369,11 +374,13 @@ export default function EmailListForm() {
       </div>
 
       <Tabs defaultValue="basic">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
           <TabsTrigger value="emails" disabled={!isEditMode}>Emails</TabsTrigger>
           <TabsTrigger value="posts" disabled={!isEditMode}>Manual Post</TabsTrigger>
           <TabsTrigger value="subscribers" disabled={!isEditMode}>Subscribers</TabsTrigger>
+          <TabsTrigger value="scheduling" disabled={!isEditMode}>Scheduling</TabsTrigger>
+          <TabsTrigger value="analytics" disabled={!isEditMode}>Analytics</TabsTrigger>
         </TabsList>
 
         {/* TAB: Basic Information */}
@@ -541,6 +548,19 @@ export default function EmailListForm() {
 
         {/* TAB: Subscribers */}
         <TabsContent value="subscribers">
+          {/* Search bar */}
+          <div className="bg-card border rounded-lg p-4 mb-4">
+            <div className="relative max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name or email..."
+                value={subscriberSearch}
+                onChange={(e) => setSubscriberSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>Group Subscribers ({groupSubscribers.length})</CardTitle>
@@ -553,32 +573,44 @@ export default function EmailListForm() {
                 <p className="text-center text-muted-foreground py-4">No user groups selected — assign groups in Basic Information tab</p>
               ) : groupSubscribers.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">No users found in the selected groups</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Display Name</TableHead>
-                      <TableHead>Groups</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {groupSubscribers.map((sub) => (
-                      <TableRow key={sub.user_id}>
-                        <TableCell className="font-medium">{sub.email}</TableCell>
-                        <TableCell>{sub.display_name || "—"}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {sub.groups.map((g) => (
-                              <Badge key={g} variant="outline" className="text-xs">{g}</Badge>
-                            ))}
-                          </div>
-                        </TableCell>
+              ) : (() => {
+                const term = subscriberSearch.toLowerCase();
+                const filtered = term
+                  ? groupSubscribers.filter(
+                      (s) =>
+                        s.email.toLowerCase().includes(term) ||
+                        (s.display_name || "").toLowerCase().includes(term)
+                    )
+                  : groupSubscribers;
+                return filtered.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No subscribers match your search</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Display Name</TableHead>
+                        <TableHead>Groups</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((sub) => (
+                        <TableRow key={sub.user_id}>
+                          <TableCell className="font-medium">{sub.email}</TableCell>
+                          <TableCell>{sub.display_name || "—"}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {sub.groups.map((g) => (
+                                <Badge key={g} variant="outline" className="text-xs">{g}</Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                );
+              })()}
             </CardContent>
           </Card>
 
@@ -592,36 +624,50 @@ export default function EmailListForm() {
                 <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
               ) : activePosts.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">No manual subscribers</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {activePosts.map((post) => (
-                      <TableRow key={post.id}>
-                        <TableCell className="font-medium">{post.email}</TableCell>
-                        <TableCell>{[post.first_name, post.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
-                        <TableCell>{post.company_name || "—"}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setUnsubTarget({ id: post.id, email: post.email })}
-                          >
-                            <UserMinus className="mr-1 h-4 w-4" /> Unsubscribe
-                          </Button>
-                        </TableCell>
+              ) : (() => {
+                const term = subscriberSearch.toLowerCase();
+                const filtered = term
+                  ? activePosts.filter(
+                      (p) =>
+                        p.email.toLowerCase().includes(term) ||
+                        (p.first_name || "").toLowerCase().includes(term) ||
+                        (p.last_name || "").toLowerCase().includes(term) ||
+                        (p.company_name || "").toLowerCase().includes(term)
+                    )
+                  : activePosts;
+                return filtered.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-4">No subscribers match your search</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Company</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+                    </TableHeader>
+                    <TableBody>
+                      {filtered.map((post) => (
+                        <TableRow key={post.id}>
+                          <TableCell className="font-medium">{post.email}</TableCell>
+                          <TableCell>{[post.first_name, post.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
+                          <TableCell>{post.company_name || "—"}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setUnsubTarget({ id: post.id, email: post.email })}
+                            >
+                              <UserMinus className="mr-1 h-4 w-4" /> Unsubscribe
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                );
+              })()}
             </CardContent>
           </Card>
 
@@ -657,6 +703,40 @@ export default function EmailListForm() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* TAB: Scheduling */}
+        <TabsContent value="scheduling">
+          {editId && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarClock className="h-5 w-5" /> Scheduled Sends
+                  </CardTitle>
+                  <CardDescription>Schedule emails to be sent at a specific date and time</CardDescription>
+                </div>
+                <Button onClick={() => setScheduleOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Schedule Send
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <ScheduledJobsList emailListId={editId} />
+              </CardContent>
+            </Card>
+          )}
+          {editId && (
+            <ScheduleSendDialog
+              open={scheduleOpen}
+              onOpenChange={setScheduleOpen}
+              emailListId={editId}
+            />
+          )}
+        </TabsContent>
+
+        {/* TAB: Analytics */}
+        <TabsContent value="analytics">
+          {editId && <EmailAnalyticsDashboard emailListId={editId} />}
         </TabsContent>
       </Tabs>
 
