@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, Save, Plus, Trash2, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import DualListSelector from "./DualListSelector";
 
 export default function EmailListForm() {
   const [searchParams] = useSearchParams();
@@ -24,11 +24,10 @@ export default function EmailListForm() {
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
 
-  // Basic info state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [groupId, setGroupId] = useState<string>("");
   const [isActive, setIsActive] = useState(true);
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
   // Post form state
   const [postEmail, setPostEmail] = useState("");
@@ -37,18 +36,33 @@ export default function EmailListForm() {
   const [postCompanyName, setPostCompanyName] = useState("");
   const [postNotes, setPostNotes] = useState("");
 
-  // Fetch groups
-  const { data: groups = [] } = useQuery({
-    queryKey: ["email-list-groups"],
+  // Fetch all user groups
+  const { data: allGroups = [] } = useQuery({
+    queryKey: ["user-groups-active"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("email_list_groups")
+        .from("user_groups")
         .select("id, name")
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch assigned group ids for this list
+  const { data: assignedGroupIds = [] } = useQuery({
+    queryKey: ["email-list-user-groups", editId],
+    queryFn: async () => {
+      if (!editId) return [];
+      const { data, error } = await supabase
+        .from("email_list_user_groups")
+        .select("user_group_id")
+        .eq("email_list_id", editId);
+      if (error) throw error;
+      return data.map((r) => r.user_group_id);
+    },
+    enabled: !!editId,
   });
 
   // Fetch existing list for edit
@@ -99,38 +113,100 @@ export default function EmailListForm() {
     enabled: !!editId,
   });
 
+  // Fetch subscribers from selected user groups (via user_group_members + profiles)
+  const { data: groupSubscribers = [], isLoading: loadingGroupSubs } = useQuery({
+    queryKey: ["email-list-group-subscribers", selectedGroupIds],
+    queryFn: async () => {
+      if (selectedGroupIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("user_group_members")
+        .select("user_id, group_id, user_groups(name)")
+        .in("group_id", selectedGroupIds);
+      if (error) throw error;
+      if (!data || data.length === 0) return [];
+
+      const userIds = [...new Set(data.map((m) => m.user_id))];
+      const { data: profiles, error: pErr } = await supabase
+        .from("profiles")
+        .select("user_id, email, display_name")
+        .in("user_id", userIds);
+      if (pErr) throw pErr;
+
+      const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
+      // Deduplicate by user_id, collect group names
+      const userMap = new Map<string, { user_id: string; email: string; display_name: string; groups: string[] }>();
+      for (const m of data) {
+        const profile = profileMap.get(m.user_id);
+        if (!profile) continue;
+        const existing = userMap.get(m.user_id);
+        const groupName = (m.user_groups as any)?.name || "";
+        if (existing) {
+          if (groupName) existing.groups.push(groupName);
+        } else {
+          userMap.set(m.user_id, {
+            user_id: m.user_id,
+            email: profile.email || "",
+            display_name: profile.display_name || "",
+            groups: groupName ? [groupName] : [],
+          });
+        }
+      }
+      return Array.from(userMap.values());
+    },
+    enabled: selectedGroupIds.length > 0,
+  });
+
   useEffect(() => {
     if (existingList) {
       setName(existingList.name);
       setDescription(existingList.description || "");
-      setGroupId(existingList.email_list_group_id || "");
       setIsActive(existingList.is_active ?? true);
     }
   }, [existingList]);
 
-  // Save list mutation
+  useEffect(() => {
+    if (assignedGroupIds.length > 0) {
+      setSelectedGroupIds(assignedGroupIds);
+    }
+  }, [assignedGroupIds]);
+
+  // Save list + group assignments
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = {
         name,
         description: description || null,
-        email_list_group_id: groupId || null,
         is_active: isActive,
       };
 
+      let listId: string;
       if (isEditMode && editId) {
         const { error } = await supabase.from("email_lists").update(payload).eq("id", editId);
         if (error) throw error;
-        return editId;
+        listId = editId;
       } else {
         const { data, error } = await supabase.from("email_lists").insert(payload).select("id").single();
         if (error) throw error;
-        return data.id;
+        listId = data.id;
       }
+
+      // Sync group assignments: delete all, re-insert selected
+      await supabase.from("email_list_user_groups").delete().eq("email_list_id", listId);
+      if (selectedGroupIds.length > 0) {
+        const rows = selectedGroupIds.map((gid) => ({
+          email_list_id: listId,
+          user_group_id: gid,
+        }));
+        const { error: gErr } = await supabase.from("email_list_user_groups").insert(rows);
+        if (gErr) throw gErr;
+      }
+
+      return listId;
     },
     onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ["email-lists"] });
       queryClient.invalidateQueries({ queryKey: ["email-list", id] });
+      queryClient.invalidateQueries({ queryKey: ["email-list-user-groups", id] });
       logAction(isEditMode ? "update" : "create", "email_list", id, { name });
       toast.success(`Email list ${isEditMode ? "updated" : "created"} successfully`);
       if (!isEditMode) {
@@ -179,13 +255,11 @@ export default function EmailListForm() {
     onError: () => toast.error("Failed to remove email"),
   });
 
-  // Unsubscribe mutation
+  // Unsubscribe mutation (for manually added posts)
   const unsubscribeMutation = useMutation({
     mutationFn: async (post: { id: string; email: string }) => {
       if (!editId) throw new Error("No list");
-      // Mark post as inactive
       await supabase.from("email_list_posts").update({ is_active: false }).eq("id", post.id);
-      // Create unsubscribe record
       const { error } = await supabase.from("email_list_unsubscribes").insert({
         email_list_id: editId,
         email_list_post_id: post.id,
@@ -211,6 +285,7 @@ export default function EmailListForm() {
   }
 
   const activePosts = posts.filter((p) => p.is_active);
+  const selectedGroupItems = allGroups.filter((g) => selectedGroupIds.includes(g.id));
 
   return (
     <div className="space-y-6">
@@ -240,9 +315,9 @@ export default function EmailListForm() {
           <Card>
             <CardHeader>
               <CardTitle>List Details</CardTitle>
-              <CardDescription>Configure the email list name, group, and status</CardDescription>
+              <CardDescription>Configure the email list name, groups, and status</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Name *</Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Monthly Newsletter" />
@@ -251,20 +326,20 @@ export default function EmailListForm() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." />
               </div>
+
+              {/* Dual-list selector for User Groups */}
               <div className="space-y-2">
-                <Label>Group</Label>
-                <Select value={groupId} onValueChange={setGroupId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a group (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Group</SelectItem>
-                    {groups.map((g) => (
-                      <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>User Groups</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Select user groups whose members will be auto-included as subscribers
+                </p>
+                <DualListSelector
+                  availableItems={allGroups}
+                  selectedItems={selectedGroupItems}
+                  onSelectionChange={setSelectedGroupIds}
+                />
               </div>
+
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <Label className="text-base">Active</Label>
@@ -374,16 +449,59 @@ export default function EmailListForm() {
 
         {/* TAB: Subscribers */}
         <TabsContent value="subscribers">
+          {/* Group-based subscribers */}
           <Card>
             <CardHeader>
-              <CardTitle>Active Subscribers ({activePosts.length})</CardTitle>
-              <CardDescription>Manage active subscribers — unsubscribe users directly from here</CardDescription>
+              <CardTitle>Group Subscribers ({groupSubscribers.length})</CardTitle>
+              <CardDescription>Users automatically included from selected user groups</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingGroupSubs ? (
+                <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : selectedGroupIds.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">No user groups selected — assign groups in Basic Information tab</p>
+              ) : groupSubscribers.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">No users found in the selected groups</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Display Name</TableHead>
+                      <TableHead>Groups</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupSubscribers.map((sub) => (
+                      <TableRow key={sub.user_id}>
+                        <TableCell className="font-medium">{sub.email}</TableCell>
+                        <TableCell>{sub.display_name || "—"}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {sub.groups.map((g) => (
+                              <Badge key={g} variant="outline" className="text-xs">{g}</Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Manually added active subscribers */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Manual Subscribers ({activePosts.length})</CardTitle>
+              <CardDescription>Manually added email entries — unsubscribe users from here</CardDescription>
             </CardHeader>
             <CardContent>
               {loadingPosts ? (
                 <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
               ) : activePosts.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">No active subscribers</p>
+                <p className="text-center text-muted-foreground py-4">No manual subscribers</p>
               ) : (
                 <Table>
                   <TableHeader>
@@ -420,6 +538,7 @@ export default function EmailListForm() {
             </CardContent>
           </Card>
 
+          {/* Unsubscribed */}
           <Card className="mt-4">
             <CardHeader>
               <CardTitle>Unsubscribed ({unsubscribes.length})</CardTitle>
