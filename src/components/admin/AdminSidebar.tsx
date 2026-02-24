@@ -226,6 +226,14 @@ const staticMenuItems: MenuItem[] = [
     ],
   },
   {
+    title: "Products",
+    icon: Package,
+    children: [
+      { title: "Add", url: "/admin/products/add", icon: Plus },
+      { title: "List", url: "/admin/products/list", icon: List },
+    ],
+  },
+  {
     title: "File Manager",
     icon: HardDrive,
     url: "/admin/file-manager",
