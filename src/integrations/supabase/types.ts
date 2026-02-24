@@ -2230,6 +2230,7 @@ export type Database = {
       products: {
         Row: {
           brand_id: string | null
+          category: string | null
           company_id: string | null
           created_at: string
           display_order: number | null
@@ -2244,6 +2245,7 @@ export type Database = {
         }
         Insert: {
           brand_id?: string | null
+          category?: string | null
           company_id?: string | null
           created_at?: string
           display_order?: number | null
@@ -2258,6 +2260,7 @@ export type Database = {
         }
         Update: {
           brand_id?: string | null
+          category?: string | null
           company_id?: string | null
           created_at?: string
           display_order?: number | null
