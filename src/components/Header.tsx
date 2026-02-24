@@ -1,4 +1,4 @@
-import { Phone, User, LogOut, Shield } from "lucide-react";
+import { Phone, User, LogOut, Shield, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,16 @@ const Header = () => {
           </div>
           
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/products")}
+              className="hidden sm:flex"
+            >
+              <Package className="w-4 h-4" />
+              <span>Products</span>
+            </Button>
+
             <a 
               href="tel:555-123-4567" 
               className="hidden md:flex items-center gap-2 text-foreground hover:text-primary transition-colors"
