@@ -2227,6 +2227,66 @@ export type Database = {
           },
         ]
       }
+      products: {
+        Row: {
+          brand_id: string | null
+          company_id: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_published: boolean
+          product_name: string
+          spot_images: Json | null
+          spot_text: string | null
+          stick_count: number | null
+          updated_at: string
+          weight: number | null
+        }
+        Insert: {
+          brand_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean
+          product_name: string
+          spot_images?: Json | null
+          spot_text?: string | null
+          stick_count?: number | null
+          updated_at?: string
+          weight?: number | null
+        }
+        Update: {
+          brand_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_published?: boolean
+          product_name?: string
+          spot_images?: Json | null
+          spot_text?: string | null
+          stick_count?: number | null
+          updated_at?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
