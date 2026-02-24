@@ -32,6 +32,7 @@ interface CompanyHeaderProps {
 }
 
 const HEADER_PAGES = [
+  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
   { key: "services", label: "Services" },

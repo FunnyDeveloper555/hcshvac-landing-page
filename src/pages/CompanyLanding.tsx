@@ -18,6 +18,8 @@ import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyPopup from "@/components/company/CompanyPopup";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
+import CompanyProductsList from "@/components/company/CompanyProductsList";
+import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -69,6 +71,7 @@ interface Company {
 }
 
 const HEADER_PAGES = [
+  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
   { key: "services", label: "Services" },
@@ -84,7 +87,7 @@ const CompanyLanding = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [activePage, setActivePage] = useState<string | null>(null);
-
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   useEffect(() => {
     const fetchCompany = async () => {
       if (!slug) {
@@ -154,12 +157,13 @@ const CompanyLanding = () => {
 
   const handlePageChange = (pageKey: string) => {
     setActivePage(pageKey);
-    // Scroll to top when changing pages
+    setSelectedProductId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToHome = () => {
     setActivePage(null);
+    setSelectedProductId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -196,7 +200,39 @@ const CompanyLanding = () => {
         onPageChange={handlePageChange}
       />
       <main className="flex-1">
-        {activePage ? (
+        {activePage === "products" ? (
+          <section className="pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              {selectedProductId ? (
+                <>
+                  <CompanyProductDetail
+                    productId={selectedProductId}
+                    onBack={() => {
+                      setSelectedProductId(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={handleBackToHome}
+                    className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    ← Back to Home
+                  </button>
+                  <CompanyProductsList
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </section>
+        ) : activePage ? (
           // Show the selected page content
           <section className="pt-24 pb-16">
             <div className="container mx-auto px-4">
