@@ -10,6 +10,8 @@ import Admin from "./pages/Admin";
 import ServiceDetail from "./pages/ServiceDetail";
 import BookingForm from "./pages/BookingForm";
 import CompanyLanding from "./pages/CompanyLanding";
+import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/services/:id" element={<ServiceDetail />} />
           <Route path="/book/:token" element={<BookingForm />} />
           <Route path="/company/:slug" element={<CompanyLanding />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
