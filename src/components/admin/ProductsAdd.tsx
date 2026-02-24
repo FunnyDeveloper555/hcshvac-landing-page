@@ -1,17 +1,76 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, ChevronsUpDown, Check, GripVertical } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useQuery } from "@tanstack/react-query";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
+import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+const PRODUCT_CATEGORIES = [
+  "Accessories",
+  "Filters",
+  "Parts",
+  "Refrigerants",
+  "Tools",
+  "Equipment",
+  "Supplies",
+];
+
+interface SortableImageProps {
+  id: string;
+  url: string;
+  index: number;
+  onRemove: () => void;
+}
+
+const SortableImage = ({ id, url, index, onRemove }: SortableImageProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 p-2 border rounded-md bg-background">
+      <button type="button" className="cursor-grab active:cursor-grabbing touch-none text-muted-foreground" {...attributes} {...listeners}>
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <img src={url} alt={`Spot ${index + 1}`} className="w-16 h-16 object-cover rounded" />
+      <span className="text-sm truncate flex-1">{url}</span>
+      <Button type="button" size="sm" variant="ghost" onClick={onRemove}>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
 
 const ProductsAdd = () => {
   const { toast } = useToast();
@@ -24,6 +83,7 @@ const ProductsAdd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [brandOpen, setBrandOpen] = useState(false);
 
   const [companyId, setCompanyId] = useState("");
   const [category, setCategory] = useState("");
@@ -34,6 +94,11 @@ const ProductsAdd = () => {
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [spotImages, setSpotImages] = useState<string[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const { data: companies = [] } = useQuery({
     queryKey: ["products-companies"],
@@ -116,6 +181,19 @@ const ProductsAdd = () => {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setSpotImages((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const selectedBrandName = brands.find((b) => b.id === brandId)?.name;
+
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -143,7 +221,15 @@ const ProductsAdd = () => {
 
           <div className="space-y-2">
             <Label>Category *</Label>
-            <Input placeholder="e.g. Filters, Parts, Accessories" value={category} onChange={(e) => setCategory(e.target.value)} />
+            <Select value={category || "placeholder"} onValueChange={(val) => setCategory(val === "placeholder" ? "" : val)}>
+              <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="placeholder" disabled className="hidden">Select a category</SelectItem>
+                {PRODUCT_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -160,22 +246,26 @@ const ProductsAdd = () => {
         <div className="space-y-2">
           <Label>Spot Images</Label>
           <div className="mt-1 space-y-2">
-            {spotImages.map((url, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 border rounded-md">
-                <img src={url} alt={`Spot ${index + 1}`} className="w-16 h-16 object-cover rounded" />
-                <span className="text-sm truncate flex-1">{url}</span>
-                <Button type="button" size="sm" variant="ghost" onClick={() => setSpotImages(prev => prev.filter((_, i) => i !== index))}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={spotImages} strategy={verticalListSortingStrategy}>
+                {spotImages.map((url, index) => (
+                  <SortableImage
+                    key={url}
+                    id={url}
+                    url={url}
+                    index={index}
+                    onRemove={() => setSpotImages((prev) => prev.filter((_, i) => i !== index))}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
             <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
               <Plus className="h-4 w-4 mr-1" /> Add Image
             </Button>
             <FileManagerPicker
               open={pickerOpen}
               onOpenChange={setPickerOpen}
-              onSelect={(url) => { setSpotImages(prev => [...prev, url]); setPickerOpen(false); }}
+              onSelect={(url) => { setSpotImages((prev) => [...prev, url]); setPickerOpen(false); }}
               accept="image/*"
             />
           </div>
@@ -184,15 +274,34 @@ const ProductsAdd = () => {
         <div className="grid md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label>Brand</Label>
-            <Select value={brandId || "none"} onValueChange={(val) => setBrandId(val === "none" ? "" : val)}>
-              <SelectTrigger><SelectValue placeholder="Select a brand" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {brands.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={brandOpen} onOpenChange={setBrandOpen}>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" role="combobox" aria-expanded={brandOpen} className="w-full justify-between font-normal">
+                  {selectedBrandName || "Select a brand..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search brands..." />
+                  <CommandList>
+                    <CommandEmpty>No brand found.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem value="__none__" onSelect={() => { setBrandId(""); setBrandOpen(false); }}>
+                        <Check className={cn("mr-2 h-4 w-4", !brandId ? "opacity-100" : "opacity-0")} />
+                        None
+                      </CommandItem>
+                      {brands.map((b) => (
+                        <CommandItem key={b.id} value={b.name} onSelect={() => { setBrandId(b.id); setBrandOpen(false); }}>
+                          <Check className={cn("mr-2 h-4 w-4", brandId === b.id ? "opacity-100" : "opacity-0")} />
+                          {b.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
