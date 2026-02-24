@@ -334,6 +334,7 @@ const ProductsList = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[60px]">Image</TableHead>
               <SortableHead field="product_name">Product Name</SortableHead>
               <SortableHead field="category">Category</SortableHead>
               <SortableHead field="company">Company</SortableHead>
@@ -347,6 +348,17 @@ const ProductsList = () => {
           <TableBody>
             {paginatedProducts.map((product) => (
               <TableRow key={product.id}>
+                <TableCell>
+                  {(product.spot_images as string[] | null)?.length ? (
+                    <img
+                      src={(product.spot_images as string[])[0]}
+                      alt={product.product_name}
+                      className="h-10 w-10 rounded object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">—</div>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{product.product_name}</TableCell>
                 <TableCell>{product.category || "—"}</TableCell>
                 <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
@@ -372,7 +384,7 @@ const ProductsList = () => {
             ))}
             {paginatedProducts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                 </TableCell>
               </TableRow>
