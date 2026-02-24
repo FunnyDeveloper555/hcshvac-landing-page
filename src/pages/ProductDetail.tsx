@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +26,45 @@ const ProductDetail = () => {
     },
     enabled: !!id,
   });
+
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ["related-products-public", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, brands(name)")
+        .eq("is_published", true)
+        .neq("id", id!)
+        .limit(3);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const images = (product?.spot_images as string[] | null) || [];
+
+  // Auto-rotate images
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setSelectedImage((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  // Reset on product change
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [id]);
+
+  const goToPrev = useCallback(() => {
+    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const goToNext = useCallback(() => {
+    setSelectedImage((prev) => (prev + 1) % images.length);
+  }, [images.length]);
 
   if (isLoading) {
     return (
@@ -64,8 +103,6 @@ const ProductDetail = () => {
     );
   }
 
-  const images = (product.spot_images as string[] | null) || [];
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -76,15 +113,46 @@ const ProductDetail = () => {
           </Button>
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            {/* Images */}
+            {/* Image Slider */}
             <div className="space-y-4">
-              <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border">
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-muted border border-border group">
                 {images.length > 0 ? (
-                  <img
-                    src={images[selectedImage]}
-                    alt={product.product_name}
-                    className="w-full h-full object-cover"
-                  />
+                  <>
+                    <img
+                      src={images[selectedImage]}
+                      alt={product.product_name}
+                      className="w-full h-full object-cover transition-opacity duration-500"
+                    />
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={goToPrev}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-background"
+                        >
+                          <ChevronLeft className="w-5 h-5 text-foreground" />
+                        </button>
+                        <button
+                          onClick={goToNext}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-background"
+                        >
+                          <ChevronRight className="w-5 h-5 text-foreground" />
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          {images.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setSelectedImage(i)}
+                              className={`w-2 h-2 rounded-full transition-all ${
+                                selectedImage === i
+                                  ? "bg-primary w-4"
+                                  : "bg-background/70 hover:bg-background"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     No Image Available
@@ -148,6 +216,56 @@ const ProductDetail = () => {
               )}
             </div>
           </div>
+
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-16 border-t border-border pt-10">
+              <h2 className="text-2xl font-bold text-foreground mb-6">You May Also Like</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {relatedProducts.map((rp) => {
+                  const rpImages = rp.spot_images as string[] | null;
+                  const thumb = rpImages?.[0];
+                  return (
+                    <div
+                      key={rp.id}
+                      onClick={() => navigate(`/products/${rp.id}`)}
+                      className="group cursor-pointer rounded-xl border border-border bg-card overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                    >
+                      <div className="aspect-[4/3] bg-muted overflow-hidden">
+                        {thumb ? (
+                          <img
+                            src={thumb}
+                            alt={rp.product_name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                            No Image
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4 space-y-2">
+                        <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                          {rp.product_name}
+                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {rp.category && (
+                            <span className="text-xs bg-accent text-accent-foreground px-2.5 py-0.5 rounded-full font-medium">
+                              {rp.category}
+                            </span>
+                          )}
+                          {(rp.brands as any)?.name && (
+                            <span className="text-xs text-muted-foreground">{(rp.brands as any).name}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

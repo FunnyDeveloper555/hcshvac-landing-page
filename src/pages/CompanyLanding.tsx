@@ -207,8 +207,13 @@ const CompanyLanding = () => {
                 <>
                   <CompanyProductDetail
                     productId={selectedProductId}
+                    companyId={company.id}
                     onBack={() => {
                       setSelectedProductId(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    onProductClick={(id) => {
+                      setSelectedProductId(id);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                   />
