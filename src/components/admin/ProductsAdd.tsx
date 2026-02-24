@@ -184,10 +184,10 @@ const ProductsAdd = () => {
         <div className="grid md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label>Brand</Label>
-            <Select value={brandId} onValueChange={setBrandId}>
+            <Select value={brandId || "none"} onValueChange={(val) => setBrandId(val === "none" ? "" : val)}>
               <SelectTrigger><SelectValue placeholder="Select a brand" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {brands.map((b) => (
                   <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
                 ))}
