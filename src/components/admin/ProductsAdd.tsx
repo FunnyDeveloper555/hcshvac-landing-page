@@ -32,6 +32,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
 
 const PRODUCT_CATEGORIES = [
   "Accessories",
@@ -205,131 +207,146 @@ const ProductsAdd = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Product" : "Add New Product"}</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Company *</Label>
-            <Select value={companyId} onValueChange={setCompanyId}>
-              <SelectTrigger><SelectValue placeholder="Select a company" /></SelectTrigger>
-              <SelectContent>
-                {companies.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <Tabs defaultValue="basic">
+        <TabsList>
+          <TabsTrigger value="basic">Basic Information</TabsTrigger>
+          {isEditing && <TabsTrigger value="related">Related Products</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="basic">
+          <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Company *</Label>
+                <Select value={companyId} onValueChange={setCompanyId}>
+                  <SelectTrigger><SelectValue placeholder="Select a company" /></SelectTrigger>
+                  <SelectContent>
+                    {companies.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="space-y-2">
-            <Label>Category *</Label>
-            <Select value={category || "placeholder"} onValueChange={(val) => setCategory(val === "placeholder" ? "" : val)}>
-              <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="placeholder" disabled className="hidden">Select a category</SelectItem>
-                {PRODUCT_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+              <div className="space-y-2">
+                <Label>Category *</Label>
+                <Select value={category || "placeholder"} onValueChange={(val) => setCategory(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select a category</SelectItem>
+                    {PRODUCT_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <Label>Product Name *</Label>
-          <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
-        </div>
+            <div className="space-y-2">
+              <Label>Product Name *</Label>
+              <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
+            </div>
 
-        <div className="space-y-2">
-          <Label>Spot Text</Label>
-          <Textarea placeholder="Short description or promotional text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
-        </div>
+            <div className="space-y-2">
+              <Label>Spot Text</Label>
+              <Textarea placeholder="Short description or promotional text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
+            </div>
 
-        <div className="space-y-2">
-          <Label>Spot Images</Label>
-          <div className="mt-1 space-y-2">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={spotImages} strategy={verticalListSortingStrategy}>
-                {spotImages.map((url, index) => (
-                  <SortableImage
-                    key={url}
-                    id={url}
-                    url={url}
-                    index={index}
-                    onRemove={() => setSpotImages((prev) => prev.filter((_, i) => i !== index))}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-            <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
-              <Plus className="h-4 w-4 mr-1" /> Add Image
-            </Button>
-            <FileManagerPicker
-              open={pickerOpen}
-              onOpenChange={setPickerOpen}
-              onSelect={(url) => { setSpotImages((prev) => [...prev, url]); setPickerOpen(false); }}
-              accept="image/*"
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Brand</Label>
-            <Popover open={brandOpen} onOpenChange={setBrandOpen}>
-              <PopoverTrigger asChild>
-                <Button type="button" variant="outline" role="combobox" aria-expanded={brandOpen} className="w-full justify-between font-normal">
-                  {selectedBrandName || "Select a brand..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <div className="space-y-2">
+              <Label>Spot Images</Label>
+              <div className="mt-1 space-y-2">
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={spotImages} strategy={verticalListSortingStrategy}>
+                    {spotImages.map((url, index) => (
+                      <SortableImage
+                        key={url}
+                        id={url}
+                        url={url}
+                        index={index}
+                        onRemove={() => setSpotImages((prev) => prev.filter((_, i) => i !== index))}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+                <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" /> Add Image
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search brands..." />
-                  <CommandList>
-                    <CommandEmpty>No brand found.</CommandEmpty>
-                    <CommandGroup>
-                      <CommandItem value="__none__" onSelect={() => { setBrandId(""); setBrandOpen(false); }}>
-                        <Check className={cn("mr-2 h-4 w-4", !brandId ? "opacity-100" : "opacity-0")} />
-                        None
-                      </CommandItem>
-                      {brands.map((b) => (
-                        <CommandItem key={b.id} value={b.name} onSelect={() => { setBrandId(b.id); setBrandOpen(false); }}>
-                          <Check className={cn("mr-2 h-4 w-4", brandId === b.id ? "opacity-100" : "opacity-0")} />
-                          {b.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+                <FileManagerPicker
+                  open={pickerOpen}
+                  onOpenChange={setPickerOpen}
+                  onSelect={(url) => { setSpotImages((prev) => [...prev, url]); setPickerOpen(false); }}
+                  accept="image/*"
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Weight</Label>
-            <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
-          </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Brand</Label>
+                <Popover open={brandOpen} onOpenChange={setBrandOpen}>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" role="combobox" aria-expanded={brandOpen} className="w-full justify-between font-normal">
+                      {selectedBrandName || "Select a brand..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search brands..." />
+                      <CommandList>
+                        <CommandEmpty>No brand found.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem value="__none__" onSelect={() => { setBrandId(""); setBrandOpen(false); }}>
+                            <Check className={cn("mr-2 h-4 w-4", !brandId ? "opacity-100" : "opacity-0")} />
+                            None
+                          </CommandItem>
+                          {brands.map((b) => (
+                            <CommandItem key={b.id} value={b.name} onSelect={() => { setBrandId(b.id); setBrandOpen(false); }}>
+                              <Check className={cn("mr-2 h-4 w-4", brandId === b.id ? "opacity-100" : "opacity-0")} />
+                              {b.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-          <div className="space-y-2">
-            <Label>Stick Count</Label>
-            <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
-          </div>
-        </div>
+              <div className="space-y-2">
+                <Label>Weight</Label>
+                <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
+              </div>
 
-        <div className="flex items-center gap-3">
-          <Label>Published</Label>
-          <Switch checked={isPublished} onCheckedChange={setIsPublished} />
-        </div>
+              <div className="space-y-2">
+                <Label>Stick Count</Label>
+                <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
+              </div>
+            </div>
 
-        <div className="flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {isEditing ? "Update Product" : "Create Product"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => navigate("/admin/products/list")}>
-            Cancel
-          </Button>
-        </div>
-      </form>
+            <div className="flex items-center gap-3">
+              <Label>Published</Label>
+              <Switch checked={isPublished} onCheckedChange={setIsPublished} />
+            </div>
+
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isEditing ? "Update Product" : "Create Product"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate("/admin/products/list")}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </TabsContent>
+        {isEditing && editId && (
+          <TabsContent value="related">
+            <div className="mt-4">
+              <RelatedProductsTab productId={editId} companyId={companyId} />
+            </div>
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 };

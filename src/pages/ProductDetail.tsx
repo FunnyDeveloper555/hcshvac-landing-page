@@ -11,6 +11,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [relatedStart, setRelatedStart] = useState(0);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["public-product", id],
@@ -27,9 +28,19 @@ const ProductDetail = () => {
     enabled: !!id,
   });
 
+  // Fetch curated recommendations, fallback to random
   const { data: relatedProducts = [] } = useQuery({
     queryKey: ["related-products-public", id],
     queryFn: async () => {
+      const { data: recs, error: recError } = await supabase
+        .from("product_recommendations")
+        .select("recommended_product_id, display_order, products!product_recommendations_recommended_product_id_fkey(*, brands(name))")
+        .eq("product_id", id!)
+        .eq("is_active", true)
+        .order("display_order");
+      if (!recError && recs && recs.length > 0) {
+        return recs.map((r: any) => r.products).filter(Boolean);
+      }
       const { data, error } = await supabase
         .from("products")
         .select("*, brands(name)")
@@ -44,7 +55,6 @@ const ProductDetail = () => {
 
   const images = (product?.spot_images as string[] | null) || [];
 
-  // Auto-rotate images
   useEffect(() => {
     if (images.length <= 1) return;
     const interval = setInterval(() => {
@@ -53,9 +63,9 @@ const ProductDetail = () => {
     return () => clearInterval(interval);
   }, [images.length]);
 
-  // Reset on product change
   useEffect(() => {
     setSelectedImage(0);
+    setRelatedStart(0);
   }, [id]);
 
   const goToPrev = useCallback(() => {
@@ -65,6 +75,11 @@ const ProductDetail = () => {
   const goToNext = useCallback(() => {
     setSelectedImage((prev) => (prev + 1) % images.length);
   }, [images.length]);
+
+  const visibleCount = 3;
+  const canSlideLeft = relatedStart > 0;
+  const canSlideRight = relatedStart + visibleCount < relatedProducts.length;
+  const visibleRelated = relatedProducts.slice(relatedStart, relatedStart + visibleCount);
 
   if (isLoading) {
     return (
@@ -217,12 +232,32 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Related Products */}
+          {/* Related Products with slider */}
           {relatedProducts.length > 0 && (
             <div className="mt-16 border-t border-border pt-10">
-              <h2 className="text-2xl font-bold text-foreground mb-6">You May Also Like</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-foreground">You May Also Like</h2>
+                {relatedProducts.length > visibleCount && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setRelatedStart((s) => Math.max(0, s - 1))}
+                      disabled={!canSlideLeft}
+                      className="p-2 rounded-full border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setRelatedStart((s) => Math.min(relatedProducts.length - visibleCount, s + 1))}
+                      disabled={!canSlideRight}
+                      className="p-2 rounded-full border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {relatedProducts.map((rp) => {
+                {visibleRelated.map((rp: any) => {
                   const rpImages = rp.spot_images as string[] | null;
                   const thumb = rpImages?.[0];
                   return (
