@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -279,13 +280,23 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
                         </div>
                       </div>
                       {isSelected && attrs && Object.keys(attrs).length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-border flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                          {Object.entries(attrs).map(([key, val]) => (
-                            <div key={key}>
-                              <span className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</span>{" "}
-                              <span className="text-foreground">{String(val)}</span>
-                            </div>
-                          ))}
+                        <div className="mt-2 pt-2 border-t border-border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Specification</TableHead>
+                                <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Value</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {Object.entries(attrs).map(([key, val]) => (
+                                <TableRow key={key} className="border-border/50">
+                                  <TableCell className="py-2 px-4 text-muted-foreground capitalize font-medium text-sm">{key.replace(/_/g, " ")}</TableCell>
+                                  <TableCell className="py-2 px-4 text-foreground text-sm">{String(val)}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </div>
                       )}
                     </button>
