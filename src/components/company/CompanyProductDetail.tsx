@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface CompanyProductDetailProps {
   productId: string;
@@ -16,6 +17,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedStart, setRelatedStart] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["company-product-detail", productId],
@@ -59,6 +61,22 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
     enabled: !!productId,
   });
 
+  // Fetch product variants
+  const { data: variants = [] } = useQuery({
+    queryKey: ["product-variants-public", productId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .eq("is_active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!productId,
+  });
+
   const images = (product?.spot_images as string[] | null) || [];
 
   useEffect(() => {
@@ -72,6 +90,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
   useEffect(() => {
     setSelectedImage(0);
     setRelatedStart(0);
+    setSelectedVariant(null);
   }, [productId]);
 
   const goToPrev = useCallback(() => {
@@ -221,6 +240,58 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
             <div>
               <h2 className="text-lg font-semibold text-foreground mb-2">Description</h2>
               <p className="text-muted-foreground whitespace-pre-wrap">{product.spot_text}</p>
+            </div>
+          )}
+
+          {/* Variants */}
+          {variants.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-3">Available Options</h2>
+              <div className="space-y-2">
+                {variants.map((v: any) => {
+                  const isSelected = selectedVariant === v.id;
+                  const attrs = v.attributes as Record<string, any> | null;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariant(isSelected ? null : v.id)}
+                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-foreground">{v.variant_name}</span>
+                          <span className="ml-2 text-xs font-mono text-muted-foreground">SKU: {v.sku}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {v.price != null && (
+                            <span className="font-semibold text-foreground">${Number(v.price).toFixed(2)}</span>
+                          )}
+                          <Badge
+                            variant={v.stock_status === "in_stock" ? "default" : v.stock_status === "out_of_stock" ? "destructive" : "secondary"}
+                            className="text-xs"
+                          >
+                            {v.stock_status === "in_stock" ? "In Stock" : v.stock_status === "low_stock" ? "Low Stock" : v.stock_status === "out_of_stock" ? "Out of Stock" : v.stock_status}
+                          </Badge>
+                        </div>
+                      </div>
+                      {isSelected && attrs && Object.keys(attrs).length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-border flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                          {Object.entries(attrs).map(([key, val]) => (
+                            <div key={key}>
+                              <span className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</span>{" "}
+                              <span className="text-foreground">{String(val)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

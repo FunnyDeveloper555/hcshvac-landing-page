@@ -34,6 +34,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
+import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 
 const PRODUCT_CATEGORIES = [
   "Accessories",
@@ -210,6 +211,7 @@ const ProductsAdd = () => {
       <Tabs defaultValue="basic">
         <TabsList>
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
+          {isEditing && <TabsTrigger value="variants">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related">Related Products</TabsTrigger>}
         </TabsList>
         <TabsContent value="basic">
@@ -339,6 +341,13 @@ const ProductsAdd = () => {
             </div>
           </form>
         </TabsContent>
+        {isEditing && editId && (
+          <TabsContent value="variants">
+            <div className="mt-4">
+              <ProductVariantsTab productId={editId} />
+            </div>
+          </TabsContent>
+        )}
         {isEditing && editId && (
           <TabsContent value="related">
             <div className="mt-4">
