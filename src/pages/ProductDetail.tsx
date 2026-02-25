@@ -6,12 +6,14 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import ProductImageLightbox from "@/components/ProductImageLightbox";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedStart, setRelatedStart] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["public-product", id],
@@ -136,7 +138,8 @@ const ProductDetail = () => {
                     <img
                       src={images[selectedImage]}
                       alt={product.product_name}
-                      className="w-full h-full object-cover transition-opacity duration-500"
+                      className="w-full h-full object-cover transition-opacity duration-500 cursor-pointer"
+                      onClick={() => setLightboxIndex(selectedImage)}
                     />
                     {images.length > 1 && (
                       <>
@@ -303,6 +306,14 @@ const ProductDetail = () => {
           )}
         </div>
       </main>
+      {lightboxIndex !== null && (
+        <ProductImageLightbox
+          images={images}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          alt={product.product_name}
+        />
+      )}
       <Footer />
     </div>
   );
