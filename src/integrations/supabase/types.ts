@@ -2272,6 +2272,59 @@ export type Database = {
           },
         ]
       }
+      product_variants: {
+        Row: {
+          attributes: Json
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          price: number | null
+          product_id: string
+          sku: string
+          stock_status: string
+          updated_at: string
+          variant_name: string
+          weight: number | null
+        }
+        Insert: {
+          attributes?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          price?: number | null
+          product_id: string
+          sku: string
+          stock_status?: string
+          updated_at?: string
+          variant_name: string
+          weight?: number | null
+        }
+        Update: {
+          attributes?: Json
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          price?: number | null
+          product_id?: string
+          sku?: string
+          stock_status?: string
+          updated_at?: string
+          variant_name?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand_id: string | null
