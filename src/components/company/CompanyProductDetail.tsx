@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import ProductImageLightbox from "@/components/ProductImageLightbox";
 import { Button } from "@/components/ui/button";
 
 interface CompanyProductDetailProps {
@@ -14,6 +15,7 @@ interface CompanyProductDetailProps {
 const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: CompanyProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedStart, setRelatedStart] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["company-product-detail", productId],
@@ -127,7 +129,8 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
                 <img
                   src={images[selectedImage]}
                   alt={product.product_name}
-                  className="w-full h-full object-cover transition-opacity duration-500"
+                  className="w-full h-full object-cover transition-opacity duration-500 cursor-pointer"
+                  onClick={() => setLightboxIndex(selectedImage)}
                 />
                 {images.length > 1 && (
                   <>
@@ -291,6 +294,14 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
             })}
           </div>
         </div>
+      )}
+      {lightboxIndex !== null && (
+        <ProductImageLightbox
+          images={images}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          alt={product.product_name}
+        />
       )}
     </div>
   );
