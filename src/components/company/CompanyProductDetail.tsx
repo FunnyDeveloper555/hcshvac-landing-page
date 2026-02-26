@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
 import ProductReviews from "@/components/ProductReviews";
 import ProductDocuments from "@/components/ProductDocuments";
+import ReviewSubmitForm from "@/components/ReviewSubmitForm";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -313,6 +314,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
       </div>
 
       <ProductReviews productId={productId} />
+      <ReviewSubmitForm productId={productId} />
 
       {/* Related Products with slider */}
       {relatedProducts.length > 0 && (

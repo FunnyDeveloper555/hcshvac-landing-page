@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from "react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
 import ProductReviews from "@/components/ProductReviews";
 import ProductDocuments from "@/components/ProductDocuments";
+import ReviewSubmitForm from "@/components/ReviewSubmitForm";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -312,6 +313,7 @@ const ProductDetail = () => {
 
           {/* Product Reviews */}
           <ProductReviews productId={id!} />
+          <ReviewSubmitForm productId={id!} />
         </div>
       </main>
       {lightboxIndex !== null && (

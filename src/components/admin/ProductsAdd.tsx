@@ -35,6 +35,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
 import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
+import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
+import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 
 const PRODUCT_CATEGORIES = [
   "Accessories",
@@ -213,6 +215,8 @@ const ProductsAdd = () => {
           <TabsTrigger value="basic">Basic Information</TabsTrigger>
           {isEditing && <TabsTrigger value="variants">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related">Related Products</TabsTrigger>}
+          {isEditing && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
+          {isEditing && <TabsTrigger value="documents">Documents</TabsTrigger>}
         </TabsList>
         <TabsContent value="basic">
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
@@ -352,6 +356,20 @@ const ProductsAdd = () => {
           <TabsContent value="related">
             <div className="mt-4">
               <RelatedProductsTab productId={editId} companyId={companyId} />
+            </div>
+          </TabsContent>
+        )}
+        {isEditing && editId && (
+          <TabsContent value="reviews">
+            <div className="mt-4">
+              <ProductReviewsTab productId={editId} />
+            </div>
+          </TabsContent>
+        )}
+        {isEditing && editId && (
+          <TabsContent value="documents">
+            <div className="mt-4">
+              <ProductDocumentsTab productId={editId} />
             </div>
           </TabsContent>
         )}
