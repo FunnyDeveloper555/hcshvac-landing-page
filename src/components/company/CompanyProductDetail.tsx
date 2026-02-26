@@ -312,6 +312,8 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
         </div>
       </div>
 
+      <ProductReviews productId={productId} />
+
       {/* Related Products with slider */}
       {relatedProducts.length > 0 && (
         <div className="mt-16 border-t border-border pt-10">
@@ -381,8 +383,6 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
           </div>
         </div>
       )}
-      <ProductReviews productId={productId} />
-
       {lightboxIndex !== null && (
         <ProductImageLightbox
           images={images}
