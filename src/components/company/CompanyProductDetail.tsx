@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
+import ProductReviews from "@/components/ProductReviews";
+import ProductDocuments from "@/components/ProductDocuments";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -305,6 +307,8 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
               </div>
             </div>
           )}
+
+          <ProductDocuments productId={productId} />
         </div>
       </div>
 
@@ -377,6 +381,8 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
           </div>
         </div>
       )}
+      <ProductReviews productId={productId} />
+
       {lightboxIndex !== null && (
         <ProductImageLightbox
           images={images}
