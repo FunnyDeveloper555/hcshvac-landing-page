@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
+import ProductReviews from "@/components/ProductReviews";
+import ProductDocuments from "@/components/ProductDocuments";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -232,6 +234,9 @@ const ProductDetail = () => {
                   <p className="text-muted-foreground whitespace-pre-wrap">{product.spot_text}</p>
                 </div>
               )}
+
+              {/* Documents & Downloads */}
+              <ProductDocuments productId={id!} />
             </div>
           </div>
 
@@ -304,6 +309,9 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
+
+          {/* Product Reviews */}
+          <ProductReviews productId={id!} />
         </div>
       </main>
       {lightboxIndex !== null && (
