@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
 import { useFileManager, FileItem, FileFolder } from "@/hooks/useFileManager";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { FolderTree } from "./FolderTree";
 import { FileListingToolbar } from "./FileListingToolbar";
 import { FileGrid } from "./FileGrid";
@@ -11,6 +14,7 @@ import {
   PreviewDialog,
   PasteConflictDialog,
 } from "./FileManagerDialogs";
+import { ImageEditorDialog } from "./ImageEditorDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileDetailPanel } from "./FileDetailPanel";
 import { Loader2, FolderOpen } from "lucide-react";
@@ -25,6 +29,7 @@ import { Button } from "@/components/ui/button";
 
 export default function FileManager() {
   const fm = useFileManager();
+  const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [mobileFolderOpen, setMobileFolderOpen] = useState(false);
@@ -44,6 +49,8 @@ export default function FileManager() {
   } | null>(null);
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
   const [detailFile, setDetailFile] = useState<FileItem | null>(null);
+  const [editImageFile, setEditImageFile] = useState<FileItem | null>(null);
+  const [editImageSaving, setEditImageSaving] = useState(false);
 
   const handleFileClick = (fileId: string, e: React.MouseEvent) => {
     const allIds = fm.files.map((f) => f.id);
@@ -63,6 +70,43 @@ export default function FileManager() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  };
+
+  const handleEditImageSave = async (file: File) => {
+    if (!editImageFile) return;
+    setEditImageSaving(true);
+    try {
+      await supabase.storage.from("file-manager").remove([editImageFile.storage_path]);
+
+      const ext = file.name.split(".").pop() || "png";
+      const newPath = `${crypto.randomUUID()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("file-manager")
+        .upload(newPath, file);
+      if (uploadErr) throw uploadErr;
+
+      const { data: urlData } = supabase.storage
+        .from("file-manager")
+        .getPublicUrl(newPath);
+
+      const { error: dbErr } = await supabase
+        .from("file_items")
+        .update({
+          storage_path: newPath,
+          file_url: urlData.publicUrl,
+          file_size: file.size,
+        })
+        .eq("id", editImageFile.id);
+      if (dbErr) throw dbErr;
+
+      queryClient.invalidateQueries({ queryKey: ["file-manager-files"] });
+      toast.success("Image saved successfully");
+      setEditImageFile(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save edited image");
+    } finally {
+      setEditImageSaving(false);
+    }
   };
 
   const handleDeleteSelected = () => {
@@ -186,6 +230,14 @@ export default function FileManager() {
       const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
       if (selected) setDetailFile(selected);
     },
+    onEditImageSelected: () => {
+      const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+      if (selected && selected.mime_type?.startsWith("image/")) setEditImageFile(selected);
+    },
+    isSelectedImage: (() => {
+      const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+      return !!selected?.mime_type?.startsWith("image/");
+    })(),
   };
 
   const fileListingContent = (
@@ -246,6 +298,9 @@ export default function FileManager() {
           }
           onDropItem={handleDropOnFolder}
           onProperties={setDetailFile}
+          onEditImage={(f) => {
+            if (f.mime_type?.startsWith("image/")) setEditImageFile(f);
+          }}
         />
       )}
     </div>
@@ -350,6 +405,15 @@ export default function FileManager() {
         open={!!detailFile}
         onOpenChange={(open) => !open && setDetailFile(null)}
         file={detailFile}
+      />
+
+      <ImageEditorDialog
+        open={!!editImageFile}
+        onOpenChange={(open) => !open && setEditImageFile(null)}
+        imageUrl={editImageFile?.file_url ?? null}
+        imageName={editImageFile?.name ?? ""}
+        onSave={handleEditImageSave}
+        isPending={editImageSaving}
       />
     </div>
   );

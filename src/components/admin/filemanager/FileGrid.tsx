@@ -8,7 +8,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Copy, Scissors, Pencil, Trash2, Download, Eye, Info } from "lucide-react";
+import { Copy, Scissors, Pencil, Trash2, Download, Eye, Info, ImageIcon } from "lucide-react";
 
 interface FileGridProps {
   files: FileItem[];
@@ -28,6 +28,7 @@ interface FileGridProps {
   onDeleteFolder: (folder: FileFolder) => void;
   onDropItem: (targetFolderId: string, dataTransfer: DataTransfer) => void;
   onProperties?: (file: FileItem) => void;
+  onEditImage?: (file: FileItem) => void;
 }
 
 function getFileIcon(mimeType: string | null) {
@@ -68,6 +69,7 @@ export function FileGrid({
   onDeleteFolder,
   onDropItem,
   onProperties,
+  onEditImage,
 }: FileGridProps) {
   if (subfolders.length === 0 && files.length === 0) {
     return (
@@ -163,6 +165,14 @@ export function FileGrid({
                         <ContextMenuItem className="text-destructive" onClick={() => onDelete(file)}>
                           <Trash2 className="h-4 w-4 mr-2" /> Delete
                         </ContextMenuItem>
+                        {onEditImage && isImageType(file.mime_type) && (
+                          <>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem onClick={() => onEditImage(file)}>
+                              <ImageIcon className="h-4 w-4 mr-2" /> Edit Image
+                            </ContextMenuItem>
+                          </>
+                        )}
                         {onProperties && (
                           <>
                             <ContextMenuSeparator />
@@ -270,6 +280,14 @@ export function FileGrid({
                 <ContextMenuItem className="text-destructive" onClick={() => onDelete(file)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
                 </ContextMenuItem>
+                {onEditImage && isImageType(file.mime_type) && (
+                  <>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => onEditImage(file)}>
+                      <ImageIcon className="h-4 w-4 mr-2" /> Edit Image
+                    </ContextMenuItem>
+                  </>
+                )}
                 {onProperties && (
                   <>
                     <ContextMenuSeparator />
