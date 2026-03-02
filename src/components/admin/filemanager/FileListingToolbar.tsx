@@ -1,7 +1,7 @@
 import {
   Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
   ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil, Info,
-  FolderOpen, MoreVertical,
+  FolderOpen, MoreVertical, ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,8 @@ interface FileListingToolbarProps {
   onCutSelected?: () => void;
   onRenameSelected?: () => void;
   onPropertiesSelected?: () => void;
+  onEditImageSelected?: () => void;
+  isSelectedImage?: boolean;
 }
 
 export function FileListingToolbar({
@@ -75,6 +77,8 @@ export function FileListingToolbar({
   onCutSelected,
   onRenameSelected,
   onPropertiesSelected,
+  onEditImageSelected,
+  isSelectedImage,
 }: FileListingToolbarProps) {
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
   const hasSelection = selectedCount > 0;
@@ -150,6 +154,11 @@ export function FileListingToolbar({
                     <Info className="h-4 w-4" />
                   </Button>
                 )}
+                {hasSingleSelection && isSelectedImage && onEditImageSelected && (
+                  <Button variant="outline" size="sm" onClick={onEditImageSelected} title="Edit Image">
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               {/* Mobile: overflow menu for selection actions */}
@@ -189,6 +198,11 @@ export function FileListingToolbar({
                     {hasSingleSelection && onPropertiesSelected && (
                       <DropdownMenuItem onClick={onPropertiesSelected}>
                         <Info className="h-4 w-4 mr-2" /> Properties
+                      </DropdownMenuItem>
+                    )}
+                    {hasSingleSelection && isSelectedImage && onEditImageSelected && (
+                      <DropdownMenuItem onClick={onEditImageSelected}>
+                        <ImageIcon className="h-4 w-4 mr-2" /> Edit Image
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
