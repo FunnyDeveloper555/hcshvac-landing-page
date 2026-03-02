@@ -12,6 +12,7 @@ import {
   PasteConflictDialog,
 } from "./FileManagerDialogs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FileDetailPanel } from "./FileDetailPanel";
 import { Loader2 } from "lucide-react";
 import {
   ResizablePanelGroup,
@@ -37,6 +38,7 @@ export default function FileManager() {
     message: string;
   } | null>(null);
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
+  const [detailFile, setDetailFile] = useState<FileItem | null>(null);
 
   const handleFileClick = (fileId: string, e: React.MouseEvent) => {
     const allIds = fm.files.map((f) => f.id);
@@ -197,6 +199,10 @@ export default function FileManager() {
                 const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
                 if (selected) setRenameTarget({ type: "file", id: selected.id, name: selected.name });
               }}
+              onPropertiesSelected={() => {
+                const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
+                if (selected) setDetailFile(selected);
+              }}
             />
             {fm.filesLoading ? (
               <div className="p-4 grid grid-cols-6 gap-3">
@@ -238,6 +244,7 @@ export default function FileManager() {
                   })
                 }
                 onDropItem={handleDropOnFolder}
+                onProperties={setDetailFile}
               />
             )}
           </div>
@@ -305,6 +312,12 @@ export default function FileManager() {
         open={!!fm.pasteConflict}
         conflict={fm.pasteConflict}
         onResolve={fm.resolvePasteConflict}
+      />
+
+      <FileDetailPanel
+        open={!!detailFile}
+        onOpenChange={(open) => !open && setDetailFile(null)}
+        file={detailFile}
       />
     </div>
   );

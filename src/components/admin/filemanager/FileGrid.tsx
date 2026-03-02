@@ -8,7 +8,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Copy, Scissors, Pencil, Trash2, Download, Eye } from "lucide-react";
+import { Copy, Scissors, Pencil, Trash2, Download, Eye, Info } from "lucide-react";
 
 interface FileGridProps {
   files: FileItem[];
@@ -27,6 +27,7 @@ interface FileGridProps {
   onRenameFolder: (folder: FileFolder) => void;
   onDeleteFolder: (folder: FileFolder) => void;
   onDropItem: (targetFolderId: string, dataTransfer: DataTransfer) => void;
+  onProperties?: (file: FileItem) => void;
 }
 
 function getFileIcon(mimeType: string | null) {
@@ -66,6 +67,7 @@ export function FileGrid({
   onRenameFolder,
   onDeleteFolder,
   onDropItem,
+  onProperties,
 }: FileGridProps) {
   if (subfolders.length === 0 && files.length === 0) {
     return (
@@ -161,6 +163,14 @@ export function FileGrid({
                         <ContextMenuItem className="text-destructive" onClick={() => onDelete(file)}>
                           <Trash2 className="h-4 w-4 mr-2" /> Delete
                         </ContextMenuItem>
+                        {onProperties && (
+                          <>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem onClick={() => onProperties(file)}>
+                              <Info className="h-4 w-4 mr-2" /> Properties
+                            </ContextMenuItem>
+                          </>
+                        )}
                       </ContextMenuContent>
                     </ContextMenu>
                   </td>
@@ -260,6 +270,14 @@ export function FileGrid({
                 <ContextMenuItem className="text-destructive" onClick={() => onDelete(file)}>
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
                 </ContextMenuItem>
+                {onProperties && (
+                  <>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => onProperties(file)}>
+                      <Info className="h-4 w-4 mr-2" /> Properties
+                    </ContextMenuItem>
+                  </>
+                )}
               </ContextMenuContent>
             </ContextMenu>
           );
