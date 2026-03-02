@@ -1,6 +1,6 @@
 import {
   Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
-  ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil,
+  ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil, Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,7 @@ interface FileListingToolbarProps {
   onCopySelected?: () => void;
   onCutSelected?: () => void;
   onRenameSelected?: () => void;
+  onPropertiesSelected?: () => void;
 }
 
 export function FileListingToolbar({
@@ -69,6 +70,7 @@ export function FileListingToolbar({
   onCopySelected,
   onCutSelected,
   onRenameSelected,
+  onPropertiesSelected,
 }: FileListingToolbarProps) {
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
   const hasSelection = selectedCount > 0;
@@ -124,6 +126,11 @@ export function FileListingToolbar({
           {hasSingleSelection && onRenameSelected && (
             <Button variant="outline" size="sm" onClick={onRenameSelected} title="Rename">
               <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          {hasSingleSelection && onPropertiesSelected && (
+            <Button variant="outline" size="sm" onClick={onPropertiesSelected} title="Properties">
+              <Info className="h-4 w-4" />
             </Button>
           )}
           {hasSelection && (
