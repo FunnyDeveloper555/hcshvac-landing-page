@@ -1,6 +1,7 @@
 import {
   Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
   ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil, Info,
+  FolderOpen, MoreVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import React from "react";
@@ -39,6 +41,7 @@ interface FileListingToolbarProps {
   onSortDirectionToggle: () => void;
   canUndo: boolean;
   onUndo: () => void;
+  onFoldersClick?: () => void;
   onPreviewSelected?: () => void;
   onDownloadSelected?: () => void;
   onCopySelected?: () => void;
@@ -65,6 +68,7 @@ export function FileListingToolbar({
   onSortDirectionToggle,
   canUndo,
   onUndo,
+  onFoldersClick,
   onPreviewSelected,
   onDownloadSelected,
   onCopySelected,
@@ -77,76 +81,132 @@ export function FileListingToolbar({
   const hasSingleSelection = selectedCount === 1;
 
   return (
-    <div className="flex flex-col gap-2 px-4 py-2 border-b">
-      <div className="flex items-center justify-between">
-        <Breadcrumb>
-          <BreadcrumbList>
-            {breadcrumbs.map((crumb, idx) => (
-              <React.Fragment key={crumb.id ?? "root"}>
-                {idx > 0 && <BreadcrumbSeparator />}
-                <BreadcrumbItem>
-                  {idx === breadcrumbs.length - 1 ? (
-                    <BreadcrumbPage>{crumb.name}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink
-                      className="cursor-pointer"
-                      onClick={() => onNavigate(crumb.id)}
-                    >
-                      {crumb.name}
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </React.Fragment>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
+    <div className="flex flex-col gap-2 px-3 sm:px-4 py-2 border-b">
+      {/* Row 1: Breadcrumbs + actions */}
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+          {/* Mobile folders button */}
+          {onFoldersClick && (
+            <Button variant="outline" size="sm" onClick={onFoldersClick} className="shrink-0">
+              <FolderOpen className="h-4 w-4" />
+            </Button>
+          )}
+          <Breadcrumb className="min-w-0">
+            <BreadcrumbList className="flex-nowrap">
+              {breadcrumbs.map((crumb, idx) => (
+                <React.Fragment key={crumb.id ?? "root"}>
+                  {idx > 0 && <BreadcrumbSeparator />}
+                  <BreadcrumbItem className="min-w-0">
+                    {idx === breadcrumbs.length - 1 ? (
+                      <BreadcrumbPage className="truncate max-w-[120px] sm:max-w-none">{crumb.name}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink
+                        className="cursor-pointer truncate max-w-[80px] sm:max-w-none"
+                        onClick={() => onNavigate(crumb.id)}
+                      >
+                        {crumb.name}
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </React.Fragment>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
 
-        <div className="flex items-center gap-1">
-          {/* File actions - shown when files are selected */}
-          {hasSingleSelection && onPreviewSelected && (
-            <Button variant="outline" size="sm" onClick={onPreviewSelected} title="Preview">
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
-          {hasSingleSelection && onDownloadSelected && (
-            <Button variant="outline" size="sm" onClick={onDownloadSelected} title="Download">
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
-          {hasSelection && onCopySelected && (
-            <Button variant="outline" size="sm" onClick={onCopySelected} title="Copy">
-              <Copy className="h-4 w-4" />
-            </Button>
-          )}
-          {hasSelection && onCutSelected && (
-            <Button variant="outline" size="sm" onClick={onCutSelected} title="Cut">
-              <Scissors className="h-4 w-4" />
-            </Button>
-          )}
-          {hasSingleSelection && onRenameSelected && (
-            <Button variant="outline" size="sm" onClick={onRenameSelected} title="Rename">
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-          {hasSingleSelection && onPropertiesSelected && (
-            <Button variant="outline" size="sm" onClick={onPropertiesSelected} title="Properties">
-              <Info className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Selection actions - collapsed into overflow menu on mobile */}
           {hasSelection && (
-            <Button variant="destructive" size="sm" onClick={onDeleteSelected}>
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete ({selectedCount})
-            </Button>
-          )}
+            <>
+              {/* Desktop: show individual buttons */}
+              <div className="hidden sm:flex items-center gap-1">
+                {hasSingleSelection && onPreviewSelected && (
+                  <Button variant="outline" size="sm" onClick={onPreviewSelected} title="Preview">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                )}
+                {hasSingleSelection && onDownloadSelected && (
+                  <Button variant="outline" size="sm" onClick={onDownloadSelected} title="Download">
+                    <Download className="h-4 w-4" />
+                  </Button>
+                )}
+                {onCopySelected && (
+                  <Button variant="outline" size="sm" onClick={onCopySelected} title="Copy">
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+                {onCutSelected && (
+                  <Button variant="outline" size="sm" onClick={onCutSelected} title="Cut">
+                    <Scissors className="h-4 w-4" />
+                  </Button>
+                )}
+                {hasSingleSelection && onRenameSelected && (
+                  <Button variant="outline" size="sm" onClick={onRenameSelected} title="Rename">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+                {hasSingleSelection && onPropertiesSelected && (
+                  <Button variant="outline" size="sm" onClick={onPropertiesSelected} title="Properties">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
 
-          {/* Separator between file actions and general actions */}
-          {hasSelection && <div className="w-px h-6 bg-border mx-1" />}
+              {/* Mobile: overflow menu for selection actions */}
+              <div className="sm:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {hasSingleSelection && onPreviewSelected && (
+                      <DropdownMenuItem onClick={onPreviewSelected}>
+                        <Eye className="h-4 w-4 mr-2" /> Preview
+                      </DropdownMenuItem>
+                    )}
+                    {hasSingleSelection && onDownloadSelected && (
+                      <DropdownMenuItem onClick={onDownloadSelected}>
+                        <Download className="h-4 w-4 mr-2" /> Download
+                      </DropdownMenuItem>
+                    )}
+                    {onCopySelected && (
+                      <DropdownMenuItem onClick={onCopySelected}>
+                        <Copy className="h-4 w-4 mr-2" /> Copy
+                      </DropdownMenuItem>
+                    )}
+                    {onCutSelected && (
+                      <DropdownMenuItem onClick={onCutSelected}>
+                        <Scissors className="h-4 w-4 mr-2" /> Cut
+                      </DropdownMenuItem>
+                    )}
+                    {hasSingleSelection && onRenameSelected && (
+                      <DropdownMenuItem onClick={onRenameSelected}>
+                        <Pencil className="h-4 w-4 mr-2" /> Rename
+                      </DropdownMenuItem>
+                    )}
+                    {hasSingleSelection && onPropertiesSelected && (
+                      <DropdownMenuItem onClick={onPropertiesSelected}>
+                        <Info className="h-4 w-4 mr-2" /> Properties
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              <Button variant="destructive" size="sm" onClick={onDeleteSelected}>
+                <Trash2 className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Delete ({selectedCount})</span>
+              </Button>
+              <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+            </>
+          )}
 
           {hasClipboard && (
             <Button variant="outline" size="sm" onClick={onPaste}>
-              <ClipboardPaste className="h-4 w-4 mr-1" />
-              Paste
+              <ClipboardPaste className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Paste</span>
             </Button>
           )}
           {canUndo && (
@@ -155,16 +215,16 @@ export function FileListingToolbar({
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={onUploadClick}>
-            <Upload className="h-4 w-4 mr-1" />
-            Upload
+            <Upload className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Upload</span>
           </Button>
 
           {/* Sort dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <ArrowUpDown className="h-4 w-4 mr-1" />
-                Sort
+                <ArrowUpDown className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Sort</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -184,7 +244,7 @@ export function FileListingToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex border rounded-md">
+          <div className="hidden sm:flex border rounded-md">
             <button
               onClick={() => onViewModeChange("grid")}
               className={`p-1.5 ${viewMode === "grid" ? "bg-muted" : ""}`}
@@ -201,8 +261,8 @@ export function FileListingToolbar({
         </div>
       </div>
 
-      {/* Search bar */}
-      <div className="relative max-w-xs">
+      {/* Row 2: Search bar */}
+      <div className="relative w-full sm:max-w-xs">
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={searchQuery}

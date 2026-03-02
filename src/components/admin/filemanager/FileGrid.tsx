@@ -83,9 +83,9 @@ export function FileGrid({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
-              <th className="px-4 py-2 font-medium">Name</th>
-              <th className="px-4 py-2 font-medium w-24">Size</th>
-              <th className="px-4 py-2 font-medium w-40">Modified</th>
+              <th className="px-3 sm:px-4 py-2 font-medium">Name</th>
+              <th className="px-3 sm:px-4 py-2 font-medium w-24 hidden sm:table-cell">Size</th>
+              <th className="px-3 sm:px-4 py-2 font-medium w-40 hidden md:table-cell">Modified</th>
             </tr>
           </thead>
           <tbody>
@@ -97,7 +97,7 @@ export function FileGrid({
                 onDragOver={(e) => { e.preventDefault(); }}
                 onDrop={(e) => { e.preventDefault(); onDropItem(folder.id, e.dataTransfer); }}
               >
-                <td className="px-4 py-2 flex items-center gap-2">
+                <td className="px-3 sm:px-4 py-2 flex items-center gap-2">
                   <ContextMenu>
                     <ContextMenuTrigger className="flex items-center gap-2 w-full">
                       <Folder className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -113,8 +113,8 @@ export function FileGrid({
                     </ContextMenuContent>
                   </ContextMenu>
                 </td>
-                <td className="px-4 py-2 text-muted-foreground">—</td>
-                <td className="px-4 py-2 text-muted-foreground">
+                <td className="px-3 sm:px-4 py-2 text-muted-foreground hidden sm:table-cell">—</td>
+                <td className="px-3 sm:px-4 py-2 text-muted-foreground hidden md:table-cell">
                   {new Date(folder.updated_at).toLocaleDateString()}
                 </td>
               </tr>
@@ -136,7 +136,7 @@ export function FileGrid({
                     e.dataTransfer.setData("application/fm-file", file.id);
                   }}
                 >
-                  <td className="px-4 py-2">
+                  <td className="px-3 sm:px-4 py-2">
                     <ContextMenu>
                       <ContextMenuTrigger className="flex items-center gap-2 w-full">
                         <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -174,8 +174,8 @@ export function FileGrid({
                       </ContextMenuContent>
                     </ContextMenu>
                   </td>
-                  <td className="px-4 py-2 text-muted-foreground">{formatSize(file.file_size)}</td>
-                  <td className="px-4 py-2 text-muted-foreground">
+                  <td className="px-3 sm:px-4 py-2 text-muted-foreground hidden sm:table-cell">{formatSize(file.file_size)}</td>
+                  <td className="px-3 sm:px-4 py-2 text-muted-foreground hidden md:table-cell">
                     {new Date(file.updated_at).toLocaleDateString()}
                   </td>
                 </tr>
