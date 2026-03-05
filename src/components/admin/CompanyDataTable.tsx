@@ -14,8 +14,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronDown, ChevronRight, ChevronUp, Search, Columns3, Eye, Pencil, Loader2,
+  Globe, Hash, Wrench,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  HoverCard, HoverCardContent, HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Company {
   id: string;
