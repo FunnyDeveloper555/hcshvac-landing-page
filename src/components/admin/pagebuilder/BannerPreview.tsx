@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Loader2, Monitor, Smartphone, Save, Phone, Image, Plus, Trash2,
-  ArrowUp, ArrowDown, Edit, X, Eye, EyeOff,
+  ArrowUp, ArrowDown, Edit, X, Eye, EyeOff, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import hvacHero from "@/assets/hvac-hero.jpg";
@@ -75,6 +75,10 @@ const BannerPreview = () => {
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
   const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineTitle, setInlineTitle] = useState("");
+  const [inlineTagline, setInlineTagline] = useState("");
+  const [inlineSaving, setInlineSaving] = useState(false);
 
   // Auto-slide through active banners
   useEffect(() => {
@@ -244,6 +248,39 @@ const BannerPreview = () => {
     } else {
       fetchData();
     }
+  };
+
+  const startInlineEdit = (banner: Banner) => {
+    setInlineEditId(banner.id);
+    setInlineTitle(banner.title);
+    setInlineTagline(banner.tagline);
+  };
+
+  const cancelInlineEdit = () => {
+    setInlineEditId(null);
+    setInlineTitle("");
+    setInlineTagline("");
+  };
+
+  const saveInlineEdit = async () => {
+    if (!inlineEditId) return;
+    if (!inlineTitle.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    setInlineSaving(true);
+    const { error } = await supabase
+      .from("company_banners")
+      .update({ title: inlineTitle.trim(), tagline: inlineTagline.trim() })
+      .eq("id", inlineEditId);
+    if (error) {
+      toast.error("Failed to update banner");
+    } else {
+      toast.success("Banner updated");
+      cancelInlineEdit();
+      fetchData();
+    }
+    setInlineSaving(false);
   };
 
   if (loading) {
@@ -456,14 +493,62 @@ const BannerPreview = () => {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{banner.title || "Untitled"}</p>
-                      {!banner.is_active && (
-                        <span className="text-xs bg-muted px-2 py-0.5 rounded">Inactive</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">{banner.tagline}</p>
-                    <p className="text-xs text-muted-foreground">Order: {banner.display_order}</p>
+                    {inlineEditId === banner.id ? (
+                      <div className="flex flex-col gap-2">
+                        <Input
+                          value={inlineTitle}
+                          onChange={(e) => setInlineTitle(e.target.value)}
+                          placeholder="Title"
+                          className="h-8 text-sm font-medium"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveInlineEdit();
+                            if (e.key === "Escape") cancelInlineEdit();
+                          }}
+                        />
+                        <Input
+                          value={inlineTagline}
+                          onChange={(e) => setInlineTagline(e.target.value)}
+                          placeholder="Tagline"
+                          className="h-8 text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveInlineEdit();
+                            if (e.key === "Escape") cancelInlineEdit();
+                          }}
+                        />
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="default" className="h-7 text-xs" onClick={saveInlineEdit} disabled={inlineSaving}>
+                            {inlineSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-1" />} Save
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={cancelInlineEdit}>
+                            <X className="h-3 w-3 mr-1" /> Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <p
+                            className="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                            onDoubleClick={() => startInlineEdit(banner)}
+                            title="Double-click to quick edit"
+                          >
+                            {banner.title || "Untitled"}
+                          </p>
+                          {!banner.is_active && (
+                            <span className="text-xs bg-muted px-2 py-0.5 rounded">Inactive</span>
+                          )}
+                        </div>
+                        <p
+                          className="text-sm text-muted-foreground truncate cursor-pointer hover:text-foreground transition-colors"
+                          onDoubleClick={() => startInlineEdit(banner)}
+                          title="Double-click to quick edit"
+                        >
+                          {banner.tagline}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Order: {banner.display_order}</p>
+                      </>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" onClick={() => setPreviewBanner(banner)} title="Preview">
@@ -472,8 +557,13 @@ const BannerPreview = () => {
                     <Button variant="ghost" size="icon" onClick={() => toggleActive(banner)} title={banner.is_active ? "Deactivate" : "Activate"}>
                       {banner.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEditForm(banner)}>
-                      <Edit className="h-4 w-4" />
+                    {inlineEditId !== banner.id && (
+                      <Button variant="ghost" size="icon" onClick={() => startInlineEdit(banner)} title="Quick Edit">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={() => openEditForm(banner)} title="Full Edit">
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDelete(banner.id)} className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
