@@ -272,7 +272,7 @@ const CompanyDataTable = ({
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">{areaCount} areas</Badge>
                     )}
                     {company.financing_enabled && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-green-600 border-green-300">Financing</Badge>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-accent-foreground border-accent">Financing</Badge>
                     )}
                   </div>
                 </div>
