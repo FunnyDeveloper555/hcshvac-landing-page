@@ -200,15 +200,85 @@ const CompanyDataTable = ({
   };
 
   const renderCellValue = (company: Company, key: string) => {
+    const serviceCount = jsonLength(company.services_provided);
+    const brandCount = jsonLength(company.brands_installed) + jsonLength(company.brands_serviced);
+    const areaCount = jsonLength(company.service_areas);
+
     switch (key) {
       case "name":
         return (
-          <div className="flex items-center gap-2">
-            {company.logo_url && (
-              <img src={company.logo_url} alt="" className="w-8 h-8 object-contain rounded" />
-            )}
-            <span className="font-medium">{company.name}</span>
-          </div>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <div className="flex items-center gap-2 cursor-pointer">
+                {company.logo_url && (
+                  <img src={company.logo_url} alt="" className="w-8 h-8 object-contain rounded" />
+                )}
+                <span className="font-medium underline-offset-4 hover:underline">{company.name}</span>
+                {/* Quick-glance badges */}
+                <div className="flex gap-1 ml-1">
+                  {company.slug ? (
+                    <Badge variant="default" className="text-[10px] px-1.5 py-0 gap-0.5">
+                      <Globe className="w-3 h-3" />
+                      Site
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground gap-0.5">
+                      <Globe className="w-3 h-3" />
+                      No Site
+                    </Badge>
+                  )}
+                  {serviceCount > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                      <Wrench className="w-3 h-3" />
+                      {serviceCount}
+                    </Badge>
+                  )}
+                  {brandCount > 0 && (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-0.5">
+                      <Hash className="w-3 h-3" />
+                      {brandCount}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-72" side="right">
+              <div className="flex gap-3">
+                <Avatar className="h-12 w-12 rounded-md">
+                  {company.logo_url ? (
+                    <AvatarImage src={company.logo_url} alt={company.name} className="object-contain" />
+                  ) : null}
+                  <AvatarFallback className="rounded-md text-xs">
+                    {company.name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1 flex-1 min-w-0">
+                  <p className="text-sm font-semibold leading-tight truncate">{company.name}</p>
+                  {company.website_tagline && (
+                    <p className="text-xs text-muted-foreground italic truncate">{company.website_tagline}</p>
+                  )}
+                  {(company.company_address || company.company_city) && (
+                    <p className="text-xs text-muted-foreground">
+                      {[company.company_address, company.company_city, company.company_state, company.company_zip_code]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                  )}
+                  {company.company_phone && (
+                    <p className="text-xs text-muted-foreground">{company.company_phone}</p>
+                  )}
+                  <div className="flex gap-1 pt-1">
+                    {areaCount > 0 && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{areaCount} areas</Badge>
+                    )}
+                    {company.financing_enabled && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-green-600 border-green-300">Financing</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
         );
       case "slug":
         return company.slug ? (
