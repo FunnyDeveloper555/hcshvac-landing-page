@@ -435,7 +435,13 @@ const ContentAdd = () => {
             {/* Rich Text Editor */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Content Editor</Label>
-              <div className="rounded-lg border overflow-hidden">
+              <div
+                ref={editorContainerRef}
+                className={cn(
+                  "rounded-lg border overflow-hidden flex flex-col",
+                  isFullscreen && "fixed inset-0 z-[9999] bg-background rounded-none"
+                )}
+              >
                 <div className="border-b bg-muted/40">
                   {/* Menu Bar Row 1 - File/Edit actions */}
                   <div className="flex flex-wrap gap-0.5 p-1 border-b">
