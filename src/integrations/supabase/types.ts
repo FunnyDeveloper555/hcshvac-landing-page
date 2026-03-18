@@ -883,6 +883,57 @@ export type Database = {
           },
         ]
       }
+      contents: {
+        Row: {
+          author_id: string
+          created_at: string
+          display_order: number
+          html_content: string
+          id: string
+          is_active: boolean
+          publish_end_date: string | null
+          publish_start_date: string | null
+          publish_status: string
+          short_description: string | null
+          slug: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          display_order?: number
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          publish_end_date?: string | null
+          publish_start_date?: string | null
+          publish_status?: string
+          short_description?: string | null
+          slug?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          display_order?: number
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          publish_end_date?: string | null
+          publish_start_date?: string | null
+          publish_status?: string
+          short_description?: string | null
+          slug?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cta_icons: {
         Row: {
           alt_text: string
