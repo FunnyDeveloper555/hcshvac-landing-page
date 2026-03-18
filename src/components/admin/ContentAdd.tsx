@@ -558,8 +558,8 @@ const ContentAdd = () => {
                   ref={editorRef}
                   srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
                   onLoad={handleEditorLoad}
-                  className="w-full border-0"
-                  style={{ minHeight: "400px", height: "400px" }}
+                  className={cn("w-full border-0", isFullscreen && "flex-1")}
+                  style={isFullscreen ? { minHeight: 0 } : { minHeight: "400px", height: "400px" }}
                   title="Content Editor"
                 />
               </div>
