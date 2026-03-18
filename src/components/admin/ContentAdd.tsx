@@ -76,14 +76,12 @@ const ContentAdd = () => {
     if (editId) fetchContent();
   }, [editId]);
 
-  // Initialize the rich text editor
+  // When htmlContent changes and editor is ready, sync it
   useEffect(() => {
-    initEditor();
-  }, []);
-
-  const initEditor = () => {
-    // We'll set editor ready after iframe loads
-  };
+    if (editorReady && htmlContent) {
+      setEditorContent(htmlContent);
+    }
+  }, [editorReady, htmlContent]);
 
   const fetchContent = async () => {
     setLoading(true);
@@ -558,6 +556,7 @@ const ContentAdd = () => {
 
             <iframe
               ref={editorRef}
+              srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
               onLoad={handleEditorLoad}
               className="w-full border-0"
               style={{ minHeight: "400px", height: "400px" }}
