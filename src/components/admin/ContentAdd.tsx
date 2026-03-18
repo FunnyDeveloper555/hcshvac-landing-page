@@ -165,6 +165,18 @@ const ContentAdd = () => {
     `;
     doc.head.appendChild(style);
 
+    // Intercept Tab key to insert tab spaces instead of moving focus
+    doc.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        doc.execCommand("insertHTML", false, "&nbsp;&nbsp;&nbsp;&nbsp;");
+      }
+      // Allow Escape to exit fullscreen
+      if (e.key === "Escape") {
+        setIsFullscreen(false);
+      }
+    });
+
     // Set content if editing
     if (htmlContent) {
       doc.body.innerHTML = htmlContent;
