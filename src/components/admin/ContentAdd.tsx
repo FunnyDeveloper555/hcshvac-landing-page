@@ -544,27 +544,7 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={insertHR} label="— Line" />
                     <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                     <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
-                    <EditorMenuButton onClick={() => {
-                      const iframe = editorRef.current;
-                      if (iframe?.contentDocument) {
-                        const isFullscreen = iframe.style.position === "fixed";
-                        if (isFullscreen) {
-                          iframe.style.position = "";
-                          iframe.style.top = "";
-                          iframe.style.left = "";
-                          iframe.style.width = "";
-                          iframe.style.height = "";
-                          iframe.style.zIndex = "";
-                        } else {
-                          iframe.style.position = "fixed";
-                          iframe.style.top = "0";
-                          iframe.style.left = "0";
-                          iframe.style.width = "100vw";
-                          iframe.style.height = "100vh";
-                          iframe.style.zIndex = "9999";
-                        }
-                      }
-                    }} label="⛶ Fullscreen" />
+                    <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
                   </div>
                 </div>
 
