@@ -75,6 +75,8 @@ import EmailListForm from "@/components/admin/emaillist/EmailListForm";
 import EmailTemplatesList from "@/components/admin/emaillist/EmailTemplatesList";
 import ProductsAdd from "@/components/admin/ProductsAdd";
 import ProductsList from "@/components/admin/ProductsList";
+import ContentAdd from "@/components/admin/ContentAdd";
+import ContentList from "@/components/admin/ContentList";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
