@@ -57,6 +57,8 @@ const ContentAdd = () => {
   const [tagInput, setTagInput] = useState("");
   const [displayOrder, setDisplayOrder] = useState(0);
   const [editorReady, setEditorReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-generate slug from title
   useEffect(() => {
