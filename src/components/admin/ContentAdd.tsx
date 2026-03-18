@@ -57,6 +57,8 @@ const ContentAdd = () => {
   const [tagInput, setTagInput] = useState("");
   const [displayOrder, setDisplayOrder] = useState(0);
   const [editorReady, setEditorReady] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-generate slug from title
   useEffect(() => {
@@ -162,6 +164,18 @@ const ContentAdd = () => {
       hr { border: none; border-top: 1px solid #ccc; margin: 1em 0; }
     `;
     doc.head.appendChild(style);
+
+    // Intercept Tab key to insert tab spaces instead of moving focus
+    doc.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        doc.execCommand("insertHTML", false, "&nbsp;&nbsp;&nbsp;&nbsp;");
+      }
+      // Allow Escape to exit fullscreen
+      if (e.key === "Escape") {
+        setIsFullscreen(false);
+      }
+    });
 
     // Set content if editing
     if (htmlContent) {
@@ -421,7 +435,13 @@ const ContentAdd = () => {
             {/* Rich Text Editor */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Content Editor</Label>
-              <div className="rounded-lg border overflow-hidden">
+              <div
+                ref={editorContainerRef}
+                className={cn(
+                  "rounded-lg border overflow-hidden flex flex-col",
+                  isFullscreen && "fixed inset-0 z-[9999] bg-background rounded-none"
+                )}
+              >
                 <div className="border-b bg-muted/40">
                   {/* Menu Bar Row 1 - File/Edit actions */}
                   <div className="flex flex-wrap gap-0.5 p-1 border-b">
@@ -530,27 +550,7 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={insertHR} label="— Line" />
                     <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                     <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
-                    <EditorMenuButton onClick={() => {
-                      const iframe = editorRef.current;
-                      if (iframe?.contentDocument) {
-                        const isFullscreen = iframe.style.position === "fixed";
-                        if (isFullscreen) {
-                          iframe.style.position = "";
-                          iframe.style.top = "";
-                          iframe.style.left = "";
-                          iframe.style.width = "";
-                          iframe.style.height = "";
-                          iframe.style.zIndex = "";
-                        } else {
-                          iframe.style.position = "fixed";
-                          iframe.style.top = "0";
-                          iframe.style.left = "0";
-                          iframe.style.width = "100vw";
-                          iframe.style.height = "100vh";
-                          iframe.style.zIndex = "9999";
-                        }
-                      }
-                    }} label="⛶ Fullscreen" />
+                    <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
                   </div>
                 </div>
 
@@ -558,8 +558,8 @@ const ContentAdd = () => {
                   ref={editorRef}
                   srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
                   onLoad={handleEditorLoad}
-                  className="w-full border-0"
-                  style={{ minHeight: "400px", height: "400px" }}
+                  className={cn("w-full border-0", isFullscreen && "flex-1")}
+                  style={isFullscreen ? { minHeight: 0 } : { minHeight: "400px", height: "400px" }}
                   title="Content Editor"
                 />
               </div>
