@@ -556,6 +556,7 @@ const ContentAdd = () => {
 
             <iframe
               ref={editorRef}
+              srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
               onLoad={handleEditorLoad}
               className="w-full border-0"
               style={{ minHeight: "400px", height: "400px" }}
