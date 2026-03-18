@@ -75,6 +75,8 @@ import EmailListForm from "@/components/admin/emaillist/EmailListForm";
 import EmailTemplatesList from "@/components/admin/emaillist/EmailTemplatesList";
 import ProductsAdd from "@/components/admin/ProductsAdd";
 import ProductsList from "@/components/admin/ProductsList";
+import ContentAdd from "@/components/admin/ContentAdd";
+import ContentList from "@/components/admin/ContentList";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -235,6 +237,8 @@ const Admin = () => {
               <Route path="/email-templates" element={<EmailTemplatesList />} />
               <Route path="/products/add" element={<ProductsAdd />} />
               <Route path="/products/list" element={<ProductsList />} />
+              <Route path="/contents/add" element={<ContentAdd />} />
+              <Route path="/contents/list" element={<ContentList />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>
