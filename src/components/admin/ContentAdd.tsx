@@ -321,314 +321,314 @@ const ContentAdd = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Content" : "Add New Content"}</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Author & Title */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Author</Label>
-            <Input
-              placeholder="Author name or ID"
-              value={author || user?.email || ""}
-              onChange={(e) => setAuthor(e.target.value)}
-              disabled
-            />
-            <p className="text-xs text-muted-foreground">Auto-assigned to current user</p>
-          </div>
-          <div className="space-y-2">
-            <Label>Title *</Label>
-            <Input placeholder="Content title" value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-        </div>
+      <Card>
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Author & Title */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Author</Label>
+                <Input
+                  placeholder="Author name or ID"
+                  value={author || user?.email || ""}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  disabled
+                />
+                <p className="text-xs text-muted-foreground">Auto-assigned to current user</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Title *</Label>
+                <Input placeholder="Content title" value={title} onChange={(e) => setTitle(e.target.value)} />
+              </div>
+            </div>
 
-        {/* Slug & Short Description */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Slug</Label>
-            <Input placeholder="url-friendly-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Short Description</Label>
-            <Input placeholder="Brief summary" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
-          </div>
-        </div>
+            {/* Slug & Short Description */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Slug</Label>
+                <Input placeholder="url-friendly-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Short Description</Label>
+                <Input placeholder="Brief summary" value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
+              </div>
+            </div>
 
-        {/* Publish Date Range & Status */}
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <Label className="text-base font-semibold">Publishing</Label>
-              <span className="text-xs text-muted-foreground">Quick presets:</span>
-              {DATE_PRESETS.map((preset) => (
+            {/* Publish Date Range & Status */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Label className="text-base font-semibold">Publishing</Label>
+                <span className="text-xs text-muted-foreground">Quick presets:</span>
+                {DATE_PRESETS.map((preset) => (
+                  <Button
+                    key={preset.days}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => applyDatePreset(preset.days)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !publishStartDate && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {publishStartDate ? format(publishStartDate, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={publishStartDate} onSelect={setPublishStartDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !publishEndDate && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {publishEndDate ? format(publishEndDate, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={publishEndDate} onSelect={setPublishEndDate} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Publish Status</Label>
+                  <Select value={publishStatus} onValueChange={setPublishStatus}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PUBLISH_STATUSES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Rich Text Editor */}
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Content Editor</Label>
+              <div className="rounded-lg border overflow-hidden">
+                <div className="border-b bg-muted/40">
+                  {/* Menu Bar Row 1 - File/Edit actions */}
+                  <div className="flex flex-wrap gap-0.5 p-1 border-b">
+                    <EditorMenuButton onClick={() => execCmd("undo")} label="Undo" />
+                    <EditorMenuButton onClick={() => execCmd("redo")} label="Redo" />
+                    <span className="w-px bg-border mx-1" />
+                    <EditorMenuButton onClick={() => execCmd("cut")} label="Cut" />
+                    <EditorMenuButton onClick={() => execCmd("copy")} label="Copy" />
+                    <EditorMenuButton onClick={() => execCmd("paste")} label="Paste" />
+                    <EditorMenuButton onClick={() => execCmd("selectAll")} label="Select All" />
+                    <span className="w-px bg-border mx-1" />
+                    <EditorMenuButton onClick={() => execCmd("removeFormat")} label="Clear Format" />
+                    <EditorMenuButton onClick={() => {
+                      const html = getEditorContent();
+                      const blob = new Blob([html], { type: "text/html" });
+                      const a = document.createElement("a");
+                      a.href = URL.createObjectURL(blob);
+                      a.download = `${slug || "content"}.html`;
+                      a.click();
+                    }} label="Export HTML" />
+                  </div>
+
+                  {/* Menu Bar Row 2 - Format Block */}
+                  <div className="flex flex-wrap gap-0.5 p-1 border-b">
+                    <select
+                      className="h-7 text-xs border rounded px-1 bg-background"
+                      onChange={(e) => execCmd("formatBlock", e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Block Format</option>
+                      <option value="p">Paragraph</option>
+                      <option value="h1">Heading 1</option>
+                      <option value="h2">Heading 2</option>
+                      <option value="h3">Heading 3</option>
+                      <option value="h4">Heading 4</option>
+                      <option value="h5">Heading 5</option>
+                      <option value="h6">Heading 6</option>
+                      <option value="pre">Preformatted</option>
+                      <option value="blockquote">Blockquote</option>
+                    </select>
+                    <select
+                      className="h-7 text-xs border rounded px-1 bg-background"
+                      onChange={(e) => execCmd("fontName", e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Font Family</option>
+                      <option value="Arial">Arial</option>
+                      <option value="Georgia">Georgia</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Courier New">Courier New</option>
+                      <option value="Verdana">Verdana</option>
+                      <option value="Trebuchet MS">Trebuchet MS</option>
+                    </select>
+                    <select
+                      className="h-7 text-xs border rounded px-1 bg-background"
+                      onChange={(e) => execCmd("fontSize", e.target.value)}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Size</option>
+                      <option value="1">Very Small</option>
+                      <option value="2">Small</option>
+                      <option value="3">Normal</option>
+                      <option value="4">Medium</option>
+                      <option value="5">Large</option>
+                      <option value="6">Very Large</option>
+                      <option value="7">Huge</option>
+                    </select>
+                  </div>
+
+                  {/* Menu Bar Row 3 - Formatting */}
+                  <div className="flex flex-wrap gap-0.5 p-1 border-b">
+                    <EditorMenuButton onClick={() => execCmd("bold")} label="B" className="font-bold" />
+                    <EditorMenuButton onClick={() => execCmd("italic")} label="I" className="italic" />
+                    <EditorMenuButton onClick={() => execCmd("underline")} label="U" className="underline" />
+                    <EditorMenuButton onClick={() => execCmd("strikeThrough")} label="S" className="line-through" />
+                    <EditorMenuButton onClick={() => execCmd("subscript")} label="X₂" />
+                    <EditorMenuButton onClick={() => execCmd("superscript")} label="X²" />
+                    <span className="w-px bg-border mx-1" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">Text:</span>
+                      <input type="color" className="h-6 w-6 cursor-pointer border rounded" onChange={(e) => execCmd("foreColor", e.target.value)} title="Text Color" />
+                      <span className="text-xs text-muted-foreground">Bg:</span>
+                      <input type="color" className="h-6 w-6 cursor-pointer border rounded" defaultValue="#ffff00" onChange={(e) => execCmd("hiliteColor", e.target.value)} title="Highlight Color" />
+                    </div>
+                  </div>
+
+                  {/* Menu Bar Row 4 - Alignment & Lists */}
+                  <div className="flex flex-wrap gap-0.5 p-1 border-b">
+                    <EditorMenuButton onClick={() => execCmd("justifyLeft")} label="Left" />
+                    <EditorMenuButton onClick={() => execCmd("justifyCenter")} label="Center" />
+                    <EditorMenuButton onClick={() => execCmd("justifyRight")} label="Right" />
+                    <EditorMenuButton onClick={() => execCmd("justifyFull")} label="Justify" />
+                    <span className="w-px bg-border mx-1" />
+                    <EditorMenuButton onClick={() => execCmd("insertUnorderedList")} label="• List" />
+                    <EditorMenuButton onClick={() => execCmd("insertOrderedList")} label="1. List" />
+                    <EditorMenuButton onClick={() => execCmd("indent")} label="Indent →" />
+                    <EditorMenuButton onClick={() => execCmd("outdent")} label="← Outdent" />
+                  </div>
+
+                  {/* Menu Bar Row 5 - Insert */}
+                  <div className="flex flex-wrap gap-0.5 p-1">
+                    <EditorMenuButton onClick={insertLink} label="🔗 Link" />
+                    <EditorMenuButton onClick={() => execCmd("unlink")} label="Unlink" />
+                    <EditorMenuButton onClick={insertImage} label="🖼 Image" />
+                    <EditorMenuButton onClick={insertTable} label="⊞ Table" />
+                    <EditorMenuButton onClick={insertHR} label="— Line" />
+                    <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
+                    <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
+                    <EditorMenuButton onClick={() => {
+                      const iframe = editorRef.current;
+                      if (iframe?.contentDocument) {
+                        const isFullscreen = iframe.style.position === "fixed";
+                        if (isFullscreen) {
+                          iframe.style.position = "";
+                          iframe.style.top = "";
+                          iframe.style.left = "";
+                          iframe.style.width = "";
+                          iframe.style.height = "";
+                          iframe.style.zIndex = "";
+                        } else {
+                          iframe.style.position = "fixed";
+                          iframe.style.top = "0";
+                          iframe.style.left = "0";
+                          iframe.style.width = "100vw";
+                          iframe.style.height = "100vh";
+                          iframe.style.zIndex = "9999";
+                        }
+                      }
+                    }} label="⛶ Fullscreen" />
+                  </div>
+                </div>
+
+                <iframe
+                  ref={editorRef}
+                  srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
+                  onLoad={handleEditorLoad}
+                  className="w-full border-0"
+                  style={{ minHeight: "400px", height: "400px" }}
+                  title="Content Editor"
+                />
+              </div>
+            </div>
+
+            {/* Display Order */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Display Order</Label>
+                <Input type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} />
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Tags</Label>
                 <Button
-                  key={preset.days}
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => applyDatePreset(preset.days)}
+                  onClick={generateTags}
+                  disabled={generatingTags}
                 >
-                  {preset.label}
+                  {generatingTags ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                  Generate with AI
                 </Button>
-              ))}
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !publishStartDate && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {publishStartDate ? format(publishStartDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={publishStartDate} onSelect={setPublishStartDate} initialFocus />
-                  </PopoverContent>
-                </Popover>
               </div>
 
-              <div className="space-y-2">
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !publishEndDate && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {publishEndDate ? format(publishEndDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={publishEndDate} onSelect={setPublishEndDate} initialFocus />
-                  </PopoverContent>
-                </Popover>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a tag and press Enter"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  className="flex-1"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addTag}>
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
 
-              <div className="space-y-2">
-                <Label>Publish Status</Label>
-                <Select value={publishStatus} onValueChange={setPublishStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PUBLISH_STATUSES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Rich Text Editor */}
-        <div className="space-y-2">
-          <Label className="text-base font-semibold">Content Editor</Label>
-          <Card>
-            <div className="border-b bg-muted/40">
-              {/* Menu Bar Row 1 - File/Edit actions */}
-              <div className="flex flex-wrap gap-0.5 p-1 border-b">
-                <EditorMenuButton onClick={() => execCmd("undo")} label="Undo" />
-                <EditorMenuButton onClick={() => execCmd("redo")} label="Redo" />
-                <span className="w-px bg-border mx-1" />
-                <EditorMenuButton onClick={() => execCmd("cut")} label="Cut" />
-                <EditorMenuButton onClick={() => execCmd("copy")} label="Copy" />
-                <EditorMenuButton onClick={() => execCmd("paste")} label="Paste" />
-                <EditorMenuButton onClick={() => execCmd("selectAll")} label="Select All" />
-                <span className="w-px bg-border mx-1" />
-                <EditorMenuButton onClick={() => execCmd("removeFormat")} label="Clear Format" />
-                <EditorMenuButton onClick={() => {
-                  const html = getEditorContent();
-                  const blob = new Blob([html], { type: "text/html" });
-                  const a = document.createElement("a");
-                  a.href = URL.createObjectURL(blob);
-                  a.download = `${slug || "content"}.html`;
-                  a.click();
-                }} label="Export HTML" />
-              </div>
-
-              {/* Menu Bar Row 2 - Format Block */}
-              <div className="flex flex-wrap gap-0.5 p-1 border-b">
-                <select
-                  className="h-7 text-xs border rounded px-1 bg-background"
-                  onChange={(e) => execCmd("formatBlock", e.target.value)}
-                  defaultValue=""
-                >
-                  <option value="" disabled>Block Format</option>
-                  <option value="p">Paragraph</option>
-                  <option value="h1">Heading 1</option>
-                  <option value="h2">Heading 2</option>
-                  <option value="h3">Heading 3</option>
-                  <option value="h4">Heading 4</option>
-                  <option value="h5">Heading 5</option>
-                  <option value="h6">Heading 6</option>
-                  <option value="pre">Preformatted</option>
-                  <option value="blockquote">Blockquote</option>
-                </select>
-                <select
-                  className="h-7 text-xs border rounded px-1 bg-background"
-                  onChange={(e) => execCmd("fontName", e.target.value)}
-                  defaultValue=""
-                >
-                  <option value="" disabled>Font Family</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Courier New">Courier New</option>
-                  <option value="Verdana">Verdana</option>
-                  <option value="Trebuchet MS">Trebuchet MS</option>
-                </select>
-                <select
-                  className="h-7 text-xs border rounded px-1 bg-background"
-                  onChange={(e) => execCmd("fontSize", e.target.value)}
-                  defaultValue=""
-                >
-                  <option value="" disabled>Size</option>
-                  <option value="1">Very Small</option>
-                  <option value="2">Small</option>
-                  <option value="3">Normal</option>
-                  <option value="4">Medium</option>
-                  <option value="5">Large</option>
-                  <option value="6">Very Large</option>
-                  <option value="7">Huge</option>
-                </select>
-              </div>
-
-              {/* Menu Bar Row 3 - Formatting */}
-              <div className="flex flex-wrap gap-0.5 p-1 border-b">
-                <EditorMenuButton onClick={() => execCmd("bold")} label="B" className="font-bold" />
-                <EditorMenuButton onClick={() => execCmd("italic")} label="I" className="italic" />
-                <EditorMenuButton onClick={() => execCmd("underline")} label="U" className="underline" />
-                <EditorMenuButton onClick={() => execCmd("strikeThrough")} label="S" className="line-through" />
-                <EditorMenuButton onClick={() => execCmd("subscript")} label="X₂" />
-                <EditorMenuButton onClick={() => execCmd("superscript")} label="X²" />
-                <span className="w-px bg-border mx-1" />
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">Text:</span>
-                  <input type="color" className="h-6 w-6 cursor-pointer border rounded" onChange={(e) => execCmd("foreColor", e.target.value)} title="Text Color" />
-                  <span className="text-xs text-muted-foreground">Bg:</span>
-                  <input type="color" className="h-6 w-6 cursor-pointer border rounded" defaultValue="#ffff00" onChange={(e) => execCmd("hiliteColor", e.target.value)} title="Highlight Color" />
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="gap-1">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
                 </div>
-              </div>
-
-              {/* Menu Bar Row 4 - Alignment & Lists */}
-              <div className="flex flex-wrap gap-0.5 p-1 border-b">
-                <EditorMenuButton onClick={() => execCmd("justifyLeft")} label="Left" />
-                <EditorMenuButton onClick={() => execCmd("justifyCenter")} label="Center" />
-                <EditorMenuButton onClick={() => execCmd("justifyRight")} label="Right" />
-                <EditorMenuButton onClick={() => execCmd("justifyFull")} label="Justify" />
-                <span className="w-px bg-border mx-1" />
-                <EditorMenuButton onClick={() => execCmd("insertUnorderedList")} label="• List" />
-                <EditorMenuButton onClick={() => execCmd("insertOrderedList")} label="1. List" />
-                <EditorMenuButton onClick={() => execCmd("indent")} label="Indent →" />
-                <EditorMenuButton onClick={() => execCmd("outdent")} label="← Outdent" />
-              </div>
-
-              {/* Menu Bar Row 5 - Insert */}
-              <div className="flex flex-wrap gap-0.5 p-1">
-                <EditorMenuButton onClick={insertLink} label="🔗 Link" />
-                <EditorMenuButton onClick={() => execCmd("unlink")} label="Unlink" />
-                <EditorMenuButton onClick={insertImage} label="🖼 Image" />
-                <EditorMenuButton onClick={insertTable} label="⊞ Table" />
-                <EditorMenuButton onClick={insertHR} label="— Line" />
-                <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
-                <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
-                <EditorMenuButton onClick={() => {
-                  const iframe = editorRef.current;
-                  if (iframe?.contentDocument) {
-                    const isFullscreen = iframe.style.position === "fixed";
-                    if (isFullscreen) {
-                      iframe.style.position = "";
-                      iframe.style.top = "";
-                      iframe.style.left = "";
-                      iframe.style.width = "";
-                      iframe.style.height = "";
-                      iframe.style.zIndex = "";
-                    } else {
-                      iframe.style.position = "fixed";
-                      iframe.style.top = "0";
-                      iframe.style.left = "0";
-                      iframe.style.width = "100vw";
-                      iframe.style.height = "100vh";
-                      iframe.style.zIndex = "9999";
-                    }
-                  }
-                }} label="⛶ Fullscreen" />
-              </div>
+              )}
             </div>
 
-            <iframe
-              ref={editorRef}
-              srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
-              onLoad={handleEditorLoad}
-              className="w-full border-0"
-              style={{ minHeight: "400px", height: "400px" }}
-              title="Content Editor"
-            />
-          </Card>
-        </div>
-
-        {/* Display Order */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Display Order</Label>
-            <Input type="number" value={displayOrder} onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)} />
-          </div>
-        </div>
-
-        {/* Tags */}
-        <Card>
-          <CardContent className="pt-6 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Tags</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={generateTags}
-                disabled={generatingTags}
-              >
-                {generatingTags ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
-                Generate with AI
+            {/* Submit */}
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isEditing ? "Update Content" : "Create Content"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate("/admin/contents/list")}>
+                Cancel
               </Button>
             </div>
-
-            <div className="flex gap-2">
-              <Input
-                placeholder="Type a tag and press Enter"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-                className="flex-1"
-              />
-              <Button type="button" variant="outline" size="sm" onClick={addTag}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1">
-                    {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Submit */}
-        <div className="flex gap-2">
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {isEditing ? "Update Content" : "Create Content"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => navigate("/admin/contents/list")}>
-            Cancel
-          </Button>
-        </div>
-      </form>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
