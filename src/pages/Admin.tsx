@@ -237,6 +237,8 @@ const Admin = () => {
               <Route path="/email-templates" element={<EmailTemplatesList />} />
               <Route path="/products/add" element={<ProductsAdd />} />
               <Route path="/products/list" element={<ProductsList />} />
+              <Route path="/contents/add" element={<ContentAdd />} />
+              <Route path="/contents/list" element={<ContentList />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>
