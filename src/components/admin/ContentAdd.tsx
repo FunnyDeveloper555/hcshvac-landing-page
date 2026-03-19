@@ -823,6 +823,18 @@ const ContentAdd = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Spot Image Review Dialog */}
+      <SpotImageReviewDialog
+        open={spotImageReviewOpen}
+        onOpenChange={setSpotImageReviewOpen}
+        base64={spotImageBase64}
+        onSaved={(publicUrl) => {
+          setSpotImageUrl(publicUrl);
+          setSpotImageBase64(null);
+          toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
+        }}
+      />
     </div>
   );
 };
