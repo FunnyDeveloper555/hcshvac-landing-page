@@ -329,10 +329,11 @@ const ContentAdd = () => {
         body: { type: "spot_image", content, title },
       });
       if (error) throw error;
-      if (data?.searchQuery) {
-        const imageUrl = `https://source.unsplash.com/800x400/?${encodeURIComponent(data.searchQuery)}`;
-        setSpotImageUrl(imageUrl);
-        toast({ title: "Spot image suggested", description: `Search: "${data.searchQuery}"` });
+      if (data?.imageUrl) {
+        setSpotImageUrl(data.imageUrl);
+        toast({ title: "Spot image generated", description: "AI image has been created and saved." });
+      } else {
+        throw new Error("No image was returned");
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to generate spot image", variant: "destructive" });
