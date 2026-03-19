@@ -2,14 +2,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, X, CalendarIcon, Sparkles, Plus } from "lucide-react";
+import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +45,12 @@ const ContentAdd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generatingTags, setGeneratingTags] = useState(false);
+  const [generatingSpotText, setGeneratingSpotText] = useState(false);
+  const [generatingSpotImage, setGeneratingSpotImage] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGeneratedContent, setAiGeneratedContent] = useState("");
+  const [generatingContent, setGeneratingContent] = useState(false);
 
   // Form state
   const [author, setAuthor] = useState("");
@@ -282,6 +290,92 @@ const ContentAdd = () => {
     } finally {
       setGeneratingTags(false);
     }
+  };
+
+  // AI spot text generation
+  const generateSpotText = async () => {
+    const content = getEditorContent();
+    if (!content && !title) {
+      toast({ title: "No content", description: "Add content or title first.", variant: "destructive" });
+      return;
+    }
+    setGeneratingSpotText(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "spot_text", content, title },
+      });
+      if (error) throw error;
+      if (data?.result) {
+        setSpotText(data.result.trim());
+        toast({ title: "Spot text generated" });
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate spot text", variant: "destructive" });
+    } finally {
+      setGeneratingSpotText(false);
+    }
+  };
+
+  // AI spot image suggestion
+  const generateSpotImage = async () => {
+    const content = getEditorContent();
+    if (!content && !title) {
+      toast({ title: "No content", description: "Add content or title first.", variant: "destructive" });
+      return;
+    }
+    setGeneratingSpotImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "spot_image", content, title },
+      });
+      if (error) throw error;
+      if (data?.searchQuery) {
+        const imageUrl = `https://source.unsplash.com/800x400/?${encodeURIComponent(data.searchQuery)}`;
+        setSpotImageUrl(imageUrl);
+        toast({ title: "Spot image suggested", description: `Search: "${data.searchQuery}"` });
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate spot image", variant: "destructive" });
+    } finally {
+      setGeneratingSpotImage(false);
+    }
+  };
+
+  // AI content generation from prompt
+  const generateEditorContent = async () => {
+    if (!aiPrompt.trim()) {
+      toast({ title: "Error", description: "Please enter a prompt.", variant: "destructive" });
+      return;
+    }
+    setGeneratingContent(true);
+    setAiGeneratedContent("");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "editor_content", prompt: aiPrompt },
+      });
+      if (error) throw error;
+      if (data?.result) {
+        setAiGeneratedContent(data.result);
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate content", variant: "destructive" });
+    } finally {
+      setGeneratingContent(false);
+    }
+  };
+
+  const insertAiContent = (mode: "replace" | "append") => {
+    if (!aiGeneratedContent) return;
+    if (mode === "replace") {
+      setEditorContent(aiGeneratedContent);
+    } else {
+      const current = getEditorContent();
+      setEditorContent(current + aiGeneratedContent);
+    }
+    setAiModalOpen(false);
+    setAiPrompt("");
+    setAiGeneratedContent("");
+    toast({ title: "Content inserted" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -547,7 +641,7 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={() => execCmd("outdent")} label="← Outdent" />
                   </div>
 
-                  {/* Menu Bar Row 5 - Insert */}
+                  {/* Menu Bar Row 5 - Insert & AI */}
                   <div className="flex flex-wrap gap-0.5 p-1">
                     <EditorMenuButton onClick={insertLink} label="🔗 Link" />
                     <EditorMenuButton onClick={() => execCmd("unlink")} label="Unlink" />
@@ -557,6 +651,15 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                     <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
                     <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
+                    <span className="w-px bg-border mx-1" />
+                    <button
+                      type="button"
+                      onClick={() => setAiModalOpen(true)}
+                      className="h-7 px-3 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap flex items-center gap-1 font-medium"
+                    >
+                      <Wand2 className="h-3.5 w-3.5" />
+                      AI Generate
+                    </button>
                   </div>
                 </div>
 
@@ -576,11 +679,23 @@ const ContentAdd = () => {
               <Label className="text-base font-semibold">Spot Content</Label>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Spot Text</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Spot Text</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={generateSpotText} disabled={generatingSpotText} className="h-7">
+                      {generatingSpotText ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                      AI Generate
+                    </Button>
+                  </div>
                   <Input placeholder="Short spot text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Spot Image URL</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Spot Image URL</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={generateSpotImage} disabled={generatingSpotImage} className="h-7">
+                      {generatingSpotImage ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                      AI Suggest
+                    </Button>
+                  </div>
                   <Input placeholder="https://example.com/image.jpg" value={spotImageUrl} onChange={(e) => setSpotImageUrl(e.target.value)} />
                   {spotImageUrl && (
                     <img src={spotImageUrl} alt="Spot preview" className="h-20 w-auto rounded border object-cover mt-1" />
@@ -653,6 +768,57 @@ const ContentAdd = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* AI Content Generation Modal */}
+      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              AI Content Generator
+            </DialogTitle>
+            <DialogDescription>Enter a prompt to generate HTML content. Review and edit before inserting.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+            <div className="space-y-2">
+              <Label>Prompt</Label>
+              <Textarea
+                placeholder="e.g. Write an article about HVAC maintenance tips for homeowners..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                rows={3}
+              />
+              <Button type="button" onClick={generateEditorContent} disabled={generatingContent} size="sm">
+                {generatingContent ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                Generate
+              </Button>
+            </div>
+
+            {aiGeneratedContent && (
+              <div className="space-y-2 flex-1 overflow-hidden flex flex-col">
+                <Label>Generated Content (preview & edit)</Label>
+                <Textarea
+                  value={aiGeneratedContent}
+                  onChange={(e) => setAiGeneratedContent(e.target.value)}
+                  className="flex-1 min-h-[200px] font-mono text-xs"
+                />
+              </div>
+            )}
+          </div>
+
+          {aiGeneratedContent && (
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => insertAiContent("append")}>
+                Append to Editor
+              </Button>
+              <Button type="button" onClick={() => insertAiContent("replace")}>
+                Replace Editor Content
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
