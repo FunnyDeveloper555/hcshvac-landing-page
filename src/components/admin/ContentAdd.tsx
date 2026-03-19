@@ -305,7 +305,9 @@ const ContentAdd = () => {
         publish_end_date: publishEndDate?.toISOString() || null,
         tags,
         display_order: displayOrder,
-      };
+        spot_text: spotText || null,
+        spot_image_url: spotImageUrl || null,
+      } as any;
 
       if (isEditing) {
         const { error } = await supabase.from("contents").update(payload).eq("id", editId);
