@@ -920,6 +920,73 @@ const ContentAdd = () => {
           toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
         }}
       />
+
+      {/* Content History Dialog */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              Version History
+            </DialogTitle>
+            <DialogDescription>View and restore previous versions of this content.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {loadingHistory ? (
+              <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : history.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No version history yet. History is saved each time you update content.</p>
+            ) : (
+              <div className="space-y-3">
+                {history.map((v) => (
+                  <div key={v.id} className="rounded-lg border p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">v{v.version_number}</Badge>
+                        <span className="font-medium text-sm">{v.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(v.created_at), "MMM d, yyyy h:mm a")}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setTitle(v.title);
+                            setSlug(v.slug || "");
+                            setShortDescription(v.short_description || "");
+                            setEditorContent(v.html_content || "");
+                            setHtmlContent(v.html_content || "");
+                            setSpotText(v.spot_text || "");
+                            setSpotImageUrl(v.spot_image_url || "");
+                            setTags(v.tags || []);
+                            setPublishStatus(v.publish_status || "draft");
+                            setAllowComments(v.allow_comments ?? false);
+                            setShowAuthorName(v.show_author_name ?? true);
+                            setHistoryOpen(false);
+                            toast({ title: "Version restored", description: `Restored to v${v.version_number}. Save to apply changes.` });
+                          }}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                          Restore
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant="outline" className="text-xs">{v.publish_status}</Badge>
+                      {v.tags?.slice(0, 3).map((t: string) => (
+                        <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
