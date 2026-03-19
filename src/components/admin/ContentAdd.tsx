@@ -679,11 +679,23 @@ const ContentAdd = () => {
               <Label className="text-base font-semibold">Spot Content</Label>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Spot Text</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Spot Text</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={generateSpotText} disabled={generatingSpotText} className="h-7">
+                      {generatingSpotText ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                      AI Generate
+                    </Button>
+                  </div>
                   <Input placeholder="Short spot text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Spot Image URL</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Spot Image URL</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={generateSpotImage} disabled={generatingSpotImage} className="h-7">
+                      {generatingSpotImage ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
+                      AI Suggest
+                    </Button>
+                  </div>
                   <Input placeholder="https://example.com/image.jpg" value={spotImageUrl} onChange={(e) => setSpotImageUrl(e.target.value)} />
                   {spotImageUrl && (
                     <img src={spotImageUrl} alt="Spot preview" className="h-20 w-auto rounded border object-cover mt-1" />
