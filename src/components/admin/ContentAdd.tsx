@@ -292,7 +292,93 @@ const ContentAdd = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // AI spot text generation
+  const generateSpotText = async () => {
+    const content = getEditorContent();
+    if (!content && !title) {
+      toast({ title: "No content", description: "Add content or title first.", variant: "destructive" });
+      return;
+    }
+    setGeneratingSpotText(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "spot_text", content, title },
+      });
+      if (error) throw error;
+      if (data?.result) {
+        setSpotText(data.result.trim());
+        toast({ title: "Spot text generated" });
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate spot text", variant: "destructive" });
+    } finally {
+      setGeneratingSpotText(false);
+    }
+  };
+
+  // AI spot image suggestion
+  const generateSpotImage = async () => {
+    const content = getEditorContent();
+    if (!content && !title) {
+      toast({ title: "No content", description: "Add content or title first.", variant: "destructive" });
+      return;
+    }
+    setGeneratingSpotImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "spot_image", content, title },
+      });
+      if (error) throw error;
+      if (data?.searchQuery) {
+        const imageUrl = `https://source.unsplash.com/800x400/?${encodeURIComponent(data.searchQuery)}`;
+        setSpotImageUrl(imageUrl);
+        toast({ title: "Spot image suggested", description: `Search: "${data.searchQuery}"` });
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate spot image", variant: "destructive" });
+    } finally {
+      setGeneratingSpotImage(false);
+    }
+  };
+
+  // AI content generation from prompt
+  const generateEditorContent = async () => {
+    if (!aiPrompt.trim()) {
+      toast({ title: "Error", description: "Please enter a prompt.", variant: "destructive" });
+      return;
+    }
+    setGeneratingContent(true);
+    setAiGeneratedContent("");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content", {
+        body: { type: "editor_content", prompt: aiPrompt },
+      });
+      if (error) throw error;
+      if (data?.result) {
+        setAiGeneratedContent(data.result);
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to generate content", variant: "destructive" });
+    } finally {
+      setGeneratingContent(false);
+    }
+  };
+
+  const insertAiContent = (mode: "replace" | "append") => {
+    if (!aiGeneratedContent) return;
+    if (mode === "replace") {
+      setEditorContent(aiGeneratedContent);
+    } else {
+      const current = getEditorContent();
+      setEditorContent(current + aiGeneratedContent);
+    }
+    setAiModalOpen(false);
+    setAiPrompt("");
+    setAiGeneratedContent("");
+    toast({ title: "Content inserted" });
+  };
+
+
     e.preventDefault();
     if (!title) {
       toast({ title: "Error", description: "Title is required", variant: "destructive" });
