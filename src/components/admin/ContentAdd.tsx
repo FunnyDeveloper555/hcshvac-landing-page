@@ -45,6 +45,12 @@ const ContentAdd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [generatingTags, setGeneratingTags] = useState(false);
+  const [generatingSpotText, setGeneratingSpotText] = useState(false);
+  const [generatingSpotImage, setGeneratingSpotImage] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGeneratedContent, setAiGeneratedContent] = useState("");
+  const [generatingContent, setGeneratingContent] = useState(false);
 
   // Form state
   const [author, setAuthor] = useState("");
