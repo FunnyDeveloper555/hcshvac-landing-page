@@ -52,7 +52,8 @@ const ContentAdd = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGeneratedContent, setAiGeneratedContent] = useState("");
   const [generatingContent, setGeneratingContent] = useState(false);
-
+  const [spotImageBase64, setSpotImageBase64] = useState<string | null>(null);
+  const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
