@@ -570,6 +570,24 @@ const ContentAdd = () => {
               </div>
             </div>
 
+            {/* Spot Text & Spot Image */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+              <Label className="text-base font-semibold">Spot Content</Label>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Spot Text</Label>
+                  <Input placeholder="Short spot text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Spot Image URL</Label>
+                  <Input placeholder="https://example.com/image.jpg" value={spotImageUrl} onChange={(e) => setSpotImageUrl(e.target.value)} />
+                  {spotImageUrl && (
+                    <img src={spotImageUrl} alt="Spot preview" className="h-20 w-auto rounded border object-cover mt-1" />
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Display Order */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
