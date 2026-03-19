@@ -768,6 +768,57 @@ const ContentAdd = () => {
           </form>
         </CardContent>
       </Card>
+
+      {/* AI Content Generation Modal */}
+      <Dialog open={aiModalOpen} onOpenChange={setAiModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              AI Content Generator
+            </DialogTitle>
+            <DialogDescription>Enter a prompt to generate HTML content. Review and edit before inserting.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+            <div className="space-y-2">
+              <Label>Prompt</Label>
+              <Textarea
+                placeholder="e.g. Write an article about HVAC maintenance tips for homeowners..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                rows={3}
+              />
+              <Button type="button" onClick={generateEditorContent} disabled={generatingContent} size="sm">
+                {generatingContent ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1" />}
+                Generate
+              </Button>
+            </div>
+
+            {aiGeneratedContent && (
+              <div className="space-y-2 flex-1 overflow-hidden flex flex-col">
+                <Label>Generated Content (preview & edit)</Label>
+                <Textarea
+                  value={aiGeneratedContent}
+                  onChange={(e) => setAiGeneratedContent(e.target.value)}
+                  className="flex-1 min-h-[200px] font-mono text-xs"
+                />
+              </div>
+            )}
+          </div>
+
+          {aiGeneratedContent && (
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => insertAiContent("append")}>
+                Append to Editor
+              </Button>
+              <Button type="button" onClick={() => insertAiContent("replace")}>
+                Replace Editor Content
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
