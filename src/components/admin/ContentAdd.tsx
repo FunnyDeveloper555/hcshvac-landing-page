@@ -331,9 +331,10 @@ const ContentAdd = () => {
         body: { type: "spot_image", content, title },
       });
       if (error) throw error;
-      if (data?.imageUrl) {
-        setSpotImageUrl(data.imageUrl);
-        toast({ title: "Spot image generated", description: "AI image has been created and saved." });
+      if (data?.base64) {
+        setSpotImageBase64(data.base64);
+        setSpotImageReviewOpen(true);
+        toast({ title: "Image generated", description: "Review and save the image." });
       } else {
         throw new Error("No image was returned");
       }
