@@ -9,9 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2 } from "lucide-react";
+import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, History, RotateCcw } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,8 +69,13 @@ const ContentAdd = () => {
   const [displayOrder, setDisplayOrder] = useState(0);
   const [spotText, setSpotText] = useState("");
   const [spotImageUrl, setSpotImageUrl] = useState("");
+  const [allowComments, setAllowComments] = useState(false);
+  const [showAuthorName, setShowAuthorName] = useState(true);
   const [editorReady, setEditorReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-generate slug from title
@@ -120,6 +126,8 @@ const ContentAdd = () => {
       setDisplayOrder(data.display_order || 0);
       setSpotText((data as any).spot_text || "");
       setSpotImageUrl((data as any).spot_image_url || "");
+      setAllowComments((data as any).allow_comments ?? false);
+      setShowAuthorName((data as any).show_author_name ?? true);
     }
     setLoading(false);
   };
@@ -406,9 +414,40 @@ const ContentAdd = () => {
         display_order: displayOrder,
         spot_text: spotText || null,
         spot_image_url: spotImageUrl || null,
+        allow_comments: allowComments,
+        show_author_name: showAuthorName,
       } as any;
 
       if (isEditing) {
+        // Save current version to history before updating
+        const { data: current } = await supabase.from("contents").select("*").eq("id", editId).single();
+        if (current) {
+          const { data: lastVersion } = await supabase
+            .from("content_history")
+            .select("version_number")
+            .eq("content_id", editId)
+            .order("version_number", { ascending: false })
+            .limit(1)
+            .single();
+          const nextVersion = (lastVersion?.version_number || 0) + 1;
+          await supabase.from("content_history").insert({
+            content_id: editId,
+            version_number: nextVersion,
+            title: current.title,
+            slug: current.slug,
+            short_description: current.short_description,
+            html_content: current.html_content,
+            spot_text: (current as any).spot_text,
+            spot_image_url: (current as any).spot_image_url,
+            tags: (current.tags as string[]) || [],
+            publish_status: current.publish_status,
+            allow_comments: (current as any).allow_comments ?? false,
+            show_author_name: (current as any).show_author_name ?? true,
+            changed_by: user?.id || "",
+            change_summary: `Updated content`,
+          });
+        }
+
         const { error } = await supabase.from("contents").update(payload).eq("id", editId);
         if (error) throw error;
         toast({ title: "Success!", description: "Content updated successfully." });
@@ -708,6 +747,52 @@ const ContentAdd = () => {
               </div>
             </div>
 
+            {/* Content Settings */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+              <Label className="text-base font-semibold">Content Settings</Label>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allowComments"
+                    checked={allowComments}
+                    onCheckedChange={(checked) => setAllowComments(checked === true)}
+                  />
+                  <Label htmlFor="allowComments" className="cursor-pointer">Allow Comments</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showAuthorName"
+                    checked={showAuthorName}
+                    onCheckedChange={(checked) => setShowAuthorName(checked === true)}
+                  />
+                  <Label htmlFor="showAuthorName" className="cursor-pointer">Show Author Name</Label>
+                </div>
+                {isEditing && (
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        setHistoryOpen(true);
+                        setLoadingHistory(true);
+                        const { data } = await supabase
+                          .from("content_history")
+                          .select("*")
+                          .eq("content_id", editId!)
+                          .order("version_number", { ascending: false });
+                        setHistory(data || []);
+                        setLoadingHistory(false);
+                      }}
+                    >
+                      <History className="h-4 w-4 mr-1" />
+                      Version History
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Display Order */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -835,6 +920,73 @@ const ContentAdd = () => {
           toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
         }}
       />
+
+      {/* Content History Dialog */}
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              Version History
+            </DialogTitle>
+            <DialogDescription>View and restore previous versions of this content.</DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {loadingHistory ? (
+              <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : history.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No version history yet. History is saved each time you update content.</p>
+            ) : (
+              <div className="space-y-3">
+                {history.map((v) => (
+                  <div key={v.id} className="rounded-lg border p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">v{v.version_number}</Badge>
+                        <span className="font-medium text-sm">{v.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(v.created_at), "MMM d, yyyy h:mm a")}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setTitle(v.title);
+                            setSlug(v.slug || "");
+                            setShortDescription(v.short_description || "");
+                            setEditorContent(v.html_content || "");
+                            setHtmlContent(v.html_content || "");
+                            setSpotText(v.spot_text || "");
+                            setSpotImageUrl(v.spot_image_url || "");
+                            setTags(v.tags || []);
+                            setPublishStatus(v.publish_status || "draft");
+                            setAllowComments(v.allow_comments ?? false);
+                            setShowAuthorName(v.show_author_name ?? true);
+                            setHistoryOpen(false);
+                            toast({ title: "Version restored", description: `Restored to v${v.version_number}. Save to apply changes.` });
+                          }}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                          Restore
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant="outline" className="text-xs">{v.publish_status}</Badge>
+                      {v.tags?.slice(0, 3).map((t: string) => (
+                        <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
