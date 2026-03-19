@@ -308,10 +308,10 @@ function FolderPickerDialog({
     if (!open) return;
     setLoading(true);
     supabase
-      .from("file_manager_folders")
+      .from("file_folders" as any)
       .select("id, name, parent_id")
       .order("name")
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         setFolders(data || []);
         setLoading(false);
       });
