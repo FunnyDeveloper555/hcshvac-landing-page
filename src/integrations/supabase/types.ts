@@ -896,6 +896,8 @@ export type Database = {
           publish_status: string
           short_description: string | null
           slug: string | null
+          spot_image_url: string | null
+          spot_text: string | null
           tags: string[]
           title: string
           updated_at: string
@@ -912,6 +914,8 @@ export type Database = {
           publish_status?: string
           short_description?: string | null
           slug?: string | null
+          spot_image_url?: string | null
+          spot_text?: string | null
           tags?: string[]
           title: string
           updated_at?: string
@@ -928,6 +932,8 @@ export type Database = {
           publish_status?: string
           short_description?: string | null
           slug?: string | null
+          spot_image_url?: string | null
+          spot_text?: string | null
           tags?: string[]
           title?: string
           updated_at?: string

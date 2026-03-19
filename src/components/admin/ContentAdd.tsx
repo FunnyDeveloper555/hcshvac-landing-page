@@ -56,6 +56,8 @@ const ContentAdd = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [displayOrder, setDisplayOrder] = useState(0);
+  const [spotText, setSpotText] = useState("");
+  const [spotImageUrl, setSpotImageUrl] = useState("");
   const [editorReady, setEditorReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
