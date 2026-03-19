@@ -747,6 +747,52 @@ const ContentAdd = () => {
               </div>
             </div>
 
+            {/* Content Settings */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+              <Label className="text-base font-semibold">Content Settings</Label>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allowComments"
+                    checked={allowComments}
+                    onCheckedChange={(checked) => setAllowComments(checked === true)}
+                  />
+                  <Label htmlFor="allowComments" className="cursor-pointer">Allow Comments</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showAuthorName"
+                    checked={showAuthorName}
+                    onCheckedChange={(checked) => setShowAuthorName(checked === true)}
+                  />
+                  <Label htmlFor="showAuthorName" className="cursor-pointer">Show Author Name</Label>
+                </div>
+                {isEditing && (
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        setHistoryOpen(true);
+                        setLoadingHistory(true);
+                        const { data } = await supabase
+                          .from("content_history")
+                          .select("*")
+                          .eq("content_id", editId!)
+                          .order("version_number", { ascending: false });
+                        setHistory(data || []);
+                        setLoadingHistory(false);
+                      }}
+                    >
+                      <History className="h-4 w-4 mr-1" />
+                      Version History
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Display Order */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
