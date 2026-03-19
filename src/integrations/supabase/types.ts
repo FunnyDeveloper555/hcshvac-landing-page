@@ -883,8 +883,74 @@ export type Database = {
           },
         ]
       }
+      content_history: {
+        Row: {
+          allow_comments: boolean
+          change_summary: string | null
+          changed_by: string
+          content_id: string
+          created_at: string
+          html_content: string
+          id: string
+          publish_status: string
+          short_description: string | null
+          show_author_name: boolean
+          slug: string | null
+          spot_image_url: string | null
+          spot_text: string | null
+          tags: string[]
+          title: string
+          version_number: number
+        }
+        Insert: {
+          allow_comments?: boolean
+          change_summary?: string | null
+          changed_by: string
+          content_id: string
+          created_at?: string
+          html_content?: string
+          id?: string
+          publish_status?: string
+          short_description?: string | null
+          show_author_name?: boolean
+          slug?: string | null
+          spot_image_url?: string | null
+          spot_text?: string | null
+          tags?: string[]
+          title: string
+          version_number?: number
+        }
+        Update: {
+          allow_comments?: boolean
+          change_summary?: string | null
+          changed_by?: string
+          content_id?: string
+          created_at?: string
+          html_content?: string
+          id?: string
+          publish_status?: string
+          short_description?: string | null
+          show_author_name?: boolean
+          slug?: string | null
+          spot_image_url?: string | null
+          spot_text?: string | null
+          tags?: string[]
+          title?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_history_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contents: {
         Row: {
+          allow_comments: boolean
           author_id: string
           created_at: string
           display_order: number
@@ -895,6 +961,7 @@ export type Database = {
           publish_start_date: string | null
           publish_status: string
           short_description: string | null
+          show_author_name: boolean
           slug: string | null
           spot_image_url: string | null
           spot_text: string | null
@@ -903,6 +970,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_comments?: boolean
           author_id: string
           created_at?: string
           display_order?: number
@@ -913,6 +981,7 @@ export type Database = {
           publish_start_date?: string | null
           publish_status?: string
           short_description?: string | null
+          show_author_name?: boolean
           slug?: string | null
           spot_image_url?: string | null
           spot_text?: string | null
@@ -921,6 +990,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_comments?: boolean
           author_id?: string
           created_at?: string
           display_order?: number
@@ -931,6 +1001,7 @@ export type Database = {
           publish_start_date?: string | null
           publish_status?: string
           short_description?: string | null
+          show_author_name?: boolean
           slug?: string | null
           spot_image_url?: string | null
           spot_text?: string | null
