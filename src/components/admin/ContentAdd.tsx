@@ -56,6 +56,8 @@ const ContentAdd = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [displayOrder, setDisplayOrder] = useState(0);
+  const [spotText, setSpotText] = useState("");
+  const [spotImageUrl, setSpotImageUrl] = useState("");
   const [editorReady, setEditorReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,8 @@ const ContentAdd = () => {
       setHtmlContent(data.html_content || "");
       setTags((data.tags as string[]) || []);
       setDisplayOrder(data.display_order || 0);
+      setSpotText((data as any).spot_text || "");
+      setSpotImageUrl((data as any).spot_image_url || "");
     }
     setLoading(false);
   };
@@ -302,7 +306,9 @@ const ContentAdd = () => {
         publish_end_date: publishEndDate?.toISOString() || null,
         tags,
         display_order: displayOrder,
-      };
+        spot_text: spotText || null,
+        spot_image_url: spotImageUrl || null,
+      } as any;
 
       if (isEditing) {
         const { error } = await supabase.from("contents").update(payload).eq("id", editId);
@@ -562,6 +568,24 @@ const ContentAdd = () => {
                   style={isFullscreen ? { minHeight: 0 } : { minHeight: "400px", height: "400px" }}
                   title="Content Editor"
                 />
+              </div>
+            </div>
+
+            {/* Spot Text & Spot Image */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+              <Label className="text-base font-semibold">Spot Content</Label>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Spot Text</Label>
+                  <Input placeholder="Short spot text" value={spotText} onChange={(e) => setSpotText(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Spot Image URL</Label>
+                  <Input placeholder="https://example.com/image.jpg" value={spotImageUrl} onChange={(e) => setSpotImageUrl(e.target.value)} />
+                  {spotImageUrl && (
+                    <img src={spotImageUrl} alt="Spot preview" className="h-20 w-auto rounded border object-cover mt-1" />
+                  )}
+                </div>
               </div>
             </div>
 
