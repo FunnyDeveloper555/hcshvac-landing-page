@@ -414,9 +414,40 @@ const ContentAdd = () => {
         display_order: displayOrder,
         spot_text: spotText || null,
         spot_image_url: spotImageUrl || null,
+        allow_comments: allowComments,
+        show_author_name: showAuthorName,
       } as any;
 
       if (isEditing) {
+        // Save current version to history before updating
+        const { data: current } = await supabase.from("contents").select("*").eq("id", editId).single();
+        if (current) {
+          const { data: lastVersion } = await supabase
+            .from("content_history")
+            .select("version_number")
+            .eq("content_id", editId)
+            .order("version_number", { ascending: false })
+            .limit(1)
+            .single();
+          const nextVersion = (lastVersion?.version_number || 0) + 1;
+          await supabase.from("content_history").insert({
+            content_id: editId,
+            version_number: nextVersion,
+            title: current.title,
+            slug: current.slug,
+            short_description: current.short_description,
+            html_content: current.html_content,
+            spot_text: (current as any).spot_text,
+            spot_image_url: (current as any).spot_image_url,
+            tags: (current.tags as string[]) || [],
+            publish_status: current.publish_status,
+            allow_comments: (current as any).allow_comments ?? false,
+            show_author_name: (current as any).show_author_name ?? true,
+            changed_by: user?.id || "",
+            change_summary: `Updated content`,
+          });
+        }
+
         const { error } = await supabase.from("contents").update(payload).eq("id", editId);
         if (error) throw error;
         toast({ title: "Success!", description: "Content updated successfully." });
