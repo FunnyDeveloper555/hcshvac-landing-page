@@ -17,6 +17,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
 import { format, addDays, addMonths, addYears } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SpotImageReviewDialog } from "@/components/admin/SpotImageReviewDialog";
 
 const PUBLISH_STATUSES = [
   { value: "draft", label: "Draft" },
