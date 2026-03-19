@@ -641,7 +641,7 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={() => execCmd("outdent")} label="← Outdent" />
                   </div>
 
-                  {/* Menu Bar Row 5 - Insert */}
+                  {/* Menu Bar Row 5 - Insert & AI */}
                   <div className="flex flex-wrap gap-0.5 p-1">
                     <EditorMenuButton onClick={insertLink} label="🔗 Link" />
                     <EditorMenuButton onClick={() => execCmd("unlink")} label="Unlink" />
@@ -651,6 +651,15 @@ const ContentAdd = () => {
                     <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                     <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
                     <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
+                    <span className="w-px bg-border mx-1" />
+                    <button
+                      type="button"
+                      onClick={() => setAiModalOpen(true)}
+                      className="h-7 px-3 text-xs rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap flex items-center gap-1 font-medium"
+                    >
+                      <Wand2 className="h-3.5 w-3.5" />
+                      AI Generate
+                    </button>
                   </div>
                 </div>
 
