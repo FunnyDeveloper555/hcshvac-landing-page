@@ -108,7 +108,8 @@ const ContentAdd = () => {
       setHtmlContent(data.html_content || "");
       setTags((data.tags as string[]) || []);
       setDisplayOrder(data.display_order || 0);
-    }
+      setSpotText((data as any).spot_text || "");
+      setSpotImageUrl((data as any).spot_image_url || "");
     setLoading(false);
   };
 
