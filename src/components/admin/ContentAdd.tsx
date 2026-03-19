@@ -17,6 +17,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
 import { format, addDays, addMonths, addYears } from "date-fns";
 import { cn } from "@/lib/utils";
+import { SpotImageReviewDialog } from "@/components/admin/SpotImageReviewDialog";
 
 const PUBLISH_STATUSES = [
   { value: "draft", label: "Draft" },
@@ -51,7 +52,8 @@ const ContentAdd = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGeneratedContent, setAiGeneratedContent] = useState("");
   const [generatingContent, setGeneratingContent] = useState(false);
-
+  const [spotImageBase64, setSpotImageBase64] = useState<string | null>(null);
+  const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
@@ -329,9 +331,10 @@ const ContentAdd = () => {
         body: { type: "spot_image", content, title },
       });
       if (error) throw error;
-      if (data?.imageUrl) {
-        setSpotImageUrl(data.imageUrl);
-        toast({ title: "Spot image generated", description: "AI image has been created and saved." });
+      if (data?.base64) {
+        setSpotImageBase64(data.base64);
+        setSpotImageReviewOpen(true);
+        toast({ title: "Image generated", description: "Review and save the image." });
       } else {
         throw new Error("No image was returned");
       }
@@ -820,6 +823,18 @@ const ContentAdd = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Spot Image Review Dialog */}
+      <SpotImageReviewDialog
+        open={spotImageReviewOpen}
+        onOpenChange={setSpotImageReviewOpen}
+        base64={spotImageBase64}
+        onSaved={(publicUrl) => {
+          setSpotImageUrl(publicUrl);
+          setSpotImageBase64(null);
+          toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
+        }}
+      />
     </div>
   );
 };
