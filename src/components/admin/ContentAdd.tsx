@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, History, RotateCcw } from "lucide-react";
+import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, RotateCcw } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
