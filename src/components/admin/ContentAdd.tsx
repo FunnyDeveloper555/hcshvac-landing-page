@@ -828,6 +828,13 @@ const ContentAdd = () => {
                       )}
                     </div>
                   </TabsContent>
+
+                  {/* --- Meta Data Sub-Tab --- */}
+                  {isEditing && editId && (
+                    <TabsContent value="metadata" className="space-y-6">
+                      <ContentMetaDataTab contentId={editId} />
+                    </TabsContent>
+                  )}
                 </Tabs>
 
                 {/* Submit - always visible */}
