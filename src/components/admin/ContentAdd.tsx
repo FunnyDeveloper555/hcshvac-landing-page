@@ -492,6 +492,7 @@ const ContentAdd = () => {
                   <TabsList className="mb-4">
                     <TabsTrigger value="basic">Basic Information</TabsTrigger>
                     <TabsTrigger value="additional">Additional Fields</TabsTrigger>
+                    {isEditing && <TabsTrigger value="metadata">Meta Data</TabsTrigger>}
                   </TabsList>
 
                   {/* --- Basic Information Sub-Tab --- */}
