@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { format, addDays, addMonths, addYears } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SpotImageReviewDialog } from "@/components/admin/SpotImageReviewDialog";
+import ContentMetaDataTab from "@/components/admin/ContentMetaDataTab";
 
 const PUBLISH_STATUSES = [
   { value: "draft", label: "Draft" },
