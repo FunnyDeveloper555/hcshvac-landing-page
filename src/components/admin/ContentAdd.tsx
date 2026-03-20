@@ -74,9 +74,6 @@ const ContentAdd = () => {
   const [showAuthorName, setShowAuthorName] = useState(true);
   const [editorReady, setEditorReady] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-generate slug from title
