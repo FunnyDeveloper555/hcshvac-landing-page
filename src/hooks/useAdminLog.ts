@@ -29,7 +29,8 @@ type EntityType =
   | "admin_module"
   | "role_module_assignment"
   | "email_list"
-  | "content";
+  | "content"
+  | "content_metadata";
 
 type ActionType = 
   | "create" 

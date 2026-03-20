@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { format, addDays, addMonths, addYears } from "date-fns";
 import { cn } from "@/lib/utils";
 import { SpotImageReviewDialog } from "@/components/admin/SpotImageReviewDialog";
+import ContentMetaDataTab from "@/components/admin/ContentMetaDataTab";
 
 const PUBLISH_STATUSES = [
   { value: "draft", label: "Draft" },
@@ -491,6 +492,7 @@ const ContentAdd = () => {
                   <TabsList className="mb-4">
                     <TabsTrigger value="basic">Basic Information</TabsTrigger>
                     <TabsTrigger value="additional">Additional Fields</TabsTrigger>
+                    {isEditing && <TabsTrigger value="metadata">Meta Data</TabsTrigger>}
                   </TabsList>
 
                   {/* --- Basic Information Sub-Tab --- */}
@@ -826,6 +828,13 @@ const ContentAdd = () => {
                       )}
                     </div>
                   </TabsContent>
+
+                  {/* --- Meta Data Sub-Tab --- */}
+                  {isEditing && editId && (
+                    <TabsContent value="metadata" className="space-y-6">
+                      <ContentMetaDataTab contentId={editId} />
+                    </TabsContent>
+                  )}
                 </Tabs>
 
                 {/* Submit - always visible */}
