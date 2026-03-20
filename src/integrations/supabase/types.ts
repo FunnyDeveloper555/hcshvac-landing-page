@@ -948,6 +948,53 @@ export type Database = {
           },
         ]
       }
+      content_metadata: {
+        Row: {
+          content_id: string
+          created_at: string
+          display_order: number
+          field_key: string
+          field_value: string
+          file_url: string | null
+          id: string
+          is_active: boolean
+          metadata_type: string
+          updated_at: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          display_order?: number
+          field_key?: string
+          field_value?: string
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          metadata_type?: string
+          updated_at?: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          display_order?: number
+          field_key?: string
+          field_value?: string
+          file_url?: string | null
+          id?: string
+          is_active?: boolean
+          metadata_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_metadata_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contents: {
         Row: {
           allow_comments: boolean
