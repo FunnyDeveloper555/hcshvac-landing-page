@@ -995,6 +995,51 @@ export type Database = {
           },
         ]
       }
+      content_recommendations: {
+        Row: {
+          content_id: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          recommended_content_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          recommended_content_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          recommended_content_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_recommendations_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_recommendations_recommended_content_id_fkey"
+            columns: ["recommended_content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contents: {
         Row: {
           allow_comments: boolean
