@@ -883,6 +883,63 @@ export type Database = {
           },
         ]
       }
+      content_comments: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          comment_text: string
+          content_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_approved: boolean
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_email?: string | null
+          author_name?: string
+          comment_text: string
+          content_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_approved?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          comment_text?: string
+          content_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_approved?: boolean
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_comments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "contents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "content_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_history: {
         Row: {
           allow_comments: boolean
