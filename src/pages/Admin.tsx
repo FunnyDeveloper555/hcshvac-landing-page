@@ -77,6 +77,7 @@ import ProductsAdd from "@/components/admin/ProductsAdd";
 import ProductsList from "@/components/admin/ProductsList";
 import ContentAdd from "@/components/admin/ContentAdd";
 import ContentList from "@/components/admin/ContentList";
+import ContentPreview from "@/components/admin/ContentPreview";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -239,6 +240,7 @@ const Admin = () => {
               <Route path="/products/list" element={<ProductsList />} />
               <Route path="/contents/add" element={<ContentAdd />} />
               <Route path="/contents/list" element={<ContentList />} />
+              <Route path="/contents/preview" element={<ContentPreview />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
           </main>
