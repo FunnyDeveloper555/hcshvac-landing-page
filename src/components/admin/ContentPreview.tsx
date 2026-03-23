@@ -198,12 +198,7 @@ const ContentPreview = ({ content: propContent, inline = false }: ContentPreview
                 <Calendar className="h-3.5 w-3.5" />
                 {format(new Date(content.created_at), "MMMM d, yyyy")}
               </span>
-              {content.allow_comments && (
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Comments enabled
-                </span>
-              )}
+              
             </div>
 
             {/* Tags */}
@@ -314,19 +309,12 @@ const ContentPreview = ({ content: propContent, inline = false }: ContentPreview
         </Card>
       )}
 
-      {/* Comments placeholder */}
-      {content.allow_comments && (
-        <Card>
-          <CardContent className="py-6 px-6 md:px-12 space-y-3">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Comments
-            </h3>
-            <div className="rounded-lg border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-              Comments section will appear here when this content is published.
-            </div>
-          </CardContent>
-        </Card>
+      {/* Comments Section */}
+      {content.allow_comments && content.id && (
+        <ContentCommentsSection
+          contentId={content.id}
+          isPublished={content.publish_status === "published"}
+        />
       )}
     </div>
   );
