@@ -142,7 +142,7 @@ const ContentCommentsSection = ({ contentId, isPublished }: ContentCommentsSecti
               {format(new Date(comment.created_at), "MMM d, yyyy 'at' h:mm a")}
             </span>
             {!comment.is_approved && (
-              <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+              <Badge variant="outline" className="text-xs text-warning border-warning/40">
                 Pending Approval
               </Badge>
             )}
