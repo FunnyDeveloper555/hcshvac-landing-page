@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, RotateCcw } from "lucide-react";
+import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, RotateCcw, Eye } from "lucide-react";
+import ContentPreview from "@/components/admin/ContentPreview";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useAuth } from "@/hooks/useAuth";
@@ -480,6 +481,7 @@ const ContentAdd = () => {
       <Tabs defaultValue="form">
         <TabsList>
           <TabsTrigger value="form">Content Form</TabsTrigger>
+          <TabsTrigger value="preview"><Eye className="h-3.5 w-3.5 mr-1" />Preview</TabsTrigger>
           {isEditing && <TabsTrigger value="history">Content History</TabsTrigger>}
         </TabsList>
 
@@ -850,6 +852,31 @@ const ContentAdd = () => {
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* ===== CONTENT PREVIEW TAB ===== */}
+        <TabsContent value="preview">
+          <ContentPreview
+            content={{
+              id: editId || "",
+              title: title || "Untitled",
+              slug,
+              short_description: shortDescription,
+              html_content: getEditorContent() || htmlContent,
+              publish_status: publishStatus,
+              publish_start_date: publishStartDate?.toISOString() || null,
+              publish_end_date: publishEndDate?.toISOString() || null,
+              tags,
+              spot_text: spotText,
+              spot_image_url: spotImageUrl,
+              allow_comments: allowComments,
+              show_author_name: showAuthorName,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              author_id: user?.id || author,
+            }}
+            inline
+          />
         </TabsContent>
 
         {/* ===== CONTENT HISTORY TAB ===== */}

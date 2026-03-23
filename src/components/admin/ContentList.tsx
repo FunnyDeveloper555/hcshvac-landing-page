@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
-import { Loader2, Edit, Trash2, Search, Plus } from "lucide-react";
+import { Loader2, Edit, Trash2, Search, Plus, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
@@ -107,7 +107,10 @@ const ContentList = () => {
                     </TableCell>
                     <TableCell>{format(new Date(c.created_at), "MMM d, yyyy")}</TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button size="sm" variant="ghost" onClick={() => navigate(`/admin/contents/add?id=${c.id}`)}>
+                      <Button size="sm" variant="ghost" title="Preview" onClick={() => navigate(`/admin/contents/preview?id=${c.id}`)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" title="Edit" onClick={() => navigate(`/admin/contents/add?id=${c.id}`)}>
                         <Edit className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
