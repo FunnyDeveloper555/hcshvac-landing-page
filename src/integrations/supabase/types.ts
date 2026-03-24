@@ -2030,6 +2030,95 @@ export type Database = {
           },
         ]
       }
+      galleries: {
+        Row: {
+          activity_date: string | null
+          author_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          activity_date?: string | null
+          author_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string | null
+          author_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery_items: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          display_order: number
+          file_url: string
+          gallery_id: string
+          id: string
+          is_active: boolean
+          item_type: string
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number
+          file_url: string
+          gallery_id: string
+          id?: string
+          is_active?: boolean
+          item_type?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          display_order?: number
+          file_url?: string
+          gallery_id?: string
+          id?: string
+          is_active?: boolean
+          item_type?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_items_gallery_id_fkey"
+            columns: ["gallery_id"]
+            isOneToOne: false
+            referencedRelation: "galleries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_pages: {
         Row: {
           areas_content: Json | null
