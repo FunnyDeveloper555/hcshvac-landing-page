@@ -15,6 +15,7 @@ import {
   PasteConflictDialog,
 } from "./FileManagerDialogs";
 import { ImageEditorDialog } from "./ImageEditorDialog";
+import { AIGenerateDialog } from "./AIGenerateDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileDetailPanel } from "./FileDetailPanel";
 import { Loader2, FolderOpen } from "lucide-react";
@@ -51,6 +52,7 @@ export default function FileManager() {
   const [detailFile, setDetailFile] = useState<FileItem | null>(null);
   const [editImageFile, setEditImageFile] = useState<FileItem | null>(null);
   const [editImageSaving, setEditImageSaving] = useState(false);
+  const [aiGenerateOpen, setAiGenerateOpen] = useState(false);
 
   const handleFileClick = (fileId: string, e: React.MouseEvent) => {
     const allIds = fm.files.map((f) => f.id);
@@ -238,6 +240,7 @@ export default function FileManager() {
       const selected = fm.files.find((f) => fm.selectedFiles.has(f.id));
       return !!selected?.mime_type?.startsWith("image/");
     })(),
+    onAIGenerateClick: () => setAiGenerateOpen(true),
   };
 
   const fileListingContent = (
@@ -414,6 +417,12 @@ export default function FileManager() {
         imageName={editImageFile?.name ?? ""}
         onSave={handleEditImageSave}
         isPending={editImageSaving}
+      />
+
+      <AIGenerateDialog
+        open={aiGenerateOpen}
+        onOpenChange={setAiGenerateOpen}
+        currentFolderId={fm.currentFolderId}
       />
     </div>
   );
