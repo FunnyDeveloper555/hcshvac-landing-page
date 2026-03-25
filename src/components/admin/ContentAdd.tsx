@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, RotateCcw, Eye } from "lucide-react";
+import { Loader2, X, CalendarIcon, Sparkles, Plus, Wand2, RotateCcw, Eye, GalleryHorizontalEnd } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import ContentPreview from "@/components/admin/ContentPreview";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
@@ -58,6 +59,8 @@ const ContentAdd = () => {
   const [generatingContent, setGeneratingContent] = useState(false);
   const [spotImageBase64, setSpotImageBase64] = useState<string | null>(null);
   const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
+  const [galleryModalOpen, setGalleryModalOpen] = useState(false);
+  const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
@@ -390,6 +393,56 @@ const ContentAdd = () => {
     toast({ title: "Content inserted" });
   };
 
+  // Gallery query for insert dialog
+  const { data: galleries = [] } = useQuery({
+    queryKey: ["galleries-for-editor"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("galleries")
+        .select("id, name, gallery_items(count)")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: galleryModalOpen,
+  });
+
+  const insertGallery = async () => {
+    if (!selectedGalleryId) {
+      toast({ title: "Error", description: "Please select a gallery.", variant: "destructive" });
+      return;
+    }
+    // Fetch gallery items
+    const { data: items, error } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .eq("gallery_id", selectedGalleryId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (error || !items?.length) {
+      toast({ title: "Error", description: "No items found in this gallery.", variant: "destructive" });
+      return;
+    }
+    const gallery = galleries.find(g => g.id === selectedGalleryId);
+    const galleryName = gallery?.name || "Gallery";
+
+    // Build HTML grid
+    let html = `<div style="margin:1em 0"><h3>${galleryName}</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
+    for (const item of items) {
+      if ((item as any).media_type === "video") {
+        html += `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:6px;border:1px solid #ddd;"><video src="${(item as any).media_url}" controls style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+      } else {
+        html += `<img src="${(item as any).media_url}" alt="${(item as any).alt_text || (item as any).title || ''}" style="width:100%;border-radius:6px;border:1px solid #ddd;object-fit:cover;aspect-ratio:1/1;" />`;
+      }
+    }
+    html += `</div></div>`;
+    execCmd("insertHTML", html);
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    toast({ title: "Gallery inserted" });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) {
@@ -699,6 +752,14 @@ const ContentAdd = () => {
                             <EditorMenuButton onClick={insertHR} label="— Line" />
                             <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                             <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryModalOpen(true)}
+                              className="h-7 px-2 text-xs rounded hover:bg-accent hover:text-accent-foreground transition-colors whitespace-nowrap flex items-center gap-1"
+                            >
+                              <GalleryHorizontalEnd className="h-3.5 w-3.5" />
+                              Gallery
+                            </button>
                             <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
                             <span className="w-px bg-border mx-1" />
                             <button
@@ -969,6 +1030,43 @@ const ContentAdd = () => {
           toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
         }}
       />
+
+      {/* Gallery Insert Dialog */}
+      <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GalleryHorizontalEnd className="h-5 w-5" />
+              Insert Gallery
+            </DialogTitle>
+            <DialogDescription>Select a gallery to embed its media into the content.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Gallery</Label>
+              <Select value={selectedGalleryId} onValueChange={setSelectedGalleryId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a gallery..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {galleries.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name} ({(g as any).gallery_items?.[0]?.count ?? 0} items)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {galleries.length === 0 && (
+              <p className="text-sm text-muted-foreground">No active galleries found. Create one in the Gallery module first.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={insertGallery} disabled={!selectedGalleryId}>Insert</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
