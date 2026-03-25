@@ -59,6 +59,10 @@ const ContentAdd = () => {
   const [generatingContent, setGeneratingContent] = useState(false);
   const [spotImageBase64, setSpotImageBase64] = useState<string | null>(null);
   const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
+  const [galleryModalOpen, setGalleryModalOpen] = useState(false);
+  const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
+  const [spotImageBase64, setSpotImageBase64] = useState<string | null>(null);
+  const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
