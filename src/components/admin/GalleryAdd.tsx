@@ -69,10 +69,18 @@ const GalleryAdd = () => {
     })));
   };
 
-  const addItem = () => {
+  const addItemFromFile = (url: string) => {
+    const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
+    const filename = url.split("/").pop()?.split("?")[0] || "";
+    const title = filename.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
     setItems(prev => [...prev, {
-      item_type: "image", file_url: "", thumbnail_url: "", title: "",
-      alt_text: "", display_order: prev.length, is_active: true,
+      item_type: isVideo ? "video" : "image",
+      file_url: url,
+      thumbnail_url: "",
+      title,
+      alt_text: title,
+      display_order: prev.length,
+      is_active: true,
     }]);
   };
 
