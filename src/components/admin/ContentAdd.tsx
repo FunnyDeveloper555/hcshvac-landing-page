@@ -443,6 +443,7 @@ const ContentAdd = () => {
     toast({ title: "Gallery inserted" });
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) {
       toast({ title: "Error", description: "Title is required", variant: "destructive" });
