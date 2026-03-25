@@ -97,9 +97,16 @@ const GalleryAdd = () => {
     setPickerOpen(true);
   };
 
+  const openAddPicker = () => {
+    setPickerTarget(null);
+    setPickerOpen(true);
+  };
+
   const handlePickerSelect = (url: string) => {
     if (pickerTarget) {
       updateItem(pickerTarget.index, pickerTarget.field, url);
+    } else {
+      addItemFromFile(url);
     }
     setPickerOpen(false);
     setPickerTarget(null);
