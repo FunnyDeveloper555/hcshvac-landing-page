@@ -423,13 +423,15 @@ const ContentAdd = () => {
     toast({ title: "Content inserted" });
   };
 
+  const [gallerySearch, setGallerySearch] = useState("");
+
   // Gallery query for insert dialog
-  const { data: galleries = [] } = useQuery({
+  const { data: galleries = [], isLoading: galleriesLoading } = useQuery({
     queryKey: ["galleries-for-editor"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("galleries")
-        .select("id, name, gallery_items(count)")
+        .select("id, name, description, activity_date, gallery_items(count, file_url, thumbnail_url)")
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
@@ -437,6 +439,12 @@ const ContentAdd = () => {
     },
     enabled: galleryModalOpen,
   });
+
+  const filteredGalleries = useMemo(() => {
+    if (!gallerySearch.trim()) return galleries;
+    const q = gallerySearch.toLowerCase();
+    return galleries.filter((g: any) => g.name?.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q));
+  }, [galleries, gallerySearch]);
 
   const insertGallery = async () => {
     if (!selectedGalleryId) {
@@ -1071,42 +1079,92 @@ const ContentAdd = () => {
       />
 
       {/* Gallery Insert Dialog */}
-      <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+      <Dialog open={galleryModalOpen} onOpenChange={(open) => { setGalleryModalOpen(open); if (!open) { setGallerySearch(""); setSelectedGalleryId(""); } }}>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-5 pt-5 pb-0">
             <DialogTitle className="flex items-center gap-2">
               <GalleryHorizontalEnd className="h-5 w-5" />
               Insert Gallery
             </DialogTitle>
-            <DialogDescription>Select a gallery to embed its media into the content.</DialogDescription>
+            <DialogDescription>Search and select a gallery to embed.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Gallery</Label>
-              <Select value={selectedGalleryId} onValueChange={setSelectedGalleryId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a gallery..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {galleries.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>
-                      {g.name} ({(g as any).gallery_items?.[0]?.count ?? 0} items)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="px-5 pt-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={gallerySearch}
+                onChange={(e) => setGallerySearch(e.target.value)}
+                placeholder="Search galleries…"
+                className="pl-8 h-9 text-sm"
+              />
             </div>
-            {selectedGalleryId && (
-              <GalleryPreviewStrip galleryId={selectedGalleryId} />
-            )}
-            {galleries.length === 0 && (
-              <p className="text-sm text-muted-foreground">No active galleries found. Create one in the Gallery module first.</p>
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 space-y-1.5">
+            {galleriesLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredGalleries.length === 0 ? (
+              <div className="text-center py-12 text-sm text-muted-foreground">
+                {galleries.length === 0 ? "No active galleries found. Create one in the Gallery module first." : "No galleries match your search."}
+              </div>
+            ) : (
+              filteredGalleries.map((g: any) => {
+                const itemCount = g.gallery_items?.[0]?.count ?? 0;
+                const thumbs = (g.gallery_items || []).slice(0, 4).map((it: any) => it.thumbnail_url || it.file_url).filter(Boolean);
+                const isSelected = selectedGalleryId === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => setSelectedGalleryId(g.id)}
+                    className={cn(
+                      "w-full text-left rounded-lg border p-3 transition-colors",
+                      isSelected
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border hover:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Thumbnail strip */}
+                      <div className="shrink-0 flex gap-0.5">
+                        {thumbs.length > 0 ? thumbs.map((url: string, i: number) => (
+                          <div key={i} className="w-10 h-10 rounded overflow-hidden bg-muted border">
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )) : (
+                          <div className="w-10 h-10 rounded bg-muted border flex items-center justify-center">
+                            <GalleryHorizontalEnd className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm truncate">{g.name}</span>
+                          <Badge variant="secondary" className="shrink-0 text-xs">{itemCount} items</Badge>
+                        </div>
+                        {g.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{g.description}</p>
+                        )}
+                        {g.activity_date && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(g.activity_date), "MMM d, yyyy")}</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
-            <Button type="button" onClick={insertGallery} disabled={!selectedGalleryId}>Insert</Button>
-          </DialogFooter>
+          {selectedGalleryId && (
+            <div className="px-5 pb-2">
+              <GalleryPreviewStrip galleryId={selectedGalleryId} />
+            </div>
+          )}
+          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t">
+            <Button type="button" variant="outline" size="sm" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
+            <Button type="button" size="sm" onClick={insertGallery} disabled={!selectedGalleryId}>Insert Gallery</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
