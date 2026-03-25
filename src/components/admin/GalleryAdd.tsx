@@ -209,7 +209,7 @@ const GalleryAdd = () => {
             <TabsContent value="content" className="space-y-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">Add images and videos to this gallery</p>
-                <Button onClick={addItem} size="sm"><Plus className="h-4 w-4 mr-1" /> Add Item</Button>
+                <Button onClick={openAddPicker} size="sm"><Plus className="h-4 w-4 mr-1" /> Add Item</Button>
               </div>
 
               {items.length === 0 ? (
