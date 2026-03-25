@@ -1,7 +1,9 @@
 import type { ContentBlock } from "./ContentBlockEditor";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Play } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 function TextBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
   const data = rawData || {};
@@ -84,6 +86,58 @@ function ListBlockPreview({ data: rawData }: { data: Record<string, unknown> }) 
   );
 }
 
+function GalleryBlockPreview({ data: rawData }: { data: Record<string, unknown> }) {
+  const data = rawData || {};
+  const galleryId = data.galleryId as string;
+
+  const { data: items = [] } = useQuery({
+    queryKey: ["gallery-block-items", galleryId],
+    queryFn: async () => {
+      if (!galleryId) return [];
+      const { data, error } = await supabase
+        .from("gallery_items")
+        .select("*")
+        .eq("gallery_id", galleryId)
+        .eq("is_active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!galleryId,
+  });
+
+  if (!galleryId) return <p className="text-muted-foreground text-sm">No gallery selected.</p>;
+  if (items.length === 0) return <p className="text-muted-foreground text-sm">Gallery is empty.</p>;
+
+  return (
+    <div className="space-y-3">
+      {(data.heading as string) && <h3 className="text-xl font-semibold">{data.heading as string}</h3>}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {items.map((item: any) => (
+          <div key={item.id} className="relative rounded-lg overflow-hidden border bg-muted aspect-square">
+            {item.item_type === "video" ? (
+              <div className="w-full h-full flex items-center justify-center bg-black/10">
+                {item.thumbnail_url ? (
+                  <img src={item.thumbnail_url} alt={item.alt_text || item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <Play className="w-8 h-8 text-muted-foreground" />
+                )}
+              </div>
+            ) : (
+              <img src={item.file_url} alt={item.alt_text || item.title} className="w-full h-full object-cover" />
+            )}
+            {item.title && (
+              <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1">
+                <p className="text-white text-xs truncate">{item.title}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ContentBlockPreview({ blocks }: { blocks: ContentBlock[] }) {
   if (blocks.length === 0) {
     return <p className="text-muted-foreground text-center py-6">No content blocks to preview.</p>;
@@ -99,6 +153,7 @@ export default function ContentBlockPreview({ blocks }: { blocks: ContentBlock[]
           case "cta": return <CtaBlockPreview key={block.id} data={block.data} />;
           case "testimonial": return <TestimonialBlockPreview key={block.id} data={block.data} />;
           case "list": return <ListBlockPreview key={block.id} data={block.data} />;
+          case "gallery": return <GalleryBlockPreview key={block.id} data={block.data} />;
           default: return null;
         }
       })}

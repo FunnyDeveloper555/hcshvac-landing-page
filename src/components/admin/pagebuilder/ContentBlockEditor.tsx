@@ -5,12 +5,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, Type, Image, HelpCircle, MousePointerClick, MessageSquareQuote, List } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronUp, ChevronDown, Type, Image, HelpCircle, MousePointerClick, MessageSquareQuote, List, GalleryHorizontalEnd } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ContentBlock {
   id: string;
-  type: "text" | "image" | "faq" | "cta" | "testimonial" | "list";
+  type: "text" | "image" | "faq" | "cta" | "testimonial" | "list" | "gallery";
   data: Record<string, unknown>;
   order: number;
 }
@@ -27,6 +29,7 @@ const BLOCK_TYPES = [
   { value: "cta", label: "Call to Action", icon: MousePointerClick },
   { value: "testimonial", label: "Testimonial", icon: MessageSquareQuote },
   { value: "list", label: "Bullet List", icon: List },
+  { value: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
 ] as const;
 
 function generateId() {
@@ -41,6 +44,7 @@ function getDefaultData(type: ContentBlock["type"]): Record<string, unknown> {
     case "cta": return { heading: "", description: "", buttonText: "Learn More", buttonUrl: "#" };
     case "testimonial": return { quote: "", author: "", role: "" };
     case "list": return { heading: "", items: ["Item 1"] };
+    case "gallery": return { galleryId: "", heading: "" };
     default: return {};
   }
 }
@@ -194,6 +198,52 @@ function ListBlockFields({ data: rawData, onChange }: { data: Record<string, unk
   );
 }
 
+function GalleryBlockFields({ data: rawData, onChange }: { data: Record<string, unknown>; onChange: (d: Record<string, unknown>) => void }) {
+  const data = rawData || { galleryId: "", heading: "" };
+  const { data: galleries = [] } = useQuery({
+    queryKey: ["galleries-for-block"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("galleries")
+        .select("id, name, gallery_items(count)")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <Label className="text-xs">Heading (optional)</Label>
+        <Input value={(data.heading as string) || ""} onChange={e => onChange({ ...data, heading: e.target.value })} placeholder="Gallery heading" />
+      </div>
+      <div className="space-y-1">
+        <Label className="text-xs">Select Gallery</Label>
+        <Select value={(data.galleryId as string) || ""} onValueChange={v => onChange({ ...data, galleryId: v })}>
+          <SelectTrigger className="text-sm">
+            <SelectValue placeholder="Choose a gallery..." />
+          </SelectTrigger>
+          <SelectContent>
+            {galleries.map(g => (
+              <SelectItem key={g.id} value={g.id}>
+                <span className="flex items-center gap-2">
+                  <GalleryHorizontalEnd className="w-3.5 h-3.5" />
+                  {g.name} ({(g as any).gallery_items?.[0]?.count ?? 0} items)
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {!(data.galleryId as string) && (
+        <p className="text-xs text-muted-foreground">Select a gallery to embed its images/videos in this content.</p>
+      )}
+    </div>
+  );
+}
+
 function BlockFieldsRouter({ block, onChange }: { block: ContentBlock; onChange: (data: Record<string, unknown>) => void }) {
   switch (block.type) {
     case "text": return <TextBlockFields data={block.data} onChange={onChange} />;
@@ -202,6 +252,7 @@ function BlockFieldsRouter({ block, onChange }: { block: ContentBlock; onChange:
     case "cta": return <CtaBlockFields data={block.data} onChange={onChange} />;
     case "testimonial": return <TestimonialBlockFields data={block.data} onChange={onChange} />;
     case "list": return <ListBlockFields data={block.data} onChange={onChange} />;
+    case "gallery": return <GalleryBlockFields data={block.data} onChange={onChange} />;
     default: return null;
   }
 }
@@ -215,6 +266,7 @@ function getBlockLabel(block: ContentBlock): string {
     case "cta": return (data.heading as string) || "Call to Action";
     case "testimonial": return (data.author as string) ? `"${(data.author as string)}"` : "Testimonial";
     case "list": return (data.heading as string) || "Bullet List";
+    case "gallery": return (data.heading as string) || "Gallery";
     default: return "Block";
   }
 }
