@@ -1,7 +1,7 @@
 import {
   Upload, Grid3X3, List, ClipboardPaste, Trash2, Search, Undo2,
   ArrowUpDown, ArrowUp, ArrowDown, Eye, Download, Copy, Scissors, Pencil, Info,
-  FolderOpen, MoreVertical, ImageIcon,
+  FolderOpen, MoreVertical, ImageIcon, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,7 @@ interface FileListingToolbarProps {
   onPropertiesSelected?: () => void;
   onEditImageSelected?: () => void;
   isSelectedImage?: boolean;
+  onAIGenerateClick?: () => void;
 }
 
 export function FileListingToolbar({
@@ -79,6 +80,7 @@ export function FileListingToolbar({
   onPropertiesSelected,
   onEditImageSelected,
   isSelectedImage,
+  onAIGenerateClick,
 }: FileListingToolbarProps) {
   const SortIcon = sortDirection === "asc" ? ArrowUp : ArrowDown;
   const hasSelection = selectedCount > 0;
@@ -232,6 +234,12 @@ export function FileListingToolbar({
             <Upload className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Upload</span>
           </Button>
+          {onAIGenerateClick && (
+            <Button variant="outline" size="sm" onClick={onAIGenerateClick} title="Generate with AI">
+              <Sparkles className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">AI Generate</span>
+            </Button>
+          )}
 
           {/* Sort dropdown */}
           <DropdownMenu>
