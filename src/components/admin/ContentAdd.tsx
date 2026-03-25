@@ -1030,6 +1030,43 @@ const ContentAdd = () => {
           toast({ title: "Spot image saved", description: "Image has been resized and saved to File Manager." });
         }}
       />
+
+      {/* Gallery Insert Dialog */}
+      <Dialog open={galleryModalOpen} onOpenChange={setGalleryModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GalleryHorizontalEnd className="h-5 w-5" />
+              Insert Gallery
+            </DialogTitle>
+            <DialogDescription>Select a gallery to embed its media into the content.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Gallery</Label>
+              <Select value={selectedGalleryId} onValueChange={setSelectedGalleryId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a gallery..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {galleries.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name} ({(g as any).gallery_items?.[0]?.count ?? 0} items)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {galleries.length === 0 && (
+              <p className="text-sm text-muted-foreground">No active galleries found. Create one in the Gallery module first.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={insertGallery} disabled={!selectedGalleryId}>Insert</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
