@@ -68,8 +68,7 @@ function GalleryPreviewStrip({ galleryId }: { galleryId: string }) {
     </div>
   );
 }
-
-
+const ContentAdd = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
