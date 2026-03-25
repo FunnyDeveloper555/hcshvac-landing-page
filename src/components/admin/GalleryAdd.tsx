@@ -69,10 +69,18 @@ const GalleryAdd = () => {
     })));
   };
 
-  const addItem = () => {
+  const addItemFromFile = (url: string) => {
+    const isVideo = /\.(mp4|webm|ogg|mov|avi)$/i.test(url);
+    const filename = url.split("/").pop()?.split("?")[0] || "";
+    const title = filename.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
     setItems(prev => [...prev, {
-      item_type: "image", file_url: "", thumbnail_url: "", title: "",
-      alt_text: "", display_order: prev.length, is_active: true,
+      item_type: isVideo ? "video" : "image",
+      file_url: url,
+      thumbnail_url: "",
+      title,
+      alt_text: title,
+      display_order: prev.length,
+      is_active: true,
     }]);
   };
 
@@ -89,9 +97,16 @@ const GalleryAdd = () => {
     setPickerOpen(true);
   };
 
+  const openAddPicker = () => {
+    setPickerTarget(null);
+    setPickerOpen(true);
+  };
+
   const handlePickerSelect = (url: string) => {
     if (pickerTarget) {
       updateItem(pickerTarget.index, pickerTarget.field, url);
+    } else {
+      addItemFromFile(url);
     }
     setPickerOpen(false);
     setPickerTarget(null);
@@ -194,7 +209,7 @@ const GalleryAdd = () => {
             <TabsContent value="content" className="space-y-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-muted-foreground">Add images and videos to this gallery</p>
-                <Button onClick={addItem} size="sm"><Plus className="h-4 w-4 mr-1" /> Add Item</Button>
+                <Button onClick={openAddPicker} size="sm"><Plus className="h-4 w-4 mr-1" /> Add Item</Button>
               </div>
 
               {items.length === 0 ? (
