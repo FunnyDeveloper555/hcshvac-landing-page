@@ -38,6 +38,36 @@ const DATE_PRESETS = [
   { label: "1 Year", days: 365 },
 ];
 
+function GalleryPreviewStrip({ galleryId }: { galleryId: string }) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["gallery-preview-strip", galleryId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("gallery_items")
+        .select("id, file_url, thumbnail_url, title, item_type")
+        .eq("gallery_id", galleryId)
+        .eq("is_active", true)
+        .order("display_order")
+        .limit(6);
+      return data || [];
+    },
+    enabled: !!galleryId,
+  });
+  if (isLoading) return <div className="flex gap-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-14 h-14 rounded bg-muted animate-pulse" />)}</div>;
+  if (items.length === 0) return <p className="text-sm text-muted-foreground">This gallery has no items yet.</p>;
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">Preview</Label>
+      <div className="flex gap-2 flex-wrap">
+        {items.map((item: any) => (
+          <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted">
+            <img src={item.thumbnail_url || item.file_url} alt={item.title || ""} className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 const ContentAdd = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -413,7 +443,6 @@ const ContentAdd = () => {
       toast({ title: "Error", description: "Please select a gallery.", variant: "destructive" });
       return;
     }
-    // Fetch gallery items
     const { data: items, error } = await supabase
       .from("gallery_items")
       .select("*")
@@ -426,21 +455,31 @@ const ContentAdd = () => {
     }
     const gallery = galleries.find(g => g.id === selectedGalleryId);
     const galleryName = gallery?.name || "Gallery";
+    const totalItems = items.length;
+    const previewItems = items.slice(0, 4);
 
-    // Build HTML grid
-    let html = `<div style="margin:1em 0"><h3>${galleryName}</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
-    for (const item of items) {
-      if ((item as any).media_type === "video") {
-        html += `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:6px;border:1px solid #ddd;"><video src="${(item as any).media_url}" controls style="width:100%;height:100%;object-fit:cover;"></video></div>`;
-      } else {
-        html += `<img src="${(item as any).media_url}" alt="${(item as any).alt_text || (item as any).title || ''}" style="width:100%;border-radius:6px;border:1px solid #ddd;object-fit:cover;aspect-ratio:1/1;" />`;
-      }
+    // Build a styled placeholder embed block with thumbnail strip
+    let thumbnailsHtml = previewItems.map((item: any) => {
+      const src = item.thumbnail_url || item.file_url;
+      return `<img src="${src}" alt="${item.alt_text || item.title || ''}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`;
+    }).join("");
+    if (totalItems > 4) {
+      thumbnailsHtml += `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:13px;font-weight:600;">+${totalItems - 4}</span>`;
     }
-    html += `</div></div>`;
+
+    const html = `<div data-gallery-id="${selectedGalleryId}" contenteditable="false" style="margin:1em 0;padding:16px;border:2px dashed #94a3b8;border-radius:10px;background:#f8fafc;text-align:left;">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">` +
+        `<span style="font-size:18px;">🖼️</span>` +
+        `<strong style="font-size:15px;color:#1e293b;">${galleryName}</strong>` +
+        `<span style="font-size:12px;color:#64748b;margin-left:auto;">${totalItems} item${totalItems !== 1 ? 's' : ''}</span>` +
+      `</div>` +
+      `<div style="display:flex;gap:6px;flex-wrap:wrap;">${thumbnailsHtml}</div>` +
+    `</div><p><br/></p>`;
+
     execCmd("insertHTML", html);
     setGalleryModalOpen(false);
     setSelectedGalleryId("");
-    toast({ title: "Gallery inserted" });
+    toast({ title: "Gallery inserted", description: `"${galleryName}" embedded with ${totalItems} items.` });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1057,6 +1096,9 @@ const ContentAdd = () => {
                 </SelectContent>
               </Select>
             </div>
+            {selectedGalleryId && (
+              <GalleryPreviewStrip galleryId={selectedGalleryId} />
+            )}
             {galleries.length === 0 && (
               <p className="text-sm text-muted-foreground">No active galleries found. Create one in the Gallery module first.</p>
             )}
