@@ -752,6 +752,14 @@ const ContentAdd = () => {
                             <EditorMenuButton onClick={insertHR} label="— Line" />
                             <EditorMenuButton onClick={insertCodeBlock} label="</> Code" />
                             <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryModalOpen(true)}
+                              className="h-7 px-2 text-xs rounded hover:bg-accent hover:text-accent-foreground transition-colors whitespace-nowrap flex items-center gap-1"
+                            >
+                              <GalleryHorizontalEnd className="h-3.5 w-3.5" />
+                              Gallery
+                            </button>
                             <EditorMenuButton onClick={() => setIsFullscreen(!isFullscreen)} label={isFullscreen ? "✕ Exit Fullscreen" : "⛶ Fullscreen"} />
                             <span className="w-px bg-border mx-1" />
                             <button
