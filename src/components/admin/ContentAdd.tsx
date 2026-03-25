@@ -393,7 +393,56 @@ const ContentAdd = () => {
     toast({ title: "Content inserted" });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Gallery query for insert dialog
+  const { data: galleries = [] } = useQuery({
+    queryKey: ["galleries-for-editor"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("galleries")
+        .select("id, name, gallery_items(count)")
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: galleryModalOpen,
+  });
+
+  const insertGallery = async () => {
+    if (!selectedGalleryId) {
+      toast({ title: "Error", description: "Please select a gallery.", variant: "destructive" });
+      return;
+    }
+    // Fetch gallery items
+    const { data: items, error } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .eq("gallery_id", selectedGalleryId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (error || !items?.length) {
+      toast({ title: "Error", description: "No items found in this gallery.", variant: "destructive" });
+      return;
+    }
+    const gallery = galleries.find(g => g.id === selectedGalleryId);
+    const galleryName = gallery?.name || "Gallery";
+
+    // Build HTML grid
+    let html = `<div style="margin:1em 0"><h3>${galleryName}</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;
+    for (const item of items) {
+      if ((item as any).media_type === "video") {
+        html += `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:6px;border:1px solid #ddd;"><video src="${(item as any).media_url}" controls style="width:100%;height:100%;object-fit:cover;"></video></div>`;
+      } else {
+        html += `<img src="${(item as any).media_url}" alt="${(item as any).alt_text || (item as any).title || ''}" style="width:100%;border-radius:6px;border:1px solid #ddd;object-fit:cover;aspect-ratio:1/1;" />`;
+      }
+    }
+    html += `</div></div>`;
+    execCmd("insertHTML", html);
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    toast({ title: "Gallery inserted" });
+  };
+
     e.preventDefault();
     if (!title) {
       toast({ title: "Error", description: "Title is required", variant: "destructive" });
