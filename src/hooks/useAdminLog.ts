@@ -30,7 +30,8 @@ type EntityType =
   | "role_module_assignment"
   | "email_list"
   | "content"
-  | "content_metadata";
+  | "content_metadata"
+  | "gallery";
 
 type ActionType = 
   | "create" 
