@@ -38,7 +38,38 @@ const DATE_PRESETS = [
   { label: "1 Year", days: 365 },
 ];
 
-const ContentAdd = () => {
+function GalleryPreviewStrip({ galleryId }: { galleryId: string }) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["gallery-preview-strip", galleryId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("gallery_items")
+        .select("id, file_url, thumbnail_url, title, item_type")
+        .eq("gallery_id", galleryId)
+        .eq("is_active", true)
+        .order("display_order")
+        .limit(6);
+      return data || [];
+    },
+    enabled: !!galleryId,
+  });
+  if (isLoading) return <div className="flex gap-2">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="w-14 h-14 rounded bg-muted animate-pulse" />)}</div>;
+  if (items.length === 0) return <p className="text-sm text-muted-foreground">This gallery has no items yet.</p>;
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">Preview</Label>
+      <div className="flex gap-2 flex-wrap">
+        {items.map((item: any) => (
+          <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted">
+            <img src={item.thumbnail_url || item.file_url} alt={item.title || ""} className="w-full h-full object-cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
