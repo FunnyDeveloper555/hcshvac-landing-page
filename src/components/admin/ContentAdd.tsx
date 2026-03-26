@@ -901,7 +901,7 @@ const ContentAdd = () => {
                             <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
                             <button
                               type="button"
-                              onClick={() => setGalleryModalOpen(true)}
+                              onClick={() => { setGalleryEditMode("insert"); setEditingGalleryElement(null); setGalleryModalOpen(true); }}
                               className="h-7 px-2 text-xs rounded hover:bg-accent hover:text-accent-foreground transition-colors whitespace-nowrap flex items-center gap-1"
                             >
                               <GalleryHorizontalEnd className="h-3.5 w-3.5" />
