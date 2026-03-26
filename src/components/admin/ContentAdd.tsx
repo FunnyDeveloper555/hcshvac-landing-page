@@ -1178,15 +1178,19 @@ const ContentAdd = () => {
         }}
       />
 
-      {/* Gallery Insert Dialog */}
-      <Dialog open={galleryModalOpen} onOpenChange={(open) => { setGalleryModalOpen(open); if (!open) { setGallerySearch(""); setSelectedGalleryId(""); } }}>
+      {/* Gallery Insert/Edit Dialog */}
+      <Dialog open={galleryModalOpen} onOpenChange={(open) => { setGalleryModalOpen(open); if (!open) { setGallerySearch(""); setSelectedGalleryId(""); setEditingGalleryElement(null); setGalleryEditMode("insert"); } }}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col p-0">
           <DialogHeader className="px-5 pt-5 pb-0">
             <DialogTitle className="flex items-center gap-2">
               <GalleryHorizontalEnd className="h-5 w-5" />
-              Insert Gallery
+              {galleryEditMode === "edit" ? "Edit Gallery Embed" : "Insert Gallery"}
             </DialogTitle>
-            <DialogDescription>Search and select a gallery to embed.</DialogDescription>
+            <DialogDescription>
+              {galleryEditMode === "edit"
+                ? "Replace with a different gallery or remove this embed."
+                : "Search and select a gallery to embed."}
+            </DialogDescription>
           </DialogHeader>
           <div className="px-5 pt-3">
             <div className="relative">
@@ -1227,7 +1231,6 @@ const ContentAdd = () => {
                     )}
                   >
                     <div className="flex items-start gap-3">
-                      {/* Thumbnail strip */}
                       <div className="shrink-0 flex gap-0.5">
                         {thumbItems.length > 0 ? thumbItems.map((it: any, i: number) => {
                           const isVideo = it.item_type === "video";
@@ -1270,9 +1273,22 @@ const ContentAdd = () => {
               <GalleryPreviewStrip galleryId={selectedGalleryId} />
             </div>
           )}
-          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t">
-            <Button type="button" variant="outline" size="sm" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
-            <Button type="button" size="sm" onClick={insertGallery} disabled={!selectedGalleryId}>Insert Gallery</Button>
+          <div className="flex items-center justify-between px-5 py-3 border-t">
+            <div>
+              {galleryEditMode === "edit" && (
+                <Button type="button" variant="destructive" size="sm" onClick={removeGallery}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Remove
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
+              {galleryEditMode === "edit" ? (
+                <Button type="button" size="sm" onClick={replaceGallery} disabled={!selectedGalleryId}>Replace Gallery</Button>
+              ) : (
+                <Button type="button" size="sm" onClick={insertGallery} disabled={!selectedGalleryId}>Insert Gallery</Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
