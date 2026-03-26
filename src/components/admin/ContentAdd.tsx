@@ -431,7 +431,7 @@ const ContentAdd = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("galleries")
-        .select("id, name, description, activity_date, gallery_items(count, file_url, thumbnail_url)")
+        .select("id, name, description, activity_date, gallery_items(id, file_url, thumbnail_url, item_type)")
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
