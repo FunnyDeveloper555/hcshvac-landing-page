@@ -233,9 +233,9 @@ const ContentPreview = ({ content: propContent, inline = false }: ContentPreview
           <Separator />
 
           {/* Main HTML Content */}
-          <article
+          <RichContentRenderer
+            html={content.html_content}
             className="prose prose-neutral dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: content.html_content }}
           />
 
           {/* Publishing Window */}
