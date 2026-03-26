@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, ExternalLink, Calendar, User, Tag } from "lucide-react";
+import RichContentRenderer from "@/components/RichContentRenderer";
 import ContentCommentsSection from "./ContentCommentsSection";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
