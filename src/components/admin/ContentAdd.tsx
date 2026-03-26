@@ -230,6 +230,20 @@ const ContentAdd = () => {
     `;
     doc.head.appendChild(style);
 
+    // Add hover/click styles for gallery blocks
+    const galleryStyle = doc.createElement("style");
+    galleryStyle.textContent = `
+      div[data-gallery-id] {
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      div[data-gallery-id]:hover {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+      }
+    `;
+    doc.head.appendChild(galleryStyle);
+
     // Intercept Tab key to insert tab spaces instead of moving focus
     doc.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Tab") {
@@ -239,6 +253,21 @@ const ContentAdd = () => {
       // Allow Escape to exit fullscreen
       if (e.key === "Escape") {
         setIsFullscreen(false);
+      }
+    });
+
+    // Click handler for gallery embed blocks
+    doc.addEventListener("click", (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const galleryBlock = target.closest("div[data-gallery-id]") as HTMLElement | null;
+      if (galleryBlock) {
+        e.preventDefault();
+        e.stopPropagation();
+        const gId = galleryBlock.getAttribute("data-gallery-id") || "";
+        setEditingGalleryElement(galleryBlock);
+        setSelectedGalleryId(gId);
+        setGalleryEditMode("edit");
+        setGalleryModalOpen(true);
       }
     });
 
