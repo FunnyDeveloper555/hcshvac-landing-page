@@ -1110,8 +1110,9 @@ const ContentAdd = () => {
               </div>
             ) : (
               filteredGalleries.map((g: any) => {
-                const itemCount = g.gallery_items?.[0]?.count ?? 0;
-                const thumbs = (g.gallery_items || []).slice(0, 4).map((it: any) => it.thumbnail_url || it.file_url).filter(Boolean);
+                const allItems = g.gallery_items || [];
+                const itemCount = allItems.length;
+                const thumbItems = allItems.slice(0, 4);
                 const isSelected = selectedGalleryId === g.id;
                 return (
                   <button
