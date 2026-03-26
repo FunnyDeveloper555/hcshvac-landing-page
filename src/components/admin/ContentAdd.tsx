@@ -1129,11 +1129,19 @@ const ContentAdd = () => {
                     <div className="flex items-start gap-3">
                       {/* Thumbnail strip */}
                       <div className="shrink-0 flex gap-0.5">
-                        {thumbs.length > 0 ? thumbs.map((url: string, i: number) => (
-                          <div key={i} className="w-10 h-10 rounded overflow-hidden bg-muted border">
-                            <img src={url} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        )) : (
+                        {thumbItems.length > 0 ? thumbItems.map((it: any, i: number) => {
+                          const isVideo = it.item_type === "video";
+                          const src = it.thumbnail_url || it.file_url;
+                          return (
+                            <div key={i} className="w-10 h-10 rounded overflow-hidden bg-muted border relative">
+                              {isVideo && !it.thumbnail_url ? (
+                                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">▶</div>
+                              ) : (
+                                <img src={src} alt="" className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          );
+                        }) : (
                           <div className="w-10 h-10 rounded bg-muted border flex items-center justify-center">
                             <GalleryHorizontalEnd className="h-4 w-4 text-muted-foreground" />
                           </div>
