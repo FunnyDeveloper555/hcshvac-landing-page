@@ -59,11 +59,19 @@ function GalleryPreviewStrip({ galleryId }: { galleryId: string }) {
     <div className="space-y-1.5">
       <Label className="text-xs text-muted-foreground">Preview</Label>
       <div className="flex gap-2 flex-wrap">
-        {items.map((item: any) => (
-          <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted">
-            <img src={item.thumbnail_url || item.file_url} alt={item.title || ""} className="w-full h-full object-cover" />
-          </div>
-        ))}
+        {items.map((item: any) => {
+          const isVideo = item.item_type === "video";
+          const src = item.thumbnail_url || item.file_url;
+          return (
+            <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted relative">
+              {isVideo && !item.thumbnail_url ? (
+                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-lg">▶</div>
+              ) : (
+                <img src={src} alt={item.title || ""} className="w-full h-full object-cover" />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -431,7 +439,7 @@ const ContentAdd = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("galleries")
-        .select("id, name, description, activity_date, gallery_items(count, file_url, thumbnail_url)")
+        .select("id, name, description, activity_date, gallery_items(id, file_url, thumbnail_url, item_type)")
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
@@ -468,7 +476,11 @@ const ContentAdd = () => {
 
     // Build a styled placeholder embed block with thumbnail strip
     let thumbnailsHtml = previewItems.map((item: any) => {
+      const isVideo = item.item_type === "video";
       const src = item.thumbnail_url || item.file_url;
+      if (isVideo && !item.thumbnail_url) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:20px;">▶</span>`;
+      }
       return `<img src="${src}" alt="${item.alt_text || item.title || ''}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`;
     }).join("");
     if (totalItems > 4) {
@@ -1110,8 +1122,9 @@ const ContentAdd = () => {
               </div>
             ) : (
               filteredGalleries.map((g: any) => {
-                const itemCount = g.gallery_items?.[0]?.count ?? 0;
-                const thumbs = (g.gallery_items || []).slice(0, 4).map((it: any) => it.thumbnail_url || it.file_url).filter(Boolean);
+                const allItems = g.gallery_items || [];
+                const itemCount = allItems.length;
+                const thumbItems = allItems.slice(0, 4);
                 const isSelected = selectedGalleryId === g.id;
                 return (
                   <button
@@ -1128,11 +1141,19 @@ const ContentAdd = () => {
                     <div className="flex items-start gap-3">
                       {/* Thumbnail strip */}
                       <div className="shrink-0 flex gap-0.5">
-                        {thumbs.length > 0 ? thumbs.map((url: string, i: number) => (
-                          <div key={i} className="w-10 h-10 rounded overflow-hidden bg-muted border">
-                            <img src={url} alt="" className="w-full h-full object-cover" />
-                          </div>
-                        )) : (
+                        {thumbItems.length > 0 ? thumbItems.map((it: any, i: number) => {
+                          const isVideo = it.item_type === "video";
+                          const src = it.thumbnail_url || it.file_url;
+                          return (
+                            <div key={i} className="w-10 h-10 rounded overflow-hidden bg-muted border relative">
+                              {isVideo && !it.thumbnail_url ? (
+                                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">▶</div>
+                              ) : (
+                                <img src={src} alt="" className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                          );
+                        }) : (
                           <div className="w-10 h-10 rounded bg-muted border flex items-center justify-center">
                             <GalleryHorizontalEnd className="h-4 w-4 text-muted-foreground" />
                           </div>
