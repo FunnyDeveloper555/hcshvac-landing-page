@@ -59,11 +59,19 @@ function GalleryPreviewStrip({ galleryId }: { galleryId: string }) {
     <div className="space-y-1.5">
       <Label className="text-xs text-muted-foreground">Preview</Label>
       <div className="flex gap-2 flex-wrap">
-        {items.map((item: any) => (
-          <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted">
-            <img src={item.thumbnail_url || item.file_url} alt={item.title || ""} className="w-full h-full object-cover" />
-          </div>
-        ))}
+        {items.map((item: any) => {
+          const isVideo = item.item_type === "video";
+          const src = item.thumbnail_url || item.file_url;
+          return (
+            <div key={item.id} className="w-14 h-14 rounded overflow-hidden border bg-muted relative">
+              {isVideo && !item.thumbnail_url ? (
+                <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-lg">▶</div>
+              ) : (
+                <img src={src} alt={item.title || ""} className="w-full h-full object-cover" />
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
