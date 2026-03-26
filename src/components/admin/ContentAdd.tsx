@@ -99,6 +99,8 @@ const ContentAdd = () => {
   const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
+  const [galleryEditMode, setGalleryEditMode] = useState<"insert" | "edit">("insert");
+  const [editingGalleryElement, setEditingGalleryElement] = useState<HTMLElement | null>(null);
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
@@ -228,6 +230,20 @@ const ContentAdd = () => {
     `;
     doc.head.appendChild(style);
 
+    // Add hover/click styles for gallery blocks
+    const galleryStyle = doc.createElement("style");
+    galleryStyle.textContent = `
+      div[data-gallery-id] {
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      div[data-gallery-id]:hover {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+      }
+    `;
+    doc.head.appendChild(galleryStyle);
+
     // Intercept Tab key to insert tab spaces instead of moving focus
     doc.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Tab") {
@@ -237,6 +253,21 @@ const ContentAdd = () => {
       // Allow Escape to exit fullscreen
       if (e.key === "Escape") {
         setIsFullscreen(false);
+      }
+    });
+
+    // Click handler for gallery embed blocks
+    doc.addEventListener("click", (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const galleryBlock = target.closest("div[data-gallery-id]") as HTMLElement | null;
+      if (galleryBlock) {
+        e.preventDefault();
+        e.stopPropagation();
+        const gId = galleryBlock.getAttribute("data-gallery-id") || "";
+        setEditingGalleryElement(galleryBlock);
+        setSelectedGalleryId(gId);
+        setGalleryEditMode("edit");
+        setGalleryModalOpen(true);
       }
     });
 
@@ -500,6 +531,63 @@ const ContentAdd = () => {
     setGalleryModalOpen(false);
     setSelectedGalleryId("");
     toast({ title: "Gallery inserted", description: `"${galleryName}" embedded with ${totalItems} items.` });
+  };
+
+  const removeGallery = () => {
+    if (editingGalleryElement) {
+      editingGalleryElement.remove();
+      toast({ title: "Gallery removed" });
+    }
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    setEditingGalleryElement(null);
+    setGalleryEditMode("insert");
+  };
+
+  const replaceGallery = async () => {
+    if (!selectedGalleryId || !editingGalleryElement) return;
+    const { data: items } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .eq("gallery_id", selectedGalleryId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (!items?.length) {
+      toast({ title: "Error", description: "No items found in this gallery.", variant: "destructive" });
+      return;
+    }
+    const gallery = galleries.find((g: any) => g.id === selectedGalleryId);
+    const galleryName = gallery?.name || "Gallery";
+    const totalItems = items.length;
+    const previewItems = items.slice(0, 4);
+
+    let thumbnailsHtml = previewItems.map((item: any) => {
+      const isVideo = item.item_type === "video";
+      const src = item.thumbnail_url || item.file_url;
+      if (isVideo && !item.thumbnail_url) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:20px;">▶</span>`;
+      }
+      return `<img src="${src}" alt="${item.alt_text || item.title || ''}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`;
+    }).join("");
+    if (totalItems > 4) {
+      thumbnailsHtml += `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:13px;font-weight:600;">+${totalItems - 4}</span>`;
+    }
+
+    const newHtml = `<div data-gallery-id="${selectedGalleryId}" contenteditable="false" style="margin:1em 0;padding:16px;border:2px dashed #94a3b8;border-radius:10px;background:#f8fafc;text-align:left;">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">` +
+        `<span style="font-size:18px;">🖼️</span>` +
+        `<strong style="font-size:15px;color:#1e293b;">${galleryName}</strong>` +
+        `<span style="font-size:12px;color:#64748b;margin-left:auto;">${totalItems} item${totalItems !== 1 ? 's' : ''}</span>` +
+      `</div>` +
+      `<div style="display:flex;gap:6px;flex-wrap:wrap;">${thumbnailsHtml}</div>` +
+    `</div>`;
+
+    editingGalleryElement.outerHTML = newHtml;
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    setEditingGalleryElement(null);
+    setGalleryEditMode("insert");
+    toast({ title: "Gallery replaced", description: `Replaced with "${galleryName}" (${totalItems} items).` });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -813,7 +901,7 @@ const ContentAdd = () => {
                             <EditorMenuButton onClick={() => execCmd("insertHTML", "&nbsp;&nbsp;&nbsp;&nbsp;")} label="Tab" />
                             <button
                               type="button"
-                              onClick={() => setGalleryModalOpen(true)}
+                              onClick={() => { setGalleryEditMode("insert"); setEditingGalleryElement(null); setGalleryModalOpen(true); }}
                               className="h-7 px-2 text-xs rounded hover:bg-accent hover:text-accent-foreground transition-colors whitespace-nowrap flex items-center gap-1"
                             >
                               <GalleryHorizontalEnd className="h-3.5 w-3.5" />
@@ -1090,15 +1178,19 @@ const ContentAdd = () => {
         }}
       />
 
-      {/* Gallery Insert Dialog */}
-      <Dialog open={galleryModalOpen} onOpenChange={(open) => { setGalleryModalOpen(open); if (!open) { setGallerySearch(""); setSelectedGalleryId(""); } }}>
+      {/* Gallery Insert/Edit Dialog */}
+      <Dialog open={galleryModalOpen} onOpenChange={(open) => { setGalleryModalOpen(open); if (!open) { setGallerySearch(""); setSelectedGalleryId(""); setEditingGalleryElement(null); setGalleryEditMode("insert"); } }}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col p-0">
           <DialogHeader className="px-5 pt-5 pb-0">
             <DialogTitle className="flex items-center gap-2">
               <GalleryHorizontalEnd className="h-5 w-5" />
-              Insert Gallery
+              {galleryEditMode === "edit" ? "Edit Gallery Embed" : "Insert Gallery"}
             </DialogTitle>
-            <DialogDescription>Search and select a gallery to embed.</DialogDescription>
+            <DialogDescription>
+              {galleryEditMode === "edit"
+                ? "Replace with a different gallery or remove this embed."
+                : "Search and select a gallery to embed."}
+            </DialogDescription>
           </DialogHeader>
           <div className="px-5 pt-3">
             <div className="relative">
@@ -1139,7 +1231,6 @@ const ContentAdd = () => {
                     )}
                   >
                     <div className="flex items-start gap-3">
-                      {/* Thumbnail strip */}
                       <div className="shrink-0 flex gap-0.5">
                         {thumbItems.length > 0 ? thumbItems.map((it: any, i: number) => {
                           const isVideo = it.item_type === "video";
@@ -1182,9 +1273,22 @@ const ContentAdd = () => {
               <GalleryPreviewStrip galleryId={selectedGalleryId} />
             </div>
           )}
-          <div className="flex items-center justify-end gap-2 px-5 py-3 border-t">
-            <Button type="button" variant="outline" size="sm" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
-            <Button type="button" size="sm" onClick={insertGallery} disabled={!selectedGalleryId}>Insert Gallery</Button>
+          <div className="flex items-center justify-between px-5 py-3 border-t">
+            <div>
+              {galleryEditMode === "edit" && (
+                <Button type="button" variant="destructive" size="sm" onClick={removeGallery}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Remove
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setGalleryModalOpen(false)}>Cancel</Button>
+              {galleryEditMode === "edit" ? (
+                <Button type="button" size="sm" onClick={replaceGallery} disabled={!selectedGalleryId}>Replace Gallery</Button>
+              ) : (
+                <Button type="button" size="sm" onClick={insertGallery} disabled={!selectedGalleryId}>Insert Gallery</Button>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
