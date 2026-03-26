@@ -99,6 +99,8 @@ const ContentAdd = () => {
   const [spotImageReviewOpen, setSpotImageReviewOpen] = useState(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [selectedGalleryId, setSelectedGalleryId] = useState<string>("");
+  const [galleryEditMode, setGalleryEditMode] = useState<"insert" | "edit">("insert");
+  const [editingGalleryElement, setEditingGalleryElement] = useState<HTMLElement | null>(null);
   // Form state
   const [author, setAuthor] = useState("");
   const [title, setTitle] = useState("");
