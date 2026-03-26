@@ -533,6 +533,63 @@ const ContentAdd = () => {
     toast({ title: "Gallery inserted", description: `"${galleryName}" embedded with ${totalItems} items.` });
   };
 
+  const removeGallery = () => {
+    if (editingGalleryElement) {
+      editingGalleryElement.remove();
+      toast({ title: "Gallery removed" });
+    }
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    setEditingGalleryElement(null);
+    setGalleryEditMode("insert");
+  };
+
+  const replaceGallery = async () => {
+    if (!selectedGalleryId || !editingGalleryElement) return;
+    const { data: items } = await supabase
+      .from("gallery_items")
+      .select("*")
+      .eq("gallery_id", selectedGalleryId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (!items?.length) {
+      toast({ title: "Error", description: "No items found in this gallery.", variant: "destructive" });
+      return;
+    }
+    const gallery = galleries.find((g: any) => g.id === selectedGalleryId);
+    const galleryName = gallery?.name || "Gallery";
+    const totalItems = items.length;
+    const previewItems = items.slice(0, 4);
+
+    let thumbnailsHtml = previewItems.map((item: any) => {
+      const isVideo = item.item_type === "video";
+      const src = item.thumbnail_url || item.file_url;
+      if (isVideo && !item.thumbnail_url) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:20px;">▶</span>`;
+      }
+      return `<img src="${src}" alt="${item.alt_text || item.title || ''}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`;
+    }).join("");
+    if (totalItems > 4) {
+      thumbnailsHtml += `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:13px;font-weight:600;">+${totalItems - 4}</span>`;
+    }
+
+    const newHtml = `<div data-gallery-id="${selectedGalleryId}" contenteditable="false" style="margin:1em 0;padding:16px;border:2px dashed #94a3b8;border-radius:10px;background:#f8fafc;text-align:left;">` +
+      `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">` +
+        `<span style="font-size:18px;">🖼️</span>` +
+        `<strong style="font-size:15px;color:#1e293b;">${galleryName}</strong>` +
+        `<span style="font-size:12px;color:#64748b;margin-left:auto;">${totalItems} item${totalItems !== 1 ? 's' : ''}</span>` +
+      `</div>` +
+      `<div style="display:flex;gap:6px;flex-wrap:wrap;">${thumbnailsHtml}</div>` +
+    `</div>`;
+
+    editingGalleryElement.outerHTML = newHtml;
+    setGalleryModalOpen(false);
+    setSelectedGalleryId("");
+    setEditingGalleryElement(null);
+    setGalleryEditMode("insert");
+    toast({ title: "Gallery replaced", description: `Replaced with "${galleryName}" (${totalItems} items).` });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) {
