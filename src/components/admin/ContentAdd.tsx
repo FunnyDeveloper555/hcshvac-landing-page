@@ -476,7 +476,11 @@ const ContentAdd = () => {
 
     // Build a styled placeholder embed block with thumbnail strip
     let thumbnailsHtml = previewItems.map((item: any) => {
+      const isVideo = item.item_type === "video";
       const src = item.thumbnail_url || item.file_url;
+      if (isVideo && !item.thumbnail_url) {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:4px;background:#e5e7eb;color:#374151;font-size:20px;">▶</span>`;
+      }
       return `<img src="${src}" alt="${item.alt_text || item.title || ''}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`;
     }).join("");
     if (totalItems > 4) {
