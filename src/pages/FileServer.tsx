@@ -60,51 +60,43 @@ function getFileIcon(mime: string | null) {
   return <FileIcon className="h-4 w-4 text-muted-foreground" />;
 }
 
-async function uploadFileWithProgress(
-  bucketName: string,
-  storagePath: string,
+function uploadFileWithProgress(
+  url: string,
   file: File,
   token: string,
   onProgress: (percent: number) => void
 ): Promise<{ error?: string }> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const tus = await import("tus-js-client");
-
   return new Promise((resolve) => {
-    const upload = new tus.Upload(file, {
-      endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
-      retryDelays: [0, 1000, 3000, 5000],
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-upsert": "false",
-      },
-      uploadDataDuringCreation: true,
-      removeFingerprintOnSuccess: true,
-      metadata: {
-        bucketName: bucketName,
-        objectName: storagePath,
-        contentType: file.type || "application/octet-stream",
-        cacheControl: "3600",
-      },
-      chunkSize: 6 * 1024 * 1024, // 6MB chunks
-      onError: (error) => {
-        resolve({ error: error.message || "Upload failed" });
-      },
-      onProgress: (bytesUploaded, bytesTotal) => {
-        onProgress(Math.round((bytesUploaded / bytesTotal) * 100));
-      },
-      onSuccess: () => {
-        resolve({});
-      },
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("x-upsert", "false");
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
     });
 
-    // Check for previous uploads to resume
-    upload.findPreviousUploads().then((previousUploads) => {
-      if (previousUploads.length) {
-        (upload as any).resumeUpload(previousUploads[0]);
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({});
+      } else {
+        try {
+          const body = JSON.parse(xhr.responseText);
+          resolve({ error: body.message || body.error || "Upload failed" });
+        } catch {
+          resolve({ error: `Upload failed (${xhr.status})` });
+        }
       }
-      upload.start();
     });
+
+    xhr.addEventListener("error", () => resolve({ error: "Network error" }));
+    xhr.addEventListener("abort", () => resolve({ error: "Upload cancelled" }));
+
+    const formData = new FormData();
+    formData.append("", file, file.name);
+    xhr.send(formData);
   });
 }
 
@@ -172,8 +164,9 @@ export default function FileServer() {
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const storagePath = `${crypto.randomUUID()}-${file.name}`;
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/fileserver/${storagePath}`;
 
-      const result = await uploadFileWithProgress("fileserver", storagePath, file, token, (percent) => {
+      const result = await uploadFileWithProgress(uploadUrl, file, token, (percent) => {
         setUploads((prev) =>
           prev.map((u, idx) => (idx === i ? { ...u, percent, status: "uploading" } : u))
         );

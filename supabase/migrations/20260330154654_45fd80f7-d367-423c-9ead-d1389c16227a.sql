@@ -1,1 +1,0 @@
-UPDATE storage.buckets SET file_size_limit = 21474836480 WHERE id = 'fileserver';
