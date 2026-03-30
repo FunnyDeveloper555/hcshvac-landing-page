@@ -61,42 +61,50 @@ function getFileIcon(mime: string | null) {
 }
 
 function uploadFileWithProgress(
-  url: string,
+  bucketName: string,
+  storagePath: string,
   file: File,
   token: string,
   onProgress: (percent: number) => void
 ): Promise<{ error?: string }> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const { Upload } = await import("tus-js-client");
+
   return new Promise((resolve) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", url);
-    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-    xhr.setRequestHeader("x-upsert", "false");
-
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
+    const upload = new Upload(file, {
+      endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
+      retryDelays: [0, 1000, 3000, 5000],
+      headers: {
+        authorization: `Bearer ${token}`,
+        "x-upsert": "false",
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      metadata: {
+        bucketName: bucketName,
+        objectName: storagePath,
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "3600",
+      },
+      chunkSize: 6 * 1024 * 1024, // 6MB chunks
+      onError: (error) => {
+        resolve({ error: error.message || "Upload failed" });
+      },
+      onProgress: (bytesUploaded, bytesTotal) => {
+        onProgress(Math.round((bytesUploaded / bytesTotal) * 100));
+      },
+      onSuccess: () => {
         resolve({});
-      } else {
-        try {
-          const body = JSON.parse(xhr.responseText);
-          resolve({ error: body.message || body.error || "Upload failed" });
-        } catch {
-          resolve({ error: `Upload failed (${xhr.status})` });
-        }
-      }
+      },
     });
 
-    xhr.addEventListener("error", () => resolve({ error: "Network error" }));
-    xhr.addEventListener("abort", () => resolve({ error: "Upload cancelled" }));
-
-    const formData = new FormData();
-    formData.append("", file, file.name);
-    xhr.send(formData);
+    // Check for previous uploads to resume
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length) {
+        upload.resumeUpload(previousUploads[0]);
+      }
+      upload.start();
+    });
   });
 }
 
