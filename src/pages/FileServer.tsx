@@ -60,7 +60,7 @@ function getFileIcon(mime: string | null) {
   return <FileIcon className="h-4 w-4 text-muted-foreground" />;
 }
 
-function uploadFileWithProgress(
+async function uploadFileWithProgress(
   bucketName: string,
   storagePath: string,
   file: File,
@@ -68,10 +68,10 @@ function uploadFileWithProgress(
   onProgress: (percent: number) => void
 ): Promise<{ error?: string }> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const { Upload } = await import("tus-js-client");
+  const tus = await import("tus-js-client");
 
   return new Promise((resolve) => {
-    const upload = new Upload(file, {
+    const upload = new tus.Upload(file, {
       endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
       retryDelays: [0, 1000, 3000, 5000],
       headers: {
