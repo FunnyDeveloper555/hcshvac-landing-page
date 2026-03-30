@@ -101,7 +101,7 @@ async function uploadFileWithProgress(
     // Check for previous uploads to resume
     upload.findPreviousUploads().then((previousUploads) => {
       if (previousUploads.length) {
-        upload.resumeUpload(previousUploads[0]);
+        upload.resumeUpload(previousUploads[0] as any);
       }
       upload.start();
     });
