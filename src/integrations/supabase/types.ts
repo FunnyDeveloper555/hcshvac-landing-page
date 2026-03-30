@@ -2063,6 +2063,42 @@ export type Database = {
         }
         Relationships: []
       }
+      fileserver_jobs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          progress: number
+          result: Json | null
+          status: string
+          updated_at: string
+          uploaded_by: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          progress?: number
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          uploaded_by: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          progress?: number
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          uploaded_by?: string
+          url?: string
+        }
+        Relationships: []
+      }
       galleries: {
         Row: {
           activity_date: string | null

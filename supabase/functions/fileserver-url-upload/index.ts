@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify auth
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -25,7 +24,6 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user from token
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);
@@ -44,56 +42,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch the file server-side
-    const fileRes = await fetch(url);
-    if (!fileRes.ok) {
-      return new Response(
-        JSON.stringify({ error: `Failed to fetch URL: ${fileRes.status} ${fileRes.statusText}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const blob = await fileRes.blob();
-    const urlObj = new URL(url);
-    const fileName = urlObj.pathname.split("/").pop() || "downloaded-file";
-    const storagePath = `${crypto.randomUUID()}-${fileName}`;
-    const mimeType = blob.type || fileRes.headers.get("content-type") || "application/octet-stream";
-
-    // Upload to storage
-    const { error: uploadErr } = await supabase.storage
-      .from("fileserver")
-      .upload(storagePath, blob, { contentType: mimeType });
-    if (uploadErr) {
-      return new Response(JSON.stringify({ error: uploadErr.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(storagePath);
-
-    // Insert DB record
-    const { data: record, error: dbErr } = await supabase
-      .from("fileserver_items")
-      .insert({
-        name: fileName,
-        storage_path: storagePath,
-        file_url: urlData.publicUrl,
-        file_size: blob.size,
-        mime_type: mimeType,
-        uploaded_by: user.id,
-      })
+    // Create a job record
+    const { data: job, error: jobErr } = await supabase
+      .from("fileserver_jobs")
+      .insert({ url, status: "processing", progress: 0, uploaded_by: user.id })
       .select()
       .single();
 
-    if (dbErr) {
-      return new Response(JSON.stringify({ error: dbErr.message }), {
+    if (jobErr) {
+      return new Response(JSON.stringify({ error: jobErr.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true, file: record }), {
+    // Process in background using EdgeRuntime.waitUntil
+    // @ts-ignore - EdgeRuntime is a Deno Deploy global
+    EdgeRuntime.waitUntil(
+      processUpload(supabase, job.id, url, user.id).catch(async (err) => {
+        console.error(`Job ${job.id} failed:`, err);
+        await supabase
+          .from("fileserver_jobs")
+          .update({ status: "failed", error: err.message })
+          .eq("id", job.id);
+      })
+    );
+
+    // Return immediately with job ID
+    return new Response(JSON.stringify({ job_id: job.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
@@ -103,3 +79,76 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+async function processUpload(supabase: any, jobId: string, url: string, userId: string) {
+  // Update progress: fetching
+  await supabase
+    .from("fileserver_jobs")
+    .update({ progress: 10 })
+    .eq("id", jobId);
+
+  const fileRes = await fetch(url);
+  if (!fileRes.ok) {
+    throw new Error(`Failed to fetch URL: ${fileRes.status} ${fileRes.statusText}`);
+  }
+
+  // Update progress: downloaded
+  await supabase
+    .from("fileserver_jobs")
+    .update({ progress: 50 })
+    .eq("id", jobId);
+
+  const blob = await fileRes.blob();
+  const urlObj = new URL(url);
+  const fileName = urlObj.pathname.split("/").pop() || "downloaded-file";
+  const storagePath = `${crypto.randomUUID()}-${fileName}`;
+  const mimeType = blob.type || fileRes.headers.get("content-type") || "application/octet-stream";
+
+  // Update progress: uploading to storage
+  await supabase
+    .from("fileserver_jobs")
+    .update({ progress: 70 })
+    .eq("id", jobId);
+
+  const { error: uploadErr } = await supabase.storage
+    .from("fileserver")
+    .upload(storagePath, blob, { contentType: mimeType });
+  if (uploadErr) {
+    throw new Error(uploadErr.message);
+  }
+
+  const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(storagePath);
+
+  // Update progress: saving record
+  await supabase
+    .from("fileserver_jobs")
+    .update({ progress: 90 })
+    .eq("id", jobId);
+
+  const { data: record, error: dbErr } = await supabase
+    .from("fileserver_items")
+    .insert({
+      name: fileName,
+      storage_path: storagePath,
+      file_url: urlData.publicUrl,
+      file_size: blob.size,
+      mime_type: mimeType,
+      uploaded_by: userId,
+    })
+    .select()
+    .single();
+
+  if (dbErr) {
+    throw new Error(dbErr.message);
+  }
+
+  // Mark complete
+  await supabase
+    .from("fileserver_jobs")
+    .update({
+      status: "completed",
+      progress: 100,
+      result: record,
+    })
+    .eq("id", jobId);
+}
