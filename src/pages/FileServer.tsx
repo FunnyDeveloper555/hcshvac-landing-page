@@ -172,9 +172,8 @@ export default function FileServer() {
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const storagePath = `${crypto.randomUUID()}-${file.name}`;
-      const uploadUrl = `${supabaseUrl}/storage/v1/object/fileserver/${storagePath}`;
 
-      const result = await uploadFileWithProgress(uploadUrl, file, token, (percent) => {
+      const result = await uploadFileWithProgress("fileserver", storagePath, file, token, (percent) => {
         setUploads((prev) =>
           prev.map((u, idx) => (idx === i ? { ...u, percent, status: "uploading" } : u))
         );
