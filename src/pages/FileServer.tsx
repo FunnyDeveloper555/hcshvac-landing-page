@@ -48,9 +48,9 @@ function formatFileSize(bytes: number | null): string {
 
 function getFileIcon(mime: string | null) {
   if (!mime) return <FileIcon className="h-4 w-4 text-muted-foreground" />;
-  if (mime.startsWith("image/")) return <ImageIcon className="h-4 w-4 text-blue-500" />;
-  if (mime.startsWith("video/")) return <VideoIcon className="h-4 w-4 text-purple-500" />;
-  if (mime.startsWith("text/") || mime.includes("pdf")) return <FileTextIcon className="h-4 w-4 text-red-500" />;
+  if (mime.startsWith("image/")) return <ImageIcon className="h-4 w-4 text-primary" />;
+  if (mime.startsWith("video/")) return <VideoIcon className="h-4 w-4 text-accent-foreground" />;
+  if (mime.startsWith("text/") || mime.includes("pdf")) return <FileTextIcon className="h-4 w-4 text-destructive" />;
   return <FileIcon className="h-4 w-4 text-muted-foreground" />;
 }
 
