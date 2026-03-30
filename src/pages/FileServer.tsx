@@ -217,11 +217,20 @@ export default function FileServer() {
     if (!urlInput.trim() || !session) return;
     setUrlLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("fileserver-url-upload", {
-        body: { url: urlInput.trim() },
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/fileserver-url-upload`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ url: urlInput.trim() }),
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || `Upload failed (${response.status})`);
+      }
       toast.success("File uploaded from URL");
       setUrlInput("");
       fetchFiles();
