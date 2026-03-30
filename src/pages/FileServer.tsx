@@ -218,6 +218,8 @@ export default function FileServer() {
     setUrlLoading(true);
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 min timeout
       const response = await fetch(`${supabaseUrl}/functions/v1/fileserver-url-upload`, {
         method: "POST",
         headers: {
@@ -226,7 +228,9 @@ export default function FileServer() {
           "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ url: urlInput.trim() }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await response.json();
       if (!response.ok || data.error) {
         throw new Error(data.error || `Upload failed (${response.status})`);
@@ -235,7 +239,12 @@ export default function FileServer() {
       setUrlInput("");
       fetchFiles();
     } catch (err: any) {
-      toast.error(err.message || "URL upload failed");
+      if (err.name === "AbortError") {
+        toast.error("Upload timed out — file may be too large");
+      } else {
+        toast.error(err.message || "URL upload failed");
+      }
+      console.error("URL upload error:", err);
     } finally {
       setUrlLoading(false);
     }
