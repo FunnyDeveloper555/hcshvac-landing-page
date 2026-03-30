@@ -249,20 +249,33 @@ export default function FileServer() {
     }
   };
 
-  const handleDownload = (file: FileServerItem) => {
-    const a = document.createElement("a");
-    a.href = file.file_url;
-    a.download = file.name;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownload = async (file: FileServerItem) => {
+    try {
+      const res = await fetch(file.file_url);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Fallback: open in new tab
+      window.open(file.file_url, "_blank");
+    }
   };
 
-  const handleDownloadSelected = () => {
+  const handleDownloadSelected = async () => {
     const toDownload = files.filter((f) => selected.has(f.id));
-    toDownload.forEach((f) => handleDownload(f));
+    for (const file of toDownload) {
+      await handleDownload(file);
+      // Small delay between downloads to prevent browser blocking
+      if (toDownload.length > 1) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    }
   };
 
   const toggleAll = () => {
