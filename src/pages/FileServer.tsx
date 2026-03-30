@@ -290,8 +290,9 @@ export default function FileServer() {
                   onChange={(e) => setUrlInput(e.target.value)}
                   className="text-sm"
                 />
-                <Button size="sm" variant="outline" onClick={handleUrlUpload} disabled={urlLoading || !urlInput.trim()}>
-                  {urlLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link className="h-4 w-4" />}
+                <Button size="sm" variant="default" onClick={handleUrlUpload} disabled={urlLoading || !urlInput.trim()}>
+                  {urlLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Upload className="h-4 w-4 mr-1" />}
+                  Upload
                 </Button>
               </div>
             </div>
