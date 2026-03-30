@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.generate-ai-video]
 verify_jwt = false
+
+[functions.fileserver-url-upload]
+verify_jwt = false

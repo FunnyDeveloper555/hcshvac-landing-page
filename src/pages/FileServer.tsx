@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/table";
 import {
   Upload,
-  Link,
   Download,
   Trash2,
   LogIn,
@@ -39,6 +39,12 @@ interface FileServerItem {
   created_at: string;
 }
 
+interface UploadProgress {
+  fileName: string;
+  percent: number;
+  status: "uploading" | "saving" | "done" | "error";
+}
+
 function formatFileSize(bytes: number | null): string {
   if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;
@@ -54,19 +60,62 @@ function getFileIcon(mime: string | null) {
   return <FileIcon className="h-4 w-4 text-muted-foreground" />;
 }
 
+function uploadFileWithProgress(
+  url: string,
+  file: File,
+  token: string,
+  onProgress: (percent: number) => void
+): Promise<{ error?: string }> {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("x-upsert", "false");
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({});
+      } else {
+        try {
+          const body = JSON.parse(xhr.responseText);
+          resolve({ error: body.message || body.error || "Upload failed" });
+        } catch {
+          resolve({ error: `Upload failed (${xhr.status})` });
+        }
+      }
+    });
+
+    xhr.addEventListener("error", () => resolve({ error: "Network error" }));
+    xhr.addEventListener("abort", () => resolve({ error: "Upload cancelled" }));
+
+    const formData = new FormData();
+    formData.append("", file, file.name);
+    xhr.send(formData);
+  });
+}
+
 export default function FileServer() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [files, setFiles] = useState<FileServerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [uploading, setUploading] = useState(false);
+  const [uploads, setUploads] = useState<UploadProgress[]>([]);
   const [urlInput, setUrlInput] = useState("");
   const [urlLoading, setUrlLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isUploading = uploads.some((u) => u.status === "uploading" || u.status === "saving");
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -99,56 +148,80 @@ export default function FileServer() {
   }, []);
 
   const handleLocalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    setUploading(true);
-    try {
-      for (const file of Array.from(e.target.files)) {
-        const path = `${crypto.randomUUID()}-${file.name}`;
-        const { error: uploadErr } = await supabase.storage.from("fileserver").upload(path, file);
-        if (uploadErr) throw uploadErr;
-        const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(path);
-        const { error: dbErr } = await supabase.from("fileserver_items").insert({
-          name: file.name,
-          storage_path: path,
-          file_url: urlData.publicUrl,
-          file_size: file.size,
-          mime_type: file.type || null,
-          uploaded_by: session?.user?.id ?? null,
-        });
-        if (dbErr) throw dbErr;
+    if (!e.target.files?.length || !session) return;
+    const fileList = Array.from(e.target.files);
+
+    const initialProgress: UploadProgress[] = fileList.map((f) => ({
+      fileName: f.name,
+      percent: 0,
+      status: "uploading",
+    }));
+    setUploads(initialProgress);
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const token = session.access_token;
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const storagePath = `${crypto.randomUUID()}-${file.name}`;
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/fileserver/${storagePath}`;
+
+      const result = await uploadFileWithProgress(uploadUrl, file, token, (percent) => {
+        setUploads((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, percent, status: "uploading" } : u))
+        );
+      });
+
+      if (result.error) {
+        setUploads((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, status: "error", percent: 0 } : u))
+        );
+        toast.error(`${file.name}: ${result.error}`);
+        continue;
       }
-      toast.success("File(s) uploaded");
-      fetchFiles();
-    } catch (err: any) {
-      toast.error(err.message || "Upload failed");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
+
+      // Saving to DB
+      setUploads((prev) =>
+        prev.map((u, idx) => (idx === i ? { ...u, status: "saving", percent: 100 } : u))
+      );
+
+      const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(storagePath);
+      const { error: dbErr } = await supabase.from("fileserver_items").insert({
+        name: file.name,
+        storage_path: storagePath,
+        file_url: urlData.publicUrl,
+        file_size: file.size,
+        mime_type: file.type || null,
+        uploaded_by: session.user.id,
+      });
+
+      if (dbErr) {
+        setUploads((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, status: "error" } : u))
+        );
+        toast.error(`${file.name}: ${dbErr.message}`);
+      } else {
+        setUploads((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, status: "done", percent: 100 } : u))
+        );
+      }
     }
+
+    fetchFiles();
+    // Clear progress after a delay
+    setTimeout(() => setUploads([]), 3000);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleUrlUpload = async () => {
-    if (!urlInput.trim()) return;
+    if (!urlInput.trim() || !session) return;
     setUrlLoading(true);
     try {
-      const res = await fetch(urlInput.trim());
-      if (!res.ok) throw new Error("Failed to fetch file from URL");
-      const blob = await res.blob();
-      const urlObj = new URL(urlInput.trim());
-      const fileName = urlObj.pathname.split("/").pop() || "downloaded-file";
-      const path = `${crypto.randomUUID()}-${fileName}`;
-      const { error: uploadErr } = await supabase.storage.from("fileserver").upload(path, blob);
-      if (uploadErr) throw uploadErr;
-      const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(path);
-      const { error: dbErr } = await supabase.from("fileserver_items").insert({
-        name: fileName,
-        storage_path: path,
-        file_url: urlData.publicUrl,
-        file_size: blob.size,
-        mime_type: blob.type || null,
-        uploaded_by: session?.user?.id ?? null,
+      const { data, error } = await supabase.functions.invoke("fileserver-url-upload", {
+        body: { url: urlInput.trim() },
       });
-      if (dbErr) throw dbErr;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast.success("File uploaded from URL");
       setUrlInput("");
       fetchFiles();
@@ -272,14 +345,15 @@ export default function FileServer() {
                 <label className="cursor-pointer">
                   <div className="flex items-center gap-2 border border-dashed rounded-md px-3 py-2 text-sm text-muted-foreground hover:border-primary transition-colors">
                     <Upload className="h-4 w-4" />
-                    {uploading ? "Uploading…" : "Choose local files"}
+                    {isUploading ? "Uploading…" : "Choose local files"}
                   </div>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     multiple
                     className="hidden"
                     onChange={handleLocalUpload}
-                    disabled={uploading}
+                    disabled={isUploading}
                   />
                 </label>
               </div>
@@ -288,6 +362,12 @@ export default function FileServer() {
                   placeholder="Paste file URL…"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleUrlUpload();
+                    }
+                  }}
                   className="text-sm"
                 />
                 <Button size="sm" variant="default" onClick={handleUrlUpload} disabled={urlLoading || !urlInput.trim()}>
@@ -296,6 +376,33 @@ export default function FileServer() {
                 </Button>
               </div>
             </div>
+
+            {/* Upload progress bars */}
+            {uploads.length > 0 && (
+              <div className="space-y-2 pt-2">
+                {uploads.map((u, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="truncate max-w-[70%] text-muted-foreground">{u.fileName}</span>
+                      <span className={
+                        u.status === "done" ? "text-primary" :
+                        u.status === "error" ? "text-destructive" :
+                        "text-muted-foreground"
+                      }>
+                        {u.status === "uploading" && `${u.percent}%`}
+                        {u.status === "saving" && "Saving…"}
+                        {u.status === "done" && "✓ Done"}
+                        {u.status === "error" && "✗ Failed"}
+                      </span>
+                    </div>
+                    <Progress
+                      value={u.percent}
+                      className={`h-1.5 ${u.status === "error" ? "[&>div]:bg-destructive" : u.status === "done" ? "[&>div]:bg-primary" : ""}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
