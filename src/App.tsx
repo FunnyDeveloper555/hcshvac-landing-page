@@ -13,6 +13,7 @@ import CompanyLanding from "./pages/CompanyLanding";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
+import FileServer from "./pages/FileServer";
 
 const queryClient = new QueryClient();
 
