@@ -213,13 +213,40 @@ export default function FileServer() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const pollJob = async (jobId: string): Promise<void> => {
+    const maxAttempts = 120; // 4 min max polling
+    for (let i = 0; i < maxAttempts; i++) {
+      const { data, error } = await supabase
+        .from("fileserver_jobs")
+        .select("status, progress, result, error")
+        .eq("id", jobId)
+        .single();
+
+      if (error || !data) {
+        throw new Error("Failed to check upload status");
+      }
+
+      if (data.status === "completed") {
+        return;
+      }
+      if (data.status === "failed") {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      // Update progress toast
+      const pct = data.progress || 0;
+      toast.loading(`Uploading from URL… ${pct}%`, { id: `url-upload-${jobId}` });
+
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    throw new Error("Upload timed out");
+  };
+
   const handleUrlUpload = async () => {
     if (!urlInput.trim() || !session) return;
     setUrlLoading(true);
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 min timeout
       const response = await fetch(`${supabaseUrl}/functions/v1/fileserver-url-upload`, {
         method: "POST",
         headers: {
@@ -228,23 +255,19 @@ export default function FileServer() {
           "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ url: urlInput.trim() }),
-        signal: controller.signal,
       });
-      clearTimeout(timeoutId);
       const data = await response.json();
       if (!response.ok || data.error) {
         throw new Error(data.error || `Upload failed (${response.status})`);
       }
-      toast.success("File uploaded from URL");
+
+      toast.loading("Uploading from URL… 0%", { id: `url-upload-${data.job_id}` });
+      await pollJob(data.job_id);
+      toast.success("File uploaded from URL", { id: `url-upload-${data.job_id}` });
       setUrlInput("");
       fetchFiles();
     } catch (err: any) {
-      if (err.name === "AbortError") {
-        toast.error("Upload timed out — file may be too large");
-      } else {
-        toast.error(err.message || "URL upload failed");
-      }
-      console.error("URL upload error:", err);
+      toast.error(err.message || "URL upload failed");
     } finally {
       setUrlLoading(false);
     }
