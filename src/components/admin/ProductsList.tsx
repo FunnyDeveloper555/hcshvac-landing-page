@@ -10,7 +10,8 @@ import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationNext, PaginationPrevious, PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { Trash2, Loader2, Pencil, Plus, ArrowUp, ArrowDown, ArrowUpDown, Search, X } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Trash2, Loader2, Pencil, Plus, ArrowUp, ArrowDown, ArrowUpDown, Search, X, SlidersHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
@@ -280,20 +281,50 @@ const ProductsList = () => {
       </div>
 
       <div className="flex gap-6">
-        {/* Left sidebar filters */}
-        <ProductFilterSidebar
-          sections={filterSections}
-          selected={selectedFilters}
-           onToggle={handleToggleFilter}
-           onToggleGroup={handleToggleGroup}
-          onClearAll={handleClearAll}
-          hasActiveFilters={hasActiveFilters}
-        />
+        {/* Left sidebar filters – hidden on mobile/tablet */}
+        <div className="hidden lg:block">
+          <ProductFilterSidebar
+            sections={filterSections}
+            selected={selectedFilters}
+            onToggle={handleToggleFilter}
+            onToggleGroup={handleToggleGroup}
+            onClearAll={handleClearAll}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </div>
 
         {/* Right content */}
         <div className="flex-1 space-y-4 min-w-0">
-          {/* Search bar */}
+          {/* Search bar + mobile filter trigger */}
           <div className="flex gap-3 items-center">
+            {/* Mobile/Tablet filter drawer trigger */}
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button variant="outline" size="icon" className="lg:hidden shrink-0 relative">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {Object.values(selectedFilters).some((a) => a.length > 0) && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
+                      {Object.values(selectedFilters).reduce((s, a) => s + a.length, 0)}
+                    </span>
+                  )}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[85vh]">
+                <DrawerHeader>
+                  <DrawerTitle>Filters</DrawerTitle>
+                </DrawerHeader>
+                <div className="overflow-y-auto px-4 pb-6">
+                  <ProductFilterSidebar
+                    sections={filterSections}
+                    selected={selectedFilters}
+                    onToggle={handleToggleFilter}
+                    onToggleGroup={handleToggleGroup}
+                    onClearAll={handleClearAll}
+                    hasActiveFilters={hasActiveFilters}
+                  />
+                </div>
+              </DrawerContent>
+            </Drawer>
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
