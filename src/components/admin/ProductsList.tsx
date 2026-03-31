@@ -202,9 +202,10 @@ const ProductsList = () => {
           case "product_name": valA = a.product_name?.toLowerCase() ?? ""; valB = b.product_name?.toLowerCase() ?? ""; break;
           case "category": valA = a.category?.toLowerCase() ?? ""; valB = b.category?.toLowerCase() ?? ""; break;
           case "company": valA = (a.companies as any)?.name?.toLowerCase() ?? ""; valB = (b.companies as any)?.name?.toLowerCase() ?? ""; break;
-          case "brand": valA = (a.brands as any)?.name?.toLowerCase() ?? ""; valB = (b.brands as any)?.name?.toLowerCase() ?? ""; break;
-          case "weight": valA = a.weight ?? 0; valB = b.weight ?? 0; break;
-          case "stick_count": valA = a.stick_count ?? 0; valB = b.stick_count ?? 0; break;
+          case "brand": valA = (a as any).brand_name?.toLowerCase() ?? ""; valB = (b as any).brand_name?.toLowerCase() ?? ""; break;
+          case "poise": valA = (a as any).poise?.toLowerCase() ?? ""; valB = (b as any).poise?.toLowerCase() ?? ""; break;
+          case "afue": valA = (a as any).afue ?? ""; valB = (b as any).afue ?? ""; break;
+          case "stages": valA = (a as any).stages?.toLowerCase() ?? ""; valB = (b as any).stages?.toLowerCase() ?? ""; break;
           case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
