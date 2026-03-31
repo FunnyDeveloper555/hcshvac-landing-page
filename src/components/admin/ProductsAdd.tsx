@@ -170,7 +170,8 @@ const ProductsAdd = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId) { toast({ title: "Error", description: "Company is required", variant: "destructive" }); return; }
-    if (!category) { toast({ title: "Error", description: "Category is required", variant: "destructive" }); return; }
+    if (!mainCategory) { toast({ title: "Error", description: "Main category is required", variant: "destructive" }); return; }
+    if (!subCategory) { toast({ title: "Error", description: "Sub category is required", variant: "destructive" }); return; }
     if (!productName) { toast({ title: "Error", description: "Product name is required", variant: "destructive" }); return; }
 
     setIsSubmitting(true);
