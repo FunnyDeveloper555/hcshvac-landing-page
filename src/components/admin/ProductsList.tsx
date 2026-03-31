@@ -330,14 +330,15 @@ const ProductsList = () => {
                   <SortableHead field="category">Category</SortableHead>
                   <SortableHead field="company">Company</SortableHead>
                   <SortableHead field="brand">Brand</SortableHead>
-                  <SortableHead field="weight">Weight</SortableHead>
-                  <SortableHead field="stick_count">Sticks</SortableHead>
+                  <SortableHead field="poise">Poise</SortableHead>
+                  <SortableHead field="afue">AFUE</SortableHead>
+                  <SortableHead field="stages">Stages</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedProducts.map((product) => (
+                {paginatedProducts.map((product: any) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       {(product.spot_images as string[] | null)?.length ? (
@@ -349,9 +350,10 @@ const ProductsList = () => {
                     <TableCell className="font-medium">{product.product_name}</TableCell>
                     <TableCell>{product.category || "—"}</TableCell>
                     <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
-                    <TableCell>{(product.brands as any)?.name || "—"}</TableCell>
-                    <TableCell>{product.weight ?? "—"}</TableCell>
-                    <TableCell>{product.stick_count ?? "—"}</TableCell>
+                    <TableCell>{product.brand_name || "—"}</TableCell>
+                    <TableCell>{product.poise || "—"}</TableCell>
+                    <TableCell>{product.afue || "—"}</TableCell>
+                    <TableCell>{product.stages || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
