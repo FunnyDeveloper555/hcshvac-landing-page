@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 
-type SortField = "product_name" | "category" | "company" | "brand" | "weight" | "stick_count" | "status";
+type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "status";
 type SortDirection = "asc" | "desc" | null;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
