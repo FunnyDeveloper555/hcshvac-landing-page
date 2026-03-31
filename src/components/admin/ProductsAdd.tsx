@@ -210,7 +210,7 @@ const ProductsAdd = () => {
       };
 
       if (isEditing) {
-        const { error } = await supabase.from("products").update(payload).eq("id", editId);
+        const { error } = await supabase.from("products").update(payload as any).eq("id", editId);
         if (error) throw error;
         toast({ title: "Success!", description: "Product updated successfully." });
         logAction("update", "vendor", editId!, { product_name: productName });
