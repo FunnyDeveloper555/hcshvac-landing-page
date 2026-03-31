@@ -83,14 +83,21 @@ const ProductsList = () => {
     const catMap = new Map<string, number>();
     const compMap = new Map<string, number>();
     const brandMap = new Map<string, number>();
+    const poiseMap = new Map<string, number>();
+    const afueMap = new Map<string, number>();
+    const widthMap = new Map<string, number>();
+    const stagesMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
 
-    products.forEach((p) => {
+    products.forEach((p: any) => {
       if (p.category) catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
       const comp = (p.companies as any)?.name;
       if (comp) compMap.set(comp, (compMap.get(comp) || 0) + 1);
-      const brand = (p.brands as any)?.name;
-      if (brand) brandMap.set(brand, (brandMap.get(brand) || 0) + 1);
+      if (p.brand_name) brandMap.set(p.brand_name, (brandMap.get(p.brand_name) || 0) + 1);
+      if (p.poise) poiseMap.set(p.poise, (poiseMap.get(p.poise) || 0) + 1);
+      if (p.afue) afueMap.set(p.afue, (afueMap.get(p.afue) || 0) + 1);
+      if (p.width_size) widthMap.set(p.width_size, (widthMap.get(p.width_size) || 0) + 1);
+      if (p.stages) stagesMap.set(p.stages, (stagesMap.get(p.stages) || 0) + 1);
       const st = p.is_published ? "Published" : "Draft";
       statusMap.set(st, (statusMap.get(st) || 0) + 1);
     });
@@ -112,8 +119,12 @@ const ProductsList = () => {
 
     return [
       { label: "Category", key: "category", options: categoryOptions },
-      { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Brand", key: "brand", options: toOpts(brandMap) },
+      { label: "Poise", key: "poise", options: toOpts(poiseMap) },
+      { label: "AFUE", key: "afue", options: toOpts(afueMap) },
+      { label: "Width", key: "width", options: toOpts(widthMap) },
+      { label: "Stages", key: "stages", options: toOpts(stagesMap) },
+      { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ].filter((s) => s.options.length > 0);
   }, [products]);
