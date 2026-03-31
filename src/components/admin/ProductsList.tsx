@@ -138,6 +138,20 @@ const ProductsList = () => {
     setCurrentPage(1);
   };
 
+  const handleToggleGroup = (sectionKey: string, values: string[], select: boolean) => {
+    setSelectedFilters((prev) => {
+      const current = prev[sectionKey] || [];
+      let next: string[];
+      if (select) {
+        next = [...new Set([...current, ...values])];
+      } else {
+        next = current.filter((v) => !values.includes(v));
+      }
+      return { ...prev, [sectionKey]: next };
+    });
+    setCurrentPage(1);
+  };
+
   const hasActiveFilters = Object.values(selectedFilters).some((arr) => arr.length > 0) || searchTerm.trim() !== "";
 
   const handleClearAll = () => {
