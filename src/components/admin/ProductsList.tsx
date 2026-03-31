@@ -117,16 +117,22 @@ const ProductsList = () => {
       categoryOptions.push({ value: label, count: parentCount, children });
     });
 
+    const POISE_OPTS = [{ value: "Upflow", count: poiseMap.get("Upflow") || 0 }, { value: "Downflow", count: poiseMap.get("Downflow") || 0 }];
+    const AFUE_OPTS = ["80%", "92%", "95%", "96%", "97%", "98%"].map((v) => ({ value: v, count: afueMap.get(v) || 0 }));
+    const WIDTH_OPTS = ['14.5"', '17.5"', '21"', '24.5"'].map((v) => ({ value: v, count: widthMap.get(v) || 0 }));
+    const STAGES_OPTS = ["Single Stage", "Two Stage", "Two Stage Variable"].map((v) => ({ value: v, count: stagesMap.get(v) || 0 }));
+    const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
+
     return [
       { label: "Category", key: "category", options: categoryOptions },
-      { label: "Brand", key: "brand", options: toOpts(brandMap) },
-      { label: "Poise", key: "poise", options: toOpts(poiseMap) },
-      { label: "AFUE", key: "afue", options: toOpts(afueMap) },
-      { label: "Width", key: "width", options: toOpts(widthMap) },
-      { label: "Stages", key: "stages", options: toOpts(stagesMap) },
+      { label: "Brand", key: "brand", options: BRAND_OPTS },
+      { label: "Poise", key: "poise", options: POISE_OPTS },
+      { label: "AFUE", key: "afue", options: AFUE_OPTS },
+      { label: "Width", key: "width", options: WIDTH_OPTS },
+      { label: "Stages", key: "stages", options: STAGES_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
-    ].filter((s) => s.options.length > 0);
+    ];
   }, [products]);
 
   const handleToggleFilter = (sectionKey: string, value: string) => {
