@@ -192,13 +192,18 @@ const ProductsAdd = () => {
 
     setIsSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         company_id: companyId || null,
         category: `${mainCategory} - ${subCategory}`,
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
         brand_id: brandId || null,
+        brand_name: brandName || null,
+        poise: poise || null,
+        afue: afue || null,
+        width_size: widthSize || null,
+        stages: stages || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
