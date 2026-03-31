@@ -183,7 +183,15 @@ const ProductsList = () => {
     const comps = selectedFilters.company || [];
     if (comps.length) filtered = filtered.filter((p) => comps.includes((p.companies as any)?.name || ""));
     const brands = selectedFilters.brand || [];
-    if (brands.length) filtered = filtered.filter((p) => brands.includes((p.brands as any)?.name || ""));
+    if (brands.length) filtered = filtered.filter((p: any) => brands.includes(p.brand_name || ""));
+    const poises = selectedFilters.poise || [];
+    if (poises.length) filtered = filtered.filter((p: any) => poises.includes(p.poise || ""));
+    const afues = selectedFilters.afue || [];
+    if (afues.length) filtered = filtered.filter((p: any) => afues.includes(p.afue || ""));
+    const widths = selectedFilters.width || [];
+    if (widths.length) filtered = filtered.filter((p: any) => widths.includes(p.width_size || ""));
+    const stagesF = selectedFilters.stages || [];
+    if (stagesF.length) filtered = filtered.filter((p: any) => stagesF.includes(p.stages || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
