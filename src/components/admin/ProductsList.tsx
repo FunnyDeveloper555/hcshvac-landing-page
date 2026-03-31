@@ -10,7 +10,8 @@ import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationNext, PaginationPrevious, PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { Trash2, Loader2, Pencil, Plus, ArrowUp, ArrowDown, ArrowUpDown, Search, X } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Trash2, Loader2, Pencil, Plus, ArrowUp, ArrowDown, ArrowUpDown, Search, X, SlidersHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
