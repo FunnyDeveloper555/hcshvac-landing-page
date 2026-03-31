@@ -255,12 +255,25 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Category *</Label>
-                <Select value={category || "placeholder"} onValueChange={(val) => setCategory(val === "placeholder" ? "" : val)}>
-                  <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <Label>Main Category *</Label>
+                <Select value={mainCategory || "placeholder"} onValueChange={(val) => { setMainCategory(val === "placeholder" ? "" : val); setSubCategory(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Select main category" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select a category</SelectItem>
-                    {PRODUCT_CATEGORIES.map((cat) => (
+                    <SelectItem value="placeholder" disabled className="hidden">Select main category</SelectItem>
+                    {MAIN_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Sub Category *</Label>
+                <Select value={subCategory || "placeholder"} onValueChange={(val) => setSubCategory(val === "placeholder" ? "" : val)} disabled={!mainCategory}>
+                  <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
+                    {SUB_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
