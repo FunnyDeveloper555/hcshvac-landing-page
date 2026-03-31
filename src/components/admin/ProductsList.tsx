@@ -269,7 +269,8 @@ const ProductsList = () => {
         <ProductFilterSidebar
           sections={filterSections}
           selected={selectedFilters}
-          onToggle={handleToggleFilter}
+           onToggle={handleToggleFilter}
+           onToggleGroup={handleToggleGroup}
           onClearAll={handleClearAll}
           hasActiveFilters={hasActiveFilters}
         />
