@@ -343,41 +343,78 @@ const ProductsAdd = () => {
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Brand</Label>
-                <Popover open={brandOpen} onOpenChange={setBrandOpen}>
-                  <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" role="combobox" aria-expanded={brandOpen} className="w-full justify-between font-normal">
-                      {selectedBrandName || "Select a brand..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Search brands..." />
-                      <CommandList>
-                        <CommandEmpty>No brand found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem value="__none__" onSelect={() => { setBrandId(""); setBrandOpen(false); }}>
-                            <Check className={cn("mr-2 h-4 w-4", !brandId ? "opacity-100" : "opacity-0")} />
-                            None
-                          </CommandItem>
-                          {brands.map((b) => (
-                            <CommandItem key={b.id} value={b.name} onSelect={() => { setBrandId(b.id); setBrandOpen(false); }}>
-                              <Check className={cn("mr-2 h-4 w-4", brandId === b.id ? "opacity-100" : "opacity-0")} />
-                              {b.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Select value={brandName || "placeholder"} onValueChange={(val) => setBrandName(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select brand</SelectItem>
+                    {BRAND_OPTIONS.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Poise</Label>
+                <Select value={poise || "placeholder"} onValueChange={(val) => setPoise(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select poise" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select poise</SelectItem>
+                    {POISE_OPTIONS.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>AFUE</Label>
+                <Select value={afue || "placeholder"} onValueChange={(val) => setAfue(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select AFUE" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select AFUE</SelectItem>
+                    {AFUE_OPTIONS.map((a) => (
+                      <SelectItem key={a} value={a}>{a}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Width</Label>
+                <Select value={widthSize || "placeholder"} onValueChange={(val) => setWidthSize(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select width" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select width</SelectItem>
+                    {WIDTH_OPTIONS.map((w) => (
+                      <SelectItem key={w} value={w}>{w}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Stages</Label>
+                <Select value={stages || "placeholder"} onValueChange={(val) => setStages(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select stages" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select stages</SelectItem>
+                    {STAGES_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Weight</Label>
                 <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
               </div>
+            </div>
 
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Stick Count</Label>
                 <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
