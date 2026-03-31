@@ -5,6 +5,7 @@ import { useState } from "react";
 
 interface FilterOption {
   value: string;
+  label?: string;
   count: number;
   children?: FilterOption[];
 }
