@@ -239,7 +239,7 @@ const ProductsAdd = () => {
     }
   };
 
-  const selectedBrandName = brands.find((b) => b.id === brandId)?.name;
+  
 
   if (loading) {
     return (
