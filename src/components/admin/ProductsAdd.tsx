@@ -178,7 +178,7 @@ const ProductsAdd = () => {
     try {
       const payload = {
         company_id: companyId || null,
-        category: category || null,
+        category: `${mainCategory} - ${subCategory}`,
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
