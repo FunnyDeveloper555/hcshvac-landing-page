@@ -112,6 +112,11 @@ const ProductsAdd = () => {
   const [productName, setProductName] = useState("");
   const [spotText, setSpotText] = useState("");
   const [brandId, setBrandId] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [poise, setPoise] = useState("");
+  const [afue, setAfue] = useState("");
+  const [widthSize, setWidthSize] = useState("");
+  const [stages, setStages] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
