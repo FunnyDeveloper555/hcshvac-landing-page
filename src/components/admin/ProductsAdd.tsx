@@ -170,6 +170,11 @@ const ProductsAdd = () => {
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
       setBrandId(data.brand_id || "");
+      setBrandName((data as any).brand_name || "");
+      setPoise((data as any).poise || "");
+      setAfue((data as any).afue || "");
+      setWidthSize((data as any).width_size || "");
+      setStages((data as any).stages || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
