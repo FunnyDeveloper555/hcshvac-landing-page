@@ -146,7 +146,16 @@ const ProductsAdd = () => {
       navigate("/admin/products/list");
     } else if (data) {
       setCompanyId(data.company_id || "");
-      setCategory(data.category || "");
+      // Parse "Main - Sub" format
+      const cat = data.category || "";
+      const dashIdx = cat.indexOf(" - ");
+      if (dashIdx > -1) {
+        setMainCategory(cat.substring(0, dashIdx));
+        setSubCategory(cat.substring(dashIdx + 3));
+      } else {
+        setMainCategory(cat);
+        setSubCategory("");
+      }
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
       setBrandId(data.brand_id || "");
