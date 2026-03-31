@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 
-type SortField = "product_name" | "category" | "company" | "brand" | "weight" | "stick_count" | "status";
+type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "status";
 type SortDirection = "asc" | "desc" | null;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -83,14 +83,21 @@ const ProductsList = () => {
     const catMap = new Map<string, number>();
     const compMap = new Map<string, number>();
     const brandMap = new Map<string, number>();
+    const poiseMap = new Map<string, number>();
+    const afueMap = new Map<string, number>();
+    const widthMap = new Map<string, number>();
+    const stagesMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
 
-    products.forEach((p) => {
+    products.forEach((p: any) => {
       if (p.category) catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
       const comp = (p.companies as any)?.name;
       if (comp) compMap.set(comp, (compMap.get(comp) || 0) + 1);
-      const brand = (p.brands as any)?.name;
-      if (brand) brandMap.set(brand, (brandMap.get(brand) || 0) + 1);
+      if (p.brand_name) brandMap.set(p.brand_name, (brandMap.get(p.brand_name) || 0) + 1);
+      if (p.poise) poiseMap.set(p.poise, (poiseMap.get(p.poise) || 0) + 1);
+      if (p.afue) afueMap.set(p.afue, (afueMap.get(p.afue) || 0) + 1);
+      if (p.width_size) widthMap.set(p.width_size, (widthMap.get(p.width_size) || 0) + 1);
+      if (p.stages) stagesMap.set(p.stages, (stagesMap.get(p.stages) || 0) + 1);
       const st = p.is_published ? "Published" : "Draft";
       statusMap.set(st, (statusMap.get(st) || 0) + 1);
     });
@@ -112,8 +119,12 @@ const ProductsList = () => {
 
     return [
       { label: "Category", key: "category", options: categoryOptions },
-      { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Brand", key: "brand", options: toOpts(brandMap) },
+      { label: "Poise", key: "poise", options: toOpts(poiseMap) },
+      { label: "AFUE", key: "afue", options: toOpts(afueMap) },
+      { label: "Width", key: "width", options: toOpts(widthMap) },
+      { label: "Stages", key: "stages", options: toOpts(stagesMap) },
+      { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ].filter((s) => s.options.length > 0);
   }, [products]);
@@ -172,7 +183,15 @@ const ProductsList = () => {
     const comps = selectedFilters.company || [];
     if (comps.length) filtered = filtered.filter((p) => comps.includes((p.companies as any)?.name || ""));
     const brands = selectedFilters.brand || [];
-    if (brands.length) filtered = filtered.filter((p) => brands.includes((p.brands as any)?.name || ""));
+    if (brands.length) filtered = filtered.filter((p: any) => brands.includes(p.brand_name || ""));
+    const poises = selectedFilters.poise || [];
+    if (poises.length) filtered = filtered.filter((p: any) => poises.includes(p.poise || ""));
+    const afues = selectedFilters.afue || [];
+    if (afues.length) filtered = filtered.filter((p: any) => afues.includes(p.afue || ""));
+    const widths = selectedFilters.width || [];
+    if (widths.length) filtered = filtered.filter((p: any) => widths.includes(p.width_size || ""));
+    const stagesF = selectedFilters.stages || [];
+    if (stagesF.length) filtered = filtered.filter((p: any) => stagesF.includes(p.stages || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
@@ -183,9 +202,10 @@ const ProductsList = () => {
           case "product_name": valA = a.product_name?.toLowerCase() ?? ""; valB = b.product_name?.toLowerCase() ?? ""; break;
           case "category": valA = a.category?.toLowerCase() ?? ""; valB = b.category?.toLowerCase() ?? ""; break;
           case "company": valA = (a.companies as any)?.name?.toLowerCase() ?? ""; valB = (b.companies as any)?.name?.toLowerCase() ?? ""; break;
-          case "brand": valA = (a.brands as any)?.name?.toLowerCase() ?? ""; valB = (b.brands as any)?.name?.toLowerCase() ?? ""; break;
-          case "weight": valA = a.weight ?? 0; valB = b.weight ?? 0; break;
-          case "stick_count": valA = a.stick_count ?? 0; valB = b.stick_count ?? 0; break;
+          case "brand": valA = (a as any).brand_name?.toLowerCase() ?? ""; valB = (b as any).brand_name?.toLowerCase() ?? ""; break;
+          case "poise": valA = (a as any).poise?.toLowerCase() ?? ""; valB = (b as any).poise?.toLowerCase() ?? ""; break;
+          case "afue": valA = (a as any).afue ?? ""; valB = (b as any).afue ?? ""; break;
+          case "stages": valA = (a as any).stages?.toLowerCase() ?? ""; valB = (b as any).stages?.toLowerCase() ?? ""; break;
           case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
@@ -310,14 +330,15 @@ const ProductsList = () => {
                   <SortableHead field="category">Category</SortableHead>
                   <SortableHead field="company">Company</SortableHead>
                   <SortableHead field="brand">Brand</SortableHead>
-                  <SortableHead field="weight">Weight</SortableHead>
-                  <SortableHead field="stick_count">Sticks</SortableHead>
+                  <SortableHead field="poise">Poise</SortableHead>
+                  <SortableHead field="afue">AFUE</SortableHead>
+                  <SortableHead field="stages">Stages</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedProducts.map((product) => (
+                {paginatedProducts.map((product: any) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       {(product.spot_images as string[] | null)?.length ? (
@@ -329,9 +350,10 @@ const ProductsList = () => {
                     <TableCell className="font-medium">{product.product_name}</TableCell>
                     <TableCell>{product.category || "—"}</TableCell>
                     <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
-                    <TableCell>{(product.brands as any)?.name || "—"}</TableCell>
-                    <TableCell>{product.weight ?? "—"}</TableCell>
-                    <TableCell>{product.stick_count ?? "—"}</TableCell>
+                    <TableCell>{product.brand_name || "—"}</TableCell>
+                    <TableCell>{product.poise || "—"}</TableCell>
+                    <TableCell>{product.afue || "—"}</TableCell>
+                    <TableCell>{product.stages || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
@@ -347,7 +369,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>

@@ -38,6 +38,12 @@ import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 
+const POISE_OPTIONS = ["Upflow", "Downflow"];
+const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
+const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
+const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
+const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
+
 const MAIN_CATEGORIES = [
   "HVAC Equipment Residential",
   "HVAC Equipment Commercial",
@@ -98,7 +104,7 @@ const ProductsAdd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [brandOpen, setBrandOpen] = useState(false);
+  const [brandOpen, setBrandOpen] = useState(false); // keep for TS — unused now
 
   const [companyId, setCompanyId] = useState("");
   const [mainCategory, setMainCategory] = useState("");
@@ -106,6 +112,11 @@ const ProductsAdd = () => {
   const [productName, setProductName] = useState("");
   const [spotText, setSpotText] = useState("");
   const [brandId, setBrandId] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [poise, setPoise] = useState("");
+  const [afue, setAfue] = useState("");
+  const [widthSize, setWidthSize] = useState("");
+  const [stages, setStages] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
@@ -159,6 +170,11 @@ const ProductsAdd = () => {
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
       setBrandId(data.brand_id || "");
+      setBrandName((data as any).brand_name || "");
+      setPoise((data as any).poise || "");
+      setAfue((data as any).afue || "");
+      setWidthSize((data as any).width_size || "");
+      setStages((data as any).stages || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
@@ -176,25 +192,30 @@ const ProductsAdd = () => {
 
     setIsSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         company_id: companyId || null,
         category: `${mainCategory} - ${subCategory}`,
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
         brand_id: brandId || null,
+        brand_name: brandName || null,
+        poise: poise || null,
+        afue: afue || null,
+        width_size: widthSize || null,
+        stages: stages || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
       };
 
       if (isEditing) {
-        const { error } = await supabase.from("products").update(payload).eq("id", editId);
+        const { error } = await supabase.from("products").update(payload as any).eq("id", editId);
         if (error) throw error;
         toast({ title: "Success!", description: "Product updated successfully." });
         logAction("update", "vendor", editId!, { product_name: productName });
       } else {
-        const { data, error } = await supabase.from("products").insert(payload).select().single();
+        const { data, error } = await supabase.from("products").insert(payload as any).select().single();
         if (error) throw error;
         toast({ title: "Success!", description: "Product created successfully." });
         logAction("create", "vendor", data.id, { product_name: productName });
@@ -218,7 +239,7 @@ const ProductsAdd = () => {
     }
   };
 
-  const selectedBrandName = brands.find((b) => b.id === brandId)?.name;
+  
 
   if (loading) {
     return (
@@ -322,41 +343,78 @@ const ProductsAdd = () => {
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Brand</Label>
-                <Popover open={brandOpen} onOpenChange={setBrandOpen}>
-                  <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" role="combobox" aria-expanded={brandOpen} className="w-full justify-between font-normal">
-                      {selectedBrandName || "Select a brand..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Search brands..." />
-                      <CommandList>
-                        <CommandEmpty>No brand found.</CommandEmpty>
-                        <CommandGroup>
-                          <CommandItem value="__none__" onSelect={() => { setBrandId(""); setBrandOpen(false); }}>
-                            <Check className={cn("mr-2 h-4 w-4", !brandId ? "opacity-100" : "opacity-0")} />
-                            None
-                          </CommandItem>
-                          {brands.map((b) => (
-                            <CommandItem key={b.id} value={b.name} onSelect={() => { setBrandId(b.id); setBrandOpen(false); }}>
-                              <Check className={cn("mr-2 h-4 w-4", brandId === b.id ? "opacity-100" : "opacity-0")} />
-                              {b.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <Select value={brandName || "placeholder"} onValueChange={(val) => setBrandName(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select brand</SelectItem>
+                    {BRAND_OPTIONS.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Poise</Label>
+                <Select value={poise || "placeholder"} onValueChange={(val) => setPoise(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select poise" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select poise</SelectItem>
+                    {POISE_OPTIONS.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>AFUE</Label>
+                <Select value={afue || "placeholder"} onValueChange={(val) => setAfue(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select AFUE" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select AFUE</SelectItem>
+                    {AFUE_OPTIONS.map((a) => (
+                      <SelectItem key={a} value={a}>{a}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Width</Label>
+                <Select value={widthSize || "placeholder"} onValueChange={(val) => setWidthSize(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select width" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select width</SelectItem>
+                    {WIDTH_OPTIONS.map((w) => (
+                      <SelectItem key={w} value={w}>{w}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Stages</Label>
+                <Select value={stages || "placeholder"} onValueChange={(val) => setStages(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select stages" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select stages</SelectItem>
+                    {STAGES_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <Label>Weight</Label>
                 <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
               </div>
+            </div>
 
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Stick Count</Label>
                 <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
