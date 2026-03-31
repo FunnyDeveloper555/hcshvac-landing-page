@@ -57,6 +57,27 @@ const ProductsList = () => {
   };
 
   // Build filter sections with counts from raw products
+  // Subcategories shared by both parent equipment categories
+  const EQUIPMENT_SUBCATEGORIES = [
+    "Ac Condenser Only",
+    "Boiler (Hot Water)",
+    "Boiler (Steam)",
+    "Boiler (Tankless)",
+    "Coil (Only)",
+    "Furnace Only",
+    "Furnace and Coil",
+    "Furnace, Coil, and Condenser",
+    "Furnace, Coil, Condenser, and Water Heater",
+    "Water Heater",
+    "Tankless Water Heater",
+    "Mini Splitt",
+  ];
+
+  const PARENT_CATEGORIES = [
+    { label: "HVAC Equipment Residential", prefix: "HVAC Equipment Residential" },
+    { label: "HVAC Equipment Commercial", prefix: "HVAC Equipment Commercial" },
+  ];
+
   const filterSections = useMemo(() => {
     if (!products) return [];
     const catMap = new Map<string, number>();
@@ -77,8 +98,31 @@ const ProductsList = () => {
     const toOpts = (m: Map<string, number>) =>
       Array.from(m.entries()).map(([value, count]) => ({ value, count })).sort((a, b) => a.value.localeCompare(b.value));
 
+    // Build hierarchical category options
+    const categoryOptions: { value: string; count: number; children?: { value: string; count: number }[] }[] = [];
+
+    PARENT_CATEGORIES.forEach(({ label, prefix }) => {
+      const children = EQUIPMENT_SUBCATEGORIES.map((sub) => {
+        const fullKey = `${prefix} - ${sub}`;
+        return { value: fullKey, count: catMap.get(fullKey) || 0 };
+      });
+      const parentCount = children.reduce((sum, c) => sum + c.count, 0);
+      // Only add if there are any products
+      categoryOptions.push({ value: label, count: parentCount, children });
+    });
+
+    // Add any categories that don't fit the hierarchy
+    const hierarchicalValues = new Set<string>();
+    PARENT_CATEGORIES.forEach(({ prefix }) => {
+      EQUIPMENT_SUBCATEGORIES.forEach((sub) => {
+        hierarchicalValues.add(`${prefix} - ${sub}`);
+      });
+    });
+    const otherCats = toOpts(catMap).filter((o) => !hierarchicalValues.has(o.value));
+    const allCategoryOptions = [...categoryOptions, ...otherCats];
+
     return [
-      { label: "Category", key: "category", options: toOpts(catMap) },
+      { label: "Category", key: "category", options: allCategoryOptions },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Brand", key: "brand", options: toOpts(brandMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
@@ -89,6 +133,20 @@ const ProductsList = () => {
     setSelectedFilters((prev) => {
       const current = prev[sectionKey] || [];
       const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      return { ...prev, [sectionKey]: next };
+    });
+    setCurrentPage(1);
+  };
+
+  const handleToggleGroup = (sectionKey: string, values: string[], select: boolean) => {
+    setSelectedFilters((prev) => {
+      const current = prev[sectionKey] || [];
+      let next: string[];
+      if (select) {
+        next = [...new Set([...current, ...values])];
+      } else {
+        next = current.filter((v) => !values.includes(v));
+      }
       return { ...prev, [sectionKey]: next };
     });
     setCurrentPage(1);
@@ -211,7 +269,8 @@ const ProductsList = () => {
         <ProductFilterSidebar
           sections={filterSections}
           selected={selectedFilters}
-          onToggle={handleToggleFilter}
+           onToggle={handleToggleFilter}
+           onToggleGroup={handleToggleGroup}
           onClearAll={handleClearAll}
           hasActiveFilters={hasActiveFilters}
         />
