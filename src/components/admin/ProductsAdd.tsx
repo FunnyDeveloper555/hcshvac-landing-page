@@ -101,7 +101,8 @@ const ProductsAdd = () => {
   const [brandOpen, setBrandOpen] = useState(false);
 
   const [companyId, setCompanyId] = useState("");
-  const [category, setCategory] = useState("");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [productName, setProductName] = useState("");
   const [spotText, setSpotText] = useState("");
   const [brandId, setBrandId] = useState("");
