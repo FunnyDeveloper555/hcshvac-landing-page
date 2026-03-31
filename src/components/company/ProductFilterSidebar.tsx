@@ -112,7 +112,7 @@ const ProductFilterSidebar = ({
                   : "text-muted-foreground group-hover:text-foreground"
               }`}
             >
-              {opt.value}
+              {opt.label || opt.value}
             </span>
             <span className="text-xs text-muted-foreground ml-auto tabular-nums">
               {opt.count.toLocaleString()}

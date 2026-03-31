@@ -104,7 +104,7 @@ const ProductsList = () => {
     PARENT_CATEGORIES.forEach(({ label, prefix }) => {
       const children = EQUIPMENT_SUBCATEGORIES.map((sub) => {
         const fullKey = `${prefix} - ${sub}`;
-        return { value: fullKey, count: catMap.get(fullKey) || 0 };
+        return { value: fullKey, label: sub, count: catMap.get(fullKey) || 0 };
       });
       const parentCount = children.reduce((sum, c) => sum + c.count, 0);
       // Only add if there are any products
