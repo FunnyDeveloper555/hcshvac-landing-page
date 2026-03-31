@@ -104,7 +104,7 @@ const ProductsAdd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [brandOpen, setBrandOpen] = useState(false);
+  const [brandOpen, setBrandOpen] = useState(false); // keep for TS — unused now
 
   const [companyId, setCompanyId] = useState("");
   const [mainCategory, setMainCategory] = useState("");
