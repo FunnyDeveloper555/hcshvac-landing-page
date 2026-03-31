@@ -215,7 +215,7 @@ const ProductsAdd = () => {
         toast({ title: "Success!", description: "Product updated successfully." });
         logAction("update", "vendor", editId!, { product_name: productName });
       } else {
-        const { data, error } = await supabase.from("products").insert(payload).select().single();
+        const { data, error } = await supabase.from("products").insert(payload as any).select().single();
         if (error) throw error;
         toast({ title: "Success!", description: "Product created successfully." });
         logAction("create", "vendor", data.id, { product_name: productName });
