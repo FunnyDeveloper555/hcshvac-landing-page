@@ -38,14 +38,24 @@ import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 
-const PRODUCT_CATEGORIES = [
-  "Accessories",
-  "Filters",
-  "Parts",
-  "Refrigerants",
-  "Tools",
-  "Equipment",
-  "Supplies",
+const MAIN_CATEGORIES = [
+  "HVAC Equipment Residential",
+  "HVAC Equipment Commercial",
+];
+
+const SUB_CATEGORIES = [
+  "Ac Condenser Only",
+  "Boiler (Hot Water)",
+  "Boiler (Steam)",
+  "Boiler (Tankless)",
+  "Coil (Only)",
+  "Furnace Only",
+  "Furnace and Coil",
+  "Furnace, Coil, and Condenser",
+  "Furnace, Coil, Condenser, and Water Heater",
+  "Water Heater",
+  "Tankless Water Heater",
+  "Mini Splitt",
 ];
 
 interface SortableImageProps {
@@ -91,7 +101,8 @@ const ProductsAdd = () => {
   const [brandOpen, setBrandOpen] = useState(false);
 
   const [companyId, setCompanyId] = useState("");
-  const [category, setCategory] = useState("");
+  const [mainCategory, setMainCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [productName, setProductName] = useState("");
   const [spotText, setSpotText] = useState("");
   const [brandId, setBrandId] = useState("");
@@ -135,7 +146,16 @@ const ProductsAdd = () => {
       navigate("/admin/products/list");
     } else if (data) {
       setCompanyId(data.company_id || "");
-      setCategory(data.category || "");
+      // Parse "Main - Sub" format
+      const cat = data.category || "";
+      const dashIdx = cat.indexOf(" - ");
+      if (dashIdx > -1) {
+        setMainCategory(cat.substring(0, dashIdx));
+        setSubCategory(cat.substring(dashIdx + 3));
+      } else {
+        setMainCategory(cat);
+        setSubCategory("");
+      }
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
       setBrandId(data.brand_id || "");
@@ -150,14 +170,15 @@ const ProductsAdd = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId) { toast({ title: "Error", description: "Company is required", variant: "destructive" }); return; }
-    if (!category) { toast({ title: "Error", description: "Category is required", variant: "destructive" }); return; }
+    if (!mainCategory) { toast({ title: "Error", description: "Main category is required", variant: "destructive" }); return; }
+    if (!subCategory) { toast({ title: "Error", description: "Sub category is required", variant: "destructive" }); return; }
     if (!productName) { toast({ title: "Error", description: "Product name is required", variant: "destructive" }); return; }
 
     setIsSubmitting(true);
     try {
       const payload = {
         company_id: companyId || null,
-        category: category || null,
+        category: `${mainCategory} - ${subCategory}`,
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
@@ -234,12 +255,25 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Category *</Label>
-                <Select value={category || "placeholder"} onValueChange={(val) => setCategory(val === "placeholder" ? "" : val)}>
-                  <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <Label>Main Category *</Label>
+                <Select value={mainCategory || "placeholder"} onValueChange={(val) => { setMainCategory(val === "placeholder" ? "" : val); setSubCategory(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Select main category" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select a category</SelectItem>
-                    {PRODUCT_CATEGORIES.map((cat) => (
+                    <SelectItem value="placeholder" disabled className="hidden">Select main category</SelectItem>
+                    {MAIN_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Sub Category *</Label>
+                <Select value={subCategory || "placeholder"} onValueChange={(val) => setSubCategory(val === "placeholder" ? "" : val)} disabled={!mainCategory}>
+                  <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
+                    {SUB_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
