@@ -38,14 +38,24 @@ import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 
-const PRODUCT_CATEGORIES = [
-  "Accessories",
-  "Filters",
-  "Parts",
-  "Refrigerants",
-  "Tools",
-  "Equipment",
-  "Supplies",
+const MAIN_CATEGORIES = [
+  "HVAC Equipment Residential",
+  "HVAC Equipment Commercial",
+];
+
+const SUB_CATEGORIES = [
+  "Ac Condenser Only",
+  "Boiler (Hot Water)",
+  "Boiler (Steam)",
+  "Boiler (Tankless)",
+  "Coil (Only)",
+  "Furnace Only",
+  "Furnace and Coil",
+  "Furnace, Coil, and Condenser",
+  "Furnace, Coil, Condenser, and Water Heater",
+  "Water Heater",
+  "Tankless Water Heater",
+  "Mini Splitt",
 ];
 
 interface SortableImageProps {

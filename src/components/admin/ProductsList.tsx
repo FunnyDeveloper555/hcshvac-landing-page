@@ -98,8 +98,8 @@ const ProductsList = () => {
     const toOpts = (m: Map<string, number>) =>
       Array.from(m.entries()).map(([value, count]) => ({ value, count })).sort((a, b) => a.value.localeCompare(b.value));
 
-    // Build hierarchical category options
-    const categoryOptions: { value: string; count: number; children?: { value: string; count: number }[] }[] = [];
+    // Build hierarchical category options (only HVAC Equipment categories)
+    const categoryOptions: { value: string; label?: string; count: number; children?: { value: string; label?: string; count: number }[] }[] = [];
 
     PARENT_CATEGORIES.forEach(({ label, prefix }) => {
       const children = EQUIPMENT_SUBCATEGORIES.map((sub) => {
@@ -107,22 +107,11 @@ const ProductsList = () => {
         return { value: fullKey, label: sub, count: catMap.get(fullKey) || 0 };
       });
       const parentCount = children.reduce((sum, c) => sum + c.count, 0);
-      // Only add if there are any products
       categoryOptions.push({ value: label, count: parentCount, children });
     });
 
-    // Add any categories that don't fit the hierarchy
-    const hierarchicalValues = new Set<string>();
-    PARENT_CATEGORIES.forEach(({ prefix }) => {
-      EQUIPMENT_SUBCATEGORIES.forEach((sub) => {
-        hierarchicalValues.add(`${prefix} - ${sub}`);
-      });
-    });
-    const otherCats = toOpts(catMap).filter((o) => !hierarchicalValues.has(o.value));
-    const allCategoryOptions = [...categoryOptions, ...otherCats];
-
     return [
-      { label: "Category", key: "category", options: allCategoryOptions },
+      { label: "Category", key: "category", options: categoryOptions },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Brand", key: "brand", options: toOpts(brandMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
