@@ -108,6 +108,9 @@ const ProductsAdd = () => {
   const [refrigerantType, setRefrigerantType] = useState("");
   const [tonsBtu, setTonsBtu] = useState("");
   const [seerRating, setSeerRating] = useState("");
+  const [modelNumber, setModelNumber] = useState("");
+  const [height, setHeight] = useState("");
+  const [lengthDepth, setLengthDepth] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
@@ -153,6 +156,30 @@ const ProductsAdd = () => {
   const level1Categories = allCategories.filter((c: any) => c.level === 1 && c.parent_id === categoryLevel0);
   const level2Categories = allCategories.filter((c: any) => c.level === 2 && c.parent_id === categoryLevel1);
 
+  // Auto-generate product name: {Brand} {Model} {Res/Com} {Tons} {Refrigerant} {SEER} {Equipment Type}
+  const generateAutoName = () => {
+    const resComLabel = (() => {
+      const cat0 = allCategories.find((c: any) => c.id === categoryLevel0);
+      if (!cat0) return "";
+      const name = cat0.name?.toLowerCase() || "";
+      if (name.includes("residential")) return "Residential";
+      if (name.includes("commercial")) return "Commercial";
+      return "";
+    })();
+    const equipType = (() => {
+      const catId = categoryLevel2 || categoryLevel1;
+      const cat = allCategories.find((c: any) => c.id === catId);
+      return cat?.name || "";
+    })();
+    const parts = [brandName, modelNumber, resComLabel, tonsBtu, refrigerantType, seerRating, equipType].filter(Boolean);
+    return parts.join(" ");
+  };
+
+  const handleAutoGenerate = () => {
+    const autoName = generateAutoName();
+    if (autoName.trim()) setProductName(autoName);
+  };
+
   useEffect(() => {
     if (editId && allCategories.length > 0) fetchProduct();
   }, [editId, allCategories]);
@@ -197,6 +224,9 @@ const ProductsAdd = () => {
       setRefrigerantType((data as any).refrigerant_type || "");
       setTonsBtu((data as any).tons_btu || "");
       setSeerRating((data as any).seer_rating || "");
+      setModelNumber((data as any).model_number || "");
+      setHeight((data as any).height || "");
+      setLengthDepth((data as any).length_depth || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
@@ -237,6 +267,9 @@ const ProductsAdd = () => {
         refrigerant_type: refrigerantType || null,
         tons_btu: tonsBtu || null,
         seer_rating: seerRating || null,
+        model_number: modelNumber || null,
+        height: height || null,
+        length_depth: lengthDepth || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
@@ -353,8 +386,19 @@ const ProductsAdd = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Product Name *</Label>
+              <Label>Model Number / Family Prefix</Label>
+              <Input placeholder="e.g.DERA-060JA" value={modelNumber} onChange={(e) => setModelNumber(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Product Name *</Label>
+                <Button type="button" size="sm" variant="outline" onClick={handleAutoGenerate}>
+                  Auto-Generate Name
+                </Button>
+              </div>
               <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
+              <p className="text-xs text-muted-foreground">Pattern: {"{Brand} {Model} {Res/Com} {Tons} {Refrigerant} {SEER} {Equipment Type}"}</p>
             </div>
 
             <div className="space-y-2">
@@ -459,8 +503,19 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Weight</Label>
+                <Label>Weight (lbs)</Label>
                 <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Height</Label>
+                <Input placeholder='e.g. 34"' value={height} onChange={(e) => setHeight(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Length / Depth</Label>
+                <Input placeholder='e.g. 28"' value={lengthDepth} onChange={(e) => setLengthDepth(e.target.value)} />
               </div>
             </div>
 

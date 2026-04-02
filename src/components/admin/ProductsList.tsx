@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 
-type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "tons_btu" | "seer_rating" | "status";
+type SortField = "product_name" | "model_number" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "tons_btu" | "seer_rating" | "status";
 type SortDirection = "asc" | "desc" | null;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -231,6 +231,7 @@ const ProductsList = () => {
         let valA: any, valB: any;
         switch (sortField) {
           case "product_name": valA = a.product_name?.toLowerCase() ?? ""; valB = b.product_name?.toLowerCase() ?? ""; break;
+          case "model_number": valA = (a as any).model_number?.toLowerCase() ?? ""; valB = (b as any).model_number?.toLowerCase() ?? ""; break;
           case "category": valA = a.category?.toLowerCase() ?? ""; valB = b.category?.toLowerCase() ?? ""; break;
           case "company": valA = (a.companies as any)?.name?.toLowerCase() ?? ""; valB = (b.companies as any)?.name?.toLowerCase() ?? ""; break;
           case "brand": valA = (a as any).brand_name?.toLowerCase() ?? ""; valB = (b as any).brand_name?.toLowerCase() ?? ""; break;
@@ -392,6 +393,7 @@ const ProductsList = () => {
                 <TableRow>
                   <TableHead className="w-[60px]">Image</TableHead>
                   <SortableHead field="product_name">Product Name</SortableHead>
+                  <SortableHead field="model_number">Model #</SortableHead>
                   <SortableHead field="category">Category</SortableHead>
                   <SortableHead field="company">Company</SortableHead>
                   <SortableHead field="brand">Brand</SortableHead>
@@ -417,6 +419,7 @@ const ProductsList = () => {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{product.product_name}</TableCell>
+                    <TableCell>{(product as any).model_number || "—"}</TableCell>
                     <TableCell>{product.category || "—"}</TableCell>
                     <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
                     <TableCell>{product.brand_name || "—"}</TableCell>
@@ -442,7 +445,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={15} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>
