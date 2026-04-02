@@ -793,13 +793,7 @@ const ProductsAdd = () => {
               )}
             </div>
 
-            {saveButton}
-          </div>
-        </TabsContent>
-
-        {/* ===== SUMMARY TAB ===== */}
-        <TabsContent value="summary">
-          <div className="space-y-6 mt-4">
+            {/* Product Summary */}
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="text-lg font-semibold">Product Summary</h3>
               <div className="space-y-2">
@@ -808,6 +802,7 @@ const ProductsAdd = () => {
               </div>
             </div>
 
+            {/* Product Images */}
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="text-lg font-semibold">Product Images</h3>
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -839,76 +834,7 @@ const ProductsAdd = () => {
               <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} className="max-w-xs" />
             </div>
 
-            {saveButton}
-          </div>
-        </TabsContent>
-
-        {/* ===== HISTORY TAB ===== */}
-        {isEditing && editId && (
-          <TabsContent value="history">
-            <div className="space-y-6 mt-4">
-              {/* Website Activity */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Website Activity</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Consumer Page Visits</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Enquired on by Site Visitor</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Downloaded Listing Packet</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Other Pages/URLs Shown On</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Field Activity */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Field Activity</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Sent as Estimate</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Purchased and Installed</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Warranty Visits</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Warranty Repaired</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Recalls</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing History — uses existing ProductSuppliersTab which shows price history */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Pricing History</h3>
-                <ProductSuppliersTab productId={editId} />
-              </div>
-            </div>
-          </TabsContent>
-        )}
-
-        {/* ===== REPAIR TAGS TAB ===== */}
-        <TabsContent value="repair-tags">
-          <div className="space-y-6 mt-4">
+            {/* Repair Tags */}
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Repair Tags</h3>
@@ -958,26 +884,8 @@ const ProductsAdd = () => {
                 </div>
               )}
             </div>
-            {saveButton}
-          </div>
-        </TabsContent>
 
-        {/* ===== INVENTORY TAB ===== */}
-        <TabsContent value="inventory">
-          <div className="space-y-6 mt-4">
-            <div className="border rounded-lg p-4 space-y-4">
-              <h3 className="text-lg font-semibold">Inventory</h3>
-              <p className="text-sm text-muted-foreground">Track stock levels, warehouse locations, and inventory movements for this product.</p>
-              <div className="text-center py-8 text-muted-foreground">
-                Inventory tracking coming soon. Stock levels will be managed here.
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* ===== PROMOTIONAL'S TAB ===== */}
-        <TabsContent value="promotionals">
-          <div className="space-y-6 mt-4">
+            {/* Promotional Content */}
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Promotional Content</h3>
@@ -989,25 +897,16 @@ const ProductsAdd = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Promo Title</Label>
-                  <Input placeholder="e.g. Spring Sale — 20% Off" value={promoTitle} onChange={(e) => setPromoTitle(e.target.value)} />
+                  <Input placeholder="e.g. Summer Special" value={promoTitle} onChange={(e) => setPromoTitle(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Promo Image</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="Image URL" value={promoImageUrl} onChange={(e) => setPromoImageUrl(e.target.value)} className="flex-1" />
-                    <Button type="button" size="sm" variant="outline" onClick={() => setPromoPickerOpen(true)}>Browse</Button>
-                  </div>
-                  <FileManagerPicker
-                    open={promoPickerOpen}
-                    onOpenChange={setPromoPickerOpen}
-                    onSelect={(url) => { setPromoImageUrl(url); setPromoPickerOpen(false); }}
-                    accept="image/*"
-                  />
+                  <Label>Promo Image URL</Label>
+                  <Input placeholder="URL for promotional image" value={promoImageUrl} onChange={(e) => setPromoImageUrl(e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Promo Description</Label>
-                <Textarea placeholder="Promotional details..." value={promoDescription} onChange={(e) => setPromoDescription(e.target.value)} />
+                <Textarea placeholder="Promotional details" value={promoDescription} onChange={(e) => setPromoDescription(e.target.value)} rows={3} />
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -1020,6 +919,7 @@ const ProductsAdd = () => {
                 </div>
               </div>
             </div>
+
             {saveButton}
           </div>
         </TabsContent>
