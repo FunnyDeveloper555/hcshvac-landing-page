@@ -44,25 +44,7 @@ const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
 const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
 const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
 
-const MAIN_CATEGORIES = [
-  "HVAC Equipment Residential",
-  "HVAC Equipment Commercial",
-];
-
-const SUB_CATEGORIES = [
-  "Ac Condenser Only",
-  "Boiler (Hot Water)",
-  "Boiler (Steam)",
-  "Boiler (Tankless)",
-  "Coil (Only)",
-  "Furnace Only",
-  "Furnace and Coil",
-  "Furnace, Coil, and Condenser",
-  "Furnace, Coil, Condenser, and Water Heater",
-  "Water Heater",
-  "Tankless Water Heater",
-  "Mini Splitt",
-];
+// Hierarchical categories are now loaded from product_categories table
 
 interface SortableImageProps {
   id: string;
