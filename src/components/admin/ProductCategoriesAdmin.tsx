@@ -63,7 +63,7 @@ const ProductCategoriesAdmin = () => {
       if (payload.id) {
         const { error } = await supabase
           .from("product_categories")
-          .update({ name: payload.name, parent_id: payload.parent_id, display_order: payload.display_order, is_active: payload.is_active, level })
+          .update({ name: payload.name, parent_id: payload.parent_id, display_order: payload.display_order, is_active: payload.is_active, level } as any)
           .eq("id", payload.id);
         if (error) throw error;
         logAction("update", "product_category", payload.id, { name: payload.name });
