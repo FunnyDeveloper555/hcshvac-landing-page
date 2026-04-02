@@ -88,6 +88,8 @@ const ProductsList = () => {
     const afueMap = new Map<string, number>();
     const widthMap = new Map<string, number>();
     const stagesMap = new Map<string, number>();
+    const voltageMap = new Map<string, number>();
+    const refrigerantMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
 
     products.forEach((p: any) => {
