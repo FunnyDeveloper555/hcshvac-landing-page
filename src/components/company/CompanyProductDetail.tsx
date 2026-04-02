@@ -210,6 +210,30 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
 
         {/* Details */}
         <div className="space-y-6">
+          {/* Status Banner */}
+          {(product as any).installed_banner_text && product.status === "active_showing" && (
+            <div className="bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 rounded-lg px-4 py-3">
+              <p className="font-semibold">{(product as any).installed_banner_text}</p>
+              {(product as any).installed_description && <p className="text-sm mt-1 opacity-90">{(product as any).installed_description}</p>}
+            </div>
+          )}
+          {(product as any).discontinued_banner_text && product.status === "discontinued_showing" && (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-lg px-4 py-3">
+              <p className="font-semibold">{(product as any).discontinued_banner_text}</p>
+              {(product as any).discontinued_description && <p className="text-sm mt-1 opacity-90">{(product as any).discontinued_description}</p>}
+              {(product as any).alternative_product_statement && (
+                <p className="text-sm mt-2">
+                  {(product as any).alternative_product_statement}
+                  {(product as any).alternative_product_url && (
+                    <a href={(product as any).alternative_product_url} className="ml-1 underline font-medium hover:opacity-80" target="_blank" rel="noopener noreferrer">
+                      View Alternative →
+                    </a>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
+
           <div>
             <h1 className="text-3xl font-bold text-foreground">{product.product_name}</h1>
             {product.category && (

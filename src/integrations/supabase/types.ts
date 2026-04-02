@@ -3001,15 +3001,21 @@ export type Database = {
       products: {
         Row: {
           afue: string | null
+          alternative_product_statement: string | null
+          alternative_product_url: string | null
           brand_id: string | null
           brand_name: string | null
           category: string | null
           category_id: string | null
           company_id: string | null
           created_at: string
+          discontinued_banner_text: string | null
+          discontinued_description: string | null
           display_order: number | null
           height: string | null
           id: string
+          installed_banner_text: string | null
+          installed_description: string | null
           is_promo_active: boolean
           is_repair_eligible: boolean
           length_depth: string | null
@@ -3037,15 +3043,21 @@ export type Database = {
         }
         Insert: {
           afue?: string | null
+          alternative_product_statement?: string | null
+          alternative_product_url?: string | null
           brand_id?: string | null
           brand_name?: string | null
           category?: string | null
           category_id?: string | null
           company_id?: string | null
           created_at?: string
+          discontinued_banner_text?: string | null
+          discontinued_description?: string | null
           display_order?: number | null
           height?: string | null
           id?: string
+          installed_banner_text?: string | null
+          installed_description?: string | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
           length_depth?: string | null
@@ -3073,15 +3085,21 @@ export type Database = {
         }
         Update: {
           afue?: string | null
+          alternative_product_statement?: string | null
+          alternative_product_url?: string | null
           brand_id?: string | null
           brand_name?: string | null
           category?: string | null
           category_id?: string | null
           company_id?: string | null
           created_at?: string
+          discontinued_banner_text?: string | null
+          discontinued_description?: string | null
           display_order?: number | null
           height?: string | null
           id?: string
+          installed_banner_text?: string | null
+          installed_description?: string | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
           length_depth?: string | null
