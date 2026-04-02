@@ -419,6 +419,7 @@ const ProductsList = () => {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{product.product_name}</TableCell>
+                    <TableCell>{(product as any).model_number || "—"}</TableCell>
                     <TableCell>{product.category || "—"}</TableCell>
                     <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
                     <TableCell>{product.brand_name || "—"}</TableCell>
