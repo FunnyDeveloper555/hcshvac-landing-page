@@ -43,6 +43,8 @@ const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
 const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
 const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
 const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
+const VOLTAGE_OPTIONS = ["120V", "208V", "230V", "240V", "277V", "440V"];
+const REFRIGERANT_OPTIONS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"];
 
 // Hierarchical categories are now loaded from product_categories table
 
