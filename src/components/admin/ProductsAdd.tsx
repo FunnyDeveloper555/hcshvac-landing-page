@@ -196,15 +196,22 @@ const ProductsAdd = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId) { toast({ title: "Error", description: "Company is required", variant: "destructive" }); return; }
-    if (!mainCategory) { toast({ title: "Error", description: "Main category is required", variant: "destructive" }); return; }
-    if (!subCategory) { toast({ title: "Error", description: "Sub category is required", variant: "destructive" }); return; }
+    if (!categoryLevel0) { toast({ title: "Error", description: "Equipment type is required", variant: "destructive" }); return; }
     if (!productName) { toast({ title: "Error", description: "Product name is required", variant: "destructive" }); return; }
+
+    // Use the deepest selected category
+    const finalCategoryId = categoryLevel2 || categoryLevel1 || categoryLevel0;
+    // Build legacy category string for backward compatibility
+    const catNames = [categoryLevel0, categoryLevel1, categoryLevel2]
+      .map(id => allCategories.find((c: any) => c.id === id)?.name)
+      .filter(Boolean);
 
     setIsSubmitting(true);
     try {
       const payload: Record<string, any> = {
         company_id: companyId || null,
-        category: `${mainCategory} - ${subCategory}`,
+        category_id: finalCategoryId || null,
+        category: catNames.join(" - "),
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
