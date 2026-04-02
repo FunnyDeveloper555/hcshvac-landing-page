@@ -735,6 +735,44 @@ const ProductsAdd = () => {
               )}
             </div>
 
+            {/* Banner/Description Statements */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <h3 className="text-lg font-semibold">Banner &amp; Description Statements</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Installed Banner Text</Label>
+                  <Input placeholder="e.g. Currently Installed" value={installedBannerText} onChange={(e) => setInstalledBannerText(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Discontinued Banner Text</Label>
+                  <Input placeholder="e.g. Discontinued Product" value={discontinuedBannerText} onChange={(e) => setDiscontinuedBannerText(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Installed Description</Label>
+                  <Textarea placeholder="Description shown when product is installed..." value={installedDescription} onChange={(e) => setInstalledDescription(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Discontinued Description</Label>
+                  <Textarea placeholder="Description shown when product is discontinued..." value={discontinuedDescription} onChange={(e) => setDiscontinuedDescription(e.target.value)} />
+                </div>
+              </div>
+              <div className="border-t pt-4 space-y-4">
+                <h4 className="font-medium">Alternative Product</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Alternative Product Statement</Label>
+                    <Input placeholder="e.g. We recommend the XYZ model instead" value={alternativeProductStatement} onChange={(e) => setAlternativeProductStatement(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Alternative Product URL</Label>
+                    <Input placeholder="https://..." value={alternativeProductUrl} onChange={(e) => setAlternativeProductUrl(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label>Product Status</Label>
               <Select value={productStatus} onValueChange={setProductStatus}>
