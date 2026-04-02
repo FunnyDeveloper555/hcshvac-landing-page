@@ -117,6 +117,20 @@ const ProductsAdd = () => {
   const [productStatus, setProductStatus] = useState<string>("active_not_showing");
   const [spotImages, setSpotImages] = useState<string[]>([]);
 
+  // Promotional fields
+  const [promoTitle, setPromoTitle] = useState("");
+  const [promoDescription, setPromoDescription] = useState("");
+  const [promoImageUrl, setPromoImageUrl] = useState("");
+  const [promoStartDate, setPromoStartDate] = useState("");
+  const [promoEndDate, setPromoEndDate] = useState("");
+  const [isPromoActive, setIsPromoActive] = useState(false);
+  const [promoPickerOpen, setPromoPickerOpen] = useState(false);
+
+  // Repair tags
+  const [isRepairEligible, setIsRepairEligible] = useState(false);
+  const [repairTags, setRepairTags] = useState<string[]>([]);
+  const [newRepairTag, setNewRepairTag] = useState("");
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
