@@ -45,6 +45,8 @@ const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
 const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
 const VOLTAGE_OPTIONS = ["120V", "208V", "230V", "240V", "277V", "440V"];
 const REFRIGERANT_OPTIONS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"];
+const TONS_BTU_OPTIONS = ["1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "7.5 Ton", "10 Ton", "12.5 Ton", "15 Ton", "20 Ton"];
+const SEER_RATING_OPTIONS = ["13.2 SEER2", "14 SEER2", "14.3 SEER2", "15 SEER2", "15.2 SEER2", "16 SEER2", "17 SEER2", "18 SEER2", "19 SEER2", "20 SEER2", "21 SEER2"];
 
 // Hierarchical categories are now loaded from product_categories table
 
@@ -104,6 +106,8 @@ const ProductsAdd = () => {
   const [stages, setStages] = useState("");
   const [voltage, setVoltage] = useState("");
   const [refrigerantType, setRefrigerantType] = useState("");
+  const [tonsBtu, setTonsBtu] = useState("");
+  const [seerRating, setSeerRating] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
@@ -191,6 +195,8 @@ const ProductsAdd = () => {
       setStages((data as any).stages || "");
       setVoltage((data as any).voltage || "");
       setRefrigerantType((data as any).refrigerant_type || "");
+      setTonsBtu((data as any).tons_btu || "");
+      setSeerRating((data as any).seer_rating || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
@@ -229,6 +235,8 @@ const ProductsAdd = () => {
         stages: stages || null,
         voltage: voltage || null,
         refrigerant_type: refrigerantType || null,
+        tons_btu: tonsBtu || null,
+        seer_rating: seerRating || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
@@ -486,6 +494,34 @@ const ProductsAdd = () => {
               <div className="space-y-2">
                 <Label>Stick Count</Label>
                 <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Tons / BTU</Label>
+                <Select value={tonsBtu || "placeholder"} onValueChange={(val) => setTonsBtu(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select tons/BTU" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select tons/BTU</SelectItem>
+                    {TONS_BTU_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>SEER Rating</Label>
+                <Select value={seerRating || "placeholder"} onValueChange={(val) => setSeerRating(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select SEER rating" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select SEER rating</SelectItem>
+                    {SEER_RATING_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

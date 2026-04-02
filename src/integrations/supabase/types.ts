@@ -2922,10 +2922,12 @@ export type Database = {
           poise: string | null
           product_name: string
           refrigerant_type: string | null
+          seer_rating: string | null
           spot_images: Json | null
           spot_text: string | null
           stages: string | null
           stick_count: number | null
+          tons_btu: string | null
           updated_at: string
           voltage: string | null
           weight: number | null
@@ -2945,10 +2947,12 @@ export type Database = {
           poise?: string | null
           product_name: string
           refrigerant_type?: string | null
+          seer_rating?: string | null
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
           stick_count?: number | null
+          tons_btu?: string | null
           updated_at?: string
           voltage?: string | null
           weight?: number | null
@@ -2968,10 +2972,12 @@ export type Database = {
           poise?: string | null
           product_name?: string
           refrigerant_type?: string | null
+          seer_rating?: string | null
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
           stick_count?: number | null
+          tons_btu?: string | null
           updated_at?: string
           voltage?: string | null
           weight?: number | null

@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 
-type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "status";
+type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "tons_btu" | "seer_rating" | "status";
 type SortDirection = "asc" | "desc" | null;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -90,6 +90,8 @@ const ProductsList = () => {
     const stagesMap = new Map<string, number>();
     const voltageMap = new Map<string, number>();
     const refrigerantMap = new Map<string, number>();
+    const tonsBtuMap = new Map<string, number>();
+    const seerMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
 
     products.forEach((p: any) => {
@@ -103,6 +105,8 @@ const ProductsList = () => {
       if (p.stages) stagesMap.set(p.stages, (stagesMap.get(p.stages) || 0) + 1);
       if ((p as any).voltage) voltageMap.set((p as any).voltage, (voltageMap.get((p as any).voltage) || 0) + 1);
       if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
+      if ((p as any).tons_btu) tonsBtuMap.set((p as any).tons_btu, (tonsBtuMap.get((p as any).tons_btu) || 0) + 1);
+      if ((p as any).seer_rating) seerMap.set((p as any).seer_rating, (seerMap.get((p as any).seer_rating) || 0) + 1);
       const st = p.is_published ? "Published" : "Draft";
       statusMap.set(st, (statusMap.get(st) || 0) + 1);
     });
@@ -128,6 +132,8 @@ const ProductsList = () => {
     const STAGES_OPTS = ["Single Stage", "Two Stage", "Two Stage Variable"].map((v) => ({ value: v, count: stagesMap.get(v) || 0 }));
     const VOLTAGE_OPTS = ["120V", "208V", "230V", "240V", "277V", "440V"].map((v) => ({ value: v, count: voltageMap.get(v) || 0 }));
     const REFRIGERANT_OPTS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"].map((v) => ({ value: v, count: refrigerantMap.get(v) || 0 }));
+    const TONS_BTU_OPTS = ["1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "7.5 Ton", "10 Ton", "12.5 Ton", "15 Ton", "20 Ton"].map((v) => ({ value: v, count: tonsBtuMap.get(v) || 0 }));
+    const SEER_OPTS = ["13.2 SEER2", "14 SEER2", "14.3 SEER2", "15 SEER2", "15.2 SEER2", "16 SEER2", "17 SEER2", "18 SEER2", "19 SEER2", "20 SEER2", "21 SEER2"].map((v) => ({ value: v, count: seerMap.get(v) || 0 }));
     const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
 
     return [
@@ -139,6 +145,8 @@ const ProductsList = () => {
       { label: "Stages", key: "stages", options: STAGES_OPTS },
       { label: "Voltage", key: "voltage", options: VOLTAGE_OPTS },
       { label: "Refrigerant", key: "refrigerant", options: REFRIGERANT_OPTS },
+      { label: "Tons/BTU", key: "tons_btu", options: TONS_BTU_OPTS },
+      { label: "SEER Rating", key: "seer_rating", options: SEER_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ];
@@ -211,6 +219,10 @@ const ProductsList = () => {
     if (voltages.length) filtered = filtered.filter((p: any) => voltages.includes(p.voltage || ""));
     const refrigerants = selectedFilters.refrigerant || [];
     if (refrigerants.length) filtered = filtered.filter((p: any) => refrigerants.includes(p.refrigerant_type || ""));
+    const tonsBtuF = selectedFilters.tons_btu || [];
+    if (tonsBtuF.length) filtered = filtered.filter((p: any) => tonsBtuF.includes(p.tons_btu || ""));
+    const seerF = selectedFilters.seer_rating || [];
+    if (seerF.length) filtered = filtered.filter((p: any) => seerF.includes(p.seer_rating || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
@@ -227,6 +239,8 @@ const ProductsList = () => {
           case "stages": valA = (a as any).stages?.toLowerCase() ?? ""; valB = (b as any).stages?.toLowerCase() ?? ""; break;
           case "voltage": valA = (a as any).voltage?.toLowerCase() ?? ""; valB = (b as any).voltage?.toLowerCase() ?? ""; break;
           case "refrigerant": valA = (a as any).refrigerant_type?.toLowerCase() ?? ""; valB = (b as any).refrigerant_type?.toLowerCase() ?? ""; break;
+          case "tons_btu": valA = (a as any).tons_btu?.toLowerCase() ?? ""; valB = (b as any).tons_btu?.toLowerCase() ?? ""; break;
+          case "seer_rating": valA = (a as any).seer_rating?.toLowerCase() ?? ""; valB = (b as any).seer_rating?.toLowerCase() ?? ""; break;
           case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
@@ -386,6 +400,8 @@ const ProductsList = () => {
                   <SortableHead field="stages">Stages</SortableHead>
                   <SortableHead field="voltage">Voltage</SortableHead>
                   <SortableHead field="refrigerant">Refrigerant</SortableHead>
+                  <SortableHead field="tons_btu">Tons/BTU</SortableHead>
+                  <SortableHead field="seer_rating">SEER</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -409,6 +425,8 @@ const ProductsList = () => {
                     <TableCell>{(product as any).stages || "—"}</TableCell>
                     <TableCell>{(product as any).voltage || "—"}</TableCell>
                     <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
+                    <TableCell>{(product as any).tons_btu || "—"}</TableCell>
+                    <TableCell>{(product as any).seer_rating || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
@@ -424,7 +442,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>
