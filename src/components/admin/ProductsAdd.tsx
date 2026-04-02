@@ -146,8 +146,8 @@ const ProductsAdd = () => {
   const level2Categories = allCategories.filter((c: any) => c.level === 2 && c.parent_id === categoryLevel1);
 
   useEffect(() => {
-    if (editId) fetchProduct();
-  }, [editId]);
+    if (editId && allCategories.length > 0) fetchProduct();
+  }, [editId, allCategories]);
 
   const fetchProduct = async () => {
     setLoading(true);
