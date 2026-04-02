@@ -406,7 +406,9 @@ const ProductsList = () => {
                     <TableCell>{product.brand_name || "—"}</TableCell>
                     <TableCell>{product.poise || "—"}</TableCell>
                     <TableCell>{product.afue || "—"}</TableCell>
-                    <TableCell>{product.stages || "—"}</TableCell>
+                    <TableCell>{(product as any).stages || "—"}</TableCell>
+                    <TableCell>{(product as any).voltage || "—"}</TableCell>
+                    <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
