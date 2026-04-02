@@ -614,6 +614,106 @@ const ProductsAdd = () => {
               </div>
             </div>
 
+            {/* Promotional Content Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Promotional Content</h3>
+                <div className="flex items-center gap-2">
+                  <Label>Active</Label>
+                  <Switch checked={isPromoActive} onCheckedChange={setIsPromoActive} />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Promo Title</Label>
+                  <Input placeholder="e.g. Spring Sale — 20% Off" value={promoTitle} onChange={(e) => setPromoTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Promo Image</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="Image URL" value={promoImageUrl} onChange={(e) => setPromoImageUrl(e.target.value)} className="flex-1" />
+                    <Button type="button" size="sm" variant="outline" onClick={() => setPromoPickerOpen(true)}>Browse</Button>
+                  </div>
+                  <FileManagerPicker
+                    open={promoPickerOpen}
+                    onOpenChange={setPromoPickerOpen}
+                    onSelect={(url) => { setPromoImageUrl(url); setPromoPickerOpen(false); }}
+                    accept="image/*"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Promo Description</Label>
+                <Textarea placeholder="Promotional details..." value={promoDescription} onChange={(e) => setPromoDescription(e.target.value)} />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input type="date" value={promoStartDate} onChange={(e) => setPromoStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input type="date" value={promoEndDate} onChange={(e) => setPromoEndDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Repair Tags Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Repair Tags</h3>
+                <div className="flex items-center gap-2">
+                  <Label>Repair Eligible</Label>
+                  <Switch checked={isRepairEligible} onCheckedChange={setIsRepairEligible} />
+                </div>
+              </div>
+              {isRepairEligible && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g. Condenser Repair, Coil Replacement"
+                      value={newRepairTag}
+                      onChange={(e) => setNewRepairTag(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const tag = newRepairTag.trim();
+                          if (tag && !repairTags.includes(tag)) {
+                            setRepairTags([...repairTags, tag]);
+                            setNewRepairTag("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const tag = newRepairTag.trim();
+                        if (tag && !repairTags.includes(tag)) {
+                          setRepairTags([...repairTags, tag]);
+                          setNewRepairTag("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {repairTags.map((tag, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
+                        {tag}
+                        <button type="button" onClick={() => setRepairTags(repairTags.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-foreground">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label>Product Status</Label>
               <Select value={productStatus} onValueChange={setProductStatus}>
