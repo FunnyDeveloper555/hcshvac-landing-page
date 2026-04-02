@@ -117,6 +117,20 @@ const ProductsAdd = () => {
   const [productStatus, setProductStatus] = useState<string>("active_not_showing");
   const [spotImages, setSpotImages] = useState<string[]>([]);
 
+  // Promotional fields
+  const [promoTitle, setPromoTitle] = useState("");
+  const [promoDescription, setPromoDescription] = useState("");
+  const [promoImageUrl, setPromoImageUrl] = useState("");
+  const [promoStartDate, setPromoStartDate] = useState("");
+  const [promoEndDate, setPromoEndDate] = useState("");
+  const [isPromoActive, setIsPromoActive] = useState(false);
+  const [promoPickerOpen, setPromoPickerOpen] = useState(false);
+
+  // Repair tags
+  const [isRepairEligible, setIsRepairEligible] = useState(false);
+  const [repairTags, setRepairTags] = useState<string[]>([]);
+  const [newRepairTag, setNewRepairTag] = useState("");
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -232,6 +246,16 @@ const ProductsAdd = () => {
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setProductStatus((data as any).status || "active_not_showing");
       setSpotImages((data.spot_images as string[]) || []);
+      // Promotional
+      setPromoTitle((data as any).promo_title || "");
+      setPromoDescription((data as any).promo_description || "");
+      setPromoImageUrl((data as any).promo_image_url || "");
+      setPromoStartDate((data as any).promo_start_date ? (data as any).promo_start_date.slice(0, 10) : "");
+      setPromoEndDate((data as any).promo_end_date ? (data as any).promo_end_date.slice(0, 10) : "");
+      setIsPromoActive((data as any).is_promo_active || false);
+      // Repair
+      setIsRepairEligible((data as any).is_repair_eligible || false);
+      setRepairTags((data as any).repair_tags || []);
     }
     setLoading(false);
   };
@@ -274,6 +298,14 @@ const ProductsAdd = () => {
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         status: productStatus,
+        promo_title: promoTitle || "",
+        promo_description: promoDescription || "",
+        promo_image_url: promoImageUrl || "",
+        promo_start_date: promoStartDate || null,
+        promo_end_date: promoEndDate || null,
+        is_promo_active: isPromoActive,
+        is_repair_eligible: isRepairEligible,
+        repair_tags: repairTags,
       };
 
       if (isEditing) {
@@ -580,6 +612,106 @@ const ProductsAdd = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Promotional Content Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Promotional Content</h3>
+                <div className="flex items-center gap-2">
+                  <Label>Active</Label>
+                  <Switch checked={isPromoActive} onCheckedChange={setIsPromoActive} />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Promo Title</Label>
+                  <Input placeholder="e.g. Spring Sale — 20% Off" value={promoTitle} onChange={(e) => setPromoTitle(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Promo Image</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="Image URL" value={promoImageUrl} onChange={(e) => setPromoImageUrl(e.target.value)} className="flex-1" />
+                    <Button type="button" size="sm" variant="outline" onClick={() => setPromoPickerOpen(true)}>Browse</Button>
+                  </div>
+                  <FileManagerPicker
+                    open={promoPickerOpen}
+                    onOpenChange={setPromoPickerOpen}
+                    onSelect={(url) => { setPromoImageUrl(url); setPromoPickerOpen(false); }}
+                    accept="image/*"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Promo Description</Label>
+                <Textarea placeholder="Promotional details..." value={promoDescription} onChange={(e) => setPromoDescription(e.target.value)} />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input type="date" value={promoStartDate} onChange={(e) => setPromoStartDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input type="date" value={promoEndDate} onChange={(e) => setPromoEndDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Repair Tags Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Repair Tags</h3>
+                <div className="flex items-center gap-2">
+                  <Label>Repair Eligible</Label>
+                  <Switch checked={isRepairEligible} onCheckedChange={setIsRepairEligible} />
+                </div>
+              </div>
+              {isRepairEligible && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="e.g. Condenser Repair, Coil Replacement"
+                      value={newRepairTag}
+                      onChange={(e) => setNewRepairTag(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const tag = newRepairTag.trim();
+                          if (tag && !repairTags.includes(tag)) {
+                            setRepairTags([...repairTags, tag]);
+                            setNewRepairTag("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const tag = newRepairTag.trim();
+                        if (tag && !repairTags.includes(tag)) {
+                          setRepairTags([...repairTags, tag]);
+                          setNewRepairTag("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {repairTags.map((tag, i) => (
+                      <span key={i} className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm">
+                        {tag}
+                        <button type="button" onClick={() => setRepairTags(repairTags.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-foreground">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

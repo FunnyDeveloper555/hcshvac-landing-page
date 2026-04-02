@@ -3010,11 +3010,19 @@ export type Database = {
           display_order: number | null
           height: string | null
           id: string
+          is_promo_active: boolean
+          is_repair_eligible: boolean
           length_depth: string | null
           model_number: string | null
           poise: string | null
           product_name: string
+          promo_description: string | null
+          promo_end_date: string | null
+          promo_image_url: string | null
+          promo_start_date: string | null
+          promo_title: string | null
           refrigerant_type: string | null
+          repair_tags: string[]
           seer_rating: string | null
           spot_images: Json | null
           spot_text: string | null
@@ -3038,11 +3046,19 @@ export type Database = {
           display_order?: number | null
           height?: string | null
           id?: string
+          is_promo_active?: boolean
+          is_repair_eligible?: boolean
           length_depth?: string | null
           model_number?: string | null
           poise?: string | null
           product_name: string
+          promo_description?: string | null
+          promo_end_date?: string | null
+          promo_image_url?: string | null
+          promo_start_date?: string | null
+          promo_title?: string | null
           refrigerant_type?: string | null
+          repair_tags?: string[]
           seer_rating?: string | null
           spot_images?: Json | null
           spot_text?: string | null
@@ -3066,11 +3082,19 @@ export type Database = {
           display_order?: number | null
           height?: string | null
           id?: string
+          is_promo_active?: boolean
+          is_repair_eligible?: boolean
           length_depth?: string | null
           model_number?: string | null
           poise?: string | null
           product_name?: string
+          promo_description?: string | null
+          promo_end_date?: string | null
+          promo_image_url?: string | null
+          promo_start_date?: string | null
+          promo_title?: string | null
           refrigerant_type?: string | null
+          repair_tags?: string[]
           seer_rating?: string | null
           spot_images?: Json | null
           spot_text?: string | null
