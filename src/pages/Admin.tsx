@@ -80,6 +80,7 @@ import ContentList from "@/components/admin/ContentList";
 import ContentPreview from "@/components/admin/ContentPreview";
 import GalleryAdd from "@/components/admin/GalleryAdd";
 import GalleryList from "@/components/admin/GalleryList";
+import ProductCategoriesAdmin from "@/components/admin/ProductCategoriesAdmin";
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -240,6 +241,7 @@ const Admin = () => {
               <Route path="/email-templates" element={<EmailTemplatesList />} />
               <Route path="/products/add" element={<ProductsAdd />} />
               <Route path="/products/list" element={<ProductsList />} />
+              <Route path="/products/categories" element={<ProductCategoriesAdmin />} />
               <Route path="/contents/add" element={<ContentAdd />} />
               <Route path="/contents/list" element={<ContentList />} />
               <Route path="/contents/preview" element={<ContentPreview />} />
