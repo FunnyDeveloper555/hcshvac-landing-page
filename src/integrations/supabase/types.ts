@@ -2919,7 +2919,6 @@ export type Database = {
           display_order: number | null
           height: string | null
           id: string
-          is_published: boolean
           length_depth: string | null
           model_number: string | null
           poise: string | null
@@ -2929,6 +2928,7 @@ export type Database = {
           spot_images: Json | null
           spot_text: string | null
           stages: string | null
+          status: Database["public"]["Enums"]["product_status"]
           stick_count: number | null
           tons_btu: string | null
           updated_at: string
@@ -2947,7 +2947,6 @@ export type Database = {
           display_order?: number | null
           height?: string | null
           id?: string
-          is_published?: boolean
           length_depth?: string | null
           model_number?: string | null
           poise?: string | null
@@ -2957,6 +2956,7 @@ export type Database = {
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
+          status?: Database["public"]["Enums"]["product_status"]
           stick_count?: number | null
           tons_btu?: string | null
           updated_at?: string
@@ -2975,7 +2975,6 @@ export type Database = {
           display_order?: number | null
           height?: string | null
           id?: string
-          is_published?: boolean
           length_depth?: string | null
           model_number?: string | null
           poise?: string | null
@@ -2985,6 +2984,7 @@ export type Database = {
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
+          status?: Database["public"]["Enums"]["product_status"]
           stick_count?: number | null
           tons_btu?: string | null
           updated_at?: string
@@ -3441,6 +3441,11 @@ export type Database = {
         | "school"
         | "government"
         | "other"
+      product_status:
+        | "active_showing"
+        | "active_not_showing"
+        | "discontinued_showing"
+        | "deactivated"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3578,6 +3583,12 @@ export const Constants = {
         "school",
         "government",
         "other",
+      ],
+      product_status: [
+        "active_showing",
+        "active_not_showing",
+        "discontinued_showing",
+        "deactivated",
       ],
     },
   },

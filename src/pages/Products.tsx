@@ -28,7 +28,7 @@ const Products = () => {
       const { data, error } = await supabase
         .from("products")
         .select("*, brands(name), companies(name), product_variants(sku, price, variant_name, attributes)")
-        .eq("is_published", true)
+        .in("status", ["active_showing", "discontinued_showing"] as any)
         .order("display_order", { ascending: true });
       if (error) throw error;
       return data;

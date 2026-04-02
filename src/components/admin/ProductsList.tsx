@@ -107,8 +107,9 @@ const ProductsList = () => {
       if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
       if ((p as any).tons_btu) tonsBtuMap.set((p as any).tons_btu, (tonsBtuMap.get((p as any).tons_btu) || 0) + 1);
       if ((p as any).seer_rating) seerMap.set((p as any).seer_rating, (seerMap.get((p as any).seer_rating) || 0) + 1);
-      const st = p.is_published ? "Published" : "Draft";
-      statusMap.set(st, (statusMap.get(st) || 0) + 1);
+      const st = (p as any).status || "active_not_showing";
+      const statusLabel = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[st] || st;
+      statusMap.set(statusLabel, (statusMap.get(statusLabel) || 0) + 1);
     });
 
     const toOpts = (m: Map<string, number>) =>
@@ -224,7 +225,10 @@ const ProductsList = () => {
     const seerF = selectedFilters.seer_rating || [];
     if (seerF.length) filtered = filtered.filter((p: any) => seerF.includes(p.seer_rating || ""));
     const statuses = selectedFilters.status || [];
-    if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
+    if (statuses.length) {
+      const statusLabelMap: Record<string, string> = { active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" };
+      filtered = filtered.filter((p: any) => statuses.includes(statusLabelMap[p.status] || p.status));
+    }
 
     if (sortField && sortDirection) {
       filtered.sort((a, b) => {
@@ -242,7 +246,7 @@ const ProductsList = () => {
           case "refrigerant": valA = (a as any).refrigerant_type?.toLowerCase() ?? ""; valB = (b as any).refrigerant_type?.toLowerCase() ?? ""; break;
           case "tons_btu": valA = (a as any).tons_btu?.toLowerCase() ?? ""; valB = (b as any).tons_btu?.toLowerCase() ?? ""; break;
           case "seer_rating": valA = (a as any).seer_rating?.toLowerCase() ?? ""; valB = (b as any).seer_rating?.toLowerCase() ?? ""; break;
-          case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
+          case "status": valA = (a as any).status ?? ""; valB = (b as any).status ?? ""; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
         if (valA > valB) return sortDirection === "asc" ? 1 : -1;
@@ -431,9 +435,12 @@ const ProductsList = () => {
                     <TableCell>{(product as any).tons_btu || "—"}</TableCell>
                     <TableCell>{(product as any).seer_rating || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={product.is_published ? "default" : "secondary"}>
-                        {product.is_published ? "Published" : "Draft"}
-                      </Badge>
+                      {(() => {
+                        const s = (product as any).status;
+                        const label = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[s] || s;
+                        const variant = s === "active_showing" ? "default" : s === "discontinued_showing" ? "outline" : "secondary";
+                        return <Badge variant={variant as any}>{label}</Badge>;
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

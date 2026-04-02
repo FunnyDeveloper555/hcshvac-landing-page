@@ -113,7 +113,7 @@ const ProductsAdd = () => {
   const [lengthDepth, setLengthDepth] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+  const [productStatus, setProductStatus] = useState<string>("active_not_showing");
   const [spotImages, setSpotImages] = useState<string[]>([]);
 
   const sensors = useSensors(
@@ -229,7 +229,7 @@ const ProductsAdd = () => {
       setLengthDepth((data as any).length_depth || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
-      setIsPublished(data.is_published ?? false);
+      setProductStatus((data as any).status || "active_not_showing");
       setSpotImages((data.spot_images as string[]) || []);
     }
     setLoading(false);
@@ -272,7 +272,7 @@ const ProductsAdd = () => {
         length_depth: lengthDepth || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
-        is_published: isPublished,
+        status: productStatus,
       };
 
       if (isEditing) {
@@ -580,9 +580,17 @@ const ProductsAdd = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Label>Published</Label>
-              <Switch checked={isPublished} onCheckedChange={setIsPublished} />
+            <div className="space-y-2">
+              <Label>Product Status</Label>
+              <Select value={productStatus} onValueChange={setProductStatus}>
+                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active_showing">Active (Showing)</SelectItem>
+                  <SelectItem value="active_not_showing">Active (Not Showing)</SelectItem>
+                  <SelectItem value="discontinued_showing">Discontinued (Showing)</SelectItem>
+                  <SelectItem value="deactivated">Deactivated (Not Showing)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2">
