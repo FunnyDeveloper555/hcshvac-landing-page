@@ -425,6 +425,8 @@ const ProductsList = () => {
                     <TableCell>{(product as any).stages || "—"}</TableCell>
                     <TableCell>{(product as any).voltage || "—"}</TableCell>
                     <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
+                    <TableCell>{(product as any).tons_btu || "—"}</TableCell>
+                    <TableCell>{(product as any).seer_rating || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
