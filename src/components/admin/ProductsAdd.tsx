@@ -227,6 +227,8 @@ const ProductsAdd = () => {
         afue: afue || null,
         width_size: widthSize || null,
         stages: stages || null,
+        voltage: voltage || null,
+        refrigerant_type: refrigerantType || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
