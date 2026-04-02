@@ -2921,11 +2921,13 @@ export type Database = {
           is_published: boolean
           poise: string | null
           product_name: string
+          refrigerant_type: string | null
           spot_images: Json | null
           spot_text: string | null
           stages: string | null
           stick_count: number | null
           updated_at: string
+          voltage: string | null
           weight: number | null
           width_size: string | null
         }
@@ -2942,11 +2944,13 @@ export type Database = {
           is_published?: boolean
           poise?: string | null
           product_name: string
+          refrigerant_type?: string | null
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
           stick_count?: number | null
           updated_at?: string
+          voltage?: string | null
           weight?: number | null
           width_size?: string | null
         }
@@ -2963,11 +2967,13 @@ export type Database = {
           is_published?: boolean
           poise?: string | null
           product_name?: string
+          refrigerant_type?: string | null
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
           stick_count?: number | null
           updated_at?: string
+          voltage?: string | null
           weight?: number | null
           width_size?: string | null
         }
