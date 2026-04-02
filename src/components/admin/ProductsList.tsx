@@ -137,6 +137,8 @@ const ProductsList = () => {
       { label: "AFUE", key: "afue", options: AFUE_OPTS },
       { label: "Width", key: "width", options: WIDTH_OPTS },
       { label: "Stages", key: "stages", options: STAGES_OPTS },
+      { label: "Voltage", key: "voltage", options: VOLTAGE_OPTS },
+      { label: "Refrigerant", key: "refrigerant", options: REFRIGERANT_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ];
