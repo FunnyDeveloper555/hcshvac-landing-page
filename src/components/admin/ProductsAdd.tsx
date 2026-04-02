@@ -37,6 +37,7 @@ import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
 import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
+import ProductSuppliersTab from "@/components/admin/ProductSuppliersTab";
 
 const POISE_OPTIONS = ["Upflow", "Downflow"];
 const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
@@ -324,7 +325,8 @@ const ProductsAdd = () => {
           {isEditing && <TabsTrigger value="variants">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related">Related Products</TabsTrigger>}
           {isEditing && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
-          {isEditing && <TabsTrigger value="documents">Documents</TabsTrigger>}
+           {isEditing && <TabsTrigger value="suppliers">Suppliers</TabsTrigger>}
+           {isEditing && <TabsTrigger value="documents">Documents</TabsTrigger>}
         </TabsList>
         <TabsContent value="basic">
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
@@ -622,6 +624,13 @@ const ProductsAdd = () => {
           <TabsContent value="reviews">
             <div className="mt-4">
               <ProductReviewsTab productId={editId} />
+            </div>
+          </TabsContent>
+        )}
+        {isEditing && editId && (
+          <TabsContent value="suppliers">
+            <div className="mt-4">
+              <ProductSuppliersTab productId={editId} />
             </div>
           </TabsContent>
         )}

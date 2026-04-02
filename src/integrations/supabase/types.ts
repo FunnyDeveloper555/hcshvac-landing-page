@@ -2759,6 +2759,47 @@ export type Database = {
           },
         ]
       }
+      product_price_history: {
+        Row: {
+          change_reason: string | null
+          changed_at: string
+          changed_by: string | null
+          created_at: string
+          id: string
+          previous_price: number | null
+          price: number
+          product_supplier_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          previous_price?: number | null
+          price: number
+          product_supplier_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          previous_price?: number | null
+          price?: number
+          product_supplier_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_price_history_product_supplier_id_fkey"
+            columns: ["product_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "product_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_recommendations: {
         Row: {
           created_at: string
@@ -2847,6 +2888,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_suppliers: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          notes: string | null
+          our_price: number | null
+          product_id: string
+          supplier_location: string | null
+          supplier_name: string
+          updated_at: string
+          vendor_id_code: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          our_price?: number | null
+          product_id: string
+          supplier_location?: string | null
+          supplier_name?: string
+          updated_at?: string
+          vendor_id_code?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          our_price?: number | null
+          product_id?: string
+          supplier_location?: string | null
+          supplier_name?: string
+          updated_at?: string
+          vendor_id_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_suppliers_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
