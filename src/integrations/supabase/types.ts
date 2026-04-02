@@ -3005,6 +3005,7 @@ export type Database = {
           alternative_product_url: string | null
           brand_id: string | null
           brand_name: string | null
+          bullet_points: string[] | null
           category: string | null
           category_id: string | null
           company_id: string | null
@@ -3019,11 +3020,13 @@ export type Database = {
           is_part: boolean | null
           is_promo_active: boolean
           is_repair_eligible: boolean
+          labor_warranty: string | null
           length_depth: string | null
           model_number: string | null
           part_category: string | null
           part_location_type: string | null
           part_subcategory: string | null
+          parts_warranty: string | null
           poise: string | null
           product_name: string
           promo_description: string | null
@@ -3051,6 +3054,7 @@ export type Database = {
           alternative_product_url?: string | null
           brand_id?: string | null
           brand_name?: string | null
+          bullet_points?: string[] | null
           category?: string | null
           category_id?: string | null
           company_id?: string | null
@@ -3065,11 +3069,13 @@ export type Database = {
           is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
+          labor_warranty?: string | null
           length_depth?: string | null
           model_number?: string | null
           part_category?: string | null
           part_location_type?: string | null
           part_subcategory?: string | null
+          parts_warranty?: string | null
           poise?: string | null
           product_name: string
           promo_description?: string | null
@@ -3097,6 +3103,7 @@ export type Database = {
           alternative_product_url?: string | null
           brand_id?: string | null
           brand_name?: string | null
+          bullet_points?: string[] | null
           category?: string | null
           category_id?: string | null
           company_id?: string | null
@@ -3111,11 +3118,13 @@ export type Database = {
           is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
+          labor_warranty?: string | null
           length_depth?: string | null
           model_number?: string | null
           part_category?: string | null
           part_location_type?: string | null
           part_subcategory?: string | null
+          parts_warranty?: string | null
           poise?: string | null
           product_name?: string
           promo_description?: string | null
