@@ -238,9 +238,7 @@ const Admin = () => {
               <Route path="/email-lists/add" element={<EmailListForm />} />
               <Route path="/email-lists/edit" element={<EmailListForm />} />
               <Route path="/email-templates" element={<EmailTemplatesList />} />
-              <Route path="/products/add" element={<ProductsAdd />} />
-              <Route path="/products/list" element={<ProductsList />} />
-              <Route path="/products/categories" element={<ProductCategoriesAdmin />} />
+              <Route path="/products/*" element={<ProductsAdmin />} />
               <Route path="/contents/add" element={<ContentAdd />} />
               <Route path="/contents/list" element={<ContentList />} />
               <Route path="/contents/preview" element={<ContentPreview />} />
