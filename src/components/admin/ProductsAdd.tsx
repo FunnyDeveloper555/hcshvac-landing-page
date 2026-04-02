@@ -108,6 +108,9 @@ const ProductsAdd = () => {
   const [refrigerantType, setRefrigerantType] = useState("");
   const [tonsBtu, setTonsBtu] = useState("");
   const [seerRating, setSeerRating] = useState("");
+  const [modelNumber, setModelNumber] = useState("");
+  const [height, setHeight] = useState("");
+  const [lengthDepth, setLengthDepth] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
