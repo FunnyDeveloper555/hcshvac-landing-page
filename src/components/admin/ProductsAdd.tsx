@@ -497,6 +497,34 @@ const ProductsAdd = () => {
               </div>
             </div>
 
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Tons / BTU</Label>
+                <Select value={tonsBtu || "placeholder"} onValueChange={(val) => setTonsBtu(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select tons/BTU" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select tons/BTU</SelectItem>
+                    {TONS_BTU_OPTIONS.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>SEER Rating</Label>
+                <Select value={seerRating || "placeholder"} onValueChange={(val) => setSeerRating(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select SEER rating" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select SEER rating</SelectItem>
+                    {SEER_RATING_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3">
               <Label>Published</Label>
               <Switch checked={isPublished} onCheckedChange={setIsPublished} />
