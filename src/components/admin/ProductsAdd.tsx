@@ -279,7 +279,7 @@ const ProductsAdd = () => {
         </TabsList>
         <TabsContent value="basic">
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Company *</Label>
                 <Select value={companyId} onValueChange={setCompanyId}>
