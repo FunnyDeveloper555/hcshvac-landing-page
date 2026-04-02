@@ -73,14 +73,13 @@ import DomainSettings from "@/components/admin/pagebuilder/DomainSettings";
 import EmailListsList from "@/components/admin/emaillist/EmailListsList";
 import EmailListForm from "@/components/admin/emaillist/EmailListForm";
 import EmailTemplatesList from "@/components/admin/emaillist/EmailTemplatesList";
-import ProductsAdd from "@/components/admin/ProductsAdd";
-import ProductsList from "@/components/admin/ProductsList";
+import ProductsAdmin from "@/components/admin/ProductsAdmin";
 import ContentAdd from "@/components/admin/ContentAdd";
 import ContentList from "@/components/admin/ContentList";
 import ContentPreview from "@/components/admin/ContentPreview";
 import GalleryAdd from "@/components/admin/GalleryAdd";
 import GalleryList from "@/components/admin/GalleryList";
-import ProductCategoriesAdmin from "@/components/admin/ProductCategoriesAdmin";
+
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
@@ -239,9 +238,7 @@ const Admin = () => {
               <Route path="/email-lists/add" element={<EmailListForm />} />
               <Route path="/email-lists/edit" element={<EmailListForm />} />
               <Route path="/email-templates" element={<EmailTemplatesList />} />
-              <Route path="/products/add" element={<ProductsAdd />} />
-              <Route path="/products/list" element={<ProductsList />} />
-              <Route path="/products/categories" element={<ProductCategoriesAdmin />} />
+              <Route path="/products/*" element={<ProductsAdmin />} />
               <Route path="/contents/add" element={<ContentAdd />} />
               <Route path="/contents/list" element={<ContentList />} />
               <Route path="/contents/preview" element={<ContentPreview />} />
