@@ -126,6 +126,8 @@ const ProductsList = () => {
     const AFUE_OPTS = ["80%", "92%", "95%", "96%", "97%", "98%"].map((v) => ({ value: v, count: afueMap.get(v) || 0 }));
     const WIDTH_OPTS = ['14.5"', '17.5"', '21"', '24.5"'].map((v) => ({ value: v, count: widthMap.get(v) || 0 }));
     const STAGES_OPTS = ["Single Stage", "Two Stage", "Two Stage Variable"].map((v) => ({ value: v, count: stagesMap.get(v) || 0 }));
+    const VOLTAGE_OPTS = ["120V", "208V", "230V", "240V", "277V", "440V"].map((v) => ({ value: v, count: voltageMap.get(v) || 0 }));
+    const REFRIGERANT_OPTS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"].map((v) => ({ value: v, count: refrigerantMap.get(v) || 0 }));
     const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
 
     return [
