@@ -231,6 +231,7 @@ const ProductsList = () => {
         let valA: any, valB: any;
         switch (sortField) {
           case "product_name": valA = a.product_name?.toLowerCase() ?? ""; valB = b.product_name?.toLowerCase() ?? ""; break;
+          case "model_number": valA = (a as any).model_number?.toLowerCase() ?? ""; valB = (b as any).model_number?.toLowerCase() ?? ""; break;
           case "category": valA = a.category?.toLowerCase() ?? ""; valB = b.category?.toLowerCase() ?? ""; break;
           case "company": valA = (a.companies as any)?.name?.toLowerCase() ?? ""; valB = (b.companies as any)?.name?.toLowerCase() ?? ""; break;
           case "brand": valA = (a as any).brand_name?.toLowerCase() ?? ""; valB = (b as any).brand_name?.toLowerCase() ?? ""; break;
