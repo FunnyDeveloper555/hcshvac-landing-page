@@ -25,7 +25,7 @@ const ProductDetail = () => {
         .from("products")
         .select("*, brands(name), companies(name)")
         .eq("id", id!)
-        .eq("is_published", true)
+        .in("status", ["active_showing", "discontinued_showing"] as any)
         .single();
       if (error) throw error;
       return data;
