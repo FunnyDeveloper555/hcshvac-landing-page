@@ -293,30 +293,47 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Main Category *</Label>
-                <Select value={mainCategory || "placeholder"} onValueChange={(val) => { setMainCategory(val === "placeholder" ? "" : val); setSubCategory(""); }}>
-                  <SelectTrigger><SelectValue placeholder="Select main category" /></SelectTrigger>
+                <Label>Equipment Type *</Label>
+                <Select value={categoryLevel0 || "placeholder"} onValueChange={(val) => { setCategoryLevel0(val === "placeholder" ? "" : val); setCategoryLevel1(""); setCategoryLevel2(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Select equipment type" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select main category</SelectItem>
-                    {MAIN_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem value="placeholder" disabled className="hidden">Select equipment type</SelectItem>
+                    {level0Categories.map((cat: any) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Sub Category *</Label>
-                <Select value={subCategory || "placeholder"} onValueChange={(val) => setSubCategory(val === "placeholder" ? "" : val)} disabled={!mainCategory}>
-                  <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
-                    {SUB_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {level1Categories.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select value={categoryLevel1 || "placeholder"} onValueChange={(val) => { setCategoryLevel1(val === "placeholder" ? "" : val); setCategoryLevel2(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder" disabled className="hidden">Select category</SelectItem>
+                      {level1Categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {level2Categories.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Sub Category</Label>
+                  <Select value={categoryLevel2 || "placeholder"} onValueChange={(val) => setCategoryLevel2(val === "placeholder" ? "" : val)}>
+                    <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
+                      {level2Categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
