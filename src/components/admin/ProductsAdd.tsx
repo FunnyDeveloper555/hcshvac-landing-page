@@ -246,6 +246,16 @@ const ProductsAdd = () => {
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setProductStatus((data as any).status || "active_not_showing");
       setSpotImages((data.spot_images as string[]) || []);
+      // Promotional
+      setPromoTitle((data as any).promo_title || "");
+      setPromoDescription((data as any).promo_description || "");
+      setPromoImageUrl((data as any).promo_image_url || "");
+      setPromoStartDate((data as any).promo_start_date ? (data as any).promo_start_date.slice(0, 10) : "");
+      setPromoEndDate((data as any).promo_end_date ? (data as any).promo_end_date.slice(0, 10) : "");
+      setIsPromoActive((data as any).is_promo_active || false);
+      // Repair
+      setIsRepairEligible((data as any).is_repair_eligible || false);
+      setRepairTags((data as any).repair_tags || []);
     }
     setLoading(false);
   };
