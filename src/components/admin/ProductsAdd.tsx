@@ -458,6 +458,32 @@ const ProductsAdd = () => {
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
+                <Label>Voltage</Label>
+                <Select value={voltage || "placeholder"} onValueChange={(val) => setVoltage(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select voltage" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select voltage</SelectItem>
+                    {VOLTAGE_OPTIONS.map((v) => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Refrigerant Type</Label>
+                <Select value={refrigerantType || "placeholder"} onValueChange={(val) => setRefrigerantType(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select refrigerant" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select refrigerant</SelectItem>
+                    {REFRIGERANT_OPTIONS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label>Stick Count</Label>
                 <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />
               </div>
