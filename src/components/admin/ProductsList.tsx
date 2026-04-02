@@ -225,6 +225,8 @@ const ProductsList = () => {
           case "poise": valA = (a as any).poise?.toLowerCase() ?? ""; valB = (b as any).poise?.toLowerCase() ?? ""; break;
           case "afue": valA = (a as any).afue ?? ""; valB = (b as any).afue ?? ""; break;
           case "stages": valA = (a as any).stages?.toLowerCase() ?? ""; valB = (b as any).stages?.toLowerCase() ?? ""; break;
+          case "voltage": valA = (a as any).voltage?.toLowerCase() ?? ""; valB = (b as any).voltage?.toLowerCase() ?? ""; break;
+          case "refrigerant": valA = (a as any).refrigerant_type?.toLowerCase() ?? ""; valB = (b as any).refrigerant_type?.toLowerCase() ?? ""; break;
           case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
