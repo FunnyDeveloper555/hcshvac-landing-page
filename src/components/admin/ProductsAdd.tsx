@@ -325,7 +325,8 @@ const ProductsAdd = () => {
           {isEditing && <TabsTrigger value="variants">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related">Related Products</TabsTrigger>}
           {isEditing && <TabsTrigger value="reviews">Reviews</TabsTrigger>}
-          {isEditing && <TabsTrigger value="documents">Documents</TabsTrigger>}
+           {isEditing && <TabsTrigger value="suppliers">Suppliers</TabsTrigger>}
+           {isEditing && <TabsTrigger value="documents">Documents</TabsTrigger>}
         </TabsList>
         <TabsContent value="basic">
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
