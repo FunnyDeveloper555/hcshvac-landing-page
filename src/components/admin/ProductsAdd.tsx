@@ -113,7 +113,7 @@ const ProductsAdd = () => {
   const [lengthDepth, setLengthDepth] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
-  const [isPublished, setIsPublished] = useState(false);
+  const [productStatus, setProductStatus] = useState<string>("active_not_showing");
   const [spotImages, setSpotImages] = useState<string[]>([]);
 
   const sensors = useSensors(
