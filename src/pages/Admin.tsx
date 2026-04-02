@@ -79,7 +79,7 @@ import ContentList from "@/components/admin/ContentList";
 import ContentPreview from "@/components/admin/ContentPreview";
 import GalleryAdd from "@/components/admin/GalleryAdd";
 import GalleryList from "@/components/admin/GalleryList";
-import ProductCategoriesAdmin from "@/components/admin/ProductCategoriesAdmin";
+
 
 const Admin = () => {
   const { user, hasAdminAccess, loading, signOut } = useAuth();
