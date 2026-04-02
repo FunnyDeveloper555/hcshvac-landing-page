@@ -386,8 +386,19 @@ const ProductsAdd = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Product Name *</Label>
+              <Label>Model Number / Family Prefix</Label>
+              <Input placeholder="e.g.DERA-060JA" value={modelNumber} onChange={(e) => setModelNumber(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Product Name *</Label>
+                <Button type="button" size="sm" variant="outline" onClick={handleAutoGenerate}>
+                  Auto-Generate Name
+                </Button>
+              </div>
               <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
+              <p className="text-xs text-muted-foreground">Pattern: {"{Brand} {Model} {Res/Com} {Tons} {Refrigerant} {SEER} {Equipment Type}"}</p>
             </div>
 
             <div className="space-y-2">
