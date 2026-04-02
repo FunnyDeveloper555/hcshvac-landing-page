@@ -246,7 +246,7 @@ const ProductsList = () => {
           case "refrigerant": valA = (a as any).refrigerant_type?.toLowerCase() ?? ""; valB = (b as any).refrigerant_type?.toLowerCase() ?? ""; break;
           case "tons_btu": valA = (a as any).tons_btu?.toLowerCase() ?? ""; valB = (b as any).tons_btu?.toLowerCase() ?? ""; break;
           case "seer_rating": valA = (a as any).seer_rating?.toLowerCase() ?? ""; valB = (b as any).seer_rating?.toLowerCase() ?? ""; break;
-          case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
+          case "status": valA = (a as any).status ?? ""; valB = (b as any).status ?? ""; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
         if (valA > valB) return sortDirection === "asc" ? 1 : -1;
