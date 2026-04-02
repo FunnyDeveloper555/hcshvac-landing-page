@@ -2917,8 +2917,11 @@ export type Database = {
           company_id: string | null
           created_at: string
           display_order: number | null
+          height: string | null
           id: string
           is_published: boolean
+          length_depth: string | null
+          model_number: string | null
           poise: string | null
           product_name: string
           refrigerant_type: string | null
@@ -2942,8 +2945,11 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           display_order?: number | null
+          height?: string | null
           id?: string
           is_published?: boolean
+          length_depth?: string | null
+          model_number?: string | null
           poise?: string | null
           product_name: string
           refrigerant_type?: string | null
@@ -2967,8 +2973,11 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           display_order?: number | null
+          height?: string | null
           id?: string
           is_published?: boolean
+          length_depth?: string | null
+          model_number?: string | null
           poise?: string | null
           product_name?: string
           refrigerant_type?: string | null
