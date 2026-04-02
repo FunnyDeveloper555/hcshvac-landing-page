@@ -189,6 +189,8 @@ const ProductsAdd = () => {
       setAfue((data as any).afue || "");
       setWidthSize((data as any).width_size || "");
       setStages((data as any).stages || "");
+      setVoltage((data as any).voltage || "");
+      setRefrigerantType((data as any).refrigerant_type || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
