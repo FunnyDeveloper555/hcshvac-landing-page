@@ -31,7 +31,8 @@ type EntityType =
   | "email_list"
   | "content"
   | "content_metadata"
-  | "gallery";
+  | "gallery"
+  | "product_category";
 
 type ActionType = 
   | "create" 

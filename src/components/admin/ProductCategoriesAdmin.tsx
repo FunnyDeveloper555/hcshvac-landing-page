@@ -70,7 +70,7 @@ const ProductCategoriesAdmin = () => {
       } else {
         const { error } = await supabase
           .from("product_categories")
-          .insert({ name: payload.name, parent_id: payload.parent_id, display_order: payload.display_order, is_active: payload.is_active, level });
+          .insert({ name: payload.name, parent_id: payload.parent_id, display_order: payload.display_order, is_active: payload.is_active, level, slug: payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') } as any);
         if (error) throw error;
         logAction("create", "product_category", undefined, { name: payload.name });
       }
