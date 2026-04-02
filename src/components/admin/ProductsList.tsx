@@ -384,6 +384,8 @@ const ProductsList = () => {
                   <SortableHead field="poise">Poise</SortableHead>
                   <SortableHead field="afue">AFUE</SortableHead>
                   <SortableHead field="stages">Stages</SortableHead>
+                  <SortableHead field="voltage">Voltage</SortableHead>
+                  <SortableHead field="refrigerant">Refrigerant</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
