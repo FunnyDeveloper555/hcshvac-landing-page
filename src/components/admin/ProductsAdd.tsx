@@ -129,6 +129,14 @@ const ProductsAdd = () => {
   // Repair tags
   const [isRepairEligible, setIsRepairEligible] = useState(false);
   const [repairTags, setRepairTags] = useState<string[]>([]);
+
+  // Banner/Description Statements
+  const [installedBannerText, setInstalledBannerText] = useState("");
+  const [installedDescription, setInstalledDescription] = useState("");
+  const [discontinuedBannerText, setDiscontinuedBannerText] = useState("");
+  const [discontinuedDescription, setDiscontinuedDescription] = useState("");
+  const [alternativeProductStatement, setAlternativeProductStatement] = useState("");
+  const [alternativeProductUrl, setAlternativeProductUrl] = useState("");
   const [newRepairTag, setNewRepairTag] = useState("");
 
   const sensors = useSensors(
