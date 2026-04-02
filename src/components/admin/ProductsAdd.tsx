@@ -156,6 +156,30 @@ const ProductsAdd = () => {
   const level1Categories = allCategories.filter((c: any) => c.level === 1 && c.parent_id === categoryLevel0);
   const level2Categories = allCategories.filter((c: any) => c.level === 2 && c.parent_id === categoryLevel1);
 
+  // Auto-generate product name: {Brand} {Model} {Res/Com} {Tons} {Refrigerant} {SEER} {Equipment Type}
+  const generateAutoName = () => {
+    const resComLabel = (() => {
+      const cat0 = allCategories.find((c: any) => c.id === categoryLevel0);
+      if (!cat0) return "";
+      const name = cat0.name?.toLowerCase() || "";
+      if (name.includes("residential")) return "Residential";
+      if (name.includes("commercial")) return "Commercial";
+      return "";
+    })();
+    const equipType = (() => {
+      const catId = categoryLevel2 || categoryLevel1;
+      const cat = allCategories.find((c: any) => c.id === catId);
+      return cat?.name || "";
+    })();
+    const parts = [brandName, modelNumber, resComLabel, tonsBtu, refrigerantType, seerRating, equipType].filter(Boolean);
+    return parts.join(" ");
+  };
+
+  const handleAutoGenerate = () => {
+    const autoName = generateAutoName();
+    if (autoName.trim()) setProductName(autoName);
+  };
+
   useEffect(() => {
     if (editId && allCategories.length > 0) fetchProduct();
   }, [editId, allCategories]);
