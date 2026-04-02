@@ -517,6 +517,7 @@ const ProductsAdd = () => {
                 <Label>Length / Depth</Label>
                 <Input placeholder='e.g. 28"' value={lengthDepth} onChange={(e) => setLengthDepth(e.target.value)} />
               </div>
+            </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
