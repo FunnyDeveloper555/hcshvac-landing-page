@@ -49,7 +49,7 @@ const ProductDetail = () => {
       const { data, error } = await supabase
         .from("products")
         .select("*, brands(name)")
-        .eq("is_published", true)
+        .in("status", ["active_showing", "discontinued_showing"] as any)
         .neq("id", id!)
         .limit(3);
       if (error) throw error;

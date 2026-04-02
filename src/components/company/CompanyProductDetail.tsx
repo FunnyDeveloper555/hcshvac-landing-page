@@ -54,7 +54,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
       const query = supabase
         .from("products")
         .select("*, brands(name)")
-        .eq("is_published", true)
+        .in("status", ["active_showing", "discontinued_showing"] as any)
         .neq("id", productId)
         .limit(3);
       if (companyId) query.eq("company_id", companyId);

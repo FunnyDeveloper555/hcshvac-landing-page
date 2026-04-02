@@ -580,9 +580,17 @@ const ProductsAdd = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Label>Published</Label>
-              <Switch checked={isPublished} onCheckedChange={setIsPublished} />
+            <div className="space-y-2">
+              <Label>Product Status</Label>
+              <Select value={productStatus} onValueChange={setProductStatus}>
+                <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active_showing">Active (Showing)</SelectItem>
+                  <SelectItem value="active_not_showing">Active (Not Showing)</SelectItem>
+                  <SelectItem value="discontinued_showing">Discontinued (Showing)</SelectItem>
+                  <SelectItem value="deactivated">Deactivated (Not Showing)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2">

@@ -435,9 +435,12 @@ const ProductsList = () => {
                     <TableCell>{(product as any).tons_btu || "—"}</TableCell>
                     <TableCell>{(product as any).seer_rating || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant={product.is_published ? "default" : "secondary"}>
-                        {product.is_published ? "Published" : "Draft"}
-                      </Badge>
+                      {(() => {
+                        const s = (product as any).status;
+                        const label = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[s] || s;
+                        const variant = s === "active_showing" ? "default" : s === "discontinued_showing" ? "outline" : "secondary";
+                        return <Badge variant={variant as any}>{label}</Badge>;
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
