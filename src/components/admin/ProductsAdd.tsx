@@ -628,6 +628,13 @@ const ProductsAdd = () => {
           </TabsContent>
         )}
         {isEditing && editId && (
+          <TabsContent value="suppliers">
+            <div className="mt-4">
+              <ProductSuppliersTab productId={editId} />
+            </div>
+          </TabsContent>
+        )}
+        {isEditing && editId && (
           <TabsContent value="documents">
             <div className="mt-4">
               <ProductDocumentsTab productId={editId} />
