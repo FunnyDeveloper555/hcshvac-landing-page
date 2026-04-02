@@ -102,6 +102,8 @@ const ProductsAdd = () => {
   const [afue, setAfue] = useState("");
   const [widthSize, setWidthSize] = useState("");
   const [stages, setStages] = useState("");
+  const [voltage, setVoltage] = useState("");
+  const [refrigerantType, setRefrigerantType] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
