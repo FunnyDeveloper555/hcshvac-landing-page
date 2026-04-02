@@ -400,19 +400,14 @@ const ProductsAdd = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Product" : "Add New Product"}</h2>
-      <Tabs defaultValue="properties">
-        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
-          <TabsTrigger value="properties" className="flex-1">Properties</TabsTrigger>
-          <TabsTrigger value="summary" className="flex-1">Summary</TabsTrigger>
-          {isEditing && <TabsTrigger value="history" className="flex-1">History</TabsTrigger>}
-          <TabsTrigger value="repair-tags" className="flex-1">Repair Tags</TabsTrigger>
-          <TabsTrigger value="inventory" className="flex-1">Inventory</TabsTrigger>
-          <TabsTrigger value="promotionals" className="flex-1">Promotional's</TabsTrigger>
-          {isEditing && <TabsTrigger value="documents" className="flex-1">Product PDF's</TabsTrigger>}
-          {isEditing && <TabsTrigger value="suppliers" className="flex-1">Financing Vendors</TabsTrigger>}
-          {isEditing && <TabsTrigger value="variants" className="flex-1">Variants/SKUs</TabsTrigger>}
-          {isEditing && <TabsTrigger value="related" className="flex-1">Related Products</TabsTrigger>}
-          {isEditing && <TabsTrigger value="reviews" className="flex-1">Reviews</TabsTrigger>}
+      <Tabs defaultValue="basic-info">
+        <TabsList className="w-full justify-start h-auto gap-0 bg-transparent border-b rounded-none p-0">
+          <TabsTrigger value="basic-info" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Basic Information</TabsTrigger>
+          {isEditing && <TabsTrigger value="variants" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Variants/SKUs</TabsTrigger>}
+          {isEditing && <TabsTrigger value="related" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Related Products</TabsTrigger>}
+          {isEditing && <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Reviews</TabsTrigger>}
+          {isEditing && <TabsTrigger value="suppliers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Suppliers</TabsTrigger>}
+          {isEditing && <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-2">Documents</TabsTrigger>}
         </TabsList>
 
         {/* ===== PROPERTIES TAB ===== */}
