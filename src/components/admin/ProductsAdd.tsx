@@ -272,7 +272,7 @@ const ProductsAdd = () => {
         length_depth: lengthDepth || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
-        is_published: isPublished,
+        status: productStatus,
       };
 
       if (isEditing) {
