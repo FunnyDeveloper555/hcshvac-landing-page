@@ -149,6 +149,16 @@ const CompanyProductsList = ({ companyId, onProductClick }: CompanyProductsListP
       });
     }
 
+    const partCats = selectedFilters.part_category || [];
+    if (partCats.length > 0) {
+      list = list.filter((p) => partCats.includes((p as any).part_category || ""));
+    }
+
+    const locTypes = selectedFilters.location_type || [];
+    if (locTypes.length > 0) {
+      list = list.filter((p) => locTypes.includes((p as any).part_location_type || ""));
+    }
+
     // Sort
     switch (sortBy) {
       case "name_asc":
