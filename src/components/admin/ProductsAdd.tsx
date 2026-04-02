@@ -298,6 +298,14 @@ const ProductsAdd = () => {
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         status: productStatus,
+        promo_title: promoTitle || "",
+        promo_description: promoDescription || "",
+        promo_image_url: promoImageUrl || "",
+        promo_start_date: promoStartDate || null,
+        promo_end_date: promoEndDate || null,
+        is_promo_active: isPromoActive,
+        is_repair_eligible: isRepairEligible,
+        repair_tags: repairTags,
       };
 
       if (isEditing) {
