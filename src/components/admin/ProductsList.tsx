@@ -107,8 +107,9 @@ const ProductsList = () => {
       if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
       if ((p as any).tons_btu) tonsBtuMap.set((p as any).tons_btu, (tonsBtuMap.get((p as any).tons_btu) || 0) + 1);
       if ((p as any).seer_rating) seerMap.set((p as any).seer_rating, (seerMap.get((p as any).seer_rating) || 0) + 1);
-      const st = p.is_published ? "Published" : "Draft";
-      statusMap.set(st, (statusMap.get(st) || 0) + 1);
+      const st = (p as any).status || "active_not_showing";
+      const statusLabel = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[st] || st;
+      statusMap.set(statusLabel, (statusMap.get(statusLabel) || 0) + 1);
     });
 
     const toOpts = (m: Map<string, number>) =>
