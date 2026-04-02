@@ -130,6 +130,12 @@ const ProductsAdd = () => {
   const [isRepairEligible, setIsRepairEligible] = useState(false);
   const [repairTags, setRepairTags] = useState<string[]>([]);
 
+  // Parts Replacement
+  const [isPart, setIsPart] = useState(false);
+  const [partCategory, setPartCategory] = useState("");
+  const [partSubcategory, setPartSubcategory] = useState("");
+  const [partLocationType, setPartLocationType] = useState("");
+
   // Banner/Description Statements
   const [installedBannerText, setInstalledBannerText] = useState("");
   const [installedDescription, setInstalledDescription] = useState("");
