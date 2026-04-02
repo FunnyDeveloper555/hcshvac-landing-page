@@ -157,15 +157,25 @@ const ProductsAdd = () => {
       navigate("/admin/products/list");
     } else if (data) {
       setCompanyId(data.company_id || "");
-      // Parse "Main - Sub" format
-      const cat = data.category || "";
-      const dashIdx = cat.indexOf(" - ");
-      if (dashIdx > -1) {
-        setMainCategory(cat.substring(0, dashIdx));
-        setSubCategory(cat.substring(dashIdx + 3));
-      } else {
-        setMainCategory(cat);
-        setSubCategory("");
+      // Resolve category hierarchy from category_id
+      const catId = (data as any).category_id || "";
+      if (catId && allCategories.length > 0) {
+        const cat = allCategories.find((c: any) => c.id === catId);
+        if (cat) {
+          if (cat.level === 2) {
+            setCategoryLevel2(cat.id);
+            const parent1 = allCategories.find((c: any) => c.id === cat.parent_id);
+            if (parent1) {
+              setCategoryLevel1(parent1.id);
+              setCategoryLevel0(parent1.parent_id || "");
+            }
+          } else if (cat.level === 1) {
+            setCategoryLevel1(cat.id);
+            setCategoryLevel0(cat.parent_id || "");
+          } else {
+            setCategoryLevel0(cat.id);
+          }
+        }
       }
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
