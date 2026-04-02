@@ -105,6 +105,8 @@ const ProductsList = () => {
       if (p.stages) stagesMap.set(p.stages, (stagesMap.get(p.stages) || 0) + 1);
       if ((p as any).voltage) voltageMap.set((p as any).voltage, (voltageMap.get((p as any).voltage) || 0) + 1);
       if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
+      if ((p as any).tons_btu) tonsBtuMap.set((p as any).tons_btu, (tonsBtuMap.get((p as any).tons_btu) || 0) + 1);
+      if ((p as any).seer_rating) seerMap.set((p as any).seer_rating, (seerMap.get((p as any).seer_rating) || 0) + 1);
       const st = p.is_published ? "Published" : "Draft";
       statusMap.set(st, (statusMap.get(st) || 0) + 1);
     });
