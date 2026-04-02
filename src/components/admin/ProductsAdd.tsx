@@ -264,6 +264,13 @@ const ProductsAdd = () => {
       // Repair
       setIsRepairEligible((data as any).is_repair_eligible || false);
       setRepairTags((data as any).repair_tags || []);
+      // Banner/Description
+      setInstalledBannerText((data as any).installed_banner_text || "");
+      setInstalledDescription((data as any).installed_description || "");
+      setDiscontinuedBannerText((data as any).discontinued_banner_text || "");
+      setDiscontinuedDescription((data as any).discontinued_description || "");
+      setAlternativeProductStatement((data as any).alternative_product_statement || "");
+      setAlternativeProductUrl((data as any).alternative_product_url || "");
     }
     setLoading(false);
   };
