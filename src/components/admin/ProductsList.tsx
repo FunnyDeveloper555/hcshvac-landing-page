@@ -219,6 +219,10 @@ const ProductsList = () => {
     if (voltages.length) filtered = filtered.filter((p: any) => voltages.includes(p.voltage || ""));
     const refrigerants = selectedFilters.refrigerant || [];
     if (refrigerants.length) filtered = filtered.filter((p: any) => refrigerants.includes(p.refrigerant_type || ""));
+    const tonsBtuF = selectedFilters.tons_btu || [];
+    if (tonsBtuF.length) filtered = filtered.filter((p: any) => tonsBtuF.includes(p.tons_btu || ""));
+    const seerF = selectedFilters.seer_rating || [];
+    if (seerF.length) filtered = filtered.filter((p: any) => seerF.includes(p.seer_rating || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
