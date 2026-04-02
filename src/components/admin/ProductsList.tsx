@@ -393,6 +393,7 @@ const ProductsList = () => {
                 <TableRow>
                   <TableHead className="w-[60px]">Image</TableHead>
                   <SortableHead field="product_name">Product Name</SortableHead>
+                  <SortableHead field="model_number">Model #</SortableHead>
                   <SortableHead field="category">Category</SortableHead>
                   <SortableHead field="company">Company</SortableHead>
                   <SortableHead field="brand">Brand</SortableHead>
