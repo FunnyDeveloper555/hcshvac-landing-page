@@ -128,6 +128,23 @@ const ProductsAdd = () => {
     },
   });
 
+  const { data: allCategories = [] } = useQuery({
+    queryKey: ["product-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_categories")
+        .select("id, parent_id, name, level, display_order")
+        .eq("is_active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const level0Categories = allCategories.filter((c: any) => c.level === 0);
+  const level1Categories = allCategories.filter((c: any) => c.level === 1 && c.parent_id === categoryLevel0);
+  const level2Categories = allCategories.filter((c: any) => c.level === 2 && c.parent_id === categoryLevel1);
+
   useEffect(() => {
     if (editId) fetchProduct();
   }, [editId]);
