@@ -225,7 +225,10 @@ const ProductsList = () => {
     const seerF = selectedFilters.seer_rating || [];
     if (seerF.length) filtered = filtered.filter((p: any) => seerF.includes(p.seer_rating || ""));
     const statuses = selectedFilters.status || [];
-    if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
+    if (statuses.length) {
+      const statusLabelMap: Record<string, string> = { active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" };
+      filtered = filtered.filter((p: any) => statuses.includes(statusLabelMap[p.status] || p.status));
+    }
 
     if (sortField && sortDirection) {
       filtered.sort((a, b) => {
