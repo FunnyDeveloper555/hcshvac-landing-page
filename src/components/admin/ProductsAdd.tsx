@@ -797,7 +797,13 @@ const ProductsAdd = () => {
                 </div>
               )}
             </div>
+            {saveButton}
+          </div>
+        </TabsContent>
 
+        {/* ===== SUMMARY TAB ===== */}
+        <TabsContent value="summary">
+          <div className="space-y-6 mt-4">
             {/* Product Summary */}
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="text-lg font-semibold">Product Summary</h3>
@@ -839,7 +845,71 @@ const ProductsAdd = () => {
               <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} className="max-w-xs" />
             </div>
 
-            {/* Repair Tags */}
+            {saveButton}
+          </div>
+        </TabsContent>
+
+        {/* ===== HISTORY TAB ===== */}
+        {isEditing && editId && (
+          <TabsContent value="history">
+            <div className="space-y-6 mt-4">
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="text-lg font-semibold">Website Activity</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Consumer Page Visits</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Enquired on by Site Visitor</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Downloaded Listing Packet</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Other Pages/URLs Shown On</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                </div>
+              </div>
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="text-lg font-semibold">Field Activity</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Sent as Estimate</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Purchased and Installed</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Warranty Visits</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Warranty Repaired</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
+                    <span className="text-sm font-medium">Recalls</span>
+                    <span className="text-sm text-muted-foreground">—</span>
+                  </div>
+                </div>
+              </div>
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="text-lg font-semibold">Pricing History</h3>
+                <ProductSuppliersTab productId={editId} />
+              </div>
+            </div>
+          </TabsContent>
+        )}
+
+        {/* ===== REPAIR TAGS TAB ===== */}
+        <TabsContent value="repair-tags">
+          <div className="space-y-6 mt-4">
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Repair Tags</h3>
@@ -889,8 +959,26 @@ const ProductsAdd = () => {
                 </div>
               )}
             </div>
+            {saveButton}
+          </div>
+        </TabsContent>
 
-            {/* Promotional Content */}
+        {/* ===== INVENTORY TAB ===== */}
+        <TabsContent value="inventory">
+          <div className="space-y-6 mt-4">
+            <div className="border rounded-lg p-4 space-y-4">
+              <h3 className="text-lg font-semibold">Inventory</h3>
+              <p className="text-sm text-muted-foreground">Track stock levels, warehouse locations, and inventory movements for this product.</p>
+              <div className="text-center py-8 text-muted-foreground">
+                Inventory tracking coming soon. Stock levels will be managed here.
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ===== PROMOTIONAL'S TAB ===== */}
+        <TabsContent value="promotionals">
+          <div className="space-y-6 mt-4">
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Promotional Content</h3>
@@ -924,7 +1012,6 @@ const ProductsAdd = () => {
                 </div>
               </div>
             </div>
-
             {saveButton}
           </div>
         </TabsContent>
