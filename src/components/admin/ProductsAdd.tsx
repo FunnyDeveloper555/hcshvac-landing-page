@@ -321,6 +321,12 @@ const ProductsAdd = () => {
         is_promo_active: isPromoActive,
         is_repair_eligible: isRepairEligible,
         repair_tags: repairTags,
+        installed_banner_text: installedBannerText || "",
+        installed_description: installedDescription || "",
+        discontinued_banner_text: discontinuedBannerText || "",
+        discontinued_description: discontinuedDescription || "",
+        alternative_product_statement: alternativeProductStatement || "",
+        alternative_product_url: alternativeProductUrl || "",
       };
 
       if (isEditing) {
