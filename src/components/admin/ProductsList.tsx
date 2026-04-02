@@ -145,6 +145,8 @@ const ProductsList = () => {
       { label: "Stages", key: "stages", options: STAGES_OPTS },
       { label: "Voltage", key: "voltage", options: VOLTAGE_OPTS },
       { label: "Refrigerant", key: "refrigerant", options: REFRIGERANT_OPTS },
+      { label: "Tons/BTU", key: "tons_btu", options: TONS_BTU_OPTS },
+      { label: "SEER Rating", key: "seer_rating", options: SEER_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ];
