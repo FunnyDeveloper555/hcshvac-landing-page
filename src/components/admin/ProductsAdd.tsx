@@ -44,25 +44,7 @@ const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
 const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
 const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
 
-const MAIN_CATEGORIES = [
-  "HVAC Equipment Residential",
-  "HVAC Equipment Commercial",
-];
-
-const SUB_CATEGORIES = [
-  "Ac Condenser Only",
-  "Boiler (Hot Water)",
-  "Boiler (Steam)",
-  "Boiler (Tankless)",
-  "Coil (Only)",
-  "Furnace Only",
-  "Furnace and Coil",
-  "Furnace, Coil, and Condenser",
-  "Furnace, Coil, Condenser, and Water Heater",
-  "Water Heater",
-  "Tankless Water Heater",
-  "Mini Splitt",
-];
+// Hierarchical categories are now loaded from product_categories table
 
 interface SortableImageProps {
   id: string;
@@ -107,8 +89,9 @@ const ProductsAdd = () => {
   const [brandOpen, setBrandOpen] = useState(false); // keep for TS — unused now
 
   const [companyId, setCompanyId] = useState("");
-  const [mainCategory, setMainCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+  const [categoryLevel0, setCategoryLevel0] = useState("");
+  const [categoryLevel1, setCategoryLevel1] = useState("");
+  const [categoryLevel2, setCategoryLevel2] = useState("");
   const [productName, setProductName] = useState("");
   const [spotText, setSpotText] = useState("");
   const [brandId, setBrandId] = useState("");
@@ -145,9 +128,26 @@ const ProductsAdd = () => {
     },
   });
 
+  const { data: allCategories = [] } = useQuery({
+    queryKey: ["product-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_categories")
+        .select("id, parent_id, name, level, display_order")
+        .eq("is_active", true)
+        .order("display_order");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const level0Categories = allCategories.filter((c: any) => c.level === 0);
+  const level1Categories = allCategories.filter((c: any) => c.level === 1 && c.parent_id === categoryLevel0);
+  const level2Categories = allCategories.filter((c: any) => c.level === 2 && c.parent_id === categoryLevel1);
+
   useEffect(() => {
-    if (editId) fetchProduct();
-  }, [editId]);
+    if (editId && allCategories.length > 0) fetchProduct();
+  }, [editId, allCategories]);
 
   const fetchProduct = async () => {
     setLoading(true);
@@ -157,15 +157,25 @@ const ProductsAdd = () => {
       navigate("/admin/products/list");
     } else if (data) {
       setCompanyId(data.company_id || "");
-      // Parse "Main - Sub" format
-      const cat = data.category || "";
-      const dashIdx = cat.indexOf(" - ");
-      if (dashIdx > -1) {
-        setMainCategory(cat.substring(0, dashIdx));
-        setSubCategory(cat.substring(dashIdx + 3));
-      } else {
-        setMainCategory(cat);
-        setSubCategory("");
+      // Resolve category hierarchy from category_id
+      const catId = (data as any).category_id || "";
+      if (catId && allCategories.length > 0) {
+        const cat = allCategories.find((c: any) => c.id === catId);
+        if (cat) {
+          if (cat.level === 2) {
+            setCategoryLevel2(cat.id);
+            const parent1 = allCategories.find((c: any) => c.id === cat.parent_id);
+            if (parent1) {
+              setCategoryLevel1(parent1.id);
+              setCategoryLevel0(parent1.parent_id || "");
+            }
+          } else if (cat.level === 1) {
+            setCategoryLevel1(cat.id);
+            setCategoryLevel0(cat.parent_id || "");
+          } else {
+            setCategoryLevel0(cat.id);
+          }
+        }
       }
       setProductName(data.product_name);
       setSpotText(data.spot_text || "");
@@ -186,15 +196,22 @@ const ProductsAdd = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId) { toast({ title: "Error", description: "Company is required", variant: "destructive" }); return; }
-    if (!mainCategory) { toast({ title: "Error", description: "Main category is required", variant: "destructive" }); return; }
-    if (!subCategory) { toast({ title: "Error", description: "Sub category is required", variant: "destructive" }); return; }
+    if (!categoryLevel0) { toast({ title: "Error", description: "Equipment type is required", variant: "destructive" }); return; }
     if (!productName) { toast({ title: "Error", description: "Product name is required", variant: "destructive" }); return; }
+
+    // Use the deepest selected category
+    const finalCategoryId = categoryLevel2 || categoryLevel1 || categoryLevel0;
+    // Build legacy category string for backward compatibility
+    const catNames = [categoryLevel0, categoryLevel1, categoryLevel2]
+      .map(id => allCategories.find((c: any) => c.id === id)?.name)
+      .filter(Boolean);
 
     setIsSubmitting(true);
     try {
       const payload: Record<string, any> = {
         company_id: companyId || null,
-        category: `${mainCategory} - ${subCategory}`,
+        category_id: finalCategoryId || null,
+        category: catNames.join(" - "),
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
@@ -262,7 +279,7 @@ const ProductsAdd = () => {
         </TabsList>
         <TabsContent value="basic">
           <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label>Company *</Label>
                 <Select value={companyId} onValueChange={setCompanyId}>
@@ -276,30 +293,47 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Main Category *</Label>
-                <Select value={mainCategory || "placeholder"} onValueChange={(val) => { setMainCategory(val === "placeholder" ? "" : val); setSubCategory(""); }}>
-                  <SelectTrigger><SelectValue placeholder="Select main category" /></SelectTrigger>
+                <Label>Equipment Type *</Label>
+                <Select value={categoryLevel0 || "placeholder"} onValueChange={(val) => { setCategoryLevel0(val === "placeholder" ? "" : val); setCategoryLevel1(""); setCategoryLevel2(""); }}>
+                  <SelectTrigger><SelectValue placeholder="Select equipment type" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select main category</SelectItem>
-                    {MAIN_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem value="placeholder" disabled className="hidden">Select equipment type</SelectItem>
+                    {level0Categories.map((cat: any) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Sub Category *</Label>
-                <Select value={subCategory || "placeholder"} onValueChange={(val) => setSubCategory(val === "placeholder" ? "" : val)} disabled={!mainCategory}>
-                  <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
-                    {SUB_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {level1Categories.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select value={categoryLevel1 || "placeholder"} onValueChange={(val) => { setCategoryLevel1(val === "placeholder" ? "" : val); setCategoryLevel2(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder" disabled className="hidden">Select category</SelectItem>
+                      {level1Categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {level2Categories.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Sub Category</Label>
+                  <Select value={categoryLevel2 || "placeholder"} onValueChange={(val) => setCategoryLevel2(val === "placeholder" ? "" : val)}>
+                    <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
+                      {level2Categories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
