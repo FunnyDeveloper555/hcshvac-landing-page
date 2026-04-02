@@ -411,7 +411,7 @@ const ProductsAdd = () => {
         </TabsList>
 
         {/* ===== PROPERTIES TAB ===== */}
-        <TabsContent value="properties">
+        <TabsContent value="basic-info">
           <div className="space-y-6 mt-4">
             {/* Status */}
             <div className="border rounded-lg p-4 space-y-4">
