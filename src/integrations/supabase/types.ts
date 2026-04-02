@@ -3016,10 +3016,14 @@ export type Database = {
           id: string
           installed_banner_text: string | null
           installed_description: string | null
+          is_part: boolean | null
           is_promo_active: boolean
           is_repair_eligible: boolean
           length_depth: string | null
           model_number: string | null
+          part_category: string | null
+          part_location_type: string | null
+          part_subcategory: string | null
           poise: string | null
           product_name: string
           promo_description: string | null
@@ -3058,10 +3062,14 @@ export type Database = {
           id?: string
           installed_banner_text?: string | null
           installed_description?: string | null
+          is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
           length_depth?: string | null
           model_number?: string | null
+          part_category?: string | null
+          part_location_type?: string | null
+          part_subcategory?: string | null
           poise?: string | null
           product_name: string
           promo_description?: string | null
@@ -3100,10 +3108,14 @@ export type Database = {
           id?: string
           installed_banner_text?: string | null
           installed_description?: string | null
+          is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
           length_depth?: string | null
           model_number?: string | null
+          part_category?: string | null
+          part_location_type?: string | null
+          part_subcategory?: string | null
           poise?: string | null
           product_name?: string
           promo_description?: string | null
