@@ -43,6 +43,8 @@ const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
 const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
 const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
 const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
+const VOLTAGE_OPTIONS = ["120V", "208V", "230V", "240V", "277V", "440V"];
+const REFRIGERANT_OPTIONS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"];
 
 // Hierarchical categories are now loaded from product_categories table
 
@@ -100,6 +102,8 @@ const ProductsAdd = () => {
   const [afue, setAfue] = useState("");
   const [widthSize, setWidthSize] = useState("");
   const [stages, setStages] = useState("");
+  const [voltage, setVoltage] = useState("");
+  const [refrigerantType, setRefrigerantType] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
   const [isPublished, setIsPublished] = useState(false);
@@ -185,6 +189,8 @@ const ProductsAdd = () => {
       setAfue((data as any).afue || "");
       setWidthSize((data as any).width_size || "");
       setStages((data as any).stages || "");
+      setVoltage((data as any).voltage || "");
+      setRefrigerantType((data as any).refrigerant_type || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
@@ -221,6 +227,8 @@ const ProductsAdd = () => {
         afue: afue || null,
         width_size: widthSize || null,
         stages: stages || null,
+        voltage: voltage || null,
+        refrigerant_type: refrigerantType || null,
         weight: weight ? parseFloat(weight) : null,
         stick_count: stickCount ? parseInt(stickCount) : null,
         is_published: isPublished,
@@ -449,6 +457,32 @@ const ProductsAdd = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Voltage</Label>
+                <Select value={voltage || "placeholder"} onValueChange={(val) => setVoltage(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select voltage" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select voltage</SelectItem>
+                    {VOLTAGE_OPTIONS.map((v) => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Refrigerant Type</Label>
+                <Select value={refrigerantType || "placeholder"} onValueChange={(val) => setRefrigerantType(val === "placeholder" ? "" : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select refrigerant" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="placeholder" disabled className="hidden">Select refrigerant</SelectItem>
+                    {REFRIGERANT_OPTIONS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label>Stick Count</Label>
                 <Input type="number" placeholder="0" value={stickCount} onChange={(e) => setStickCount(e.target.value)} />

@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 
-type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "status";
+type SortField = "product_name" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "status";
 type SortDirection = "asc" | "desc" | null;
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -88,6 +88,8 @@ const ProductsList = () => {
     const afueMap = new Map<string, number>();
     const widthMap = new Map<string, number>();
     const stagesMap = new Map<string, number>();
+    const voltageMap = new Map<string, number>();
+    const refrigerantMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
 
     products.forEach((p: any) => {
@@ -99,6 +101,8 @@ const ProductsList = () => {
       if (p.afue) afueMap.set(p.afue, (afueMap.get(p.afue) || 0) + 1);
       if (p.width_size) widthMap.set(p.width_size, (widthMap.get(p.width_size) || 0) + 1);
       if (p.stages) stagesMap.set(p.stages, (stagesMap.get(p.stages) || 0) + 1);
+      if ((p as any).voltage) voltageMap.set((p as any).voltage, (voltageMap.get((p as any).voltage) || 0) + 1);
+      if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
       const st = p.is_published ? "Published" : "Draft";
       statusMap.set(st, (statusMap.get(st) || 0) + 1);
     });
@@ -122,6 +126,8 @@ const ProductsList = () => {
     const AFUE_OPTS = ["80%", "92%", "95%", "96%", "97%", "98%"].map((v) => ({ value: v, count: afueMap.get(v) || 0 }));
     const WIDTH_OPTS = ['14.5"', '17.5"', '21"', '24.5"'].map((v) => ({ value: v, count: widthMap.get(v) || 0 }));
     const STAGES_OPTS = ["Single Stage", "Two Stage", "Two Stage Variable"].map((v) => ({ value: v, count: stagesMap.get(v) || 0 }));
+    const VOLTAGE_OPTS = ["120V", "208V", "230V", "240V", "277V", "440V"].map((v) => ({ value: v, count: voltageMap.get(v) || 0 }));
+    const REFRIGERANT_OPTS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"].map((v) => ({ value: v, count: refrigerantMap.get(v) || 0 }));
     const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
 
     return [
@@ -131,6 +137,8 @@ const ProductsList = () => {
       { label: "AFUE", key: "afue", options: AFUE_OPTS },
       { label: "Width", key: "width", options: WIDTH_OPTS },
       { label: "Stages", key: "stages", options: STAGES_OPTS },
+      { label: "Voltage", key: "voltage", options: VOLTAGE_OPTS },
+      { label: "Refrigerant", key: "refrigerant", options: REFRIGERANT_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
     ];
@@ -199,6 +207,10 @@ const ProductsList = () => {
     if (widths.length) filtered = filtered.filter((p: any) => widths.includes(p.width_size || ""));
     const stagesF = selectedFilters.stages || [];
     if (stagesF.length) filtered = filtered.filter((p: any) => stagesF.includes(p.stages || ""));
+    const voltages = selectedFilters.voltage || [];
+    if (voltages.length) filtered = filtered.filter((p: any) => voltages.includes(p.voltage || ""));
+    const refrigerants = selectedFilters.refrigerant || [];
+    if (refrigerants.length) filtered = filtered.filter((p: any) => refrigerants.includes(p.refrigerant_type || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
@@ -213,6 +225,8 @@ const ProductsList = () => {
           case "poise": valA = (a as any).poise?.toLowerCase() ?? ""; valB = (b as any).poise?.toLowerCase() ?? ""; break;
           case "afue": valA = (a as any).afue ?? ""; valB = (b as any).afue ?? ""; break;
           case "stages": valA = (a as any).stages?.toLowerCase() ?? ""; valB = (b as any).stages?.toLowerCase() ?? ""; break;
+          case "voltage": valA = (a as any).voltage?.toLowerCase() ?? ""; valB = (b as any).voltage?.toLowerCase() ?? ""; break;
+          case "refrigerant": valA = (a as any).refrigerant_type?.toLowerCase() ?? ""; valB = (b as any).refrigerant_type?.toLowerCase() ?? ""; break;
           case "status": valA = a.is_published ? 1 : 0; valB = b.is_published ? 1 : 0; break;
         }
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
@@ -370,6 +384,8 @@ const ProductsList = () => {
                   <SortableHead field="poise">Poise</SortableHead>
                   <SortableHead field="afue">AFUE</SortableHead>
                   <SortableHead field="stages">Stages</SortableHead>
+                  <SortableHead field="voltage">Voltage</SortableHead>
+                  <SortableHead field="refrigerant">Refrigerant</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -390,7 +406,9 @@ const ProductsList = () => {
                     <TableCell>{product.brand_name || "—"}</TableCell>
                     <TableCell>{product.poise || "—"}</TableCell>
                     <TableCell>{product.afue || "—"}</TableCell>
-                    <TableCell>{product.stages || "—"}</TableCell>
+                    <TableCell>{(product as any).stages || "—"}</TableCell>
+                    <TableCell>{(product as any).voltage || "—"}</TableCell>
+                    <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={product.is_published ? "default" : "secondary"}>
                         {product.is_published ? "Published" : "Draft"}
@@ -406,7 +424,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>
