@@ -207,6 +207,10 @@ const ProductsList = () => {
     if (widths.length) filtered = filtered.filter((p: any) => widths.includes(p.width_size || ""));
     const stagesF = selectedFilters.stages || [];
     if (stagesF.length) filtered = filtered.filter((p: any) => stagesF.includes(p.stages || ""));
+    const voltages = selectedFilters.voltage || [];
+    if (voltages.length) filtered = filtered.filter((p: any) => voltages.includes(p.voltage || ""));
+    const refrigerants = selectedFilters.refrigerant || [];
+    if (refrigerants.length) filtered = filtered.filter((p: any) => refrigerants.includes(p.refrigerant_type || ""));
     const statuses = selectedFilters.status || [];
     if (statuses.length) filtered = filtered.filter((p) => statuses.includes(p.is_published ? "Published" : "Draft"));
 
