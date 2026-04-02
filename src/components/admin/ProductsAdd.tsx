@@ -37,6 +37,7 @@ import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
 import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
+import ProductSuppliersTab from "@/components/admin/ProductSuppliersTab";
 
 const POISE_OPTIONS = ["Upflow", "Downflow"];
 const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
