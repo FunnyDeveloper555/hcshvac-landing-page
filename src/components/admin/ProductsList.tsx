@@ -132,6 +132,8 @@ const ProductsList = () => {
     const STAGES_OPTS = ["Single Stage", "Two Stage", "Two Stage Variable"].map((v) => ({ value: v, count: stagesMap.get(v) || 0 }));
     const VOLTAGE_OPTS = ["120V", "208V", "230V", "240V", "277V", "440V"].map((v) => ({ value: v, count: voltageMap.get(v) || 0 }));
     const REFRIGERANT_OPTS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"].map((v) => ({ value: v, count: refrigerantMap.get(v) || 0 }));
+    const TONS_BTU_OPTS = ["1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "7.5 Ton", "10 Ton", "12.5 Ton", "15 Ton", "20 Ton"].map((v) => ({ value: v, count: tonsBtuMap.get(v) || 0 }));
+    const SEER_OPTS = ["13.2 SEER2", "14 SEER2", "14.3 SEER2", "15 SEER2", "15.2 SEER2", "16 SEER2", "17 SEER2", "18 SEER2", "19 SEER2", "20 SEER2", "21 SEER2"].map((v) => ({ value: v, count: seerMap.get(v) || 0 }));
     const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
 
     return [
