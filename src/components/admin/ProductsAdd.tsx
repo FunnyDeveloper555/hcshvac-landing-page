@@ -270,6 +270,11 @@ const ProductsAdd = () => {
       // Repair
       setIsRepairEligible((data as any).is_repair_eligible || false);
       setRepairTags((data as any).repair_tags || []);
+      // Parts
+      setIsPart((data as any).is_part || false);
+      setPartCategory((data as any).part_category || "");
+      setPartSubcategory((data as any).part_subcategory || "");
+      setPartLocationType((data as any).part_location_type || "");
       // Banner/Description
       setInstalledBannerText((data as any).installed_banner_text || "");
       setInstalledDescription((data as any).installed_description || "");
