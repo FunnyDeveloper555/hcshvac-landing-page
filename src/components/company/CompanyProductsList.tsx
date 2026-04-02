@@ -41,11 +41,17 @@ const CompanyProductsList = ({ companyId, onProductClick }: CompanyProductsListP
   const filterSections = useMemo(() => {
     const catMap = new Map<string, number>();
     const brandMap = new Map<string, number>();
+    const partCatMap = new Map<string, number>();
+    const locTypeMap = new Map<string, number>();
 
     products.forEach((p) => {
       if (p.category) catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
       const bn = (p.brands as any)?.name;
       if (bn) brandMap.set(bn, (brandMap.get(bn) || 0) + 1);
+      const pc = (p as any).part_category;
+      if (pc) partCatMap.set(pc, (partCatMap.get(pc) || 0) + 1);
+      const lt = (p as any).part_location_type;
+      if (lt) locTypeMap.set(lt, (locTypeMap.get(lt) || 0) + 1);
     });
 
     const sections = [];
@@ -63,6 +69,24 @@ const CompanyProductsList = ({ companyId, onProductClick }: CompanyProductsListP
         label: "Brand",
         key: "brand",
         options: Array.from(brandMap.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([v, c]) => ({ value: v, count: c })),
+      });
+    }
+    if (partCatMap.size > 0) {
+      sections.push({
+        label: "Part Category",
+        key: "part_category",
+        options: Array.from(partCatMap.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([v, c]) => ({ value: v, count: c })),
+      });
+    }
+    if (locTypeMap.size > 0) {
+      sections.push({
+        label: "Location Type",
+        key: "location_type",
+        options: Array.from(locTypeMap.entries())
           .sort((a, b) => b[1] - a[1])
           .map(([v, c]) => ({ value: v, count: c })),
       });
@@ -123,6 +147,16 @@ const CompanyProductsList = ({ companyId, onProductClick }: CompanyProductsListP
         const bn = (p.brands as any)?.name;
         return bn && brands.includes(bn);
       });
+    }
+
+    const partCats = selectedFilters.part_category || [];
+    if (partCats.length > 0) {
+      list = list.filter((p) => partCats.includes((p as any).part_category || ""));
+    }
+
+    const locTypes = selectedFilters.location_type || [];
+    if (locTypes.length > 0) {
+      list = list.filter((p) => locTypes.includes((p as any).part_location_type || ""));
     }
 
     // Sort

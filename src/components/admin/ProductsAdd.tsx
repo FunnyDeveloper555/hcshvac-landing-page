@@ -130,6 +130,12 @@ const ProductsAdd = () => {
   const [isRepairEligible, setIsRepairEligible] = useState(false);
   const [repairTags, setRepairTags] = useState<string[]>([]);
 
+  // Parts Replacement
+  const [isPart, setIsPart] = useState(false);
+  const [partCategory, setPartCategory] = useState("");
+  const [partSubcategory, setPartSubcategory] = useState("");
+  const [partLocationType, setPartLocationType] = useState("");
+
   // Banner/Description Statements
   const [installedBannerText, setInstalledBannerText] = useState("");
   const [installedDescription, setInstalledDescription] = useState("");
@@ -264,6 +270,11 @@ const ProductsAdd = () => {
       // Repair
       setIsRepairEligible((data as any).is_repair_eligible || false);
       setRepairTags((data as any).repair_tags || []);
+      // Parts
+      setIsPart((data as any).is_part || false);
+      setPartCategory((data as any).part_category || "");
+      setPartSubcategory((data as any).part_subcategory || "");
+      setPartLocationType((data as any).part_location_type || "");
       // Banner/Description
       setInstalledBannerText((data as any).installed_banner_text || "");
       setInstalledDescription((data as any).installed_description || "");
@@ -321,6 +332,10 @@ const ProductsAdd = () => {
         is_promo_active: isPromoActive,
         is_repair_eligible: isRepairEligible,
         repair_tags: repairTags,
+        is_part: isPart,
+        part_category: partCategory || "",
+        part_subcategory: partSubcategory || "",
+        part_location_type: partLocationType || "",
         installed_banner_text: installedBannerText || "",
         installed_description: installedDescription || "",
         discontinued_banner_text: discontinuedBannerText || "",
@@ -730,6 +745,52 @@ const ProductsAdd = () => {
                         </button>
                       </span>
                     ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Parts Replacement Category */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Parts Replacement</h3>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="is-part" className="text-sm">Is a Part</Label>
+                  <Switch id="is-part" checked={isPart} onCheckedChange={setIsPart} />
+                </div>
+              </div>
+              {isPart && (
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Part Category</Label>
+                    <Select value={partCategory} onValueChange={setPartCategory}>
+                      <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Condenser">Condenser</SelectItem>
+                        <SelectItem value="Coil">Coil</SelectItem>
+                        <SelectItem value="Furnace">Furnace</SelectItem>
+                        <SelectItem value="Boiler">Boiler</SelectItem>
+                        <SelectItem value="Heat Pump">Heat Pump</SelectItem>
+                        <SelectItem value="Air Handler">Air Handler</SelectItem>
+                        <SelectItem value="Thermostat">Thermostat</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Part Subcategory</Label>
+                    <Input placeholder="e.g. Evaporator Coil" value={partSubcategory} onChange={(e) => setPartSubcategory(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Location Type</Label>
+                    <Select value={partLocationType} onValueChange={setPartLocationType}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Residential">Residential</SelectItem>
+                        <SelectItem value="Commercial">Commercial</SelectItem>
+                        <SelectItem value="Both">Both</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               )}
