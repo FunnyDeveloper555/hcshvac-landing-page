@@ -195,6 +195,8 @@ const ProductsAdd = () => {
       setStages((data as any).stages || "");
       setVoltage((data as any).voltage || "");
       setRefrigerantType((data as any).refrigerant_type || "");
+      setTonsBtu((data as any).tons_btu || "");
+      setSeerRating((data as any).seer_rating || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
       setIsPublished(data.is_published ?? false);
