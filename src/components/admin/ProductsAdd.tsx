@@ -503,10 +503,20 @@ const ProductsAdd = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Weight</Label>
+                <Label>Weight (lbs)</Label>
                 <Input type="number" step="0.01" placeholder="0.00" value={weight} onChange={(e) => setWeight(e.target.value)} />
               </div>
             </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Height</Label>
+                <Input placeholder='e.g. 34"' value={height} onChange={(e) => setHeight(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Length / Depth</Label>
+                <Input placeholder='e.g. 28"' value={lengthDepth} onChange={(e) => setLengthDepth(e.target.value)} />
+              </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
