@@ -229,7 +229,7 @@ const ProductsAdd = () => {
       setLengthDepth((data as any).length_depth || "");
       setWeight(data.weight != null ? String(data.weight) : "");
       setStickCount(data.stick_count != null ? String(data.stick_count) : "");
-      setIsPublished(data.is_published ?? false);
+      setProductStatus((data as any).status || "active_not_showing");
       setSpotImages((data.spot_images as string[]) || []);
     }
     setLoading(false);
