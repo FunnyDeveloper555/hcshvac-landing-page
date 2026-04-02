@@ -400,6 +400,8 @@ const ProductsList = () => {
                   <SortableHead field="stages">Stages</SortableHead>
                   <SortableHead field="voltage">Voltage</SortableHead>
                   <SortableHead field="refrigerant">Refrigerant</SortableHead>
+                  <SortableHead field="tons_btu">Tons/BTU</SortableHead>
+                  <SortableHead field="seer_rating">SEER</SortableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
