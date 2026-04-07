@@ -36,6 +36,8 @@ import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 import ProductSuppliersTab from "@/components/admin/ProductSuppliersTab";
+import ProductQuoteTemplateTab from "@/components/admin/ProductQuoteTemplateTab";
+import ProductActivityHistoryTab from "@/components/admin/ProductActivityHistoryTab";
 
 const POISE_OPTIONS = ["Upflow", "Downflow"];
 const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
@@ -413,6 +415,7 @@ const ProductsAdd = () => {
           {isEditing && <TabsTrigger value="variants" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Related Products</TabsTrigger>}
           {isEditing && <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Reviews</TabsTrigger>}
+          <TabsTrigger value="quote-template" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Quote Template</TabsTrigger>
         </TabsList>
 
         {/* ===== PROPERTIES TAB ===== */}
@@ -714,43 +717,7 @@ const ProductsAdd = () => {
               </ul>
             </div>
 
-            {/* Banner & Description Statements */}
-            <div className="border rounded-lg p-4 space-y-4">
-              <h3 className="text-lg font-semibold">Banner &amp; Description Statements</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Installed Banner Text</Label>
-                  <Input placeholder="e.g. Currently Installed" value={installedBannerText} onChange={(e) => setInstalledBannerText(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Discontinued Banner Text</Label>
-                  <Input placeholder="e.g. Discontinued Product" value={discontinuedBannerText} onChange={(e) => setDiscontinuedBannerText(e.target.value)} />
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Installed Description</Label>
-                  <Textarea placeholder="Description shown when product is installed..." value={installedDescription} onChange={(e) => setInstalledDescription(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Discontinued Description</Label>
-                  <Textarea placeholder="Description shown when product is discontinued..." value={discontinuedDescription} onChange={(e) => setDiscontinuedDescription(e.target.value)} />
-                </div>
-              </div>
-              <div className="border-t pt-4 space-y-4">
-                <h4 className="font-medium">Alternative Product</h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Alternative Product Statement</Label>
-                    <Input placeholder="e.g. We recommend the XYZ model instead" value={alternativeProductStatement} onChange={(e) => setAlternativeProductStatement(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Alternative Product URL</Label>
-                    <Input placeholder="https://..." value={alternativeProductUrl} onChange={(e) => setAlternativeProductUrl(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Banner/Description moved to Quote Template tab */}
 
             {/* Parts Replacement */}
             <div className="border rounded-lg p-4 space-y-4">
@@ -852,58 +819,7 @@ const ProductsAdd = () => {
         {/* ===== HISTORY TAB ===== */}
         {isEditing && editId && (
           <TabsContent value="history">
-            <div className="space-y-6 mt-4">
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Website Activity</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Consumer Page Visits</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Enquired on by Site Visitor</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Downloaded Listing Packet</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Other Pages/URLs Shown On</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                </div>
-              </div>
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Field Activity</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Sent as Estimate</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Purchased and Installed</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Warranty Visits</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Warranty Repaired</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                    <span className="text-sm font-medium">Recalls</span>
-                    <span className="text-sm text-muted-foreground">—</span>
-                  </div>
-                </div>
-              </div>
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="text-lg font-semibold">Pricing History</h3>
-                <ProductSuppliersTab productId={editId} />
-              </div>
-            </div>
+            <ProductActivityHistoryTab productId={editId!} />
           </TabsContent>
         )}
 
@@ -1060,6 +976,25 @@ const ProductsAdd = () => {
             </div>
           </TabsContent>
         )}
+
+        {/* ===== QUOTE TEMPLATE TAB ===== */}
+        <TabsContent value="quote-template">
+          <ProductQuoteTemplateTab
+            installedBannerText={installedBannerText}
+            setInstalledBannerText={setInstalledBannerText}
+            installedDescription={installedDescription}
+            setInstalledDescription={setInstalledDescription}
+            discontinuedBannerText={discontinuedBannerText}
+            setDiscontinuedBannerText={setDiscontinuedBannerText}
+            discontinuedDescription={discontinuedDescription}
+            setDiscontinuedDescription={setDiscontinuedDescription}
+            alternativeProductStatement={alternativeProductStatement}
+            setAlternativeProductStatement={setAlternativeProductStatement}
+            alternativeProductUrl={alternativeProductUrl}
+            setAlternativeProductUrl={setAlternativeProductUrl}
+            saveButton={saveButton}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );

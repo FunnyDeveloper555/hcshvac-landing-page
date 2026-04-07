@@ -22,6 +22,25 @@ interface Supplier {
   is_active: boolean;
   display_order: number;
   notes: string;
+  website_url?: string;
+  city?: string;
+  state?: string;
+  rep_name?: string;
+  rep_phone?: string;
+  rep_email?: string;
+  manufacture_product_url?: string;
+  supplier_product_url?: string;
+  vendor_cost?: number | null;
+  tax_rate?: number | null;
+  shipping_cost?: number | null;
+  freight_cost?: number | null;
+  has_shipping?: boolean;
+  has_freight?: boolean;
+  price_residential_suburbs?: number | null;
+  price_residential_city?: number | null;
+  price_commercial_suburbs?: number | null;
+  price_commercial_city?: number | null;
+  price_custom_formula?: string;
 }
 
 interface PriceHistory {
@@ -52,6 +71,25 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
   const [ourPrice, setOurPrice] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [notes, setNotes] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [repName, setRepName] = useState("");
+  const [repPhone, setRepPhone] = useState("");
+  const [repEmail, setRepEmail] = useState("");
+  const [manufactureProductUrl, setManufactureProductUrl] = useState("");
+  const [supplierProductUrl, setSupplierProductUrl] = useState("");
+  const [vendorCost, setVendorCost] = useState("");
+  const [taxRate, setTaxRate] = useState("");
+  const [shippingCost, setShippingCost] = useState("");
+  const [freightCost, setFreightCost] = useState("");
+  const [hasShipping, setHasShipping] = useState(false);
+  const [hasFreight, setHasFreight] = useState(false);
+  const [priceResSuburbs, setPriceResSuburbs] = useState("");
+  const [priceResCity, setPriceResCity] = useState("");
+  const [priceComSuburbs, setPriceComSuburbs] = useState("");
+  const [priceComCity, setPriceComCity] = useState("");
+  const [priceCustomFormula, setPriceCustomFormula] = useState("");
 
   // Price history
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
@@ -85,19 +123,19 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
   };
 
   const resetForm = () => {
-    setVendorIdCode("");
-    setSupplierName("");
-    setSupplierLocation("");
-    setOurPrice("");
-    setIsActive(true);
-    setNotes("");
-    setEditingId(null);
+    setVendorIdCode(""); setSupplierName(""); setSupplierLocation("");
+    setOurPrice(""); setIsActive(true); setNotes("");
+    setWebsiteUrl(""); setCity(""); setState("");
+    setRepName(""); setRepPhone(""); setRepEmail("");
+    setManufactureProductUrl(""); setSupplierProductUrl("");
+    setVendorCost(""); setTaxRate(""); setShippingCost(""); setFreightCost("");
+    setHasShipping(false); setHasFreight(false);
+    setPriceResSuburbs(""); setPriceResCity("");
+    setPriceComSuburbs(""); setPriceComCity("");
+    setPriceCustomFormula(""); setEditingId(null);
   };
 
-  const openAdd = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
+  const openAdd = () => { resetForm(); setDialogOpen(true); };
 
   const openEdit = (s: Supplier) => {
     setEditingId(s.id);
@@ -107,6 +145,25 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
     setOurPrice(s.our_price != null ? String(s.our_price) : "");
     setIsActive(s.is_active);
     setNotes(s.notes || "");
+    setWebsiteUrl(s.website_url || "");
+    setCity(s.city || "");
+    setState(s.state || "");
+    setRepName(s.rep_name || "");
+    setRepPhone(s.rep_phone || "");
+    setRepEmail(s.rep_email || "");
+    setManufactureProductUrl(s.manufacture_product_url || "");
+    setSupplierProductUrl(s.supplier_product_url || "");
+    setVendorCost(s.vendor_cost != null ? String(s.vendor_cost) : "");
+    setTaxRate(s.tax_rate != null ? String(s.tax_rate) : "");
+    setShippingCost(s.shipping_cost != null ? String(s.shipping_cost) : "");
+    setFreightCost(s.freight_cost != null ? String(s.freight_cost) : "");
+    setHasShipping(s.has_shipping || false);
+    setHasFreight(s.has_freight || false);
+    setPriceResSuburbs(s.price_residential_suburbs != null ? String(s.price_residential_suburbs) : "");
+    setPriceResCity(s.price_residential_city != null ? String(s.price_residential_city) : "");
+    setPriceComSuburbs(s.price_commercial_suburbs != null ? String(s.price_commercial_suburbs) : "");
+    setPriceComCity(s.price_commercial_city != null ? String(s.price_commercial_city) : "");
+    setPriceCustomFormula(s.price_custom_formula || "");
     setDialogOpen(true);
   };
 
@@ -124,6 +181,22 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
       our_price: ourPrice ? parseFloat(ourPrice) : null,
       is_active: isActive,
       notes,
+      website_url: websiteUrl,
+      city, state,
+      rep_name: repName, rep_phone: repPhone, rep_email: repEmail,
+      manufacture_product_url: manufactureProductUrl,
+      supplier_product_url: supplierProductUrl,
+      vendor_cost: vendorCost ? parseFloat(vendorCost) : null,
+      tax_rate: taxRate ? parseFloat(taxRate) : null,
+      shipping_cost: shippingCost ? parseFloat(shippingCost) : null,
+      freight_cost: freightCost ? parseFloat(freightCost) : null,
+      has_shipping: hasShipping,
+      has_freight: hasFreight,
+      price_residential_suburbs: priceResSuburbs ? parseFloat(priceResSuburbs) : null,
+      price_residential_city: priceResCity ? parseFloat(priceResCity) : null,
+      price_commercial_suburbs: priceComSuburbs ? parseFloat(priceComSuburbs) : null,
+      price_commercial_city: priceComCity ? parseFloat(priceComCity) : null,
+      price_custom_formula: priceCustomFormula,
     };
 
     try {
@@ -135,7 +208,6 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
       } else {
         const { data, error } = await supabase.from("product_suppliers").insert(payload).select().single() as any;
         if (error) throw error;
-        // Record initial price in history
         if (ourPrice) {
           await supabase.from("product_price_history").insert({
             product_supplier_id: data.id,
@@ -193,14 +265,12 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
     setSubmitting(true);
     try {
       const newPriceNum = parseFloat(newPrice);
-      // Insert price history record
       await supabase.from("product_price_history").insert({
         product_supplier_id: priceSupplier.id,
         price: newPriceNum,
         previous_price: priceSupplier.our_price,
         change_reason: priceReason || "Price update",
       } as any);
-      // Update the supplier's current price
       await supabase.from("product_suppliers").update({ our_price: newPriceNum } as any).eq("id", priceSupplier.id);
       toast({ title: "Price Updated", description: `Price changed to $${newPriceNum.toFixed(2)}` });
       setPriceDialogOpen(false);
@@ -213,11 +283,7 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -238,6 +304,7 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
               <TableHead>Vendor ID</TableHead>
               <TableHead>Supplier Name</TableHead>
               <TableHead>Location</TableHead>
+              <TableHead>Vendor Cost</TableHead>
               <TableHead>Our Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -249,6 +316,7 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
                 <TableCell className="font-mono text-sm">{s.vendor_id_code || "—"}</TableCell>
                 <TableCell className="font-medium">{s.supplier_name}</TableCell>
                 <TableCell>{s.supplier_location || "—"}</TableCell>
+                <TableCell>{s.vendor_cost != null ? `$${Number(s.vendor_cost).toFixed(2)}` : "—"}</TableCell>
                 <TableCell>{s.our_price != null ? `$${Number(s.our_price).toFixed(2)}` : "—"}</TableCell>
                 <TableCell>
                   <Badge variant={s.is_active ? "default" : "secondary"}>
@@ -279,36 +347,158 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
 
       {/* Add/Edit Supplier Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Supplier" : "Add Supplier"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Supplier Name *</Label>
-              <Input value={supplierName} onChange={(e) => setSupplierName(e.target.value)} placeholder="e.g. ABC Distributors" />
+          <div className="space-y-6">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Basic Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Supplier Name *</Label>
+                  <Input value={supplierName} onChange={(e) => setSupplierName(e.target.value)} placeholder="e.g. Johnstone Supply" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Vendor ID Code</Label>
+                  <Input value={vendorIdCode} onChange={(e) => setVendorIdCode(e.target.value)} placeholder="e.g. 8152151170" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Website URL</Label>
+                  <Input value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Supplier Location</Label>
+                  <Input value={supplierLocation} onChange={(e) => setSupplierLocation(e.target.value)} placeholder="e.g. Joliet, IL" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>City</Label>
+                  <Input value={city} onChange={(e) => setCity(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Input value={state} onChange={(e) => setState(e.target.value)} />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Vendor ID Code</Label>
-                <Input value={vendorIdCode} onChange={(e) => setVendorIdCode(e.target.value)} placeholder="e.g. VND-001" />
+
+            {/* Rep Info */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Rep Information</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Rep's Name</Label>
+                  <Input value={repName} onChange={(e) => setRepName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Rep's Phone</Label>
+                  <Input value={repPhone} onChange={(e) => setRepPhone(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Rep's Email</Label>
+                  <Input value={repEmail} onChange={(e) => setRepEmail(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Product URLs */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Product URLs</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Manufacture Product URL</Label>
+                  <Input value={manufactureProductUrl} onChange={(e) => setManufactureProductUrl(e.target.value)} placeholder="https://..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Supplier Product Listing URL</Label>
+                  <Input value={supplierProductUrl} onChange={(e) => setSupplierProductUrl(e.target.value)} placeholder="https://..." />
+                </div>
+              </div>
+            </div>
+
+            {/* Cost Breakdown */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Cost Breakdown</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Vendor Cost ($)</Label>
+                  <Input type="number" step="0.01" value={vendorCost} onChange={(e) => setVendorCost(e.target.value)} placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tax Rate ($)</Label>
+                  <Input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0.00" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={hasShipping} onCheckedChange={setHasShipping} />
+                    <Label>Shipping Cost</Label>
+                  </div>
+                  {hasShipping && (
+                    <Input type="number" step="0.01" value={shippingCost} onChange={(e) => setShippingCost(e.target.value)} placeholder="$ 0.00" />
+                  )}
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Switch checked={hasFreight} onCheckedChange={setHasFreight} />
+                    <Label>Freight Cost</Label>
+                  </div>
+                  {hasFreight && (
+                    <Input type="number" step="0.01" value={freightCost} onChange={(e) => setFreightCost(e.target.value)} placeholder="$ 0.00" />
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Our Price ($)</Label>
                 <Input type="number" step="0.01" value={ourPrice} onChange={(e) => setOurPrice(e.target.value)} placeholder="0.00" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Supplier Location</Label>
-              <Input value={supplierLocation} onChange={(e) => setSupplierLocation(e.target.value)} placeholder="City, State" />
+
+            {/* Pricing Formula */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Pricing Formula</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Residential (Suburbs) $</Label>
+                  <Input type="number" step="0.01" value={priceResSuburbs} onChange={(e) => setPriceResSuburbs(e.target.value)} placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Residential (City) $</Label>
+                  <Input type="number" step="0.01" value={priceResCity} onChange={(e) => setPriceResCity(e.target.value)} placeholder="0.00" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Commercial (Suburbs) $</Label>
+                  <Input type="number" step="0.01" value={priceComSuburbs} onChange={(e) => setPriceComSuburbs(e.target.value)} placeholder="0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Commercial (City) $</Label>
+                  <Input type="number" step="0.01" value={priceComCity} onChange={(e) => setPriceComCity(e.target.value)} placeholder="0.00" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Custom Formula $</Label>
+                <Input value={priceCustomFormula} onChange={(e) => setPriceCustomFormula(e.target.value)} placeholder="Custom pricing formula" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
-            </div>
-            <div className="flex items-center gap-3">
-              <Label>Active</Label>
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
+
+            {/* Notes & Status */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Notes</Label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
+              </div>
+              <div className="flex items-center gap-3">
+                <Label>Active</Label>
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -359,9 +549,7 @@ const ProductSuppliersTab = ({ productId }: ProductSuppliersTabProps) => {
             <DialogTitle>Price History — {historySupplier?.supplier_name}</DialogTitle>
           </DialogHeader>
           {historyLoading ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
+            <div className="flex justify-center p-4"><Loader2 className="h-5 w-5 animate-spin" /></div>
           ) : priceHistory.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4">No price history recorded.</p>
           ) : (
