@@ -2662,6 +2662,62 @@ export type Database = {
           },
         ]
       }
+      product_activity_history: {
+        Row: {
+          created_at: string
+          downloads: number
+          enquiries: number
+          id: string
+          other_page_views: number
+          page_visits: number
+          product_id: string
+          purchased_installed: number
+          recalls_active: string | null
+          sent_as_estimate: number
+          updated_at: string
+          warranty_repaired: number
+          warranty_visits: number
+        }
+        Insert: {
+          created_at?: string
+          downloads?: number
+          enquiries?: number
+          id?: string
+          other_page_views?: number
+          page_visits?: number
+          product_id: string
+          purchased_installed?: number
+          recalls_active?: string | null
+          sent_as_estimate?: number
+          updated_at?: string
+          warranty_repaired?: number
+          warranty_visits?: number
+        }
+        Update: {
+          created_at?: string
+          downloads?: number
+          enquiries?: number
+          id?: string
+          other_page_views?: number
+          page_visits?: number
+          product_id?: string
+          purchased_installed?: number
+          recalls_active?: string | null
+          sent_as_estimate?: number
+          updated_at?: string
+          warranty_repaired?: number
+          warranty_visits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_activity_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string
@@ -2800,6 +2856,62 @@ export type Database = {
           },
         ]
       }
+      product_purchase_orders: {
+        Row: {
+          created_at: string
+          customer_id_info: string | null
+          id: string
+          manufacture_part_number: string | null
+          notes: string | null
+          po_number: string | null
+          product_id: string
+          purchase_date: string | null
+          purchase_type: string | null
+          receipt_scan_url: string | null
+          tech_id: string | null
+          updated_at: string
+          vendor_id_number: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id_info?: string | null
+          id?: string
+          manufacture_part_number?: string | null
+          notes?: string | null
+          po_number?: string | null
+          product_id: string
+          purchase_date?: string | null
+          purchase_type?: string | null
+          receipt_scan_url?: string | null
+          tech_id?: string | null
+          updated_at?: string
+          vendor_id_number?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id_info?: string | null
+          id?: string
+          manufacture_part_number?: string | null
+          notes?: string | null
+          po_number?: string | null
+          product_id?: string
+          purchase_date?: string | null
+          purchase_type?: string | null
+          receipt_scan_url?: string | null
+          tech_id?: string | null
+          updated_at?: string
+          vendor_id_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_purchase_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_recommendations: {
         Row: {
           created_at: string
@@ -2897,43 +3009,100 @@ export type Database = {
       }
       product_suppliers: {
         Row: {
+          city: string | null
           created_at: string
           display_order: number
+          freight_cost: number | null
+          has_freight: boolean
+          has_shipping: boolean
           id: string
           is_active: boolean
+          manufacture_product_url: string | null
           notes: string | null
           our_price: number | null
+          price_commercial_city: number | null
+          price_commercial_suburbs: number | null
+          price_custom_formula: string | null
+          price_residential_city: number | null
+          price_residential_suburbs: number | null
           product_id: string
+          rep_email: string | null
+          rep_name: string | null
+          rep_phone: string | null
+          shipping_cost: number | null
+          state: string | null
           supplier_location: string | null
           supplier_name: string
+          supplier_product_url: string | null
+          tax_rate: number | null
           updated_at: string
+          vendor_cost: number | null
           vendor_id_code: string
+          website_url: string | null
         }
         Insert: {
+          city?: string | null
           created_at?: string
           display_order?: number
+          freight_cost?: number | null
+          has_freight?: boolean
+          has_shipping?: boolean
           id?: string
           is_active?: boolean
+          manufacture_product_url?: string | null
           notes?: string | null
           our_price?: number | null
+          price_commercial_city?: number | null
+          price_commercial_suburbs?: number | null
+          price_custom_formula?: string | null
+          price_residential_city?: number | null
+          price_residential_suburbs?: number | null
           product_id: string
+          rep_email?: string | null
+          rep_name?: string | null
+          rep_phone?: string | null
+          shipping_cost?: number | null
+          state?: string | null
           supplier_location?: string | null
           supplier_name?: string
+          supplier_product_url?: string | null
+          tax_rate?: number | null
           updated_at?: string
+          vendor_cost?: number | null
           vendor_id_code?: string
+          website_url?: string | null
         }
         Update: {
+          city?: string | null
           created_at?: string
           display_order?: number
+          freight_cost?: number | null
+          has_freight?: boolean
+          has_shipping?: boolean
           id?: string
           is_active?: boolean
+          manufacture_product_url?: string | null
           notes?: string | null
           our_price?: number | null
+          price_commercial_city?: number | null
+          price_commercial_suburbs?: number | null
+          price_custom_formula?: string | null
+          price_residential_city?: number | null
+          price_residential_suburbs?: number | null
           product_id?: string
+          rep_email?: string | null
+          rep_name?: string | null
+          rep_phone?: string | null
+          shipping_cost?: number | null
+          state?: string | null
           supplier_location?: string | null
           supplier_name?: string
+          supplier_product_url?: string | null
+          tax_rate?: number | null
           updated_at?: string
+          vendor_cost?: number | null
           vendor_id_code?: string
+          website_url?: string | null
         }
         Relationships: [
           {
