@@ -977,6 +977,25 @@ const ProductsAdd = () => {
             </div>
           </TabsContent>
         )}
+
+        {/* ===== QUOTE TEMPLATE TAB ===== */}
+        <TabsContent value="quote-template">
+          <ProductQuoteTemplateTab
+            installedBannerText={installedBannerText}
+            setInstalledBannerText={setInstalledBannerText}
+            installedDescription={installedDescription}
+            setInstalledDescription={setInstalledDescription}
+            discontinuedBannerText={discontinuedBannerText}
+            setDiscontinuedBannerText={setDiscontinuedBannerText}
+            discontinuedDescription={discontinuedDescription}
+            setDiscontinuedDescription={setDiscontinuedDescription}
+            alternativeProductStatement={alternativeProductStatement}
+            setAlternativeProductStatement={setAlternativeProductStatement}
+            alternativeProductUrl={alternativeProductUrl}
+            setAlternativeProductUrl={setAlternativeProductUrl}
+            saveButton={saveButton}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
