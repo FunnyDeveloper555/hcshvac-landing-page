@@ -717,8 +717,7 @@ const ProductsAdd = () => {
               </ul>
             </div>
 
-            {/* Parts Replacement - Banner/Description moved to Quote Template tab */}
-            </div>
+            {/* Banner/Description moved to Quote Template tab */}
 
             {/* Parts Replacement */}
             <div className="border rounded-lg p-4 space-y-4">
