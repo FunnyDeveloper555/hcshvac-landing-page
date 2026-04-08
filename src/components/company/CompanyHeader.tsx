@@ -42,7 +42,7 @@ const HEADER_PAGES = [
   { key: "air-quality", label: "Air Quality" },
 ];
 
-const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHeaderProps) => {
+const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: CompanyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerStyles = {
@@ -62,9 +62,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHead
   });
 
   const handlePageClick = (pageKey: string) => {
-    if (onPageChange) {
+    // If clicking the already-active page, go home
+    if (activePage === pageKey) {
+      onGoHome?.();
+    } else if (onPageChange) {
       onPageChange(pageKey);
     }
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    onGoHome?.();
     setMobileMenuOpen(false);
   };
 
