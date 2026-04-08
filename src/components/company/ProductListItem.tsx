@@ -10,6 +10,16 @@ const ProductListItem = ({ product, onClick }: ProductListItemProps) => {
   const thumbnail = images?.[0];
   const brandName = (product.brands as any)?.name;
   const sku = product.product_variants?.[0]?.sku;
+  const modelNumber = product.model_number;
+  const seerRating = product.seer_rating;
+  const afue = product.afue;
+  const tonsBtu = product.tons_btu;
+
+  // Build a compact spec line
+  const specParts: string[] = [];
+  if (seerRating) specParts.push(`${seerRating} SEER`);
+  if (afue) specParts.push(`${afue} AFUE`);
+  if (tonsBtu) specParts.push(tonsBtu);
 
   return (
     <div
@@ -37,7 +47,7 @@ const ProductListItem = ({ product, onClick }: ProductListItemProps) => {
             {product.product_name}
           </h3>
           {product.spot_text && (
-            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-3 leading-relaxed">
+            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
               {product.spot_text}
             </p>
           )}
@@ -46,6 +56,11 @@ const ProductListItem = ({ product, onClick }: ProductListItemProps) => {
           {brandName && (
             <span className="text-sm text-muted-foreground">
               Brand: <span className="text-foreground font-medium">{brandName}</span>
+            </span>
+          )}
+          {modelNumber && (
+            <span className="text-sm text-muted-foreground">
+              Model: <span className="text-foreground font-medium font-mono">{modelNumber}</span>
             </span>
           )}
           {sku && (
@@ -59,6 +74,11 @@ const ProductListItem = ({ product, onClick }: ProductListItemProps) => {
             </span>
           )}
         </div>
+        {specParts.length > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {specParts.join(" · ")}
+          </p>
+        )}
       </div>
 
       {/* Arrow */}

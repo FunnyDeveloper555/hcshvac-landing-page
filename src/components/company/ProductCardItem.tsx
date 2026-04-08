@@ -8,6 +8,15 @@ const ProductCardItem = ({ product, onClick }: ProductCardItemProps) => {
   const thumbnail = images?.[0];
   const brandName = (product.brands as any)?.name;
   const sku = product.product_variants?.[0]?.sku;
+  const modelNumber = product.model_number;
+  const seerRating = product.seer_rating;
+  const afue = product.afue;
+  const tonsBtu = product.tons_btu;
+
+  const specParts: string[] = [];
+  if (seerRating) specParts.push(`${seerRating} SEER`);
+  if (afue) specParts.push(`${afue} AFUE`);
+  if (tonsBtu) specParts.push(tonsBtu);
 
   return (
     <div
@@ -30,8 +39,14 @@ const ProductCardItem = ({ product, onClick }: ProductCardItemProps) => {
         <h3 className="font-semibold text-foreground text-sm truncate group-hover:text-primary transition-colors">
           {product.product_name}
         </h3>
+        {modelNumber && (
+          <p className="text-xs text-muted-foreground font-mono">Model: {modelNumber}</p>
+        )}
         {product.spot_text && (
           <p className="text-xs text-muted-foreground line-clamp-2">{product.spot_text}</p>
+        )}
+        {specParts.length > 0 && (
+          <p className="text-xs text-primary/80 font-medium">{specParts.join(" · ")}</p>
         )}
         <div className="flex items-center gap-2 flex-wrap">
           {product.category && (
