@@ -14,8 +14,11 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 import FileServer from "./pages/FileServer";
+import { getSubdomainSlug } from "./hooks/useSubdomainSlug";
 
 const queryClient = new QueryClient();
+
+const subdomainSlug = getSubdomainSlug();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -23,20 +26,27 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/registration" element={<Registration />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/admin/*" element={<Admin />} />
-          <Route path="/services/:id" element={<ServiceDetail />} />
-          <Route path="/book/:token" element={<BookingForm />} />
-          <Route path="/company/:slug" element={<CompanyLanding />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/fileserver" element={<FileServer />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        {subdomainSlug ? (
+          /* Subdomain detected — render company landing as the entire site */
+          <Routes>
+            <Route path="*" element={<CompanyLanding subdomainSlug={subdomainSlug} />} />
+          </Routes>
+        ) : (
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin/*" element={<Admin />} />
+            <Route path="/services/:id" element={<ServiceDetail />} />
+            <Route path="/book/:token" element={<BookingForm />} />
+            <Route path="/company/:slug" element={<CompanyLanding />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/fileserver" element={<FileServer />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        )}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
