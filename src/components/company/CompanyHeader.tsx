@@ -114,6 +114,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
+            <button
+              onClick={handleLogoClick}
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                !activePage 
+                  ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                  : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
+              )}
+            >
+              Home
+            </button>
             {enabledPages.map(page => (
               <button
                 key={page.key}
