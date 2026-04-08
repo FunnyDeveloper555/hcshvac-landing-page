@@ -91,9 +91,11 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
         )}>
           {/* Logo */}
           <div className={cn(
-            "flex items-center gap-3",
+            "flex items-center gap-3 cursor-pointer",
             theme.layout.headerStyle === 'centered' && "justify-center w-full md:w-auto"
-          )}>
+          )}
+            onClick={handleLogoClick}
+          >
             {company.logo_url ? (
               <img 
                 src={company.logo_url} 
