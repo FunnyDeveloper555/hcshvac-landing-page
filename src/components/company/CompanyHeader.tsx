@@ -194,6 +194,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] sm:w-[350px]">
                 <nav className="flex flex-col gap-2 mt-8">
+                  <button
+                    onClick={handleLogoClick}
+                    className={cn(
+                      "px-4 py-3 text-left text-base font-medium rounded-lg transition-colors",
+                      !activePage 
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    Home
+                  </button>
                   {enabledPages.map(page => (
                     <button
                       key={page.key}
