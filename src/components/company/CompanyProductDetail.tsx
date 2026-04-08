@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle, Tag, Shield } from "lucide-react";
 import ProductImageLightbox from "@/components/ProductImageLightbox";
 import ProductReviews from "@/components/ProductReviews";
 import ProductDocuments from "@/components/ProductDocuments";
@@ -38,7 +38,6 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
     enabled: !!productId,
   });
 
-  // Fetch curated recommendations, fallback to random
   const { data: relatedProducts = [] } = useQuery({
     queryKey: ["related-products", productId, companyId],
     queryFn: async () => {
@@ -65,7 +64,6 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
     enabled: !!productId,
   });
 
-  // Fetch product variants
   const { data: variants = [] } = useQuery({
     queryKey: ["product-variants-public", productId],
     queryFn: async () => {
@@ -137,11 +135,63 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
     );
   }
 
+  // Build specifications list from dedicated columns
+  const specifications: { label: string; value: string }[] = [];
+  if ((product as any).model_number) specifications.push({ label: "Model Number", value: (product as any).model_number });
+  if ((product.brands as any)?.name) specifications.push({ label: "Brand", value: (product.brands as any).name });
+  if ((product as any).poise) specifications.push({ label: "Poise", value: (product as any).poise });
+  if ((product as any).afue) specifications.push({ label: "AFUE", value: (product as any).afue });
+  if ((product as any).seer_rating) specifications.push({ label: "SEER Rating", value: (product as any).seer_rating });
+  if ((product as any).tons_btu) specifications.push({ label: "Tons / BTU", value: (product as any).tons_btu });
+  if ((product as any).stages) specifications.push({ label: "Stages", value: (product as any).stages });
+  if ((product as any).voltage) specifications.push({ label: "Voltage", value: (product as any).voltage });
+  if ((product as any).refrigerant_type) specifications.push({ label: "Refrigerant Type", value: (product as any).refrigerant_type });
+  if (product.weight != null) specifications.push({ label: "Weight", value: `${product.weight} lbs` });
+  if ((product as any).height) specifications.push({ label: "Height", value: (product as any).height });
+  if ((product as any).width_size) specifications.push({ label: "Width", value: (product as any).width_size });
+  if ((product as any).length_depth) specifications.push({ label: "Depth", value: (product as any).length_depth });
+  if (product.stick_count != null) specifications.push({ label: "Stick Count", value: String(product.stick_count) });
+
+  const bulletPoints = (product as any).bullet_points as string[] | null;
+  const partsWarranty = (product as any).parts_warranty as string | null;
+  const laborWarranty = (product as any).labor_warranty as string | null;
+  const hasWarranty = partsWarranty || laborWarranty;
+
+  // Promo
+  const isPromoActive = (product as any).is_promo_active;
+  const promoTitle = (product as any).promo_title as string | null;
+  const promoDescription = (product as any).promo_description as string | null;
+  const promoImageUrl = (product as any).promo_image_url as string | null;
+  const promoStartDate = (product as any).promo_start_date as string | null;
+  const promoEndDate = (product as any).promo_end_date as string | null;
+  const now = new Date();
+  const promoVisible = isPromoActive && promoTitle &&
+    (!promoStartDate || new Date(promoStartDate) <= now) &&
+    (!promoEndDate || new Date(promoEndDate) >= now);
+
   return (
     <div>
       <Button variant="ghost" size="sm" onClick={onBack} className="mb-6">
         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Products
       </Button>
+
+      {/* Promo Banner */}
+      {promoVisible && (
+        <div className="mb-6 rounded-xl overflow-hidden border border-primary/30 bg-primary/5">
+          <div className="flex items-center gap-4 p-5">
+            {promoImageUrl && (
+              <img src={promoImageUrl} alt={promoTitle || ""} className="w-20 h-20 object-cover rounded-lg shrink-0" />
+            )}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Tag className="w-4 h-4 text-primary" />
+                <span className="font-bold text-foreground text-lg">{promoTitle}</span>
+              </div>
+              {promoDescription && <p className="text-muted-foreground text-sm">{promoDescription}</p>}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Image Slider */}
@@ -210,7 +260,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
 
         {/* Details */}
         <div className="space-y-6">
-          {/* Status Banner */}
+          {/* Status Banners */}
           {(product as any).installed_banner_text && product.status === "active_showing" && (
             <div className="bg-green-500/10 border border-green-500/30 text-green-700 dark:text-green-400 rounded-lg px-4 py-3">
               <p className="font-semibold">{(product as any).installed_banner_text}</p>
@@ -236,38 +286,82 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
 
           <div>
             <h1 className="text-3xl font-bold text-foreground">{product.product_name}</h1>
-            {product.category && (
-              <span className="inline-block mt-2 text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">
-                {product.category}
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {(product.brands as any)?.name && (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-medium">Brand:</span>
-                <span className="text-foreground">{(product.brands as any).name}</span>
-              </div>
-            )}
-            {product.weight != null && (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-medium">Weight:</span>
-                <span className="text-foreground">{product.weight} lbs</span>
-              </div>
-            )}
-            {product.stick_count != null && (
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground font-medium">Stick Count:</span>
-                <span className="text-foreground">{product.stick_count}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              {product.category && (
+                <span className="inline-block text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">
+                  {product.category}
+                </span>
+              )}
+              {(product as any).model_number && (
+                <span className="text-sm text-muted-foreground font-mono">
+                  Model: {(product as any).model_number}
+                </span>
+              )}
+            </div>
           </div>
 
           {product.spot_text && (
             <div>
               <h2 className="text-lg font-semibold text-foreground mb-2">Description</h2>
-              <p className="text-muted-foreground whitespace-pre-wrap">{product.spot_text}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{product.spot_text}</p>
+            </div>
+          )}
+
+          {/* Bullet Points / Key Features */}
+          {bulletPoints && bulletPoints.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-3">Key Features</h2>
+              <ul className="space-y-2">
+                {bulletPoints.map((bp, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span className="text-muted-foreground text-sm">{bp}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Specifications Table */}
+          {specifications.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-3">Specifications</h2>
+              <div className="border border-border rounded-lg overflow-hidden">
+                <Table>
+                  <TableBody>
+                    {specifications.map((spec, i) => (
+                      <TableRow key={i} className={i % 2 === 0 ? "bg-muted/30" : ""}>
+                        <TableCell className="py-2.5 px-4 text-muted-foreground font-medium text-sm w-1/3">{spec.label}</TableCell>
+                        <TableCell className="py-2.5 px-4 text-foreground text-sm">{spec.value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          {/* Warranty */}
+          {hasWarranty && (
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-primary" />
+                Warranty
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {partsWarranty && (
+                  <div className="bg-muted/40 rounded-lg p-3 border border-border">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Parts</p>
+                    <p className="text-foreground font-semibold text-sm">{partsWarranty}</p>
+                  </div>
+                )}
+                {laborWarranty && (
+                  <div className="bg-muted/40 rounded-lg p-3 border border-border">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Labor</p>
+                    <p className="text-foreground font-semibold text-sm">{laborWarranty}</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -340,7 +434,7 @@ const CompanyProductDetail = ({ productId, companyId, onBack, onProductClick }: 
       <ProductReviews productId={productId} />
       <ReviewSubmitForm productId={productId} />
 
-      {/* Related Products with slider */}
+      {/* Related Products */}
       {relatedProducts.length > 0 && (
         <div className="mt-16 border-t border-border pt-10">
           <div className="flex items-center justify-between mb-6">
