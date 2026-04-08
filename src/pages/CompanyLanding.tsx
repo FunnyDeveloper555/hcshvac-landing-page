@@ -203,6 +203,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
         theme={theme} 
         activePage={activePage || undefined}
         onPageChange={handlePageChange}
+        onGoHome={handleBackToHome}
       />
       <main className="flex-1">
         {activePage === "products" ? (

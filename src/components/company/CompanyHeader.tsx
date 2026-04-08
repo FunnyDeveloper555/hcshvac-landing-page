@@ -29,6 +29,7 @@ interface CompanyHeaderProps {
   theme: ThemeConfig;
   activePage?: string;
   onPageChange?: (pageKey: string) => void;
+  onGoHome?: () => void;
 }
 
 const HEADER_PAGES = [
@@ -41,7 +42,7 @@ const HEADER_PAGES = [
   { key: "air-quality", label: "Air Quality" },
 ];
 
-const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHeaderProps) => {
+const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: CompanyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const headerStyles = {
@@ -61,9 +62,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHead
   });
 
   const handlePageClick = (pageKey: string) => {
-    if (onPageChange) {
+    // If clicking the already-active page, go home
+    if (activePage === pageKey) {
+      onGoHome?.();
+    } else if (onPageChange) {
       onPageChange(pageKey);
     }
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    onGoHome?.();
     setMobileMenuOpen(false);
   };
 
@@ -82,9 +91,11 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHead
         )}>
           {/* Logo */}
           <div className={cn(
-            "flex items-center gap-3",
+            "flex items-center gap-3 cursor-pointer",
             theme.layout.headerStyle === 'centered' && "justify-center w-full md:w-auto"
-          )}>
+          )}
+            onClick={handleLogoClick}
+          >
             {company.logo_url ? (
               <img 
                 src={company.logo_url} 
@@ -103,6 +114,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHead
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
+            <button
+              onClick={handleLogoClick}
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                !activePage 
+                  ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                  : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
+              )}
+            >
+              Home
+            </button>
             {enabledPages.map(page => (
               <button
                 key={page.key}
@@ -172,6 +194,17 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange }: CompanyHead
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] sm:w-[350px]">
                 <nav className="flex flex-col gap-2 mt-8">
+                  <button
+                    onClick={handleLogoClick}
+                    className={cn(
+                      "px-4 py-3 text-left text-base font-medium rounded-lg transition-colors",
+                      !activePage 
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    Home
+                  </button>
                   {enabledPages.map(page => (
                     <button
                       key={page.key}
