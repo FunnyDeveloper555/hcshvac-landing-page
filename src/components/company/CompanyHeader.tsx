@@ -29,6 +29,7 @@ interface CompanyHeaderProps {
   theme: ThemeConfig;
   activePage?: string;
   onPageChange?: (pageKey: string) => void;
+  onGoHome?: () => void;
 }
 
 const HEADER_PAGES = [
