@@ -80,8 +80,13 @@ const HEADER_PAGES = [
   { key: "air-quality", label: "Air Quality" },
 ];
 
-const CompanyLanding = () => {
-  const { slug } = useParams<{ slug: string }>();
+interface CompanyLandingProps {
+  subdomainSlug?: string;
+}
+
+const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = subdomainSlug || paramSlug;
   const [company, setCompany] = useState<Company | null>(null);
   const [services, setServices] = useState<Array<{ id: string; title: string; description: string; icon: string }>>([]);
   const [loading, setLoading] = useState(true);
