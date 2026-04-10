@@ -36,7 +36,7 @@ import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
 import ProductReviewsTab from "@/components/admin/ProductReviewsTab";
 import ProductDocumentsTab from "@/components/admin/ProductDocumentsTab";
 import ProductSuppliersTab from "@/components/admin/ProductSuppliersTab";
-import ProductQuoteTemplateTab from "@/components/admin/ProductQuoteTemplateTab";
+import ProductInvoiceTemplateTab from "@/components/admin/ProductInvoiceTemplateTab";
 import ProductActivityHistoryTab from "@/components/admin/ProductActivityHistoryTab";
 
 const POISE_OPTIONS = ["Upflow", "Downflow"];
@@ -143,13 +143,14 @@ const ProductsAdd = () => {
   const [partSubcategory, setPartSubcategory] = useState("");
   const [partLocationType, setPartLocationType] = useState("");
 
-  // Banner/Description Statements
-  const [installedBannerText, setInstalledBannerText] = useState("");
-  const [installedDescription, setInstalledDescription] = useState("");
-  const [discontinuedBannerText, setDiscontinuedBannerText] = useState("");
-  const [discontinuedDescription, setDiscontinuedDescription] = useState("");
-  const [alternativeProductStatement, setAlternativeProductStatement] = useState("");
-  const [alternativeProductUrl, setAlternativeProductUrl] = useState("");
+  // Invoice Template Fields
+  const [invoiceLineDescription, setInvoiceLineDescription] = useState("");
+  const [invoiceUnitPriceText, setInvoiceUnitPriceText] = useState("");
+  const [invoiceFootNotes, setInvoiceFootNotes] = useState("");
+  const [invoicePaymentPlan, setInvoicePaymentPlan] = useState("");
+  const [invoiceTerms, setInvoiceTerms] = useState("");
+  const [invoiceShipVia, setInvoiceShipVia] = useState("");
+  const [invoiceNotes, setInvoiceNotes] = useState("");
   const [newRepairTag, setNewRepairTag] = useState("");
 
   const sensors = useSensors(
@@ -280,12 +281,13 @@ const ProductsAdd = () => {
       setPartCategory((data as any).part_category || "");
       setPartSubcategory((data as any).part_subcategory || "");
       setPartLocationType((data as any).part_location_type || "");
-      setInstalledBannerText((data as any).installed_banner_text || "");
-      setInstalledDescription((data as any).installed_description || "");
-      setDiscontinuedBannerText((data as any).discontinued_banner_text || "");
-      setDiscontinuedDescription((data as any).discontinued_description || "");
-      setAlternativeProductStatement((data as any).alternative_product_statement || "");
-      setAlternativeProductUrl((data as any).alternative_product_url || "");
+      setInvoiceLineDescription((data as any).invoice_line_description || "");
+      setInvoiceUnitPriceText((data as any).invoice_unit_price_text || "");
+      setInvoiceFootNotes((data as any).invoice_foot_notes || "");
+      setInvoicePaymentPlan((data as any).invoice_payment_plan || "");
+      setInvoiceTerms((data as any).invoice_terms || "");
+      setInvoiceShipVia((data as any).invoice_ship_via || "");
+      setInvoiceNotes((data as any).invoice_notes || "");
     }
     setLoading(false);
   };
@@ -341,12 +343,19 @@ const ProductsAdd = () => {
         part_category: partCategory || "",
         part_subcategory: partSubcategory || "",
         part_location_type: partLocationType || "",
-        installed_banner_text: installedBannerText || "",
-        installed_description: installedDescription || "",
-        discontinued_banner_text: discontinuedBannerText || "",
-        discontinued_description: discontinuedDescription || "",
-        alternative_product_statement: alternativeProductStatement || "",
-        alternative_product_url: alternativeProductUrl || "",
+        installed_banner_text: "",
+        installed_description: "",
+        discontinued_banner_text: "",
+        discontinued_description: "",
+        alternative_product_statement: "",
+        alternative_product_url: "",
+        invoice_line_description: invoiceLineDescription || "",
+        invoice_unit_price_text: invoiceUnitPriceText || "",
+        invoice_foot_notes: invoiceFootNotes || "",
+        invoice_payment_plan: invoicePaymentPlan || "",
+        invoice_terms: invoiceTerms || "",
+        invoice_ship_via: invoiceShipVia || "",
+        invoice_notes: invoiceNotes || "",
       };
 
       if (isEditing) {
@@ -979,19 +988,21 @@ const ProductsAdd = () => {
 
         {/* ===== QUOTE TEMPLATE TAB ===== */}
         <TabsContent value="quote-template">
-          <ProductQuoteTemplateTab
-            installedBannerText={installedBannerText}
-            setInstalledBannerText={setInstalledBannerText}
-            installedDescription={installedDescription}
-            setInstalledDescription={setInstalledDescription}
-            discontinuedBannerText={discontinuedBannerText}
-            setDiscontinuedBannerText={setDiscontinuedBannerText}
-            discontinuedDescription={discontinuedDescription}
-            setDiscontinuedDescription={setDiscontinuedDescription}
-            alternativeProductStatement={alternativeProductStatement}
-            setAlternativeProductStatement={setAlternativeProductStatement}
-            alternativeProductUrl={alternativeProductUrl}
-            setAlternativeProductUrl={setAlternativeProductUrl}
+          <ProductInvoiceTemplateTab
+            invoiceLineDescription={invoiceLineDescription}
+            setInvoiceLineDescription={setInvoiceLineDescription}
+            invoiceUnitPriceText={invoiceUnitPriceText}
+            setInvoiceUnitPriceText={setInvoiceUnitPriceText}
+            invoiceFootNotes={invoiceFootNotes}
+            setInvoiceFootNotes={setInvoiceFootNotes}
+            invoicePaymentPlan={invoicePaymentPlan}
+            setInvoicePaymentPlan={setInvoicePaymentPlan}
+            invoiceTerms={invoiceTerms}
+            setInvoiceTerms={setInvoiceTerms}
+            invoiceShipVia={invoiceShipVia}
+            setInvoiceShipVia={setInvoiceShipVia}
+            invoiceNotes={invoiceNotes}
+            setInvoiceNotes={setInvoiceNotes}
             saveButton={saveButton}
           />
         </TabsContent>
