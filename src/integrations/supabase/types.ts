@@ -3186,6 +3186,13 @@ export type Database = {
           id: string
           installed_banner_text: string | null
           installed_description: string | null
+          invoice_foot_notes: string
+          invoice_line_description: string
+          invoice_notes: string
+          invoice_payment_plan: string
+          invoice_ship_via: string
+          invoice_terms: string
+          invoice_unit_price_text: string
           is_part: boolean | null
           is_promo_active: boolean
           is_repair_eligible: boolean
@@ -3235,6 +3242,13 @@ export type Database = {
           id?: string
           installed_banner_text?: string | null
           installed_description?: string | null
+          invoice_foot_notes?: string
+          invoice_line_description?: string
+          invoice_notes?: string
+          invoice_payment_plan?: string
+          invoice_ship_via?: string
+          invoice_terms?: string
+          invoice_unit_price_text?: string
           is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
@@ -3284,6 +3298,13 @@ export type Database = {
           id?: string
           installed_banner_text?: string | null
           installed_description?: string | null
+          invoice_foot_notes?: string
+          invoice_line_description?: string
+          invoice_notes?: string
+          invoice_payment_plan?: string
+          invoice_ship_via?: string
+          invoice_terms?: string
+          invoice_unit_price_text?: string
           is_part?: boolean | null
           is_promo_active?: boolean
           is_repair_eligible?: boolean
