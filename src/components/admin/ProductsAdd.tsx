@@ -415,7 +415,7 @@ const ProductsAdd = () => {
           {isEditing && <TabsTrigger value="variants" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Variants/SKUs</TabsTrigger>}
           {isEditing && <TabsTrigger value="related" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Related Products</TabsTrigger>}
           {isEditing && <TabsTrigger value="reviews" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Reviews</TabsTrigger>}
-          <TabsTrigger value="quote-template" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Quote Template</TabsTrigger>
+          <TabsTrigger value="quote-template" className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 py-2 text-sm">Invoice Template</TabsTrigger>
         </TabsList>
 
         {/* ===== PROPERTIES TAB ===== */}
