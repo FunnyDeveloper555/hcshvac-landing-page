@@ -3187,6 +3187,7 @@ export type Database = {
           installed_banner_text: string | null
           installed_description: string | null
           invoice_foot_notes: string
+          invoice_html_template: string | null
           invoice_line_description: string
           invoice_notes: string
           invoice_payment_plan: string
@@ -3243,6 +3244,7 @@ export type Database = {
           installed_banner_text?: string | null
           installed_description?: string | null
           invoice_foot_notes?: string
+          invoice_html_template?: string | null
           invoice_line_description?: string
           invoice_notes?: string
           invoice_payment_plan?: string
@@ -3299,6 +3301,7 @@ export type Database = {
           installed_banner_text?: string | null
           installed_description?: string | null
           invoice_foot_notes?: string
+          invoice_html_template?: string | null
           invoice_line_description?: string
           invoice_notes?: string
           invoice_payment_plan?: string
