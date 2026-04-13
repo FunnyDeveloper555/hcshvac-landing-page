@@ -144,13 +144,7 @@ const ProductsAdd = () => {
   const [partLocationType, setPartLocationType] = useState("");
 
   // Invoice Template Fields
-  const [invoiceLineDescription, setInvoiceLineDescription] = useState("");
-  const [invoiceUnitPriceText, setInvoiceUnitPriceText] = useState("");
-  const [invoiceFootNotes, setInvoiceFootNotes] = useState("");
-  const [invoicePaymentPlan, setInvoicePaymentPlan] = useState("");
-  const [invoiceTerms, setInvoiceTerms] = useState("");
-  const [invoiceShipVia, setInvoiceShipVia] = useState("");
-  const [invoiceNotes, setInvoiceNotes] = useState("");
+  const [invoiceHtmlTemplate, setInvoiceHtmlTemplate] = useState("");
   const [newRepairTag, setNewRepairTag] = useState("");
 
   const sensors = useSensors(
@@ -281,13 +275,7 @@ const ProductsAdd = () => {
       setPartCategory((data as any).part_category || "");
       setPartSubcategory((data as any).part_subcategory || "");
       setPartLocationType((data as any).part_location_type || "");
-      setInvoiceLineDescription((data as any).invoice_line_description || "");
-      setInvoiceUnitPriceText((data as any).invoice_unit_price_text || "");
-      setInvoiceFootNotes((data as any).invoice_foot_notes || "");
-      setInvoicePaymentPlan((data as any).invoice_payment_plan || "");
-      setInvoiceTerms((data as any).invoice_terms || "");
-      setInvoiceShipVia((data as any).invoice_ship_via || "");
-      setInvoiceNotes((data as any).invoice_notes || "");
+      setInvoiceHtmlTemplate((data as any).invoice_html_template || "");
     }
     setLoading(false);
   };
@@ -349,13 +337,7 @@ const ProductsAdd = () => {
         discontinued_description: "",
         alternative_product_statement: "",
         alternative_product_url: "",
-        invoice_line_description: invoiceLineDescription || "",
-        invoice_unit_price_text: invoiceUnitPriceText || "",
-        invoice_foot_notes: invoiceFootNotes || "",
-        invoice_payment_plan: invoicePaymentPlan || "",
-        invoice_terms: invoiceTerms || "",
-        invoice_ship_via: invoiceShipVia || "",
-        invoice_notes: invoiceNotes || "",
+        invoice_html_template: invoiceHtmlTemplate || "",
       };
 
       if (isEditing) {
@@ -989,20 +971,8 @@ const ProductsAdd = () => {
         {/* ===== QUOTE TEMPLATE TAB ===== */}
         <TabsContent value="quote-template">
           <ProductInvoiceTemplateTab
-            invoiceLineDescription={invoiceLineDescription}
-            setInvoiceLineDescription={setInvoiceLineDescription}
-            invoiceUnitPriceText={invoiceUnitPriceText}
-            setInvoiceUnitPriceText={setInvoiceUnitPriceText}
-            invoiceFootNotes={invoiceFootNotes}
-            setInvoiceFootNotes={setInvoiceFootNotes}
-            invoicePaymentPlan={invoicePaymentPlan}
-            setInvoicePaymentPlan={setInvoicePaymentPlan}
-            invoiceTerms={invoiceTerms}
-            setInvoiceTerms={setInvoiceTerms}
-            invoiceShipVia={invoiceShipVia}
-            setInvoiceShipVia={setInvoiceShipVia}
-            invoiceNotes={invoiceNotes}
-            setInvoiceNotes={setInvoiceNotes}
+            invoiceHtmlTemplate={invoiceHtmlTemplate}
+            setInvoiceHtmlTemplate={setInvoiceHtmlTemplate}
             saveButton={saveButton}
           />
         </TabsContent>
