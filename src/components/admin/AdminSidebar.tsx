@@ -302,6 +302,24 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     },
   });
 
+  const { data: appointmentCounts } = useQuery({
+    queryKey: ["sidebar-appointment-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("status");
+      if (error) throw error;
+      const open = data?.filter(a => a.status === "open").length ?? 0;
+      const closed = data?.filter(a => a.status === "closed").length ?? 0;
+      return { open, closed };
+    },
+  });
+
+  const appointmentBadges: Record<string, number> = {
+    "/admin/appointments/open": appointmentCounts?.open ?? 0,
+    "/admin/appointments/closed": appointmentCounts?.closed ?? 0,
+  };
+
   const updateUrlsWithCompanyId = (items: MenuItem[], companyId: string): MenuItem[] => {
     return items.map(item => ({
       ...item,
@@ -384,6 +402,9 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             >
               <child.icon className="h-4 w-4 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
+              {child.url && appointmentBadges[child.url] !== undefined && appointmentBadges[child.url] > 0 && (
+                <Badge variant="secondary" className="ml-auto text-xs px-1.5 py-0 h-5 min-w-[1.25rem] flex items-center justify-center">{appointmentBadges[child.url]}</Badge>
+              )}
             </button>
           )}
         </div>
