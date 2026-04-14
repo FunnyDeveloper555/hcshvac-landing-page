@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil } from "lucide-react";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -37,11 +37,18 @@ type FilterType = "all" | "open" | "closed" | "open_today" | "closed_today" | "c
 const ITEMS_PER_PAGE = 20;
 
 export default function AppointmentsList() {
-  const [filter, setFilter] = useState<FilterType>("all");
+  const location = useLocation();
+  const routeFilter: FilterType = location.pathname.endsWith("/open") ? "open" : location.pathname.endsWith("/closed") ? "closed" : "all";
+  const [filter, setFilter] = useState<FilterType>(routeFilter);
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setFilter(routeFilter);
+    setCurrentPage(1);
+  }, [routeFilter]);
 
   const { data: appointments, isLoading } = useQuery({
     queryKey: ["appointments"],
