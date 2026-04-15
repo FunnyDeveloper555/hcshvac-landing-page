@@ -556,12 +556,22 @@ const BannerPreview = () => {
                 <Textarea id="banner-description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} placeholder="Description text" rows={3} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="banner-image">Image URL</Label>
-                <div className="flex gap-2">
-                  <Input id="banner-image" value={formData.image_url} onChange={(e) => handleInputChange("image_url", e.target.value)} placeholder="Enter image URL" />
-                  <div className="flex items-center justify-center w-10 h-10 border rounded bg-muted">
-                    <Image className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                <Label>Banner Image</Label>
+                <div className="flex gap-2 items-center">
+                  {formData.image_url && (
+                    <img src={formData.image_url} alt="Banner preview" className="w-16 h-10 object-cover rounded border" />
+                  )}
+                  <FileManagerPicker
+                    onSelect={(url) => handleInputChange("image_url", url)}
+                    accept="image/*"
+                    buttonLabel={formData.image_url ? "Change Image" : "Select Image"}
+                    buttonIcon={<FolderOpen className="h-4 w-4" />}
+                  />
+                  {formData.image_url && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => handleInputChange("image_url", "")}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="space-y-2 flex items-end gap-3 pb-1">
