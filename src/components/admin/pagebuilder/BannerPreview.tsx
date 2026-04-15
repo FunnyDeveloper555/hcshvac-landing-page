@@ -10,10 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Loader2, Monitor, Smartphone, Save, Phone, Image, Plus, Trash2,
-  Edit, X, Eye, EyeOff, Pencil, GripVertical,
+  Edit, X, Eye, EyeOff, Pencil, GripVertical, FolderOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import hvacHero from "@/assets/hvac-hero.jpg";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import {
   DndContext,
   closestCenter,
@@ -252,6 +253,7 @@ const BannerPreview = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showFilePicker, setShowFilePicker] = useState(false);
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
   const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
@@ -555,13 +557,28 @@ const BannerPreview = () => {
                 <Textarea id="banner-description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} placeholder="Description text" rows={3} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="banner-image">Image URL</Label>
-                <div className="flex gap-2">
-                  <Input id="banner-image" value={formData.image_url} onChange={(e) => handleInputChange("image_url", e.target.value)} placeholder="Enter image URL" />
-                  <div className="flex items-center justify-center w-10 h-10 border rounded bg-muted">
-                    <Image className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                <Label>Banner Image</Label>
+                <div className="flex gap-2 items-center">
+                  {formData.image_url && (
+                    <img src={formData.image_url} alt="Banner preview" className="w-16 h-10 object-cover rounded border" />
+                  )}
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShowFilePicker(true)}>
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    {formData.image_url ? "Change Image" : "Select Image"}
+                  </Button>
+                  {formData.image_url && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => handleInputChange("image_url", "")}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
+                <FileManagerPicker
+                  open={showFilePicker}
+                  onOpenChange={setShowFilePicker}
+                  onSelect={(url) => { handleInputChange("image_url", url); setShowFilePicker(false); }}
+                  accept="image/*"
+                  title="Select Banner Image"
+                />
               </div>
               <div className="space-y-2 flex items-end gap-3 pb-1">
                 <div className="flex items-center gap-2">
