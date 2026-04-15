@@ -44,27 +44,28 @@ interface CompanyHeroProps {
 }
 
 const getAnimationClass = (animationStyle: string, isActive: boolean) => {
-  if (!isActive) return "opacity-0 absolute inset-0";
-  
   const base = "absolute inset-0 transition-all duration-700 ease-in-out";
+  const activeZ = isActive ? "z-10" : "z-0";
+  const visibility = isActive ? "" : "pointer-events-none";
+  
   switch (animationStyle) {
     case "slide-left":
-      return `${base} ${isActive ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}`;
     case "slide-right":
-      return `${base} ${isActive ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`;
     case "slide-up":
-      return `${base} ${isActive ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`;
     case "zoom-in":
-      return `${base} ${isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"}`;
     case "zoom-out":
-      return `${base} ${isActive ? "scale-100 opacity-100" : "scale-110 opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "scale-100 opacity-100" : "scale-110 opacity-0"}`;
     case "flip":
-      return `${base} ${isActive ? "rotateY-0 opacity-100" : "[transform:rotateY(90deg)] opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "[transform:rotateY(0deg)] opacity-100" : "[transform:rotateY(90deg)] opacity-0"}`;
     case "none":
-      return `absolute inset-0 ${isActive ? "opacity-100" : "opacity-0"}`;
+      return `absolute inset-0 ${activeZ} ${visibility} ${isActive ? "opacity-100" : "opacity-0"}`;
     case "fade":
     default:
-      return `${base} ${isActive ? "opacity-100" : "opacity-0"}`;
+      return `${base} ${activeZ} ${visibility} ${isActive ? "opacity-100" : "opacity-0"}`;
   }
 };
 
