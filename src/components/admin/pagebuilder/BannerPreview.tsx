@@ -253,6 +253,7 @@ const BannerPreview = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showFilePicker, setShowFilePicker] = useState(false);
   const [formData, setFormData] = useState<BannerFormData>(emptyForm);
   const [previewBanner, setPreviewBanner] = useState<Banner | null>(null);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
