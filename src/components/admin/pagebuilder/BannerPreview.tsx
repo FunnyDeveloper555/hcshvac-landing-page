@@ -10,10 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Loader2, Monitor, Smartphone, Save, Phone, Image, Plus, Trash2,
-  Edit, X, Eye, EyeOff, Pencil, GripVertical,
+  Edit, X, Eye, EyeOff, Pencil, GripVertical, FolderOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import hvacHero from "@/assets/hvac-hero.jpg";
+import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import {
   DndContext,
   closestCenter,
