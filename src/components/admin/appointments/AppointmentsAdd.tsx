@@ -165,6 +165,7 @@ export default function AppointmentsAdd() {
         address_state: addr.state,
         address_zip: addr.zip,
         appointment_type: data.appointment_type as AppointmentType,
+        visit_type: (data as any).visit_type || "",
         scheduled_date: data.scheduled_date,
         scheduled_time: data.scheduled_time,
         notes: data.notes || "",
