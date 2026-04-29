@@ -102,6 +102,7 @@ export type Database = {
           scheduled_time: string
           status: Database["public"]["Enums"]["appointment_status"]
           updated_at: string
+          visit_type: string | null
         }
         Insert: {
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
@@ -118,6 +119,7 @@ export type Database = {
           scheduled_time: string
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
+          visit_type?: string | null
         }
         Update: {
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
@@ -134,6 +136,7 @@ export type Database = {
           scheduled_time?: string
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
+          visit_type?: string | null
         }
         Relationships: [
           {

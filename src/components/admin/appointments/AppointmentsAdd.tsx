@@ -24,6 +24,7 @@ interface FormData {
   address_state: string;
   address_zip: string;
   appointment_type: AppointmentType;
+  visit_type: string;
   scheduled_date: string;
   scheduled_time: string;
   notes: string;
@@ -40,6 +41,7 @@ const initialFormData: FormData = {
   address_state: "",
   address_zip: "",
   appointment_type: "residential",
+  visit_type: "",
   scheduled_date: "",
   scheduled_time: "",
   notes: "",
@@ -54,6 +56,12 @@ const appointmentTypes: { value: AppointmentType; label: string }[] = [
   { value: "school", label: "School" },
   { value: "government", label: "Government Facility" },
   { value: "other", label: "Other" },
+];
+
+const visitTypes: string[] = [
+  "Estimate New AC",
+  "Estimate New Furnace",
+  "Estimate New AC and Furnace",
 ];
 
 const formatHour = (h: number): string => {
@@ -157,6 +165,7 @@ export default function AppointmentsAdd() {
         address_state: addr.state,
         address_zip: addr.zip,
         appointment_type: data.appointment_type as AppointmentType,
+        visit_type: (data as any).visit_type || "",
         scheduled_date: data.scheduled_date,
         scheduled_time: data.scheduled_time,
         notes: data.notes || "",
@@ -175,6 +184,7 @@ export default function AppointmentsAdd() {
       customer_phone: data.customer_phone,
       customer_address: fullAddress || null,
       appointment_type: data.appointment_type,
+      visit_type: data.visit_type || null,
       scheduled_date: data.scheduled_date,
       scheduled_time: data.scheduled_time,
       notes: data.notes || null,
@@ -217,7 +227,7 @@ export default function AppointmentsAdd() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
+    if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.visit_type || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -301,6 +311,25 @@ export default function AppointmentsAdd() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="visit_type">Visit Type *</Label>
+              <Select
+                value={formData.visit_type}
+                onValueChange={(v) => handleChange("visit_type", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visit type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {visitTypes.map((vt) => (
+                    <SelectItem key={vt} value={vt}>
+                      {vt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Customer Info */}
