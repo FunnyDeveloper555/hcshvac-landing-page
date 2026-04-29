@@ -15,10 +15,14 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 
 interface FormData {
-  customer_name: string;
+  first_name: string;
+  last_name: string;
   customer_email: string;
   customer_phone: string;
-  customer_address: string;
+  address_street: string;
+  address_city: string;
+  address_state: string;
+  address_zip: string;
   appointment_type: AppointmentType;
   scheduled_date: string;
   scheduled_time: string;
@@ -27,10 +31,14 @@ interface FormData {
 }
 
 const initialFormData: FormData = {
-  customer_name: "",
+  first_name: "",
+  last_name: "",
   customer_email: "",
   customer_phone: "",
-  customer_address: "",
+  address_street: "",
+  address_city: "",
+  address_state: "",
+  address_zip: "",
   appointment_type: "residential",
   scheduled_date: "",
   scheduled_time: "",
@@ -54,6 +62,42 @@ const timeSlots = [
   "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM",
   "5:00 PM", "5:30 PM", "6:00 PM"
 ];
+
+// Auto-format phone to 111-111-1111
+const formatPhone = (input: string): string => {
+  const digits = input.replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+// Split a full name into first/last (best-effort)
+const splitName = (full: string): { first: string; last: string } => {
+  const parts = (full || "").trim().split(/\s+/);
+  if (parts.length === 0 || !parts[0]) return { first: "", last: "" };
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
+};
+
+// Split address "street, city, state zip" (best-effort)
+const splitAddress = (addr: string): { street: string; city: string; state: string; zip: string } => {
+  const result = { street: "", city: "", state: "", zip: "" };
+  if (!addr) return result;
+  const parts = addr.split(",").map((p) => p.trim()).filter(Boolean);
+  if (parts.length >= 1) result.street = parts[0];
+  if (parts.length >= 2) result.city = parts[1];
+  if (parts.length >= 3) {
+    const stateZip = parts[2].split(/\s+/);
+    result.state = stateZip[0] || "";
+    result.zip = stateZip.slice(1).join(" ") || "";
+  }
+  return result;
+};
+
+const joinAddress = (d: FormData): string => {
+  const stateZip = [d.address_state, d.address_zip].filter(Boolean).join(" ");
+  return [d.address_street, d.address_city, stateZip].filter(Boolean).join(", ");
+};
 
 export default function AppointmentsAdd() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -96,11 +140,17 @@ export default function AppointmentsAdd() {
       toast.error("Failed to load appointment");
       navigate("/admin/appointments/list");
     } else if (data) {
+      const { first, last } = splitName(data.customer_name);
+      const addr = splitAddress(data.customer_address || "");
       setFormData({
-        customer_name: data.customer_name,
+        first_name: first,
+        last_name: last,
         customer_email: data.customer_email || "",
-        customer_phone: data.customer_phone,
-        customer_address: data.customer_address || "",
+        customer_phone: formatPhone(data.customer_phone || ""),
+        address_street: addr.street,
+        address_city: addr.city,
+        address_state: addr.state,
+        address_zip: addr.zip,
         appointment_type: data.appointment_type as AppointmentType,
         scheduled_date: data.scheduled_date,
         scheduled_time: data.scheduled_time,
@@ -111,27 +161,32 @@ export default function AppointmentsAdd() {
     setLoading(false);
   };
 
+  const buildPayload = (data: FormData) => {
+    const fullName = `${data.first_name.trim()} ${data.last_name.trim()}`.trim();
+    const fullAddress = joinAddress(data);
+    return {
+      customer_name: fullName,
+      customer_email: data.customer_email || null,
+      customer_phone: data.customer_phone,
+      customer_address: fullAddress || null,
+      appointment_type: data.appointment_type,
+      scheduled_date: data.scheduled_date,
+      scheduled_time: data.scheduled_time,
+      notes: data.notes || null,
+      company_id: data.company_id || null,
+    };
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const insertData = {
-        customer_name: data.customer_name,
-        customer_email: data.customer_email || null,
-        customer_phone: data.customer_phone,
-        customer_address: data.customer_address || null,
-        appointment_type: data.appointment_type,
-        scheduled_date: data.scheduled_date,
-        scheduled_time: data.scheduled_time,
-        notes: data.notes || null,
-        company_id: data.company_id || null,
-      };
-      const { data: result, error } = await supabase.from("appointments").insert(insertData).select().single();
+      const { data: result, error } = await supabase.from("appointments").insert(buildPayload(data)).select().single();
       if (error) throw error;
       return result;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Appointment created successfully");
-      logAction("create", "appointment", data.id, { customer_name: formData.customer_name });
+      logAction("create", "appointment", data.id, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
     },
     onError: (error) => {
@@ -141,24 +196,13 @@ export default function AppointmentsAdd() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const updateData = {
-        customer_name: data.customer_name,
-        customer_email: data.customer_email || null,
-        customer_phone: data.customer_phone,
-        customer_address: data.customer_address || null,
-        appointment_type: data.appointment_type,
-        scheduled_date: data.scheduled_date,
-        scheduled_time: data.scheduled_time,
-        notes: data.notes || null,
-        company_id: data.company_id || null,
-      };
-      const { error } = await supabase.from("appointments").update(updateData).eq("id", editId);
+      const { error } = await supabase.from("appointments").update(buildPayload(data)).eq("id", editId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       toast.success("Appointment updated successfully");
-      logAction("update", "appointment", editId!, { customer_name: formData.customer_name });
+      logAction("update", "appointment", editId!, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
     },
     onError: (error) => {
@@ -168,11 +212,16 @@ export default function AppointmentsAdd() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.customer_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
+    if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
       toast.error("Please fill in all required fields");
       return;
     }
-    
+    const digits = formData.customer_phone.replace(/\D/g, "");
+    if (digits.length !== 10) {
+      toast.error("Phone number must be 10 digits");
+      return;
+    }
+
     if (isEditing) {
       updateMutation.mutate(formData);
     } else {
@@ -182,6 +231,10 @@ export default function AppointmentsAdd() {
 
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setFormData(prev => ({ ...prev, customer_phone: formatPhone(value) }));
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -250,12 +303,21 @@ export default function AppointmentsAdd() {
               <h3 className="font-semibold text-lg">Customer Information</h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="customer_name">Customer Name *</Label>
+                  <Label htmlFor="first_name">First Name *</Label>
                   <Input
-                    id="customer_name"
-                    value={formData.customer_name}
-                    onChange={(e) => handleChange("customer_name", e.target.value)}
-                    placeholder="Full name"
+                    id="first_name"
+                    value={formData.first_name}
+                    onChange={(e) => handleChange("first_name", e.target.value)}
+                    placeholder="John"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Last Name *</Label>
+                  <Input
+                    id="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => handleChange("last_name", e.target.value)}
+                    placeholder="Doe"
                   />
                 </div>
                 <div className="space-y-2">
@@ -263,8 +325,10 @@ export default function AppointmentsAdd() {
                   <Input
                     id="customer_phone"
                     value={formData.customer_phone}
-                    onChange={(e) => handleChange("customer_phone", e.target.value)}
-                    placeholder="(555) 123-4567"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="111-111-1111"
+                    inputMode="tel"
+                    maxLength={12}
                   />
                 </div>
                 <div className="space-y-2">
@@ -277,13 +341,47 @@ export default function AppointmentsAdd() {
                     placeholder="email@example.com"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Address</h3>
+              <div className="space-y-2">
+                <Label htmlFor="address_street">Street Address</Label>
+                <Input
+                  id="address_street"
+                  value={formData.address_street}
+                  onChange={(e) => handleChange("address_street", e.target.value)}
+                  placeholder="123 Main St"
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="customer_address">Address</Label>
+                  <Label htmlFor="address_city">City</Label>
                   <Input
-                    id="customer_address"
-                    value={formData.customer_address}
-                    onChange={(e) => handleChange("customer_address", e.target.value)}
-                    placeholder="123 Main St, City, State"
+                    id="address_city"
+                    value={formData.address_city}
+                    onChange={(e) => handleChange("address_city", e.target.value)}
+                    placeholder="City"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address_state">State</Label>
+                  <Input
+                    id="address_state"
+                    value={formData.address_state}
+                    onChange={(e) => handleChange("address_state", e.target.value)}
+                    placeholder="State"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address_zip">ZIP</Label>
+                  <Input
+                    id="address_zip"
+                    value={formData.address_zip}
+                    onChange={(e) => handleChange("address_zip", e.target.value)}
+                    placeholder="12345"
                   />
                 </div>
               </div>
