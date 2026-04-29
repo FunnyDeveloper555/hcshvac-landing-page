@@ -24,6 +24,7 @@ interface FormData {
   address_state: string;
   address_zip: string;
   appointment_type: AppointmentType;
+  visit_type: string;
   scheduled_date: string;
   scheduled_time: string;
   notes: string;
@@ -40,6 +41,7 @@ const initialFormData: FormData = {
   address_state: "",
   address_zip: "",
   appointment_type: "residential",
+  visit_type: "",
   scheduled_date: "",
   scheduled_time: "",
   notes: "",
@@ -54,6 +56,12 @@ const appointmentTypes: { value: AppointmentType; label: string }[] = [
   { value: "school", label: "School" },
   { value: "government", label: "Government Facility" },
   { value: "other", label: "Other" },
+];
+
+const visitTypes: string[] = [
+  "Estimate New AC",
+  "Estimate New Furnace",
+  "Estimate New AC and Furnace",
 ];
 
 const formatHour = (h: number): string => {
