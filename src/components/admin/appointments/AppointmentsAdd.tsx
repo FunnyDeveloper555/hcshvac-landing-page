@@ -227,7 +227,7 @@ export default function AppointmentsAdd() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
+    if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.visit_type || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
       toast.error("Please fill in all required fields");
       return;
     }
