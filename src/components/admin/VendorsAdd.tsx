@@ -12,6 +12,7 @@ import { Plus, Trash2, Loader2, FolderOpen } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
+import { HoursOfOperationField, parseHours, serializeHours } from "@/components/admin/HoursOfOperationField";
 
 const industrySchema = z.object({
   id: z.string().optional(),
@@ -341,7 +342,10 @@ const VendorsAdd = () => {
                 <FormItem>
                   <FormLabel>Hours of Operation</FormLabel>
                   <FormControl>
-                    <Input placeholder="Mon-Fri 9AM-5PM" {...field} />
+                    <HoursOfOperationField
+                      value={parseHours(field.value)}
+                      onChange={(val) => field.onChange(serializeHours(val))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
