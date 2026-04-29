@@ -184,6 +184,7 @@ export default function AppointmentsAdd() {
       customer_phone: data.customer_phone,
       customer_address: fullAddress || null,
       appointment_type: data.appointment_type,
+      visit_type: data.visit_type || null,
       scheduled_date: data.scheduled_date,
       scheduled_time: data.scheduled_time,
       notes: data.notes || null,
