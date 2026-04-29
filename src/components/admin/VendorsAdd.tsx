@@ -342,7 +342,10 @@ const VendorsAdd = () => {
                 <FormItem>
                   <FormLabel>Hours of Operation</FormLabel>
                   <FormControl>
-                    <Input placeholder="Mon-Fri 9AM-5PM" {...field} />
+                    <HoursOfOperationField
+                      value={parseHours(field.value)}
+                      onChange={(val) => field.onChange(serializeHours(val))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
