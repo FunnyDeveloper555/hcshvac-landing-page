@@ -99,7 +99,7 @@ export default function HireApplicationForm() {
     if (!parsed.success) {
       toast({
         title: "Please fix the form",
-        description: parsed.error.errors[0]?.message || "Invalid input",
+        description: parsed.error.issues[0]?.message || "Invalid input",
         variant: "destructive",
       });
       return;
