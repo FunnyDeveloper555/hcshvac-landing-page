@@ -98,6 +98,14 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   { 
+    title: "New Hire", 
+    icon: UserPlus,
+    children: [
+      { title: "Send Application Link", url: "/admin/new-hire/send", icon: Send },
+      { title: "Applications", url: "/admin/new-hire/list", icon: List },
+    ]
+  },
+  { 
     title: "My Company", 
     icon: Building,
     children: [
