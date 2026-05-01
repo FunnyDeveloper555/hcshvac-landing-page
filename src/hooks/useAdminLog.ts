@@ -20,6 +20,7 @@ type EntityType =
   | "settings"
   | "auth"
   | "booking_invitation"
+  | "hire_invitation"
   | "call"
   | "location_profile"
   | "photo"
@@ -45,6 +46,7 @@ type ActionType =
   | "login" 
   | "logout" 
   | "send_booking_link"
+  | "send_hire_link"
   // Call actions
   | "call_in"
   | "call_out"

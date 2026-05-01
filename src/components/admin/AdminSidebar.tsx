@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive, Globe, FolderClosed } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive, Globe, FolderClosed, UserPlus } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -95,6 +95,14 @@ const staticMenuItems: MenuItem[] = [
     children: [
       { title: "Send Link", url: "/admin/sms-link/send", icon: Send },
       { title: "Sent Links", url: "/admin/sms-link/list", icon: List },
+    ]
+  },
+  { 
+    title: "New Hire", 
+    icon: UserPlus,
+    children: [
+      { title: "Send Application Link", url: "/admin/new-hire/send", icon: Send },
+      { title: "Applications", url: "/admin/new-hire/list", icon: List },
     ]
   },
   { 

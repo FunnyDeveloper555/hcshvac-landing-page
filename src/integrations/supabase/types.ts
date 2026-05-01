@@ -2384,6 +2384,128 @@ export type Database = {
         }
         Relationships: []
       }
+      hire_applications: {
+        Row: {
+          address_city: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zip: string | null
+          company_id: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          invitation_id: string | null
+          last_name: string
+          notes: string | null
+          phone: string
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          company_id?: string | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          invitation_id?: string | null
+          last_name: string
+          notes?: string | null
+          phone: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          company_id?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          invitation_id?: string | null
+          last_name?: string
+          notes?: string | null
+          phone?: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hire_applications_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "hire_invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hire_invitations: {
+        Row: {
+          company_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          opened_at: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_phone: string | null
+          send_method: string
+          sent_at: string | null
+          status: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          send_method?: string
+          sent_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          opened_at?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string | null
+          send_method?: string
+          sent_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
