@@ -937,17 +937,39 @@ export function EmployeesAdd() {
               />
             </CardContent>
           </Card>
+          </div>
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {isEditing ? "Updating..." : "Adding..."}
-              </>
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              disabled={step === 0 || isSubmitting}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Step {step + 1} of {steps.length}
+            </div>
+            {step < steps.length - 1 ? (
+              <Button type="button" onClick={handleNext}>
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             ) : (
-              isEditing ? "Update Employee" : "Add Employee"
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isEditing ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  isEditing ? "Update Employee" : "Add Employee"
+                )}
+              </Button>
             )}
-          </Button>
+          </div>
         </form>
       </Form>
     </div>
