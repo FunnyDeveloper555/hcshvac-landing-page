@@ -13,6 +13,8 @@ import { Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   // Employee Profile
@@ -73,9 +75,28 @@ export function EmployeesAdd() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [step, setStep] = useState(0);
+
   const editId = searchParams.get("id");
   const isEditing = !!editId;
+
+  const steps = [
+    { title: "Employee Profile", description: "Basic employee information" },
+    { title: "Education", description: "Educational background" },
+    { title: "Previous Employer", description: "Previous employment information" },
+  ];
+
+  const stepFields: (keyof FormValues)[][] = [
+    ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
+    ["high_school", "trade_school", "two_year_college", "four_year_college", "certificates_held", "licenses_held"],
+    ["prev_business_name", "prev_work_address", "prev_work_city", "prev_work_state", "prev_work_zip_code", "prev_work_phone_number", "prev_work_contact_person", "prev_corporate_address", "prev_corporate_city", "prev_corporate_state", "prev_corporate_zip_code", "prev_corporate_phone_number", "prev_corporate_contact_person", "prev_start_month", "prev_start_year", "prev_end_month", "prev_end_year", "prev_starting_position", "prev_ending_position", "prev_reason_for_leaving", "prev_eligible_for_rehire"],
+  ];
+
+  const handleNext = async () => {
+    const valid = await form.trigger(stepFields[step]);
+    if (valid) setStep((s) => Math.min(s + 1, steps.length - 1));
+  };
+  const handleBack = () => setStep((s) => Math.max(s - 1, 0));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -208,11 +229,52 @@ export function EmployeesAdd() {
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Stepper */}
+          <div className="flex items-center justify-between gap-2 px-1">
+            {steps.map((s, i) => {
+              const isActive = i === step;
+              const isComplete = i < step;
+              return (
+                <div key={s.title} className="flex items-center flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => i < step && setStep(i)}
+                    className={cn(
+                      "flex items-center gap-2 min-w-0",
+                      i < step ? "cursor-pointer" : "cursor-default"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium border shrink-0",
+                        isActive && "bg-primary text-primary-foreground border-primary",
+                        isComplete && "bg-primary/20 text-primary border-primary",
+                        !isActive && !isComplete && "bg-muted text-muted-foreground border-border"
+                      )}
+                    >
+                      {isComplete ? <Check className="h-4 w-4" /> : i + 1}
+                    </div>
+                    <div className="hidden sm:block min-w-0">
+                      <div className={cn("text-sm font-medium truncate", isActive ? "text-foreground" : "text-muted-foreground")}>
+                        {s.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">{s.description}</div>
+                    </div>
+                  </button>
+                  {i < steps.length - 1 && (
+                    <div className={cn("flex-1 h-px mx-2", i < step ? "bg-primary" : "bg-border")} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           {/* Employee Profile */}
+          <div className={cn(step !== 0 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>{isEditing ? "Edit Employee" : "Add Employee"}</CardTitle>
-              <CardDescription>Basic employee information</CardDescription>
+              <CardDescription>Step 1 of 3 — Basic employee information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -446,12 +508,14 @@ export function EmployeesAdd() {
               </div>
             </CardContent>
           </Card>
+          </div>
 
           {/* Education */}
+          <div className={cn(step !== 1 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>Education</CardTitle>
-              <CardDescription>Educational background</CardDescription>
+              <CardDescription>Step 2 of 3 — Educational background</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -541,12 +605,14 @@ export function EmployeesAdd() {
               />
             </CardContent>
           </Card>
+          </div>
 
           {/* Previous Employer */}
+          <div className={cn(step !== 2 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>Previous Employer</CardTitle>
-              <CardDescription>Previous employment information</CardDescription>
+              <CardDescription>Step 3 of 3 — Previous employment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -871,17 +937,39 @@ export function EmployeesAdd() {
               />
             </CardContent>
           </Card>
+          </div>
 
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {isEditing ? "Updating..." : "Adding..."}
-              </>
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              disabled={step === 0 || isSubmitting}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Back
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Step {step + 1} of {steps.length}
+            </div>
+            {step < steps.length - 1 ? (
+              <Button type="button" onClick={handleNext}>
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             ) : (
-              isEditing ? "Update Employee" : "Add Employee"
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isEditing ? "Updating..." : "Adding..."}
+                  </>
+                ) : (
+                  isEditing ? "Update Employee" : "Add Employee"
+                )}
+              </Button>
             )}
-          </Button>
+          </div>
         </form>
       </Form>
     </div>
