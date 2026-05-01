@@ -229,11 +229,52 @@ export function EmployeesAdd() {
     <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Stepper */}
+          <div className="flex items-center justify-between gap-2 px-1">
+            {steps.map((s, i) => {
+              const isActive = i === step;
+              const isComplete = i < step;
+              return (
+                <div key={s.title} className="flex items-center flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => i < step && setStep(i)}
+                    className={cn(
+                      "flex items-center gap-2 min-w-0",
+                      i < step ? "cursor-pointer" : "cursor-default"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium border shrink-0",
+                        isActive && "bg-primary text-primary-foreground border-primary",
+                        isComplete && "bg-primary/20 text-primary border-primary",
+                        !isActive && !isComplete && "bg-muted text-muted-foreground border-border"
+                      )}
+                    >
+                      {isComplete ? <Check className="h-4 w-4" /> : i + 1}
+                    </div>
+                    <div className="hidden sm:block min-w-0">
+                      <div className={cn("text-sm font-medium truncate", isActive ? "text-foreground" : "text-muted-foreground")}>
+                        {s.title}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">{s.description}</div>
+                    </div>
+                  </button>
+                  {i < steps.length - 1 && (
+                    <div className={cn("flex-1 h-px mx-2", i < step ? "bg-primary" : "bg-border")} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           {/* Employee Profile */}
+          <div className={cn(step !== 0 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>{isEditing ? "Edit Employee" : "Add Employee"}</CardTitle>
-              <CardDescription>Basic employee information</CardDescription>
+              <CardDescription>Step 1 of 3 — Basic employee information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
