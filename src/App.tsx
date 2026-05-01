@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import ServiceDetail from "./pages/ServiceDetail";
 import BookingForm from "./pages/BookingForm";
+import HireApplicationForm from "./pages/HireApplicationForm";
 import CompanyLanding from "./pages/CompanyLanding";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/admin/*" element={<Admin />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
             <Route path="/book/:token" element={<BookingForm />} />
+            <Route path="/apply/:token" element={<HireApplicationForm />} />
             <Route path="/company/:slug" element={<CompanyLanding />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
