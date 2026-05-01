@@ -605,12 +605,14 @@ export function EmployeesAdd() {
               />
             </CardContent>
           </Card>
+          </div>
 
           {/* Previous Employer */}
+          <div className={cn(step !== 2 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>Previous Employer</CardTitle>
-              <CardDescription>Previous employment information</CardDescription>
+              <CardDescription>Step 3 of 3 — Previous employment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
