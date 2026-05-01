@@ -75,9 +75,28 @@ export function EmployeesAdd() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [step, setStep] = useState(0);
+
   const editId = searchParams.get("id");
   const isEditing = !!editId;
+
+  const steps = [
+    { title: "Employee Profile", description: "Basic employee information" },
+    { title: "Education", description: "Educational background" },
+    { title: "Previous Employer", description: "Previous employment information" },
+  ];
+
+  const stepFields: (keyof FormValues)[][] = [
+    ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
+    ["high_school", "trade_school", "two_year_college", "four_year_college", "certificates_held", "licenses_held"],
+    ["prev_business_name", "prev_work_address", "prev_work_city", "prev_work_state", "prev_work_zip_code", "prev_work_phone_number", "prev_work_contact_person", "prev_corporate_address", "prev_corporate_city", "prev_corporate_state", "prev_corporate_zip_code", "prev_corporate_phone_number", "prev_corporate_contact_person", "prev_start_month", "prev_start_year", "prev_end_month", "prev_end_year", "prev_starting_position", "prev_ending_position", "prev_reason_for_leaving", "prev_eligible_for_rehire"],
+  ];
+
+  const handleNext = async () => {
+    const valid = await form.trigger(stepFields[step]);
+    if (valid) setStep((s) => Math.min(s + 1, steps.length - 1));
+  };
+  const handleBack = () => setStep((s) => Math.max(s - 1, 0));
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
