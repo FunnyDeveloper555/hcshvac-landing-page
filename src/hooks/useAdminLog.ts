@@ -20,6 +20,7 @@ type EntityType =
   | "settings"
   | "auth"
   | "booking_invitation"
+  | "hire_invitation"
   | "call"
   | "location_profile"
   | "photo"
