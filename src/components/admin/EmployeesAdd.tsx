@@ -508,12 +508,14 @@ export function EmployeesAdd() {
               </div>
             </CardContent>
           </Card>
+          </div>
 
           {/* Education */}
+          <div className={cn(step !== 1 && "hidden")}>
           <Card>
             <CardHeader>
               <CardTitle>Education</CardTitle>
-              <CardDescription>Educational background</CardDescription>
+              <CardDescription>Step 2 of 3 — Educational background</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
