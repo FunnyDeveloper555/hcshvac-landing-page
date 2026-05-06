@@ -1845,6 +1845,7 @@ export type Database = {
           prev_work_state: string | null
           prev_work_zip_code: string | null
           resume_certificates_achievements: string | null
+          resume_certificates_file_url: string | null
           resume_skills: string | null
           resume_summary: string | null
           social_security_number: string | null
@@ -1896,6 +1897,7 @@ export type Database = {
           prev_work_state?: string | null
           prev_work_zip_code?: string | null
           resume_certificates_achievements?: string | null
+          resume_certificates_file_url?: string | null
           resume_skills?: string | null
           resume_summary?: string | null
           social_security_number?: string | null
@@ -1947,6 +1949,7 @@ export type Database = {
           prev_work_state?: string | null
           prev_work_zip_code?: string | null
           resume_certificates_achievements?: string | null
+          resume_certificates_file_url?: string | null
           resume_skills?: string | null
           resume_summary?: string | null
           social_security_number?: string | null
