@@ -92,7 +92,9 @@ export function EmployeesAdd() {
     ["prev_business_name", "prev_work_address", "prev_work_city", "prev_work_state", "prev_work_zip_code", "prev_work_phone_number", "prev_work_contact_person", "prev_corporate_address", "prev_corporate_city", "prev_corporate_state", "prev_corporate_zip_code", "prev_corporate_phone_number", "prev_corporate_contact_person", "prev_start_month", "prev_start_year", "prev_end_month", "prev_end_year", "prev_starting_position", "prev_ending_position", "prev_reason_for_leaving", "prev_eligible_for_rehire"],
   ];
 
-  const handleNext = async () => {
+  const handleNext = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     const valid = await form.trigger(stepFields[step]);
     if (valid) setStep((s) => Math.min(s + 1, steps.length - 1));
   };
@@ -953,12 +955,12 @@ export function EmployeesAdd() {
               Step {step + 1} of {steps.length}
             </div>
             {step < steps.length - 1 ? (
-              <Button type="button" onClick={handleNext}>
+              <Button key="next-btn" type="button" onClick={handleNext}>
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button type="submit" disabled={isSubmitting}>
+              <Button key="submit-btn" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
