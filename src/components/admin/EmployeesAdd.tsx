@@ -65,6 +65,11 @@ const formSchema = z.object({
   prev_ending_position: z.string().optional(),
   prev_reason_for_leaving: z.string().optional(),
   prev_eligible_for_rehire: z.boolean().optional(),
+
+  // Resume
+  resume_certificates_achievements: z.string().optional(),
+  resume_skills: z.string().optional(),
+  resume_summary: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -84,12 +89,14 @@ export function EmployeesAdd() {
     { title: "Employee Profile", description: "Basic employee information" },
     { title: "Education", description: "Educational background" },
     { title: "Previous Employer", description: "Previous employment information" },
+    { title: "Resume", description: "Certificates, skills, and summary" },
   ];
 
   const stepFields: (keyof FormValues)[][] = [
     ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
     ["high_school", "trade_school", "two_year_college", "four_year_college", "certificates_held", "licenses_held"],
     ["prev_business_name", "prev_work_address", "prev_work_city", "prev_work_state", "prev_work_zip_code", "prev_work_phone_number", "prev_work_contact_person", "prev_corporate_address", "prev_corporate_city", "prev_corporate_state", "prev_corporate_zip_code", "prev_corporate_phone_number", "prev_corporate_contact_person", "prev_start_month", "prev_start_year", "prev_end_month", "prev_end_year", "prev_starting_position", "prev_ending_position", "prev_reason_for_leaving", "prev_eligible_for_rehire"],
+    ["resume_certificates_achievements", "resume_skills", "resume_summary"],
   ];
 
   const handleNext = async (e?: React.MouseEvent) => {
@@ -168,6 +175,9 @@ export function EmployeesAdd() {
               prev_ending_position: data.prev_ending_position || "",
               prev_reason_for_leaving: data.prev_reason_for_leaving || "",
               prev_eligible_for_rehire: data.prev_eligible_for_rehire || false,
+              resume_certificates_achievements: data.resume_certificates_achievements || "",
+              resume_skills: data.resume_skills || "",
+              resume_summary: data.resume_summary || "",
             });
           }
           setIsLoading(false);
@@ -276,7 +286,7 @@ export function EmployeesAdd() {
           <Card>
             <CardHeader>
               <CardTitle>{isEditing ? "Edit Employee" : "Add Employee"}</CardTitle>
-              <CardDescription>Step 1 of 3 — Basic employee information</CardDescription>
+              <CardDescription>Step 1 of 4 — Basic employee information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -517,7 +527,7 @@ export function EmployeesAdd() {
           <Card>
             <CardHeader>
               <CardTitle>Education</CardTitle>
-              <CardDescription>Step 2 of 3 — Educational background</CardDescription>
+              <CardDescription>Step 2 of 4 — Educational background</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -614,7 +624,7 @@ export function EmployeesAdd() {
           <Card>
             <CardHeader>
               <CardTitle>Previous Employer</CardTitle>
-              <CardDescription>Step 3 of 3 — Previous employment information</CardDescription>
+              <CardDescription>Step 3 of 4 — Previous employment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -933,6 +943,57 @@ export function EmployeesAdd() {
                       />
                     </FormControl>
                     <FormLabel className="font-normal">Eligible for Rehire</FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+          </div>
+
+          {/* Resume */}
+          <div className={cn(step !== 3 && "hidden")}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Resume</CardTitle>
+              <CardDescription>Step 4 of 4 — Certificates, skills, and summary</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="resume_certificates_achievements"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Certificates and Achievements</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={4} placeholder="List certifications, awards, and notable achievements" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="resume_skills"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Skills</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={4} placeholder="List relevant skills and competencies" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="resume_summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Summary</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={5} placeholder="Brief professional summary" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
