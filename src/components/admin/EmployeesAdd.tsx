@@ -286,7 +286,7 @@ export function EmployeesAdd() {
           <Card>
             <CardHeader>
               <CardTitle>{isEditing ? "Edit Employee" : "Add Employee"}</CardTitle>
-              <CardDescription>Step 1 of 3 — Basic employee information</CardDescription>
+              <CardDescription>Step 1 of 4 — Basic employee information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
