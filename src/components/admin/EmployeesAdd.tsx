@@ -65,6 +65,11 @@ const formSchema = z.object({
   prev_ending_position: z.string().optional(),
   prev_reason_for_leaving: z.string().optional(),
   prev_eligible_for_rehire: z.boolean().optional(),
+
+  // Resume
+  resume_certificates_achievements: z.string().optional(),
+  resume_skills: z.string().optional(),
+  resume_summary: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
