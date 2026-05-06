@@ -624,7 +624,7 @@ export function EmployeesAdd() {
           <Card>
             <CardHeader>
               <CardTitle>Previous Employer</CardTitle>
-              <CardDescription>Step 3 of 3 — Previous employment information</CardDescription>
+              <CardDescription>Step 3 of 4 — Previous employment information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
