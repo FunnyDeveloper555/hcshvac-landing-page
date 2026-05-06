@@ -955,12 +955,12 @@ export function EmployeesAdd() {
               Step {step + 1} of {steps.length}
             </div>
             {step < steps.length - 1 ? (
-              <Button type="button" onClick={handleNext}>
+              <Button key="next-btn" type="button" onClick={handleNext}>
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button type="submit" disabled={isSubmitting}>
+              <Button key="submit-btn" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
