@@ -175,6 +175,9 @@ export function EmployeesAdd() {
               prev_ending_position: data.prev_ending_position || "",
               prev_reason_for_leaving: data.prev_reason_for_leaving || "",
               prev_eligible_for_rehire: data.prev_eligible_for_rehire || false,
+              resume_certificates_achievements: data.resume_certificates_achievements || "",
+              resume_skills: data.resume_skills || "",
+              resume_summary: data.resume_summary || "",
             });
           }
           setIsLoading(false);
