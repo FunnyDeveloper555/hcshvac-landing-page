@@ -951,6 +951,57 @@ export function EmployeesAdd() {
           </Card>
           </div>
 
+          {/* Resume */}
+          <div className={cn(step !== 3 && "hidden")}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Resume</CardTitle>
+              <CardDescription>Step 4 of 4 — Certificates, skills, and summary</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="resume_certificates_achievements"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Certificates and Achievements</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={4} placeholder="List certifications, awards, and notable achievements" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="resume_skills"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Skills</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={4} placeholder="List relevant skills and competencies" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="resume_summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Summary</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} rows={5} placeholder="Brief professional summary" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+          </div>
+
           <div className="flex items-center justify-between gap-2">
             <Button
               type="button"
