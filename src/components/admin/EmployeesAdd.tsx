@@ -84,13 +84,12 @@ function SecureMaskedInput({
 }) {
   const [reveal, setReveal] = useState(false);
   const formatted = formatGroups(value || "", groups, alphanumeric);
-  const display = reveal ? formatted : maskValue(formatted, 0);
   return (
     <div className="relative">
       <Input
-        value={display}
+        type={reveal ? "text" : "password"}
+        value={formatted}
         placeholder={placeholder}
-        readOnly={!reveal}
         onChange={(e) => onChange(formatGroups(e.target.value, groups, alphanumeric))}
         inputMode={alphanumeric ? "text" : "numeric"}
         autoComplete="off"
