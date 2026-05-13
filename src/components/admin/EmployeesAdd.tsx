@@ -144,17 +144,21 @@ const formSchema = z.object({
   previous_employers: z.array(z.object({
     id: z.string().optional(),
     prev_business_name: z.string().optional(),
+    prev_corporate_name: z.string().optional(),
+    prev_website_url: z.string().optional(),
     prev_work_address: z.string().optional(),
     prev_work_city: z.string().optional(),
     prev_work_state: z.string().optional(),
     prev_work_zip_code: z.string().optional(),
     prev_work_phone_number: z.string().optional(),
+    prev_work_phone_extension: z.string().optional(),
     prev_work_contact_person: z.string().optional(),
     prev_corporate_address: z.string().optional(),
     prev_corporate_city: z.string().optional(),
     prev_corporate_state: z.string().optional(),
     prev_corporate_zip_code: z.string().optional(),
     prev_corporate_phone_number: z.string().optional(),
+    prev_corporate_phone_extension: z.string().optional(),
     prev_corporate_contact_person: z.string().optional(),
     prev_start_month: z.string().optional(),
     prev_start_year: z.string().optional(),
@@ -165,6 +169,26 @@ const formSchema = z.object({
     prev_reason_for_leaving: z.string().optional(),
     prev_eligible_for_rehire: z.boolean().optional(),
   })).optional(),
+
+  // References (multiple)
+  references: z.array(z.object({
+    id: z.string().optional(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    company_name: z.string().optional(),
+    position_held: z.string().optional(),
+    phone_number: z.string().optional(),
+    email_address: z.string().optional(),
+    known_for: z.string().optional(),
+    validates_strengths: z.string().optional(),
+  })).optional(),
+
+  // Languages
+  languages: z.array(z.string()).optional(),
+  languages_other: z.string().optional(),
+
+  // Comfort assessment
+  comfort_assessment: z.record(z.string(), z.boolean()).optional(),
 
   // Resume
   resume_certificates_achievements: z.string().optional(),
