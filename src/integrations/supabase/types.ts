@@ -1804,6 +1804,145 @@ export type Database = {
           },
         ]
       }
+      employee_education: {
+        Row: {
+          certificates_held: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          licenses_held: string | null
+          school_name: string | null
+          school_type: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          certificates_held?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          licenses_held?: string | null
+          school_name?: string | null
+          school_type?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          certificates_held?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          licenses_held?: string | null
+          school_name?: string | null
+          school_type?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_education_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_previous_employers: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          prev_business_name: string | null
+          prev_corporate_address: string | null
+          prev_corporate_city: string | null
+          prev_corporate_contact_person: string | null
+          prev_corporate_phone_number: string | null
+          prev_corporate_state: string | null
+          prev_corporate_zip_code: string | null
+          prev_eligible_for_rehire: boolean | null
+          prev_end_month: string | null
+          prev_end_year: string | null
+          prev_ending_position: string | null
+          prev_reason_for_leaving: string | null
+          prev_start_month: string | null
+          prev_start_year: string | null
+          prev_starting_position: string | null
+          prev_work_address: string | null
+          prev_work_city: string | null
+          prev_work_contact_person: string | null
+          prev_work_phone_number: string | null
+          prev_work_state: string | null
+          prev_work_zip_code: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          prev_business_name?: string | null
+          prev_corporate_address?: string | null
+          prev_corporate_city?: string | null
+          prev_corporate_contact_person?: string | null
+          prev_corporate_phone_number?: string | null
+          prev_corporate_state?: string | null
+          prev_corporate_zip_code?: string | null
+          prev_eligible_for_rehire?: boolean | null
+          prev_end_month?: string | null
+          prev_end_year?: string | null
+          prev_ending_position?: string | null
+          prev_reason_for_leaving?: string | null
+          prev_start_month?: string | null
+          prev_start_year?: string | null
+          prev_starting_position?: string | null
+          prev_work_address?: string | null
+          prev_work_city?: string | null
+          prev_work_contact_person?: string | null
+          prev_work_phone_number?: string | null
+          prev_work_state?: string | null
+          prev_work_zip_code?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          prev_business_name?: string | null
+          prev_corporate_address?: string | null
+          prev_corporate_city?: string | null
+          prev_corporate_contact_person?: string | null
+          prev_corporate_phone_number?: string | null
+          prev_corporate_state?: string | null
+          prev_corporate_zip_code?: string | null
+          prev_eligible_for_rehire?: boolean | null
+          prev_end_month?: string | null
+          prev_end_year?: string | null
+          prev_ending_position?: string | null
+          prev_reason_for_leaving?: string | null
+          prev_start_month?: string | null
+          prev_start_year?: string | null
+          prev_starting_position?: string | null
+          prev_work_address?: string | null
+          prev_work_city?: string | null
+          prev_work_contact_person?: string | null
+          prev_work_phone_number?: string | null
+          prev_work_state?: string | null
+          prev_work_zip_code?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_previous_employers_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string
