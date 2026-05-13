@@ -250,100 +250,136 @@ export function EmployeesAdd() {
   useEffect(() => {
     if (editId) {
       setIsLoading(true);
-      supabase
-        .from("employees")
-        .select("*")
-        .eq("id", editId)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            toast({
-              title: "Error",
-              description: "Failed to load employee data",
-              variant: "destructive",
-            });
-          } else if (data) {
-            form.reset({
-              first_name: data.first_name || "",
-              middle_name: data.middle_name || "",
-              last_name: data.last_name || "",
-              address: data.address || "",
-              city: data.city || "",
-              state: data.state || "",
-              zip_code: data.zip_code || "",
-              phone_number: data.phone_number || "",
-              email_address: data.email_address || "",
-              date_of_birth: data.date_of_birth || "",
-              drivers_license_number: data.drivers_license_number || "",
-              social_security_number: data.social_security_number || "",
-              us_citizen: data.us_citizen || false,
-              city_of_birth: data.city_of_birth || "",
-              state_of_birth: data.state_of_birth || "",
-              birth_gender: data.birth_gender || "",
-              high_school: data.high_school || "",
-              trade_school: data.trade_school || "",
-              two_year_college: data.two_year_college || "",
-              four_year_college: data.four_year_college || "",
-              certificates_held: data.certificates_held || "",
-              licenses_held: data.licenses_held || "",
-              prev_business_name: data.prev_business_name || "",
-              prev_work_address: data.prev_work_address || "",
-              prev_work_city: data.prev_work_city || "",
-              prev_work_state: data.prev_work_state || "",
-              prev_work_zip_code: data.prev_work_zip_code || "",
-              prev_work_phone_number: data.prev_work_phone_number || "",
-              prev_work_contact_person: data.prev_work_contact_person || "",
-              prev_corporate_address: data.prev_corporate_address || "",
-              prev_corporate_city: data.prev_corporate_city || "",
-              prev_corporate_state: data.prev_corporate_state || "",
-              prev_corporate_zip_code: data.prev_corporate_zip_code || "",
-              prev_corporate_phone_number: data.prev_corporate_phone_number || "",
-              prev_corporate_contact_person: data.prev_corporate_contact_person || "",
-              prev_start_month: data.prev_start_month || "",
-              prev_start_year: data.prev_start_year || "",
-              prev_end_month: data.prev_end_month || "",
-              prev_end_year: data.prev_end_year || "",
-              prev_starting_position: data.prev_starting_position || "",
-              prev_ending_position: data.prev_ending_position || "",
-              prev_reason_for_leaving: data.prev_reason_for_leaving || "",
-              prev_eligible_for_rehire: data.prev_eligible_for_rehire || false,
-              resume_certificates_achievements: data.resume_certificates_achievements || "",
-              resume_certificates_file_url: (data as any).resume_certificates_file_url || "",
-              resume_skills: data.resume_skills || "",
-              resume_summary: data.resume_summary || "",
-            });
-          }
+      (async () => {
+        const [empRes, eduRes, prevRes] = await Promise.all([
+          supabase.from("employees").select("*").eq("id", editId).single(),
+          supabase.from("employee_education" as any).select("*").eq("employee_id", editId).order("sort_order"),
+          supabase.from("employee_previous_employers" as any).select("*").eq("employee_id", editId).order("sort_order"),
+        ]);
+        if (empRes.error || !empRes.data) {
+          toast({ title: "Error", description: "Failed to load employee data", variant: "destructive" });
           setIsLoading(false);
+          return;
+        }
+        const data = empRes.data;
+        form.reset({
+          first_name: data.first_name || "",
+          middle_name: data.middle_name || "",
+          last_name: data.last_name || "",
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          zip_code: data.zip_code || "",
+          phone_number: data.phone_number || "",
+          email_address: data.email_address || "",
+          date_of_birth: data.date_of_birth || "",
+          drivers_license_number: data.drivers_license_number || "",
+          social_security_number: data.social_security_number || "",
+          us_citizen: data.us_citizen || false,
+          city_of_birth: data.city_of_birth || "",
+          state_of_birth: data.state_of_birth || "",
+          birth_gender: data.birth_gender || "",
+          educations: ((eduRes.data as any[]) || []).map((e) => ({
+            id: e.id,
+            school_type: e.school_type || "",
+            school_name: e.school_name || "",
+            certificates_held: e.certificates_held || "",
+            licenses_held: e.licenses_held || "",
+          })),
+          previous_employers: ((prevRes.data as any[]) || []).map((p) => ({
+            id: p.id,
+            prev_business_name: p.prev_business_name || "",
+            prev_work_address: p.prev_work_address || "",
+            prev_work_city: p.prev_work_city || "",
+            prev_work_state: p.prev_work_state || "",
+            prev_work_zip_code: p.prev_work_zip_code || "",
+            prev_work_phone_number: p.prev_work_phone_number || "",
+            prev_work_contact_person: p.prev_work_contact_person || "",
+            prev_corporate_address: p.prev_corporate_address || "",
+            prev_corporate_city: p.prev_corporate_city || "",
+            prev_corporate_state: p.prev_corporate_state || "",
+            prev_corporate_zip_code: p.prev_corporate_zip_code || "",
+            prev_corporate_phone_number: p.prev_corporate_phone_number || "",
+            prev_corporate_contact_person: p.prev_corporate_contact_person || "",
+            prev_start_month: p.prev_start_month || "",
+            prev_start_year: p.prev_start_year || "",
+            prev_end_month: p.prev_end_month || "",
+            prev_end_year: p.prev_end_year || "",
+            prev_starting_position: p.prev_starting_position || "",
+            prev_ending_position: p.prev_ending_position || "",
+            prev_reason_for_leaving: p.prev_reason_for_leaving || "",
+            prev_eligible_for_rehire: p.prev_eligible_for_rehire || false,
+          })),
+          resume_certificates_achievements: data.resume_certificates_achievements || "",
+          resume_certificates_file_url: (data as any).resume_certificates_file_url || "",
+          resume_skills: data.resume_skills || "",
+          resume_summary: data.resume_summary || "",
         });
+        setIsLoading(false);
+      })();
     }
   }, [editId, form, toast]);
 
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
+      const { educations = [], previous_employers = [], ...employeeFields } = values;
+
+      let employeeId = editId as string | null;
 
       if (isEditing) {
         const { error } = await supabase
           .from("employees")
-          .update(values)
+          .update(employeeFields as any)
           .eq("id", editId);
-
         if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("employees")
+          .insert([employeeFields as any])
+          .select("id")
+          .single();
+        if (error) throw error;
+        employeeId = data.id;
+      }
 
-        toast({
-          title: "Success",
-          description: "Employee updated successfully",
-        });
+      if (employeeId) {
+        // Replace child rows
+        await supabase.from("employee_education" as any).delete().eq("employee_id", employeeId);
+        await supabase.from("employee_previous_employers" as any).delete().eq("employee_id", employeeId);
+
+        if (educations.length) {
+          const eduRows = educations.map((e, idx) => ({
+            employee_id: employeeId,
+            school_type: e.school_type || null,
+            school_name: e.school_name || null,
+            certificates_held: e.certificates_held || null,
+            licenses_held: e.licenses_held || null,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_education" as any).insert(eduRows);
+          if (error) throw error;
+        }
+
+        if (previous_employers.length) {
+          const prevRows = previous_employers.map((p, idx) => ({
+            employee_id: employeeId,
+            ...p,
+            id: undefined,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_previous_employers" as any).insert(prevRows);
+          if (error) throw error;
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: isEditing ? "Employee updated successfully" : "Employee added successfully",
+      });
+      if (isEditing) {
         navigate("/admin/employees/list");
       } else {
-        const { error } = await supabase.from("employees").insert([values]);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Employee added successfully",
-        });
         form.reset();
         setStep(0);
       }
@@ -357,6 +393,7 @@ export function EmployeesAdd() {
       setIsSubmitting(false);
     }
   };
+
 
   const handleCertFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
