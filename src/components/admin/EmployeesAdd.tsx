@@ -30,6 +30,10 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  Users,
+  Languages as LanguagesIcon,
+  ClipboardCheck,
+  Globe,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -140,17 +144,21 @@ const formSchema = z.object({
   previous_employers: z.array(z.object({
     id: z.string().optional(),
     prev_business_name: z.string().optional(),
+    prev_corporate_name: z.string().optional(),
+    prev_website_url: z.string().optional(),
     prev_work_address: z.string().optional(),
     prev_work_city: z.string().optional(),
     prev_work_state: z.string().optional(),
     prev_work_zip_code: z.string().optional(),
     prev_work_phone_number: z.string().optional(),
+    prev_work_phone_extension: z.string().optional(),
     prev_work_contact_person: z.string().optional(),
     prev_corporate_address: z.string().optional(),
     prev_corporate_city: z.string().optional(),
     prev_corporate_state: z.string().optional(),
     prev_corporate_zip_code: z.string().optional(),
     prev_corporate_phone_number: z.string().optional(),
+    prev_corporate_phone_extension: z.string().optional(),
     prev_corporate_contact_person: z.string().optional(),
     prev_start_month: z.string().optional(),
     prev_start_year: z.string().optional(),
@@ -162,6 +170,26 @@ const formSchema = z.object({
     prev_eligible_for_rehire: z.boolean().optional(),
   })).optional(),
 
+  // References (multiple)
+  references: z.array(z.object({
+    id: z.string().optional(),
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    company_name: z.string().optional(),
+    position_held: z.string().optional(),
+    phone_number: z.string().optional(),
+    email_address: z.string().optional(),
+    known_for: z.string().optional(),
+    validates_strengths: z.string().optional(),
+  })).optional(),
+
+  // Languages
+  languages: z.array(z.string()).optional(),
+  languages_other: z.string().optional(),
+
+  // Comfort assessment
+  comfort_assessment: z.record(z.string(), z.boolean()).optional(),
+
   // Resume
   resume_certificates_achievements: z.string().optional(),
   resume_certificates_file_url: z.string().optional(),
@@ -170,6 +198,37 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const LANGUAGE_OPTIONS = [
+  "English", "Spanish", "Italian", "Hindi", "Urdu", "Punjabi",
+  "Greek/Arabic", "Chinese", "Japanese", "German",
+];
+
+const COMFORT_ITEMS: { key: string; label: string }[] = [
+  { key: "heights", label: "Heights (above standard roofs of 20' and higher)" },
+  { key: "ladders", label: "Ladders" },
+  { key: "access_hatch_ladders", label: "Access hatch ladders" },
+  { key: "tight_spaces", label: "Small tight spaces" },
+  { key: "attics", label: "Attics" },
+  { key: "crawl_in_attics", label: "Crawl in attics" },
+  { key: "crawl_spaces", label: "Crawl spaces" },
+  { key: "roof_tops", label: "Roof tops" },
+  { key: "under_building", label: "Under the building/home" },
+  { key: "extreme_heat", label: "Extremely above-temperature work areas" },
+  { key: "extreme_cold", label: "Extremely cold-temperature work areas" },
+  { key: "carry_uniform", label: "Carrying a complete change of uniform clothing at all times" },
+  { key: "heavy_loads", label: "Carrying, lifting, moving, relocating, bracing or supporting heavy loads daily" },
+  { key: "team_compliant", label: "Working with others as a team and completing group tasks" },
+  { key: "follow_instructions", label: "Following instructions of a task manager" },
+  { key: "deliver_instructions", label: "Delivering instructions as the task manager" },
+  { key: "non_aggressive_comm", label: "Communicating in a non-aggressive manner with staff, clients, vendors, and customers" },
+  { key: "display_credentials", label: "Carrying and displaying all required company credentials" },
+  { key: "comm_strangers", label: "Communicating with strangers" },
+  { key: "comm_same_gender", label: "Business communication with the same gender only" },
+  { key: "comm_opposite_gender", label: "Business communication with the opposite gender only" },
+  { key: "comm_multi_gender", label: "Business communication with multiple people/genders where you are the focus point" },
+  { key: "formal_writing", label: "Writing formal reports in a structured, grammatically correct English format" },
+];
 
 // Section heading inside a step
 function SectionHeader({
@@ -211,6 +270,9 @@ export function EmployeesAdd() {
     { title: "Profile", description: "Personal details", icon: User },
     { title: "Education", description: "Schooling & licenses", icon: GraduationCap },
     { title: "Employment", description: "Previous employer", icon: Briefcase },
+    { title: "References", description: "Professional references", icon: Users },
+    { title: "Languages", description: "Spoken languages", icon: LanguagesIcon },
+    { title: "Assessment", description: "Comfort & abilities", icon: ClipboardCheck },
     { title: "Resume", description: "Skills & summary", icon: FileText },
   ];
 
@@ -218,6 +280,9 @@ export function EmployeesAdd() {
     ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
     ["educations"],
     ["previous_employers"],
+    ["references"],
+    ["languages", "languages_other"],
+    ["comfort_assessment"],
     ["resume_certificates_achievements", "resume_certificates_file_url", "resume_skills", "resume_summary"],
   ];
 
@@ -227,11 +292,16 @@ export function EmployeesAdd() {
       us_citizen: false,
       educations: [],
       previous_employers: [],
+      references: [],
+      languages: [],
+      languages_other: "",
+      comfort_assessment: {},
     },
   });
 
   const educationsArray = useFieldArray({ control: form.control, name: "educations" });
   const employersArray = useFieldArray({ control: form.control, name: "previous_employers" });
+  const referencesArray = useFieldArray({ control: form.control, name: "references" });
 
   const handleNext = async (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -251,10 +321,11 @@ export function EmployeesAdd() {
     if (editId) {
       setIsLoading(true);
       (async () => {
-        const [empRes, eduRes, prevRes] = await Promise.all([
+        const [empRes, eduRes, prevRes, refRes] = await Promise.all([
           supabase.from("employees").select("*").eq("id", editId).single(),
           supabase.from("employee_education" as any).select("*").eq("employee_id", editId).order("sort_order"),
           supabase.from("employee_previous_employers" as any).select("*").eq("employee_id", editId).order("sort_order"),
+          supabase.from("employee_references" as any).select("*").eq("employee_id", editId).order("sort_order"),
         ]);
         if (empRes.error || !empRes.data) {
           toast({ title: "Error", description: "Failed to load employee data", variant: "destructive" });
@@ -289,17 +360,21 @@ export function EmployeesAdd() {
           previous_employers: ((prevRes.data as any[]) || []).map((p) => ({
             id: p.id,
             prev_business_name: p.prev_business_name || "",
+            prev_corporate_name: p.prev_corporate_name || "",
+            prev_website_url: p.prev_website_url || "",
             prev_work_address: p.prev_work_address || "",
             prev_work_city: p.prev_work_city || "",
             prev_work_state: p.prev_work_state || "",
             prev_work_zip_code: p.prev_work_zip_code || "",
             prev_work_phone_number: p.prev_work_phone_number || "",
+            prev_work_phone_extension: p.prev_work_phone_extension || "",
             prev_work_contact_person: p.prev_work_contact_person || "",
             prev_corporate_address: p.prev_corporate_address || "",
             prev_corporate_city: p.prev_corporate_city || "",
             prev_corporate_state: p.prev_corporate_state || "",
             prev_corporate_zip_code: p.prev_corporate_zip_code || "",
             prev_corporate_phone_number: p.prev_corporate_phone_number || "",
+            prev_corporate_phone_extension: p.prev_corporate_phone_extension || "",
             prev_corporate_contact_person: p.prev_corporate_contact_person || "",
             prev_start_month: p.prev_start_month || "",
             prev_start_year: p.prev_start_year || "",
@@ -310,6 +385,22 @@ export function EmployeesAdd() {
             prev_reason_for_leaving: p.prev_reason_for_leaving || "",
             prev_eligible_for_rehire: p.prev_eligible_for_rehire || false,
           })),
+          references: ((refRes.data as any[]) || []).map((r) => ({
+            id: r.id,
+            first_name: r.first_name || "",
+            last_name: r.last_name || "",
+            company_name: r.company_name || "",
+            position_held: r.position_held || "",
+            phone_number: r.phone_number || "",
+            email_address: r.email_address || "",
+            known_for: r.known_for || "",
+            validates_strengths: r.validates_strengths || "",
+          })),
+          languages: Array.isArray((data as any).languages) ? (data as any).languages.filter((x: string) => LANGUAGE_OPTIONS.includes(x)) : [],
+          languages_other: Array.isArray((data as any).languages)
+            ? ((data as any).languages.find((x: string) => !LANGUAGE_OPTIONS.includes(x)) || "")
+            : "",
+          comfort_assessment: (data as any).comfort_assessment || {},
           resume_certificates_achievements: data.resume_certificates_achievements || "",
           resume_certificates_file_url: (data as any).resume_certificates_file_url || "",
           resume_skills: data.resume_skills || "",
@@ -323,7 +414,26 @@ export function EmployeesAdd() {
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      const { educations = [], previous_employers = [], ...employeeFields } = values;
+      const {
+        educations = [],
+        previous_employers = [],
+        references = [],
+        languages = [],
+        languages_other = "",
+        comfort_assessment = {},
+        ...rest
+      } = values;
+
+      const mergedLanguages = [
+        ...languages,
+        ...(languages_other && languages_other.trim() ? [languages_other.trim()] : []),
+      ];
+
+      const employeeFields = {
+        ...rest,
+        languages: mergedLanguages,
+        comfort_assessment,
+      };
 
       let employeeId = editId as string | null;
 
@@ -347,6 +457,7 @@ export function EmployeesAdd() {
         // Replace child rows
         await supabase.from("employee_education" as any).delete().eq("employee_id", employeeId);
         await supabase.from("employee_previous_employers" as any).delete().eq("employee_id", employeeId);
+        await supabase.from("employee_references" as any).delete().eq("employee_id", employeeId);
 
         if (educations.length) {
           const eduRows = educations.map((e, idx) => ({
@@ -369,6 +480,23 @@ export function EmployeesAdd() {
             sort_order: idx,
           }));
           const { error } = await supabase.from("employee_previous_employers" as any).insert(prevRows);
+          if (error) throw error;
+        }
+
+        if (references.length) {
+          const refRows = references.map((r, idx) => ({
+            employee_id: employeeId,
+            first_name: r.first_name || null,
+            last_name: r.last_name || null,
+            company_name: r.company_name || null,
+            position_held: r.position_held || null,
+            phone_number: r.phone_number || null,
+            email_address: r.email_address || null,
+            known_for: r.known_for || null,
+            validates_strengths: r.validates_strengths || null,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_references" as any).insert(refRows);
           if (error) throw error;
         }
       }
@@ -852,8 +980,25 @@ export function EmployeesAdd() {
                         </Button>
                       </div>
 
-                      <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
-                        <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={n("prev_corporate_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Corporate Name</FormLabel><FormControl><Input placeholder="Parent / corporate entity" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <FormField control={form.control} name={n("prev_website_url") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Website URL</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input className="pl-9" placeholder="https://example.com" {...field} value={(field.value as string) || ""} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )} />
 
                       <section className="space-y-4">
@@ -872,9 +1017,12 @@ export function EmployeesAdd() {
                             <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField control={form.control} name={n("prev_work_phone_number") as any} render={({ field }) => (
-                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="(555) 123-4567" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_phone_extension") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Extension</FormLabel><FormControl><Input placeholder="ext." {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                           <FormField control={form.control} name={n("prev_work_contact_person") as any} render={({ field }) => (
                             <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
@@ -898,9 +1046,12 @@ export function EmployeesAdd() {
                             <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField control={form.control} name={n("prev_corporate_phone_number") as any} render={({ field }) => (
-                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="(555) 123-4567" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_phone_extension") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Extension</FormLabel><FormControl><Input placeholder="ext." {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                           <FormField control={form.control} name={n("prev_corporate_contact_person") as any} render={({ field }) => (
                             <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
@@ -974,8 +1125,209 @@ export function EmployeesAdd() {
             </Card>
           </div>
 
-          {/* STEP 4 — Resume */}
+          {/* STEP 4 — References */}
           <div className={cn(step !== 3 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Professional References</CardTitle>
+                  <CardDescription>People who can speak to your professional strengths</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    referencesArray.append({
+                      first_name: "",
+                      last_name: "",
+                      company_name: "",
+                      position_held: "",
+                      phone_number: "",
+                      email_address: "",
+                      known_for: "",
+                      validates_strengths: "",
+                    })
+                  }
+                >
+                  + Add Reference
+                </Button>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {referencesArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No references yet. Click "Add Reference" to begin.
+                  </p>
+                )}
+                {referencesArray.fields.map((field, index) => {
+                  const r = (k: string) => `references.${index}.${k}` as const;
+                  return (
+                    <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-4 relative">
+                      <div className="flex items-center justify-between">
+                        <SectionHeader icon={Users} title={`Reference #${index + 1}`} />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => referencesArray.remove(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("first_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("last_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("company_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Company Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("position_held") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Position Held</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("phone_number") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="(555) 123-4567" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("email_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="name@example.com" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <FormField control={form.control} name={r("known_for") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Would know you professionally best for and achieve</FormLabel>
+                          <FormControl><Textarea rows={3} placeholder="Describe what this reference would highlight about your work" {...field} value={(field.value as string) || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name={r("validates_strengths") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>This individual would most likely honor / validate your strengths on</FormLabel>
+                          <FormControl><Textarea rows={3} placeholder="Strengths this reference can validate" {...field} value={(field.value as string) || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 5 — Languages */}
+          <div className={cn(step !== 4 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30">
+                <CardTitle className="text-lg">Languages</CardTitle>
+                <CardDescription>Select all languages you are verbally fluent in</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="languages"
+                  render={() => (
+                    <FormItem>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <FormField
+                            key={lang}
+                            control={form.control}
+                            name="languages"
+                            render={({ field }) => {
+                              const arr = (field.value as string[]) || [];
+                              const checked = arr.includes(lang);
+                              return (
+                                <label
+                                  className={cn(
+                                    "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
+                                    checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                                  )}
+                                >
+                                  <Checkbox
+                                    checked={checked}
+                                    onCheckedChange={(v) => {
+                                      if (v) field.onChange([...arr, lang]);
+                                      else field.onChange(arr.filter((x) => x !== lang));
+                                    }}
+                                  />
+                                  <span className="text-sm font-medium">{lang}</span>
+                                </label>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField control={form.control} name="languages_other" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Other (specify)</FormLabel>
+                    <FormControl><Input placeholder="e.g. Portuguese, Russian" {...field} value={field.value || ""} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 6 — Comfort Assessment */}
+          <div className={cn(step !== 5 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30">
+                <CardTitle className="text-lg">Comfort & Abilities Assessment</CardTitle>
+                <CardDescription>Check the items you are comfortable with</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-3">
+                <FormField
+                  control={form.control}
+                  name="comfort_assessment"
+                  render={({ field }) => {
+                    const obj = (field.value as Record<string, boolean>) || {};
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {COMFORT_ITEMS.map((item) => {
+                          const checked = !!obj[item.key];
+                          return (
+                            <label
+                              key={item.key}
+                              className={cn(
+                                "flex items-start gap-3 rounded-md border p-3 cursor-pointer transition-colors",
+                                checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                              )}
+                            >
+                              <Checkbox
+                                className="mt-0.5"
+                                checked={checked}
+                                onCheckedChange={(v) =>
+                                  field.onChange({ ...obj, [item.key]: !!v })
+                                }
+                              />
+                              <span className="text-sm leading-snug">{item.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
+                />
+                <p className="text-xs text-muted-foreground pt-3 border-t border-border/60 mt-4">
+                  Note: Part 2 of the standard Q&A assessment will be requested after this initial assessment is reviewed.
+                  Part 1 of the standard psychological assessment and background check (driver's history past 5 years, criminal history limited to violent crimes and crimes of dishonesty) will be requested by H.R., the department manager, or the company owner.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 7 — Resume */}
+          <div className={cn(step !== 6 && "hidden")}>
             <Card className="border-border/60">
               <CardHeader className="border-b border-border/60 bg-muted/30">
                 <CardTitle className="text-lg">Resume</CardTitle>

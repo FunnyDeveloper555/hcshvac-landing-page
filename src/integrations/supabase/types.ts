@@ -1857,6 +1857,8 @@ export type Database = {
           prev_corporate_address: string | null
           prev_corporate_city: string | null
           prev_corporate_contact_person: string | null
+          prev_corporate_name: string | null
+          prev_corporate_phone_extension: string | null
           prev_corporate_phone_number: string | null
           prev_corporate_state: string | null
           prev_corporate_zip_code: string | null
@@ -1868,9 +1870,11 @@ export type Database = {
           prev_start_month: string | null
           prev_start_year: string | null
           prev_starting_position: string | null
+          prev_website_url: string | null
           prev_work_address: string | null
           prev_work_city: string | null
           prev_work_contact_person: string | null
+          prev_work_phone_extension: string | null
           prev_work_phone_number: string | null
           prev_work_state: string | null
           prev_work_zip_code: string | null
@@ -1885,6 +1889,8 @@ export type Database = {
           prev_corporate_address?: string | null
           prev_corporate_city?: string | null
           prev_corporate_contact_person?: string | null
+          prev_corporate_name?: string | null
+          prev_corporate_phone_extension?: string | null
           prev_corporate_phone_number?: string | null
           prev_corporate_state?: string | null
           prev_corporate_zip_code?: string | null
@@ -1896,9 +1902,11 @@ export type Database = {
           prev_start_month?: string | null
           prev_start_year?: string | null
           prev_starting_position?: string | null
+          prev_website_url?: string | null
           prev_work_address?: string | null
           prev_work_city?: string | null
           prev_work_contact_person?: string | null
+          prev_work_phone_extension?: string | null
           prev_work_phone_number?: string | null
           prev_work_state?: string | null
           prev_work_zip_code?: string | null
@@ -1913,6 +1921,8 @@ export type Database = {
           prev_corporate_address?: string | null
           prev_corporate_city?: string | null
           prev_corporate_contact_person?: string | null
+          prev_corporate_name?: string | null
+          prev_corporate_phone_extension?: string | null
           prev_corporate_phone_number?: string | null
           prev_corporate_state?: string | null
           prev_corporate_zip_code?: string | null
@@ -1924,9 +1934,11 @@ export type Database = {
           prev_start_month?: string | null
           prev_start_year?: string | null
           prev_starting_position?: string | null
+          prev_website_url?: string | null
           prev_work_address?: string | null
           prev_work_city?: string | null
           prev_work_contact_person?: string | null
+          prev_work_phone_extension?: string | null
           prev_work_phone_number?: string | null
           prev_work_state?: string | null
           prev_work_zip_code?: string | null
@@ -1943,6 +1955,62 @@ export type Database = {
           },
         ]
       }
+      employee_references: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          email_address: string | null
+          employee_id: string
+          first_name: string | null
+          id: string
+          known_for: string | null
+          last_name: string | null
+          phone_number: string | null
+          position_held: string | null
+          sort_order: number
+          updated_at: string
+          validates_strengths: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          email_address?: string | null
+          employee_id: string
+          first_name?: string | null
+          id?: string
+          known_for?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          position_held?: string | null
+          sort_order?: number
+          updated_at?: string
+          validates_strengths?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          email_address?: string | null
+          employee_id?: string
+          first_name?: string | null
+          id?: string
+          known_for?: string | null
+          last_name?: string | null
+          phone_number?: string | null
+          position_held?: string | null
+          sort_order?: number
+          updated_at?: string
+          validates_strengths?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_references_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           address: string
@@ -1950,6 +2018,7 @@ export type Database = {
           certificates_held: string | null
           city: string
           city_of_birth: string | null
+          comfort_assessment: Json | null
           created_at: string
           date_of_birth: string
           drivers_license_number: string | null
@@ -1958,6 +2027,7 @@ export type Database = {
           four_year_college: string | null
           high_school: string | null
           id: string
+          languages: Json | null
           last_name: string
           licenses_held: string | null
           middle_name: string | null
@@ -2002,6 +2072,7 @@ export type Database = {
           certificates_held?: string | null
           city: string
           city_of_birth?: string | null
+          comfort_assessment?: Json | null
           created_at?: string
           date_of_birth: string
           drivers_license_number?: string | null
@@ -2010,6 +2081,7 @@ export type Database = {
           four_year_college?: string | null
           high_school?: string | null
           id?: string
+          languages?: Json | null
           last_name: string
           licenses_held?: string | null
           middle_name?: string | null
@@ -2054,6 +2126,7 @@ export type Database = {
           certificates_held?: string | null
           city?: string
           city_of_birth?: string | null
+          comfort_assessment?: Json | null
           created_at?: string
           date_of_birth?: string
           drivers_license_number?: string | null
@@ -2062,6 +2135,7 @@ export type Database = {
           four_year_college?: string | null
           high_school?: string | null
           id?: string
+          languages?: Json | null
           last_name?: string
           licenses_held?: string | null
           middle_name?: string | null
