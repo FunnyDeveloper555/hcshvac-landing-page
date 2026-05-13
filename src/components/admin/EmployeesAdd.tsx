@@ -1017,9 +1017,12 @@ export function EmployeesAdd() {
                             <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField control={form.control} name={n("prev_work_phone_number") as any} render={({ field }) => (
-                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="(555) 123-4567" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_phone_extension") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Extension</FormLabel><FormControl><Input placeholder="ext." {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
                           )} />
                           <FormField control={form.control} name={n("prev_work_contact_person") as any} render={({ field }) => (
                             <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
