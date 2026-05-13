@@ -980,8 +980,25 @@ export function EmployeesAdd() {
                         </Button>
                       </div>
 
-                      <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
-                        <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={n("prev_corporate_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Corporate Name</FormLabel><FormControl><Input placeholder="Parent / corporate entity" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <FormField control={form.control} name={n("prev_website_url") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Website URL</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input className="pl-9" placeholder="https://example.com" {...field} value={(field.value as string) || ""} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )} />
 
                       <section className="space-y-4">
