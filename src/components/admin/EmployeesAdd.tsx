@@ -576,7 +576,16 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="drivers_license_number" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Driver's License Number</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl>
+                          <SecureMaskedInput
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            groups={[4, 4, 5]}
+                            alphanumeric
+                            placeholder="XXXX-XXXX-XXXXX"
+                          />
+                        </FormControl>
+                        <FormDescription>Hidden by default. Click the eye to reveal.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -585,7 +594,15 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="social_security_number" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Social Security Number</FormLabel>
-                        <FormControl><Input placeholder="XXX-XX-XXXX" {...field} /></FormControl>
+                        <FormControl>
+                          <SecureMaskedInput
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            groups={[3, 2, 4]}
+                            placeholder="XXX-XX-XXXX"
+                          />
+                        </FormControl>
+                        <FormDescription>Hidden by default. Click the eye to reveal.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -617,7 +634,19 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="birth_gender" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Birth Gender</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl>
+                          <RadioGroup
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            className="flex gap-4 pt-2"
+                          >
+                            {["Male", "Female", "Other"].map((g) => (
+                              <label key={g} className="flex items-center gap-2 cursor-pointer text-sm">
+                                <RadioGroupItem value={g} /> {g}
+                              </label>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
