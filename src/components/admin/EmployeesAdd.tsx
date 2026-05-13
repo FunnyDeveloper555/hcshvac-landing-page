@@ -199,6 +199,37 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const LANGUAGE_OPTIONS = [
+  "English", "Spanish", "Italian", "Hindi", "Urdu", "Punjabi",
+  "Greek/Arabic", "Chinese", "Japanese", "German",
+];
+
+const COMFORT_ITEMS: { key: string; label: string }[] = [
+  { key: "heights", label: "Heights (above standard roofs of 20' and higher)" },
+  { key: "ladders", label: "Ladders" },
+  { key: "access_hatch_ladders", label: "Access hatch ladders" },
+  { key: "tight_spaces", label: "Small tight spaces" },
+  { key: "attics", label: "Attics" },
+  { key: "crawl_in_attics", label: "Crawl in attics" },
+  { key: "crawl_spaces", label: "Crawl spaces" },
+  { key: "roof_tops", label: "Roof tops" },
+  { key: "under_building", label: "Under the building/home" },
+  { key: "extreme_heat", label: "Extremely above-temperature work areas" },
+  { key: "extreme_cold", label: "Extremely cold-temperature work areas" },
+  { key: "carry_uniform", label: "Carrying a complete change of uniform clothing at all times" },
+  { key: "heavy_loads", label: "Carrying, lifting, moving, relocating, bracing or supporting heavy loads daily" },
+  { key: "team_compliant", label: "Working with others as a team and completing group tasks" },
+  { key: "follow_instructions", label: "Following instructions of a task manager" },
+  { key: "deliver_instructions", label: "Delivering instructions as the task manager" },
+  { key: "non_aggressive_comm", label: "Communicating in a non-aggressive manner with staff, clients, vendors, and customers" },
+  { key: "display_credentials", label: "Carrying and displaying all required company credentials" },
+  { key: "comm_strangers", label: "Communicating with strangers" },
+  { key: "comm_same_gender", label: "Business communication with the same gender only" },
+  { key: "comm_opposite_gender", label: "Business communication with the opposite gender only" },
+  { key: "comm_multi_gender", label: "Business communication with multiple people/genders where you are the focus point" },
+  { key: "formal_writing", label: "Writing formal reports in a structured, grammatically correct English format" },
+];
+
 // Section heading inside a step
 function SectionHeader({
   icon: Icon,
