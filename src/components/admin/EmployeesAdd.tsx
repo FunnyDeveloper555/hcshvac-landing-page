@@ -239,6 +239,9 @@ export function EmployeesAdd() {
     { title: "Profile", description: "Personal details", icon: User },
     { title: "Education", description: "Schooling & licenses", icon: GraduationCap },
     { title: "Employment", description: "Previous employer", icon: Briefcase },
+    { title: "References", description: "Professional references", icon: Users },
+    { title: "Languages", description: "Spoken languages", icon: LanguagesIcon },
+    { title: "Assessment", description: "Comfort & abilities", icon: ClipboardCheck },
     { title: "Resume", description: "Skills & summary", icon: FileText },
   ];
 
@@ -246,6 +249,9 @@ export function EmployeesAdd() {
     ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
     ["educations"],
     ["previous_employers"],
+    ["references"],
+    ["languages", "languages_other"],
+    ["comfort_assessment"],
     ["resume_certificates_achievements", "resume_certificates_file_url", "resume_skills", "resume_summary"],
   ];
 
@@ -255,11 +261,16 @@ export function EmployeesAdd() {
       us_citizen: false,
       educations: [],
       previous_employers: [],
+      references: [],
+      languages: [],
+      languages_other: "",
+      comfort_assessment: {},
     },
   });
 
   const educationsArray = useFieldArray({ control: form.control, name: "educations" });
   const employersArray = useFieldArray({ control: form.control, name: "previous_employers" });
+  const referencesArray = useFieldArray({ control: form.control, name: "references" });
 
   const handleNext = async (e?: React.MouseEvent) => {
     e?.preventDefault();
