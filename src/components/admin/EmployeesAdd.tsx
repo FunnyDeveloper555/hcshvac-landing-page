@@ -1125,8 +1125,209 @@ export function EmployeesAdd() {
             </Card>
           </div>
 
-          {/* STEP 4 — Resume */}
+          {/* STEP 4 — References */}
           <div className={cn(step !== 3 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Professional References</CardTitle>
+                  <CardDescription>People who can speak to your professional strengths</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    referencesArray.append({
+                      first_name: "",
+                      last_name: "",
+                      company_name: "",
+                      position_held: "",
+                      phone_number: "",
+                      email_address: "",
+                      known_for: "",
+                      validates_strengths: "",
+                    })
+                  }
+                >
+                  + Add Reference
+                </Button>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {referencesArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No references yet. Click "Add Reference" to begin.
+                  </p>
+                )}
+                {referencesArray.fields.map((field, index) => {
+                  const r = (k: string) => `references.${index}.${k}` as const;
+                  return (
+                    <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-4 relative">
+                      <div className="flex items-center justify-between">
+                        <SectionHeader icon={Users} title={`Reference #${index + 1}`} />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => referencesArray.remove(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("first_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("last_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("company_name") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Company Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("position_held") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Position Held</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField control={form.control} name={r("phone_number") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="(555) 123-4567" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name={r("email_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="name@example.com" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                      </div>
+                      <FormField control={form.control} name={r("known_for") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Would know you professionally best for and achieve</FormLabel>
+                          <FormControl><Textarea rows={3} placeholder="Describe what this reference would highlight about your work" {...field} value={(field.value as string) || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name={r("validates_strengths") as any} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>This individual would most likely honor / validate your strengths on</FormLabel>
+                          <FormControl><Textarea rows={3} placeholder="Strengths this reference can validate" {...field} value={(field.value as string) || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 5 — Languages */}
+          <div className={cn(step !== 4 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30">
+                <CardTitle className="text-lg">Languages</CardTitle>
+                <CardDescription>Select all languages you are verbally fluent in</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="languages"
+                  render={() => (
+                    <FormItem>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {LANGUAGE_OPTIONS.map((lang) => (
+                          <FormField
+                            key={lang}
+                            control={form.control}
+                            name="languages"
+                            render={({ field }) => {
+                              const arr = (field.value as string[]) || [];
+                              const checked = arr.includes(lang);
+                              return (
+                                <label
+                                  className={cn(
+                                    "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
+                                    checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                                  )}
+                                >
+                                  <Checkbox
+                                    checked={checked}
+                                    onCheckedChange={(v) => {
+                                      if (v) field.onChange([...arr, lang]);
+                                      else field.onChange(arr.filter((x) => x !== lang));
+                                    }}
+                                  />
+                                  <span className="text-sm font-medium">{lang}</span>
+                                </label>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField control={form.control} name="languages_other" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Other (specify)</FormLabel>
+                    <FormControl><Input placeholder="e.g. Portuguese, Russian" {...field} value={field.value || ""} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 6 — Comfort Assessment */}
+          <div className={cn(step !== 5 && "hidden")}>
+            <Card className="border-border/60">
+              <CardHeader className="border-b border-border/60 bg-muted/30">
+                <CardTitle className="text-lg">Comfort & Abilities Assessment</CardTitle>
+                <CardDescription>Check the items you are comfortable with</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-3">
+                <FormField
+                  control={form.control}
+                  name="comfort_assessment"
+                  render={({ field }) => {
+                    const obj = (field.value as Record<string, boolean>) || {};
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {COMFORT_ITEMS.map((item) => {
+                          const checked = !!obj[item.key];
+                          return (
+                            <label
+                              key={item.key}
+                              className={cn(
+                                "flex items-start gap-3 rounded-md border p-3 cursor-pointer transition-colors",
+                                checked ? "border-primary bg-primary/5" : "border-border bg-muted/20 hover:bg-muted/40"
+                              )}
+                            >
+                              <Checkbox
+                                className="mt-0.5"
+                                checked={checked}
+                                onCheckedChange={(v) =>
+                                  field.onChange({ ...obj, [item.key]: !!v })
+                                }
+                              />
+                              <span className="text-sm leading-snug">{item.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    );
+                  }}
+                />
+                <p className="text-xs text-muted-foreground pt-3 border-t border-border/60 mt-4">
+                  Note: Part 2 of the standard Q&A assessment will be requested after this initial assessment is reviewed.
+                  Part 1 of the standard psychological assessment and background check (driver's history past 5 years, criminal history limited to violent crimes and crimes of dishonesty) will be requested by H.R., the department manager, or the company owner.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* STEP 7 — Resume */}
+          <div className={cn(step !== 6 && "hidden")}>
             <Card className="border-border/60">
               <CardHeader className="border-b border-border/60 bg-muted/30">
                 <CardTitle className="text-lg">Resume</CardTitle>
