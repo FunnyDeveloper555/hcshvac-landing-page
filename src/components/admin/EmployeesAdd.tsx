@@ -28,11 +28,88 @@ import {
   Upload,
   X,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+
+// Format a raw alphanumeric string into groups separated by dashes
+function formatGroups(raw: string, groups: number[], alphanumeric = false): string {
+  const cleaned = (raw || "")
+    .toUpperCase()
+    .replace(alphanumeric ? /[^A-Z0-9]/g : /\D/g, "")
+    .slice(0, groups.reduce((a, b) => a + b, 0));
+  const parts: string[] = [];
+  let i = 0;
+  for (const g of groups) {
+    if (i >= cleaned.length) break;
+    parts.push(cleaned.slice(i, i + g));
+    i += g;
+  }
+  return parts.join("-");
+}
+
+// Mask all but the last `visibleTail` characters (preserving dashes)
+function maskValue(formatted: string, visibleTail = 4): string {
+  if (!formatted) return "";
+  const chars = formatted.split("");
+  const total = chars.filter((c) => c !== "-").length;
+  let seenAlnum = 0;
+  return chars
+    .map((c) => {
+      if (c === "-") return c;
+      seenAlnum += 1;
+      const fromEnd = total - seenAlnum;
+      return fromEnd < visibleTail ? c : "•";
+    })
+    .join("");
+}
+
+function SecureMaskedInput({
+  value,
+  onChange,
+  groups,
+  alphanumeric = false,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  groups: number[];
+  alphanumeric?: boolean;
+  placeholder?: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  const [reveal, setReveal] = useState(false);
+  const formatted = formatGroups(value || "", groups, alphanumeric);
+  const display = focused || reveal ? formatted : maskValue(formatted, 4);
+  return (
+    <div className="relative">
+      <Input
+        value={display}
+        placeholder={placeholder}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onChange={(e) => onChange(formatGroups(e.target.value, groups, alphanumeric))}
+        inputMode={alphanumeric ? "text" : "numeric"}
+        autoComplete="off"
+        className="pr-10 font-mono tracking-wider"
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setReveal((r) => !r)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        aria-label={reveal ? "Hide" : "Show"}
+      >
+        {reveal ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 const formSchema = z.object({
   // Employee Profile
@@ -499,7 +576,16 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="drivers_license_number" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Driver's License Number</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl>
+                          <SecureMaskedInput
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            groups={[4, 4, 5]}
+                            alphanumeric
+                            placeholder="XXXX-XXXX-XXXXX"
+                          />
+                        </FormControl>
+                        <FormDescription>Hidden by default. Click the eye to reveal.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -508,7 +594,15 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="social_security_number" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Social Security Number</FormLabel>
-                        <FormControl><Input placeholder="XXX-XX-XXXX" {...field} /></FormControl>
+                        <FormControl>
+                          <SecureMaskedInput
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            groups={[3, 2, 4]}
+                            placeholder="XXX-XX-XXXX"
+                          />
+                        </FormControl>
+                        <FormDescription>Hidden by default. Click the eye to reveal.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -540,7 +634,19 @@ export function EmployeesAdd() {
                     <FormField control={form.control} name="birth_gender" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Birth Gender</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormControl>
+                          <RadioGroup
+                            value={field.value || ""}
+                            onValueChange={field.onChange}
+                            className="flex gap-4 pt-2"
+                          >
+                            {["Male", "Female", "Other"].map((g) => (
+                              <label key={g} className="flex items-center gap-2 cursor-pointer text-sm">
+                                <RadioGroupItem value={g} /> {g}
+                              </label>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
