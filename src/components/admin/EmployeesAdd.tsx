@@ -414,7 +414,26 @@ export function EmployeesAdd() {
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      const { educations = [], previous_employers = [], ...employeeFields } = values;
+      const {
+        educations = [],
+        previous_employers = [],
+        references = [],
+        languages = [],
+        languages_other = "",
+        comfort_assessment = {},
+        ...rest
+      } = values;
+
+      const mergedLanguages = [
+        ...languages,
+        ...(languages_other && languages_other.trim() ? [languages_other.trim()] : []),
+      ];
+
+      const employeeFields = {
+        ...rest,
+        languages: mergedLanguages,
+        comfort_assessment,
+      };
 
       let employeeId = editId as string | null;
 
@@ -438,6 +457,7 @@ export function EmployeesAdd() {
         // Replace child rows
         await supabase.from("employee_education" as any).delete().eq("employee_id", employeeId);
         await supabase.from("employee_previous_employers" as any).delete().eq("employee_id", employeeId);
+        await supabase.from("employee_references" as any).delete().eq("employee_id", employeeId);
 
         if (educations.length) {
           const eduRows = educations.map((e, idx) => ({
@@ -460,6 +480,23 @@ export function EmployeesAdd() {
             sort_order: idx,
           }));
           const { error } = await supabase.from("employee_previous_employers" as any).insert(prevRows);
+          if (error) throw error;
+        }
+
+        if (references.length) {
+          const refRows = references.map((r, idx) => ({
+            employee_id: employeeId,
+            first_name: r.first_name || null,
+            last_name: r.last_name || null,
+            company_name: r.company_name || null,
+            position_held: r.position_held || null,
+            phone_number: r.phone_number || null,
+            email_address: r.email_address || null,
+            known_for: r.known_for || null,
+            validates_strengths: r.validates_strengths || null,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_references" as any).insert(refRows);
           if (error) throw error;
         }
       }
