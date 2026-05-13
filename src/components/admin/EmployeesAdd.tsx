@@ -701,62 +701,89 @@ export function EmployeesAdd() {
           {/* STEP 2 — Education */}
           <div className={cn(step !== 1 && "hidden")}>
             <Card className="border-border/60">
-              <CardHeader className="border-b border-border/60 bg-muted/30">
-                <CardTitle className="text-lg">Education & Credentials</CardTitle>
-                <CardDescription>Schooling, certificates and licenses</CardDescription>
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Education & Credentials</CardTitle>
+                  <CardDescription>Add one or more schools, certificates and licenses</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    educationsArray.append({
+                      school_type: "",
+                      school_name: "",
+                      certificates_held: "",
+                      licenses_held: "",
+                    })
+                  }
+                >
+                  + Add Education
+                </Button>
               </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <section className="space-y-4">
-                  <SectionHeader icon={GraduationCap} title="Schooling" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="high_school" render={({ field }) => (
+              <CardContent className="p-6 space-y-6">
+                {educationsArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No education records yet. Click "Add Education" to begin.
+                  </p>
+                )}
+                {educationsArray.fields.map((field, index) => (
+                  <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-4 relative">
+                    <div className="flex items-center justify-between">
+                      <SectionHeader icon={GraduationCap} title={`Education #${index + 1}`} />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => educationsArray.remove(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name={`educations.${index}.school_type`} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>School Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="High School">High School</SelectItem>
+                              <SelectItem value="Trade School">Trade School</SelectItem>
+                              <SelectItem value="2-Year College">2-Year College</SelectItem>
+                              <SelectItem value="4-Year College">4-Year College</SelectItem>
+                              <SelectItem value="Graduate School">Graduate School</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name={`educations.${index}.school_name`} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>School / Institution Name</FormLabel>
+                          <FormControl><Input placeholder="Institution name" {...field} value={field.value || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField control={form.control} name={`educations.${index}.certificates_held`} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>High School</FormLabel>
-                        <FormControl><Input placeholder="School name" {...field} /></FormControl>
+                        <FormLabel>Certificates Held</FormLabel>
+                        <FormControl><Textarea rows={2} placeholder="List certificates earned here" {...field} value={field.value || ""} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="trade_school" render={({ field }) => (
+                    <FormField control={form.control} name={`educations.${index}.licenses_held`} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Trade School</FormLabel>
-                        <FormControl><Input placeholder="School name" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="two_year_college" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>2-Year College</FormLabel>
-                        <FormControl><Input placeholder="Institution" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="four_year_college" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>4-Year College</FormLabel>
-                        <FormControl><Input placeholder="Institution" {...field} /></FormControl>
+                        <FormLabel>Licenses Held</FormLabel>
+                        <FormControl><Textarea rows={2} placeholder="List licenses earned here" {...field} value={field.value || ""} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
-                </section>
-
-                <section className="space-y-4">
-                  <SectionHeader icon={Award} title="Certificates & Licenses" />
-                  <FormField control={form.control} name="certificates_held" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Certificates Held</FormLabel>
-                      <FormControl><Textarea rows={3} placeholder="List all professional certificates" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="licenses_held" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Licenses Held</FormLabel>
-                      <FormControl><Textarea rows={3} placeholder="List all professional licenses" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+                ))}
               </CardContent>
             </Card>
           </div>
@@ -764,141 +791,185 @@ export function EmployeesAdd() {
           {/* STEP 3 — Previous Employer */}
           <div className={cn(step !== 2 && "hidden")}>
             <Card className="border-border/60">
-              <CardHeader className="border-b border-border/60 bg-muted/30">
-                <CardTitle className="text-lg">Previous Employer</CardTitle>
-                <CardDescription>Most recent prior employment</CardDescription>
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Previous Employers</CardTitle>
+                  <CardDescription>Add one or more prior employers</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    employersArray.append({
+                      prev_business_name: "",
+                      prev_work_address: "",
+                      prev_work_city: "",
+                      prev_work_state: "",
+                      prev_work_zip_code: "",
+                      prev_work_phone_number: "",
+                      prev_work_contact_person: "",
+                      prev_corporate_address: "",
+                      prev_corporate_city: "",
+                      prev_corporate_state: "",
+                      prev_corporate_zip_code: "",
+                      prev_corporate_phone_number: "",
+                      prev_corporate_contact_person: "",
+                      prev_start_month: "",
+                      prev_start_year: "",
+                      prev_end_month: "",
+                      prev_end_year: "",
+                      prev_starting_position: "",
+                      prev_ending_position: "",
+                      prev_reason_for_leaving: "",
+                      prev_eligible_for_rehire: false,
+                    })
+                  }
+                >
+                  + Add Employer
+                </Button>
               </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <section className="space-y-4">
-                  <SectionHeader icon={Briefcase} title="Business" />
-                  <FormField control={form.control} name="prev_business_name" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Name</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+              <CardContent className="p-6 space-y-6">
+                {employersArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No previous employers yet. Click "Add Employer" to begin.
+                  </p>
+                )}
+                {employersArray.fields.map((field, index) => {
+                  const n = (k: string) => `previous_employers.${index}.${k}` as const;
+                  return (
+                    <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-6 relative">
+                      <div className="flex items-center justify-between">
+                        <SectionHeader icon={Briefcase} title={`Employer #${index + 1}`} />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => employersArray.remove(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
 
-                <section className="space-y-4">
-                  <SectionHeader icon={MapPin} title="Work Location" />
-                  <FormField control={form.control} name="prev_work_address" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street Address</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="prev_work_city" render={({ field }) => (
-                      <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_state" render={({ field }) => (
-                      <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_zip_code" render={({ field }) => (
-                      <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_work_phone_number" render={({ field }) => (
-                      <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_contact_person" render={({ field }) => (
-                      <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                </section>
+                      <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
+                        <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
 
-                <section className="space-y-4">
-                  <SectionHeader icon={Building2} title="Corporate / Main Office" description="If applicable" />
-                  <FormField control={form.control} name="prev_corporate_address" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street Address</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="prev_corporate_city" render={({ field }) => (
-                      <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_state" render={({ field }) => (
-                      <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_zip_code" render={({ field }) => (
-                      <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_corporate_phone_number" render={({ field }) => (
-                      <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_contact_person" render={({ field }) => (
-                      <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                </section>
+                      <section className="space-y-4">
+                        <SectionHeader icon={MapPin} title="Work Location" />
+                        <FormField control={form.control} name={n("prev_work_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField control={form.control} name={n("prev_work_city") as any} render={({ field }) => (
+                            <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_state") as any} render={({ field }) => (
+                            <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_zip_code") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_work_phone_number") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_contact_person") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                      </section>
 
-                <section className="space-y-4">
-                  <SectionHeader icon={CalendarRange} title="Tenure & Role" />
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <FormField control={form.control} name="prev_start_month" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Month</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_start_year" render={({ field }) => (
-                      <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_end_month" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Month</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_end_year" render={({ field }) => (
-                      <FormItem><FormLabel>End Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_starting_position" render={({ field }) => (
-                      <FormItem><FormLabel>Starting Position</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_ending_position" render={({ field }) => (
-                      <FormItem><FormLabel>Ending Position</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <FormField control={form.control} name="prev_reason_for_leaving" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reason for Leaving</FormLabel>
-                      <FormControl><Textarea rows={3} {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="prev_eligible_for_rehire" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-md border border-border bg-muted/30 p-3">
-                      <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Eligible for Rehire</FormLabel>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+                      <section className="space-y-4">
+                        <SectionHeader icon={Building2} title="Corporate / Main Office" description="If applicable" />
+                        <FormField control={form.control} name={n("prev_corporate_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField control={form.control} name={n("prev_corporate_city") as any} render={({ field }) => (
+                            <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_state") as any} render={({ field }) => (
+                            <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_zip_code") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_corporate_phone_number") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_contact_person") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                      </section>
+
+                      <section className="space-y-4">
+                        <SectionHeader icon={CalendarRange} title="Tenure & Role" />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <FormField control={form.control} name={n("prev_start_month") as any} render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Start Month</FormLabel>
+                              <Select onValueChange={field.onChange} value={(field.value as string) || ""}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_start_year") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_end_month") as any} render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Month</FormLabel>
+                              <Select onValueChange={field.onChange} value={(field.value as string) || ""}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_end_year") as any} render={({ field }) => (
+                            <FormItem><FormLabel>End Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_starting_position") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Starting Position</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_ending_position") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Ending Position</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <FormField control={form.control} name={n("prev_reason_for_leaving") as any} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Reason for Leaving</FormLabel>
+                            <FormControl><Textarea rows={3} {...field} value={(field.value as string) || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name={n("prev_eligible_for_rehire") as any} render={({ field }) => (
+                          <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-md border border-border bg-background p-3">
+                            <FormControl>
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Eligible for Rehire</FormLabel>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </section>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           </div>
