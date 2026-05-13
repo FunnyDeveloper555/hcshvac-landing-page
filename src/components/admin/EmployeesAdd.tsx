@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -127,36 +127,40 @@ const formSchema = z.object({
   state_of_birth: z.string().optional(),
   birth_gender: z.string().optional(),
 
-  // Education
-  high_school: z.string().optional(),
-  trade_school: z.string().optional(),
-  two_year_college: z.string().optional(),
-  four_year_college: z.string().optional(),
-  certificates_held: z.string().optional(),
-  licenses_held: z.string().optional(),
+  // Education (multiple)
+  educations: z.array(z.object({
+    id: z.string().optional(),
+    school_type: z.string().optional(),
+    school_name: z.string().optional(),
+    certificates_held: z.string().optional(),
+    licenses_held: z.string().optional(),
+  })).optional(),
 
-  // Previous Employer
-  prev_business_name: z.string().optional(),
-  prev_work_address: z.string().optional(),
-  prev_work_city: z.string().optional(),
-  prev_work_state: z.string().optional(),
-  prev_work_zip_code: z.string().optional(),
-  prev_work_phone_number: z.string().optional(),
-  prev_work_contact_person: z.string().optional(),
-  prev_corporate_address: z.string().optional(),
-  prev_corporate_city: z.string().optional(),
-  prev_corporate_state: z.string().optional(),
-  prev_corporate_zip_code: z.string().optional(),
-  prev_corporate_phone_number: z.string().optional(),
-  prev_corporate_contact_person: z.string().optional(),
-  prev_start_month: z.string().optional(),
-  prev_start_year: z.string().optional(),
-  prev_end_month: z.string().optional(),
-  prev_end_year: z.string().optional(),
-  prev_starting_position: z.string().optional(),
-  prev_ending_position: z.string().optional(),
-  prev_reason_for_leaving: z.string().optional(),
-  prev_eligible_for_rehire: z.boolean().optional(),
+  // Previous Employers (multiple)
+  previous_employers: z.array(z.object({
+    id: z.string().optional(),
+    prev_business_name: z.string().optional(),
+    prev_work_address: z.string().optional(),
+    prev_work_city: z.string().optional(),
+    prev_work_state: z.string().optional(),
+    prev_work_zip_code: z.string().optional(),
+    prev_work_phone_number: z.string().optional(),
+    prev_work_contact_person: z.string().optional(),
+    prev_corporate_address: z.string().optional(),
+    prev_corporate_city: z.string().optional(),
+    prev_corporate_state: z.string().optional(),
+    prev_corporate_zip_code: z.string().optional(),
+    prev_corporate_phone_number: z.string().optional(),
+    prev_corporate_contact_person: z.string().optional(),
+    prev_start_month: z.string().optional(),
+    prev_start_year: z.string().optional(),
+    prev_end_month: z.string().optional(),
+    prev_end_year: z.string().optional(),
+    prev_starting_position: z.string().optional(),
+    prev_ending_position: z.string().optional(),
+    prev_reason_for_leaving: z.string().optional(),
+    prev_eligible_for_rehire: z.boolean().optional(),
+  })).optional(),
 
   // Resume
   resume_certificates_achievements: z.string().optional(),
@@ -212,8 +216,8 @@ export function EmployeesAdd() {
 
   const stepFields: (keyof FormValues)[][] = [
     ["first_name", "middle_name", "last_name", "address", "city", "state", "zip_code", "phone_number", "email_address", "date_of_birth", "drivers_license_number", "social_security_number", "us_citizen", "city_of_birth", "state_of_birth", "birth_gender"],
-    ["high_school", "trade_school", "two_year_college", "four_year_college", "certificates_held", "licenses_held"],
-    ["prev_business_name", "prev_work_address", "prev_work_city", "prev_work_state", "prev_work_zip_code", "prev_work_phone_number", "prev_work_contact_person", "prev_corporate_address", "prev_corporate_city", "prev_corporate_state", "prev_corporate_zip_code", "prev_corporate_phone_number", "prev_corporate_contact_person", "prev_start_month", "prev_start_year", "prev_end_month", "prev_end_year", "prev_starting_position", "prev_ending_position", "prev_reason_for_leaving", "prev_eligible_for_rehire"],
+    ["educations"],
+    ["previous_employers"],
     ["resume_certificates_achievements", "resume_certificates_file_url", "resume_skills", "resume_summary"],
   ];
 
@@ -221,9 +225,13 @@ export function EmployeesAdd() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       us_citizen: false,
-      prev_eligible_for_rehire: false,
+      educations: [],
+      previous_employers: [],
     },
   });
+
+  const educationsArray = useFieldArray({ control: form.control, name: "educations" });
+  const employersArray = useFieldArray({ control: form.control, name: "previous_employers" });
 
   const handleNext = async (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -242,100 +250,136 @@ export function EmployeesAdd() {
   useEffect(() => {
     if (editId) {
       setIsLoading(true);
-      supabase
-        .from("employees")
-        .select("*")
-        .eq("id", editId)
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            toast({
-              title: "Error",
-              description: "Failed to load employee data",
-              variant: "destructive",
-            });
-          } else if (data) {
-            form.reset({
-              first_name: data.first_name || "",
-              middle_name: data.middle_name || "",
-              last_name: data.last_name || "",
-              address: data.address || "",
-              city: data.city || "",
-              state: data.state || "",
-              zip_code: data.zip_code || "",
-              phone_number: data.phone_number || "",
-              email_address: data.email_address || "",
-              date_of_birth: data.date_of_birth || "",
-              drivers_license_number: data.drivers_license_number || "",
-              social_security_number: data.social_security_number || "",
-              us_citizen: data.us_citizen || false,
-              city_of_birth: data.city_of_birth || "",
-              state_of_birth: data.state_of_birth || "",
-              birth_gender: data.birth_gender || "",
-              high_school: data.high_school || "",
-              trade_school: data.trade_school || "",
-              two_year_college: data.two_year_college || "",
-              four_year_college: data.four_year_college || "",
-              certificates_held: data.certificates_held || "",
-              licenses_held: data.licenses_held || "",
-              prev_business_name: data.prev_business_name || "",
-              prev_work_address: data.prev_work_address || "",
-              prev_work_city: data.prev_work_city || "",
-              prev_work_state: data.prev_work_state || "",
-              prev_work_zip_code: data.prev_work_zip_code || "",
-              prev_work_phone_number: data.prev_work_phone_number || "",
-              prev_work_contact_person: data.prev_work_contact_person || "",
-              prev_corporate_address: data.prev_corporate_address || "",
-              prev_corporate_city: data.prev_corporate_city || "",
-              prev_corporate_state: data.prev_corporate_state || "",
-              prev_corporate_zip_code: data.prev_corporate_zip_code || "",
-              prev_corporate_phone_number: data.prev_corporate_phone_number || "",
-              prev_corporate_contact_person: data.prev_corporate_contact_person || "",
-              prev_start_month: data.prev_start_month || "",
-              prev_start_year: data.prev_start_year || "",
-              prev_end_month: data.prev_end_month || "",
-              prev_end_year: data.prev_end_year || "",
-              prev_starting_position: data.prev_starting_position || "",
-              prev_ending_position: data.prev_ending_position || "",
-              prev_reason_for_leaving: data.prev_reason_for_leaving || "",
-              prev_eligible_for_rehire: data.prev_eligible_for_rehire || false,
-              resume_certificates_achievements: data.resume_certificates_achievements || "",
-              resume_certificates_file_url: (data as any).resume_certificates_file_url || "",
-              resume_skills: data.resume_skills || "",
-              resume_summary: data.resume_summary || "",
-            });
-          }
+      (async () => {
+        const [empRes, eduRes, prevRes] = await Promise.all([
+          supabase.from("employees").select("*").eq("id", editId).single(),
+          supabase.from("employee_education" as any).select("*").eq("employee_id", editId).order("sort_order"),
+          supabase.from("employee_previous_employers" as any).select("*").eq("employee_id", editId).order("sort_order"),
+        ]);
+        if (empRes.error || !empRes.data) {
+          toast({ title: "Error", description: "Failed to load employee data", variant: "destructive" });
           setIsLoading(false);
+          return;
+        }
+        const data = empRes.data;
+        form.reset({
+          first_name: data.first_name || "",
+          middle_name: data.middle_name || "",
+          last_name: data.last_name || "",
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          zip_code: data.zip_code || "",
+          phone_number: data.phone_number || "",
+          email_address: data.email_address || "",
+          date_of_birth: data.date_of_birth || "",
+          drivers_license_number: data.drivers_license_number || "",
+          social_security_number: data.social_security_number || "",
+          us_citizen: data.us_citizen || false,
+          city_of_birth: data.city_of_birth || "",
+          state_of_birth: data.state_of_birth || "",
+          birth_gender: data.birth_gender || "",
+          educations: ((eduRes.data as any[]) || []).map((e) => ({
+            id: e.id,
+            school_type: e.school_type || "",
+            school_name: e.school_name || "",
+            certificates_held: e.certificates_held || "",
+            licenses_held: e.licenses_held || "",
+          })),
+          previous_employers: ((prevRes.data as any[]) || []).map((p) => ({
+            id: p.id,
+            prev_business_name: p.prev_business_name || "",
+            prev_work_address: p.prev_work_address || "",
+            prev_work_city: p.prev_work_city || "",
+            prev_work_state: p.prev_work_state || "",
+            prev_work_zip_code: p.prev_work_zip_code || "",
+            prev_work_phone_number: p.prev_work_phone_number || "",
+            prev_work_contact_person: p.prev_work_contact_person || "",
+            prev_corporate_address: p.prev_corporate_address || "",
+            prev_corporate_city: p.prev_corporate_city || "",
+            prev_corporate_state: p.prev_corporate_state || "",
+            prev_corporate_zip_code: p.prev_corporate_zip_code || "",
+            prev_corporate_phone_number: p.prev_corporate_phone_number || "",
+            prev_corporate_contact_person: p.prev_corporate_contact_person || "",
+            prev_start_month: p.prev_start_month || "",
+            prev_start_year: p.prev_start_year || "",
+            prev_end_month: p.prev_end_month || "",
+            prev_end_year: p.prev_end_year || "",
+            prev_starting_position: p.prev_starting_position || "",
+            prev_ending_position: p.prev_ending_position || "",
+            prev_reason_for_leaving: p.prev_reason_for_leaving || "",
+            prev_eligible_for_rehire: p.prev_eligible_for_rehire || false,
+          })),
+          resume_certificates_achievements: data.resume_certificates_achievements || "",
+          resume_certificates_file_url: (data as any).resume_certificates_file_url || "",
+          resume_skills: data.resume_skills || "",
+          resume_summary: data.resume_summary || "",
         });
+        setIsLoading(false);
+      })();
     }
   }, [editId, form, toast]);
 
   const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
+      const { educations = [], previous_employers = [], ...employeeFields } = values;
+
+      let employeeId = editId as string | null;
 
       if (isEditing) {
         const { error } = await supabase
           .from("employees")
-          .update(values)
+          .update(employeeFields as any)
           .eq("id", editId);
-
         if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("employees")
+          .insert([employeeFields as any])
+          .select("id")
+          .single();
+        if (error) throw error;
+        employeeId = data.id;
+      }
 
-        toast({
-          title: "Success",
-          description: "Employee updated successfully",
-        });
+      if (employeeId) {
+        // Replace child rows
+        await supabase.from("employee_education" as any).delete().eq("employee_id", employeeId);
+        await supabase.from("employee_previous_employers" as any).delete().eq("employee_id", employeeId);
+
+        if (educations.length) {
+          const eduRows = educations.map((e, idx) => ({
+            employee_id: employeeId,
+            school_type: e.school_type || null,
+            school_name: e.school_name || null,
+            certificates_held: e.certificates_held || null,
+            licenses_held: e.licenses_held || null,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_education" as any).insert(eduRows);
+          if (error) throw error;
+        }
+
+        if (previous_employers.length) {
+          const prevRows = previous_employers.map((p, idx) => ({
+            employee_id: employeeId,
+            ...p,
+            id: undefined,
+            sort_order: idx,
+          }));
+          const { error } = await supabase.from("employee_previous_employers" as any).insert(prevRows);
+          if (error) throw error;
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: isEditing ? "Employee updated successfully" : "Employee added successfully",
+      });
+      if (isEditing) {
         navigate("/admin/employees/list");
       } else {
-        const { error } = await supabase.from("employees").insert([values]);
-
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: "Employee added successfully",
-        });
         form.reset();
         setStep(0);
       }
@@ -349,6 +393,7 @@ export function EmployeesAdd() {
       setIsSubmitting(false);
     }
   };
+
 
   const handleCertFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -656,62 +701,89 @@ export function EmployeesAdd() {
           {/* STEP 2 — Education */}
           <div className={cn(step !== 1 && "hidden")}>
             <Card className="border-border/60">
-              <CardHeader className="border-b border-border/60 bg-muted/30">
-                <CardTitle className="text-lg">Education & Credentials</CardTitle>
-                <CardDescription>Schooling, certificates and licenses</CardDescription>
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Education & Credentials</CardTitle>
+                  <CardDescription>Add one or more schools, certificates and licenses</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    educationsArray.append({
+                      school_type: "",
+                      school_name: "",
+                      certificates_held: "",
+                      licenses_held: "",
+                    })
+                  }
+                >
+                  + Add Education
+                </Button>
               </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <section className="space-y-4">
-                  <SectionHeader icon={GraduationCap} title="Schooling" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="high_school" render={({ field }) => (
+              <CardContent className="p-6 space-y-6">
+                {educationsArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No education records yet. Click "Add Education" to begin.
+                  </p>
+                )}
+                {educationsArray.fields.map((field, index) => (
+                  <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-4 relative">
+                    <div className="flex items-center justify-between">
+                      <SectionHeader icon={GraduationCap} title={`Education #${index + 1}`} />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => educationsArray.remove(index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name={`educations.${index}.school_type`} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>School Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="High School">High School</SelectItem>
+                              <SelectItem value="Trade School">Trade School</SelectItem>
+                              <SelectItem value="2-Year College">2-Year College</SelectItem>
+                              <SelectItem value="4-Year College">4-Year College</SelectItem>
+                              <SelectItem value="Graduate School">Graduate School</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name={`educations.${index}.school_name`} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>School / Institution Name</FormLabel>
+                          <FormControl><Input placeholder="Institution name" {...field} value={field.value || ""} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField control={form.control} name={`educations.${index}.certificates_held`} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>High School</FormLabel>
-                        <FormControl><Input placeholder="School name" {...field} /></FormControl>
+                        <FormLabel>Certificates Held</FormLabel>
+                        <FormControl><Textarea rows={2} placeholder="List certificates earned here" {...field} value={field.value || ""} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={form.control} name="trade_school" render={({ field }) => (
+                    <FormField control={form.control} name={`educations.${index}.licenses_held`} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Trade School</FormLabel>
-                        <FormControl><Input placeholder="School name" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="two_year_college" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>2-Year College</FormLabel>
-                        <FormControl><Input placeholder="Institution" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="four_year_college" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>4-Year College</FormLabel>
-                        <FormControl><Input placeholder="Institution" {...field} /></FormControl>
+                        <FormLabel>Licenses Held</FormLabel>
+                        <FormControl><Textarea rows={2} placeholder="List licenses earned here" {...field} value={field.value || ""} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
-                </section>
-
-                <section className="space-y-4">
-                  <SectionHeader icon={Award} title="Certificates & Licenses" />
-                  <FormField control={form.control} name="certificates_held" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Certificates Held</FormLabel>
-                      <FormControl><Textarea rows={3} placeholder="List all professional certificates" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="licenses_held" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Licenses Held</FormLabel>
-                      <FormControl><Textarea rows={3} placeholder="List all professional licenses" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+                ))}
               </CardContent>
             </Card>
           </div>
@@ -719,141 +791,185 @@ export function EmployeesAdd() {
           {/* STEP 3 — Previous Employer */}
           <div className={cn(step !== 2 && "hidden")}>
             <Card className="border-border/60">
-              <CardHeader className="border-b border-border/60 bg-muted/30">
-                <CardTitle className="text-lg">Previous Employer</CardTitle>
-                <CardDescription>Most recent prior employment</CardDescription>
+              <CardHeader className="border-b border-border/60 bg-muted/30 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Previous Employers</CardTitle>
+                  <CardDescription>Add one or more prior employers</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    employersArray.append({
+                      prev_business_name: "",
+                      prev_work_address: "",
+                      prev_work_city: "",
+                      prev_work_state: "",
+                      prev_work_zip_code: "",
+                      prev_work_phone_number: "",
+                      prev_work_contact_person: "",
+                      prev_corporate_address: "",
+                      prev_corporate_city: "",
+                      prev_corporate_state: "",
+                      prev_corporate_zip_code: "",
+                      prev_corporate_phone_number: "",
+                      prev_corporate_contact_person: "",
+                      prev_start_month: "",
+                      prev_start_year: "",
+                      prev_end_month: "",
+                      prev_end_year: "",
+                      prev_starting_position: "",
+                      prev_ending_position: "",
+                      prev_reason_for_leaving: "",
+                      prev_eligible_for_rehire: false,
+                    })
+                  }
+                >
+                  + Add Employer
+                </Button>
               </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                <section className="space-y-4">
-                  <SectionHeader icon={Briefcase} title="Business" />
-                  <FormField control={form.control} name="prev_business_name" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Business Name</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+              <CardContent className="p-6 space-y-6">
+                {employersArray.fields.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No previous employers yet. Click "Add Employer" to begin.
+                  </p>
+                )}
+                {employersArray.fields.map((field, index) => {
+                  const n = (k: string) => `previous_employers.${index}.${k}` as const;
+                  return (
+                    <div key={field.id} className="rounded-lg border border-border bg-muted/20 p-4 space-y-6 relative">
+                      <div className="flex items-center justify-between">
+                        <SectionHeader icon={Briefcase} title={`Employer #${index + 1}`} />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => employersArray.remove(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
 
-                <section className="space-y-4">
-                  <SectionHeader icon={MapPin} title="Work Location" />
-                  <FormField control={form.control} name="prev_work_address" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street Address</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="prev_work_city" render={({ field }) => (
-                      <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_state" render={({ field }) => (
-                      <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_zip_code" render={({ field }) => (
-                      <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_work_phone_number" render={({ field }) => (
-                      <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_work_contact_person" render={({ field }) => (
-                      <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                </section>
+                      <FormField control={form.control} name={n("prev_business_name") as any} render={({ field }) => (
+                        <FormItem><FormLabel>Business Name</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                      )} />
 
-                <section className="space-y-4">
-                  <SectionHeader icon={Building2} title="Corporate / Main Office" description="If applicable" />
-                  <FormField control={form.control} name="prev_corporate_address" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street Address</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField control={form.control} name="prev_corporate_city" render={({ field }) => (
-                      <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_state" render={({ field }) => (
-                      <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_zip_code" render={({ field }) => (
-                      <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_corporate_phone_number" render={({ field }) => (
-                      <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_corporate_contact_person" render={({ field }) => (
-                      <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                </section>
+                      <section className="space-y-4">
+                        <SectionHeader icon={MapPin} title="Work Location" />
+                        <FormField control={form.control} name={n("prev_work_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField control={form.control} name={n("prev_work_city") as any} render={({ field }) => (
+                            <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_state") as any} render={({ field }) => (
+                            <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_zip_code") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_work_phone_number") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_work_contact_person") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                      </section>
 
-                <section className="space-y-4">
-                  <SectionHeader icon={CalendarRange} title="Tenure & Role" />
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <FormField control={form.control} name="prev_start_month" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Month</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_start_year" render={({ field }) => (
-                      <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_end_month" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Month</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_end_year" render={({ field }) => (
-                      <FormItem><FormLabel>End Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="prev_starting_position" render={({ field }) => (
-                      <FormItem><FormLabel>Starting Position</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="prev_ending_position" render={({ field }) => (
-                      <FormItem><FormLabel>Ending Position</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                  </div>
-                  <FormField control={form.control} name="prev_reason_for_leaving" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reason for Leaving</FormLabel>
-                      <FormControl><Textarea rows={3} {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="prev_eligible_for_rehire" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-md border border-border bg-muted/30 p-3">
-                      <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Eligible for Rehire</FormLabel>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </section>
+                      <section className="space-y-4">
+                        <SectionHeader icon={Building2} title="Corporate / Main Office" description="If applicable" />
+                        <FormField control={form.control} name={n("prev_corporate_address") as any} render={({ field }) => (
+                          <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField control={form.control} name={n("prev_corporate_city") as any} render={({ field }) => (
+                            <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_state") as any} render={({ field }) => (
+                            <FormItem><FormLabel>State</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_zip_code") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Zip Code</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_corporate_phone_number") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_corporate_contact_person") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Person of Contact</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                      </section>
+
+                      <section className="space-y-4">
+                        <SectionHeader icon={CalendarRange} title="Tenure & Role" />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <FormField control={form.control} name={n("prev_start_month") as any} render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Start Month</FormLabel>
+                              <Select onValueChange={field.onChange} value={(field.value as string) || ""}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_start_year") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_end_month") as any} render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Month</FormLabel>
+                              <Select onValueChange={field.onChange} value={(field.value as string) || ""}>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                <SelectContent>
+                                  {months.map((month) => (<SelectItem key={month} value={month}>{month}</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_end_year") as any} render={({ field }) => (
+                            <FormItem><FormLabel>End Year</FormLabel><FormControl><Input placeholder="YYYY" {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name={n("prev_starting_position") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Starting Position</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                          <FormField control={form.control} name={n("prev_ending_position") as any} render={({ field }) => (
+                            <FormItem><FormLabel>Ending Position</FormLabel><FormControl><Input {...field} value={(field.value as string) || ""} /></FormControl><FormMessage /></FormItem>
+                          )} />
+                        </div>
+                        <FormField control={form.control} name={n("prev_reason_for_leaving") as any} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Reason for Leaving</FormLabel>
+                            <FormControl><Textarea rows={3} {...field} value={(field.value as string) || ""} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name={n("prev_eligible_for_rehire") as any} render={({ field }) => (
+                          <FormItem className="flex flex-row items-center gap-3 space-y-0 rounded-md border border-border bg-background p-3">
+                            <FormControl>
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Eligible for Rehire</FormLabel>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </section>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           </div>
