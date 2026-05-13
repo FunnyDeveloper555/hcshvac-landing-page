@@ -321,10 +321,11 @@ export function EmployeesAdd() {
     if (editId) {
       setIsLoading(true);
       (async () => {
-        const [empRes, eduRes, prevRes] = await Promise.all([
+        const [empRes, eduRes, prevRes, refRes] = await Promise.all([
           supabase.from("employees").select("*").eq("id", editId).single(),
           supabase.from("employee_education" as any).select("*").eq("employee_id", editId).order("sort_order"),
           supabase.from("employee_previous_employers" as any).select("*").eq("employee_id", editId).order("sort_order"),
+          supabase.from("employee_references" as any).select("*").eq("employee_id", editId).order("sort_order"),
         ]);
         if (empRes.error || !empRes.data) {
           toast({ title: "Error", description: "Failed to load employee data", variant: "destructive" });
