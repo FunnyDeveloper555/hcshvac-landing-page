@@ -82,10 +82,9 @@ function SecureMaskedInput({
   alphanumeric?: boolean;
   placeholder?: string;
 }) {
-  const [focused, setFocused] = useState(false);
   const [reveal, setReveal] = useState(false);
   const formatted = formatGroups(value || "", groups, alphanumeric);
-  const display = focused || reveal ? formatted : maskValue(formatted, 4);
+  const display = reveal ? formatted : maskValue(formatted, 0);
   return (
     <div className="relative">
       <Input
