@@ -90,8 +90,7 @@ function SecureMaskedInput({
       <Input
         value={display}
         placeholder={placeholder}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        readOnly={!reveal}
         onChange={(e) => onChange(formatGroups(e.target.value, groups, alphanumeric))}
         inputMode={alphanumeric ? "text" : "numeric"}
         autoComplete="off"
