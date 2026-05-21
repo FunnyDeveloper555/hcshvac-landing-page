@@ -10,7 +10,13 @@ export interface TemplateEntry {
 }
 
 import { template as applicationReceived } from './application-received.tsx'
+import { template as interviewInvite } from './interview-invite.tsx'
+import { template as nextStepsRequired } from './next-steps-required.tsx'
+import { template as applicationNotSelected } from './application-not-selected.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
+  'interview-invite': interviewInvite,
+  'next-steps-required': nextStepsRequired,
+  'application-not-selected': applicationNotSelected,
 }
