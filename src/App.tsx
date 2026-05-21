@@ -50,6 +50,8 @@ const App = () => (
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/fileserver" element={<FileServer />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/applicant" element={<ApplicantPortal />} />
+            <Route path="/applicant/set-password" element={<ApplicantSetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
 
             <Route path="*" element={<NotFound />} />
