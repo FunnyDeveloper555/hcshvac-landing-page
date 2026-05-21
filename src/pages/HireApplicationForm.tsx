@@ -118,10 +118,9 @@ export default function HireApplicationForm() {
       });
       if (error) throw error;
 
-      await supabase
-        .from("hire_invitations")
-        .update({ status: "completed", completed_at: new Date().toISOString() })
-        .eq("id", invitation.id);
+      if (token) {
+        await supabase.rpc("complete_hire_invitation", { _token: token });
+      }
 
       setSubmitted(true);
     } catch (err: any) {
