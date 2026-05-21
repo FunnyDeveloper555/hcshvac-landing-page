@@ -538,8 +538,8 @@ export function EmployeesAdd() {
         .from("employee-files")
         .upload(path, file, { upsert: false, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("employee-files").getPublicUrl(path);
-      form.setValue("resume_certificates_file_url", pub.publicUrl, { shouldDirty: true });
+      // Store the storage path; we generate signed URLs on demand for private access
+      form.setValue("resume_certificates_file_url", path, { shouldDirty: true });
       toast({ title: "Uploaded", description: file.name });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
