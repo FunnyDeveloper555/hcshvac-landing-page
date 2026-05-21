@@ -197,16 +197,12 @@ export default function BookingForm() {
 
       if (regError) throw regError;
 
-      // Update invitation status
-      const { error: updateError } = await supabase
-        .from("booking_invitations")
-        .update({ 
-          status: "completed", 
-          completed_at: new Date().toISOString() 
-        })
-        .eq("id", invitation.id);
-
-      if (updateError) throw updateError;
+      // Update invitation status via secure RPC
+      if (token) {
+        const { error: updateError } = await supabase
+          .rpc("complete_booking_invitation", { _token: token });
+        if (updateError) throw updateError;
+      }
 
       return true;
     },
