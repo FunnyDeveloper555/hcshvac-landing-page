@@ -44,3 +44,7 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.create-applicant-account]
+verify_jwt = false
+
