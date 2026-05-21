@@ -53,11 +53,9 @@ export default function HireApplicationForm() {
   useEffect(() => {
     const load = async () => {
       if (!token) return;
-      const { data: inv } = await supabase
-        .from("hire_invitations")
-        .select("*")
-        .eq("token", token)
-        .maybeSingle();
+      const { data: rows } = await supabase
+        .rpc("get_hire_invitation_by_token", { _token: token });
+      const inv = Array.isArray(rows) ? rows[0] : rows;
 
       if (!inv) {
         setLoading(false);
@@ -75,10 +73,7 @@ export default function HireApplicationForm() {
       }
 
       if (!inv.opened_at) {
-        await supabase
-          .from("hire_invitations")
-          .update({ opened_at: new Date().toISOString() })
-          .eq("id", inv.id);
+        await supabase.rpc("mark_hire_invitation_opened", { _token: token });
       }
 
       setForm((f) => ({
