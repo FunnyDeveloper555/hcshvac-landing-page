@@ -4097,6 +4097,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_booking_invitation: {
+        Args: { _token: string }
+        Returns: undefined
+      }
+      complete_hire_invitation: { Args: { _token: string }; Returns: undefined }
+      get_booking_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          company_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          customer_type: string
+          expires_at: string | null
+          id: string
+          invitation_type: string
+          notes: string | null
+          opened_at: string | null
+          recipient_email: string | null
+          recipient_phone: string | null
+          sent_at: string | null
+          status: string
+          token: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "booking_invitations"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_business_counts_by_cities: {
         Args: { city_names: string[]; state_codes: string[] }
         Returns: {
@@ -4119,12 +4150,57 @@ export type Database = {
           state_code: string
         }[]
       }
+      get_hire_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          company_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          opened_at: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          recipient_phone: string | null
+          send_method: string
+          sent_at: string | null
+          status: string
+          token: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "hire_invitations"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_public_employees: {
+        Args: never
+        Returns: {
+          city: string
+          first_name: string
+          id: string
+          last_name: string
+          state: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      mark_booking_invitation_opened: {
+        Args: { _token: string }
+        Returns: undefined
+      }
+      mark_hire_invitation_opened: {
+        Args: { _token: string }
+        Returns: undefined
       }
     }
     Enums: {

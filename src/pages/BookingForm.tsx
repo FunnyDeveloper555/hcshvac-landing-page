@@ -127,31 +127,33 @@ export default function BookingForm() {
     queryFn: async () => {
       if (!token) throw new Error("No token provided");
       
-      const { data, error } = await supabase
-        .from("booking_invitations")
-        .select(`
-          *,
-          companies:company_id (name, company_phone, logo_url)
-        `)
-        .eq("token", token)
-        .single();
-      
+      const { data: rows, error } = await supabase
+        .rpc("get_booking_invitation_by_token", { _token: token });
       if (error) throw error;
-      return data as BookingInvitation;
+      const inv = Array.isArray(rows) ? rows[0] : rows;
+      if (!inv) throw new Error("Invitation not found");
+      let companies = null;
+      if (inv.company_id) {
+        const { data: c } = await supabase
+          .from("companies")
+          .select("name, company_phone, logo_url")
+          .eq("id", inv.company_id)
+          .maybeSingle();
+        companies = c || null;
+      }
+      return { ...inv, companies } as BookingInvitation;
     },
     enabled: !!token,
   });
 
   // Update invitation status to "opened" when page is viewed
   useEffect(() => {
-    if (invitation && invitation.status === "sent") {
+    if (invitation && invitation.status === "sent" && token) {
       supabase
-        .from("booking_invitations")
-        .update({ status: "opened", opened_at: new Date().toISOString() })
-        .eq("id", invitation.id)
+        .rpc("mark_booking_invitation_opened", { _token: token })
         .then(() => console.log("Invitation marked as opened"));
     }
-  }, [invitation]);
+  }, [invitation, token]);
 
   const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -195,16 +197,12 @@ export default function BookingForm() {
 
       if (regError) throw regError;
 
-      // Update invitation status
-      const { error: updateError } = await supabase
-        .from("booking_invitations")
-        .update({ 
-          status: "completed", 
-          completed_at: new Date().toISOString() 
-        })
-        .eq("id", invitation.id);
-
-      if (updateError) throw updateError;
+      // Update invitation status via secure RPC
+      if (token) {
+        const { error: updateError } = await supabase
+          .rpc("complete_booking_invitation", { _token: token });
+        if (updateError) throw updateError;
+      }
 
       return true;
     },

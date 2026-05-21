@@ -538,8 +538,8 @@ export function EmployeesAdd() {
         .from("employee-files")
         .upload(path, file, { upsert: false, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("employee-files").getPublicUrl(path);
-      form.setValue("resume_certificates_file_url", pub.publicUrl, { shouldDirty: true });
+      // Store the storage path; we generate signed URLs on demand for private access
+      form.setValue("resume_certificates_file_url", path, { shouldDirty: true });
       toast({ title: "Uploaded", description: file.name });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
@@ -1368,14 +1368,27 @@ export function EmployeesAdd() {
                             <div className="h-9 w-9 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
                               <FileText className="h-4 w-4" />
                             </div>
-                            <a
-                              href={certFileUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm text-primary hover:underline truncate"
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                // Support both legacy public URLs and new private storage paths
+                                if (/^https?:\/\//i.test(certFileUrl)) {
+                                  window.open(certFileUrl, "_blank", "noopener,noreferrer");
+                                  return;
+                                }
+                                const { data, error } = await supabase.storage
+                                  .from("employee-files")
+                                  .createSignedUrl(certFileUrl, 60 * 10);
+                                if (error || !data?.signedUrl) {
+                                  toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
+                                  return;
+                                }
+                                window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                              }}
+                              className="text-sm text-primary hover:underline truncate text-left"
                             >
                               {certFileUrl.split("/").pop()}
-                            </a>
+                            </button>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <Button
