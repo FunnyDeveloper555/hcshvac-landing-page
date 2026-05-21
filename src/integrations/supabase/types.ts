@@ -86,6 +86,415 @@ export type Database = {
         }
         Relationships: []
       }
+      applicant_accounts: {
+        Row: {
+          activated_at: string | null
+          application_id: string | null
+          company_id: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          invited_at: string | null
+          last_name: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["applicant_account_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          application_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          invited_at?: string | null
+          last_name?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["applicant_account_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          application_id?: string | null
+          company_id?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          invited_at?: string | null
+          last_name?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["applicant_account_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_accounts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "hire_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applicant_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_consents: {
+        Row: {
+          agreed: boolean
+          applicant_account_id: string
+          consent_type: Database["public"]["Enums"]["applicant_consent_type"]
+          created_at: string
+          document_version: string | null
+          id: string
+          ip_address: string | null
+          notes: string | null
+          signature_name: string | null
+          signed_at: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          agreed?: boolean
+          applicant_account_id: string
+          consent_type: Database["public"]["Enums"]["applicant_consent_type"]
+          created_at?: string
+          document_version?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          signature_name?: string | null
+          signed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          agreed?: boolean
+          applicant_account_id?: string
+          consent_type?: Database["public"]["Enums"]["applicant_consent_type"]
+          created_at?: string
+          document_version?: string | null
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          signature_name?: string | null
+          signed_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_consents_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_documents: {
+        Row: {
+          admin_notes: string | null
+          applicant_account_id: string
+          created_at: string
+          document_type: Database["public"]["Enums"]["applicant_document_type"]
+          file_name: string | null
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["applicant_document_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          applicant_account_id: string
+          created_at?: string
+          document_type: Database["public"]["Enums"]["applicant_document_type"]
+          file_name?: string | null
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["applicant_document_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          applicant_account_id?: string
+          created_at?: string
+          document_type?: Database["public"]["Enums"]["applicant_document_type"]
+          file_name?: string | null
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["applicant_document_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_documents_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_handbook_acks: {
+        Row: {
+          acknowledged: boolean
+          acknowledged_at: string | null
+          applicant_account_id: string
+          created_at: string
+          handbook_version: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          applicant_account_id: string
+          created_at?: string
+          handbook_version?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          applicant_account_id?: string
+          created_at?: string
+          handbook_version?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_handbook_acks_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_interview_forms: {
+        Row: {
+          applicant_account_id: string
+          created_at: string
+          id: string
+          interview_id: string
+          notes: string | null
+          rating: number | null
+          recommendation: string | null
+          responses: Json
+          staff_name: string | null
+          staff_user_id: string
+          strengths: string | null
+          submitted_at: string | null
+          updated_at: string
+          weaknesses: string | null
+        }
+        Insert: {
+          applicant_account_id: string
+          created_at?: string
+          id?: string
+          interview_id: string
+          notes?: string | null
+          rating?: number | null
+          recommendation?: string | null
+          responses?: Json
+          staff_name?: string | null
+          staff_user_id: string
+          strengths?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          weaknesses?: string | null
+        }
+        Update: {
+          applicant_account_id?: string
+          created_at?: string
+          id?: string
+          interview_id?: string
+          notes?: string | null
+          rating?: number | null
+          recommendation?: string | null
+          responses?: Json
+          staff_name?: string | null
+          staff_user_id?: string
+          strengths?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          weaknesses?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_interview_forms_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applicant_interview_forms_interview_id_fkey"
+            columns: ["interview_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_interviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_interviews: {
+        Row: {
+          applicant_account_id: string
+          applicant_notes: string | null
+          created_at: string
+          created_by: string | null
+          duration_minutes: number | null
+          id: string
+          internal_notes: string | null
+          interviewer_email: string | null
+          interviewer_name: string | null
+          location: string | null
+          meeting_url: string | null
+          position_title: string | null
+          scheduled_at: string
+          status: Database["public"]["Enums"]["applicant_interview_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applicant_account_id: string
+          applicant_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number | null
+          id?: string
+          internal_notes?: string | null
+          interviewer_email?: string | null
+          interviewer_name?: string | null
+          location?: string | null
+          meeting_url?: string | null
+          position_title?: string | null
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["applicant_interview_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applicant_account_id?: string
+          applicant_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_minutes?: number | null
+          id?: string
+          internal_notes?: string | null
+          interviewer_email?: string | null
+          interviewer_name?: string | null
+          location?: string | null
+          meeting_url?: string | null
+          position_title?: string | null
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["applicant_interview_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_interviews_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applicant_psych_exams: {
+        Row: {
+          admin_notes: string | null
+          applicant_account_id: string
+          created_at: string
+          exam_version: string | null
+          id: string
+          responses: Json
+          result: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          score: number | null
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          applicant_account_id: string
+          created_at?: string
+          exam_version?: string | null
+          id?: string
+          responses?: Json
+          result?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          score?: number | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          applicant_account_id?: string
+          created_at?: string
+          exam_version?: string | null
+          id?: string
+          responses?: Json
+          result?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          score?: number | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_psych_exams_applicant_account_id_fkey"
+            columns: ["applicant_account_id"]
+            isOneToOne: false
+            referencedRelation: "applicant_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_type: Database["public"]["Enums"]["appointment_type"]
@@ -4341,6 +4750,31 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "moderator"
+      applicant_account_status: "invited" | "active" | "suspended"
+      applicant_consent_type:
+        | "criminal_background_check"
+        | "drug_testing"
+        | "driving_history"
+        | "citizenship_affidavit"
+        | "general_terms"
+      applicant_document_status: "pending" | "approved" | "rejected"
+      applicant_document_type:
+        | "personal_photo"
+        | "drivers_license"
+        | "birth_certificate"
+        | "social_security_card"
+        | "irs_1099"
+        | "irs_w4"
+        | "work_authorization"
+        | "citizenship_affidavit"
+        | "address_proof_1"
+        | "address_proof_2"
+        | "other"
+      applicant_interview_status:
+        | "scheduled"
+        | "completed"
+        | "cancelled"
+        | "no_show"
       appointment_status: "open" | "closed" | "cancelled"
       appointment_type:
         | "residential"
@@ -4483,6 +4917,34 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "moderator"],
+      applicant_account_status: ["invited", "active", "suspended"],
+      applicant_consent_type: [
+        "criminal_background_check",
+        "drug_testing",
+        "driving_history",
+        "citizenship_affidavit",
+        "general_terms",
+      ],
+      applicant_document_status: ["pending", "approved", "rejected"],
+      applicant_document_type: [
+        "personal_photo",
+        "drivers_license",
+        "birth_certificate",
+        "social_security_card",
+        "irs_1099",
+        "irs_w4",
+        "work_authorization",
+        "citizenship_affidavit",
+        "address_proof_1",
+        "address_proof_2",
+        "other",
+      ],
+      applicant_interview_status: [
+        "scheduled",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
       appointment_status: ["open", "closed", "cancelled"],
       appointment_type: [
         "residential",
