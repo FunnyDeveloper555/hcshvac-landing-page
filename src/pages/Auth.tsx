@@ -23,21 +23,25 @@ const Auth = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get("redirect") || "/";
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate(redirectTo);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/");
+        navigate(redirectTo);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
