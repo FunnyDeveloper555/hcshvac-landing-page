@@ -180,6 +180,7 @@ const Admin = () => {
               <Route path="/sms-link/list" element={<SMSLinkList />} />
               <Route path="/new-hire/send" element={<HireLinkSend />} />
               <Route path="/new-hire/list" element={<HireApplicationsList />} />
+              <Route path="/new-hire/applicant/:id" element={<AdminApplicantDetail />} />
               <Route path="/cities/import" element={<CitiesImport />} />
               <Route path="/business/import" element={<BusinessImport />} />
               {/* Global page builder routes */}
