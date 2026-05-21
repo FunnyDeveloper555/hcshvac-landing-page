@@ -46,6 +46,7 @@ import SMSLinkSend from "@/components/admin/smslink/SMSLinkSend";
 import SMSLinkList from "@/components/admin/smslink/SMSLinkList";
 import HireLinkSend from "@/components/admin/hire/HireLinkSend";
 import HireApplicationsList from "@/components/admin/hire/HireApplicationsList";
+import AdminApplicantDetail from "@/components/admin/hire/AdminApplicantDetail";
 import LogsList from "@/components/admin/LogsList";
 import CallLogAdd from "@/components/admin/CallLogAdd";
 import CustomersAdd from "@/components/admin/CustomersAdd";
@@ -179,6 +180,7 @@ const Admin = () => {
               <Route path="/sms-link/list" element={<SMSLinkList />} />
               <Route path="/new-hire/send" element={<HireLinkSend />} />
               <Route path="/new-hire/list" element={<HireApplicationsList />} />
+              <Route path="/new-hire/applicant/:id" element={<AdminApplicantDetail />} />
               <Route path="/cities/import" element={<CitiesImport />} />
               <Route path="/business/import" element={<BusinessImport />} />
               {/* Global page builder routes */}
