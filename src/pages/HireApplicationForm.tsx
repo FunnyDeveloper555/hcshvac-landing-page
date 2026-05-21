@@ -122,6 +122,20 @@ export default function HireApplicationForm() {
         await supabase.rpc("complete_hire_invitation", { _token: token });
       }
 
+      // Send confirmation email (non-blocking — don't fail submission if email fails)
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "application-received",
+          recipientEmail: parsed.data.email,
+          idempotencyKey: `application-received-${invitation.id}`,
+          templateData: {
+            applicantName: `${parsed.data.first_name} ${parsed.data.last_name}`.trim(),
+            companyName: companyName || undefined,
+          },
+        },
+      }).catch((e) => console.warn("Email send failed:", e));
+
+
       setSubmitted(true);
     } catch (err: any) {
       toast({ title: "Submission failed", description: err.message, variant: "destructive" });
