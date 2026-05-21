@@ -16,6 +16,8 @@ import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 import FileServer from "./pages/FileServer";
 import Unsubscribe from "./pages/Unsubscribe";
+import ApplicantPortal from "./pages/ApplicantPortal";
+import ApplicantSetPassword from "./pages/ApplicantSetPassword";
 
 import { getSubdomainSlug } from "./hooks/useSubdomainSlug";
 
