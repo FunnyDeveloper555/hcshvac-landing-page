@@ -32,8 +32,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         {subdomainSlug ? (
-          /* Subdomain detected — render company landing as the entire site */
+          /* Subdomain detected — render company landing as the entire site,
+             but still expose public token-based flows so links work from
+             any host (apex or subdomain). */
           <Routes>
+            <Route path="/apply/:token" element={<HireApplicationForm />} />
+            <Route path="/book/:token" element={<BookingForm />} />
+            <Route path="/applicant" element={<ApplicantPortal />} />
+            <Route path="/applicant/set-password" element={<ApplicantSetPassword />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/fileserver" element={<FileServer />} />
             <Route path="*" element={<CompanyLanding subdomainSlug={subdomainSlug} />} />
           </Routes>
         ) : (
