@@ -757,6 +757,92 @@ export type Database = {
         }
         Relationships: []
       }
+      call_logs_3cx: {
+        Row: {
+          agent_extension: string | null
+          agent_name: string | null
+          caller_name: string | null
+          cost: number | null
+          created_at: string
+          customer_id: string | null
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          external_call_id: string | null
+          from_number: string | null
+          id: string
+          matched_phone: string | null
+          notes: string | null
+          queue_name: string | null
+          raw_payload: Json
+          recording_url: string | null
+          ring_seconds: number | null
+          started_at: string | null
+          status: string | null
+          talk_seconds: number | null
+          to_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_extension?: string | null
+          agent_name?: string | null
+          caller_name?: string | null
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          direction: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          from_number?: string | null
+          id?: string
+          matched_phone?: string | null
+          notes?: string | null
+          queue_name?: string | null
+          raw_payload?: Json
+          recording_url?: string | null
+          ring_seconds?: number | null
+          started_at?: string | null
+          status?: string | null
+          talk_seconds?: number | null
+          to_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_extension?: string | null
+          agent_name?: string | null
+          caller_name?: string | null
+          cost?: number | null
+          created_at?: string
+          customer_id?: string | null
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          external_call_id?: string | null
+          from_number?: string | null
+          id?: string
+          matched_phone?: string | null
+          notes?: string | null
+          queue_name?: string | null
+          raw_payload?: Json
+          recording_url?: string | null
+          ring_seconds?: number | null
+          started_at?: string | null
+          status?: string | null
+          talk_seconds?: number | null
+          to_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_3cx_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           area_code: string | null
