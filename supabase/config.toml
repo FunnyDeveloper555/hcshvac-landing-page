@@ -48,3 +48,7 @@ verify_jwt = false
 [functions.create-applicant-account]
 verify_jwt = false
 
+[functions.webhook-3cx-call]
+verify_jwt = false
+
+
