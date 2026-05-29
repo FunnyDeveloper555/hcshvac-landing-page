@@ -6,9 +6,9 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SERVER = (Deno.env.get("THREECX_SERVER_URL") || "").replace(/\/+$/, "");
-const CLIENT_ID = Deno.env.get("THREECX_CLIENT_ID")!;
-const CLIENT_SECRET = Deno.env.get("THREECX_CLIENT_SECRET")!;
+const SERVER = (Deno.env.get("THREECX_SERVER_URL") || "").trim().replace(/\/+$/, "");
+const CLIENT_ID = (Deno.env.get("THREECX_CLIENT_ID") || "").trim();
+const CLIENT_SECRET = (Deno.env.get("THREECX_CLIENT_SECRET") || "").trim();
 
 function normalizePhone(p?: string | null): string | null {
   if (!p) return null;
