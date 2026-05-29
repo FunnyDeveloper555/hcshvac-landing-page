@@ -81,24 +81,36 @@ Deno.serve(async (req) => {
         tryVariant(token, "CallHistoryView-count", { "$count": "true", "$top": "0" }),
       ]);
 
-      // Probe alternative endpoints
+      // Probe alternative endpoints — try entity sets + report functions with required params
+      const fromIso = "2026-05-01T00:00:00Z";
+      const toIso = "2026-05-30T00:00:00Z";
       const altEndpoints = [
-        "/xapi/v1/ReportCallLogData",
-        "/xapi/v1/ReportExtensionStatistics",
-        "/xapi/v1/CallHistory",
-        "/xapi/v1/Cdr",
-        "/xapi/v1/ActiveCalls",
-        "/xapi/v1/CallHistoryView/Pbx.GetCallHistoryView()",
+        `/xapi/v1/CallLogData?$top=3`,
+        `/xapi/v1/OutboundCall?$top=3`,
+        `/xapi/v1/InboundCall?$top=3`,
+        `/xapi/v1/CallDistribution?$top=3`,
+        `/xapi/v1/ReportCallLogData(periodFrom=${fromIso},periodTo=${toIso},sourceType='Extension',sourceFilter=null,destinationType='Extension',destinationFilter=null,callsType=0,callTimeFilterType=0,callTimeFilterFrom='00%3A00%3A00',callTimeFilterTo='00%3A00%3A00',hidePcalls=true)?$top=3`,
+        `/xapi/v1/ReportInboundCalls(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
+        `/xapi/v1/ReportOutboundCalls(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
+        `/xapi/v1/ReportCallDistribution(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
       ];
       const altResults = await Promise.all(
         altEndpoints.map(async (ep) => {
-          const r = await fetch(`${SERVER}${ep}?$top=3`, {
+          const r = await fetch(`${SERVER}${ep}`, {
             headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
           });
           const t = await r.text();
-          return { endpoint: ep, status: r.status, body: t.slice(0, 250) };
+          let parsed: any = null; try { parsed = JSON.parse(t); } catch {}
+          return {
+            endpoint: ep.split("?")[0].slice(0, 80),
+            status: r.status,
+            count: parsed?.value?.length ?? null,
+            firstRecord: parsed?.value?.[0] || null,
+            error: !r.ok ? t.slice(0, 250) : null,
+          };
         })
       );
+
 
       // Read $metadata to discover what entity sets exist for this client
       const metaRes = await fetch(`${SERVER}/xapi/v1/$metadata`, {
