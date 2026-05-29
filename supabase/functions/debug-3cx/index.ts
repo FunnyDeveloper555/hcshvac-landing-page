@@ -15,19 +15,17 @@ async function getToken() {
 Deno.serve(async () => {
   const token = await getToken();
 
-  // Pull the $metadata to find ReportCallLogData's exact function signature
-  const meta = await fetch(`${SERVER}/xapi/v1/$metadata`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/xml" } });
+  const meta = await fetch(`${SERVER}/xapi/v1/$metadata`, { headers: { Authorization: `Bearer ${token}` } });
   const metaText = await meta.text();
-  // extract function definitions related to call log
-  const fnMatch = metaText.match(/<Function Name="ReportCallLogData"[\s\S]*?<\/Function>/g);
-  const fnMatch2 = metaText.match(/<Function Name="GetCallHistoryView"[\s\S]*?<\/Function>/g);
-  // also list all <Function Name="...
-  const allFns = [...metaText.matchAll(/<Function Name="([^"]+)"/g)].map(m => m[1]);
-  const callFns = allFns.filter(n => /call|cdr|report|history|log/i.test(n));
+  const fn = metaText.match(/<Function Name="GetCallLogData"[\s\S]*?<\/Function>/);
+  const ib = metaText.match(/<Function Name="GetInboundCalls"[\s\S]*?<\/Function>/);
+  const ob = metaText.match(/<Function Name="GetOutboundCalls"[\s\S]*?<\/Function>/);
+  const dch = metaText.match(/<Function Name="DownloadCallHistory"[\s\S]*?<\/Function>/);
 
   return new Response(JSON.stringify({
-    callFns,
-    ReportCallLogData: fnMatch,
-    GetCallHistoryView: fnMatch2,
+    GetCallLogData: fn?.[0],
+    GetInboundCalls: ib?.[0],
+    GetOutboundCalls: ob?.[0],
+    DownloadCallHistory: dch?.[0],
   }, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 });
