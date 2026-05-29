@@ -69,15 +69,13 @@ Deno.serve(async (req) => {
 
     // DEBUG MODE: try multiple endpoints to find call data
     if (debug) {
-      const probes = await Promise.all([
-        tryEndpoint(token, "/xapi/v1/CallHistoryView", { "$top": "3", "$orderby": "SegmentStartTime desc" }),
-        tryEndpoint(token, "/xapi/v1/CallHistoryView", { "$top": "3" }),
-        tryEndpoint(token, "/xapi/v1/ReportCallLogData", { "$top": "3" }),
-        tryEndpoint(token, "/xapi/v1/CallLogData", { "$top": "3" }),
-        tryEndpoint(token, "/xapi/v1/Pbx.GetCallHistoryView", {}),
-        tryEndpoint(token, "/xapi/v1/$metadata", {}),
-        tryEndpoint(token, "/xapi/v1/", {}),
-      ]);
+      // Fetch catalog, then probe every entity whose name contains "call"
+      const catResp = await fetch(`${SERVER}/xapi/v1/`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+      const cat = await catResp.json();
+      const callSets = (cat.value || []).filter((e: any) => /call|cdr|history|report/i.test(e.name));
+      const probes = await Promise.all(
+        callSets.map((e: any) => tryEndpoint(token, `/xapi/v1/${e.url}`, { "$top": "1" }))
+      );
       return new Response(JSON.stringify({ ok: true, probes }, null, 2), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
