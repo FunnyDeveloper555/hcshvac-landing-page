@@ -1,4 +1,3 @@
-// debug list entities
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 const SERVER = (Deno.env.get("THREECX_SERVER_URL") || "").trim().replace(/\/+$/, "");
 const CLIENT_ID = (Deno.env.get("THREECX_CLIENT_ID") || "").trim();
@@ -15,23 +14,30 @@ async function getToken() {
 
 Deno.serve(async () => {
   const token = await getToken();
-  const r = await fetch(`${SERVER}/xapi/v1/`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
-  const j = await r.json();
-  const names = (j.value || []).map((e: any) => e.name).filter((n: string) => /call|cdr|report|history|log/i.test(n));
+  const startDt = "2026-05-01T00:00:00Z";
+  const endDt = "2026-05-30T00:00:00Z";
 
-  // probe each call-related endpoint with $top=2
-  const results: any[] = [];
-  for (const name of names) {
-    const res = await fetch(`${SERVER}/xapi/v1/${name}?$top=2`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
-    let body: any = null;
-    try { body = await res.json(); } catch {}
-    results.push({
-      name,
-      status: res.status,
-      count: body?.value?.length ?? null,
-      firstKeys: body?.value?.[0] ? Object.keys(body.value[0]).slice(0, 15) : null,
-      first: body?.value?.[0] || null,
+  // ReportCallLogData is an OData function — must be called as Pbx.ReportCallLogData with params in URL
+  const candidates = [
+    `/xapi/v1/ReportCallLogData(periodFrom=${startDt},periodTo=${endDt},sourceType=0,sourceFilter='',destinationType=0,destinationFilter='',callsType=0,callTimeFilterType=0,callTimeFilterFrom='00:00:00',callTimeFilterTo='00:00:00',hidePcalls=true)?$top=3`,
+    `/xapi/v1/Pbx.ReportCallLogData(periodFrom=${startDt},periodTo=${endDt},sourceType=0,sourceFilter='',destinationType=0,destinationFilter='',callsType=0,callTimeFilterType=0,callTimeFilterFrom='00:00:00',callTimeFilterTo='00:00:00',hidePcalls=true)?$top=3`,
+    `/xapi/v1/CallHistoryView?$count=true&$top=5`,
+  ];
+
+  const out: any[] = [];
+  for (const path of candidates) {
+    const r = await fetch(`${SERVER}${path}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+    const text = await r.text();
+    let parsed: any = null;
+    try { parsed = JSON.parse(text); } catch {}
+    out.push({
+      path,
+      status: r.status,
+      count: parsed?.value?.length ?? null,
+      odataCount: parsed?.["@odata.count"] ?? null,
+      first: parsed?.value?.[0] || null,
+      raw: parsed ? null : text.slice(0, 400),
     });
   }
-  return new Response(JSON.stringify({ allNames: names, results }, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(out, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 });
