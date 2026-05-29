@@ -51,4 +51,8 @@ verify_jwt = false
 [functions.webhook-3cx-call]
 verify_jwt = false
 
+[functions.poll-3cx-calls]
+verify_jwt = false
+
+
 
