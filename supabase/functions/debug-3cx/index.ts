@@ -14,18 +14,31 @@ async function getToken() {
 
 Deno.serve(async () => {
   const token = await getToken();
+  const from = "2026-05-01T00:00:00Z";
+  const to = "2026-05-30T00:00:00Z";
 
-  const meta = await fetch(`${SERVER}/xapi/v1/$metadata`, { headers: { Authorization: `Bearer ${token}` } });
-  const metaText = await meta.text();
-  const fn = metaText.match(/<Function Name="GetCallLogData"[\s\S]*?<\/Function>/);
-  const ib = metaText.match(/<Function Name="GetInboundCalls"[\s\S]*?<\/Function>/);
-  const ob = metaText.match(/<Function Name="GetOutboundCalls"[\s\S]*?<\/Function>/);
-  const dch = metaText.match(/<Function Name="DownloadCallHistory"[\s\S]*?<\/Function>/);
+  const args = `periodFrom=${from},periodTo=${to},sourceType=0,sourceFilter='',destinationType=0,destinationFilter='',callsType=0,callTimeFilterType=0,callTimeFilterFrom='',callTimeFilterTo='',hidePcalls=true`;
 
-  return new Response(JSON.stringify({
-    GetCallLogData: fn?.[0],
-    GetInboundCalls: ib?.[0],
-    GetOutboundCalls: ob?.[0],
-    DownloadCallHistory: dch?.[0],
-  }, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const paths = [
+    `/xapi/v1/CallLogData/Pbx.GetCallLogData(${args})?$top=3`,
+    `/xapi/v1/InboundCall/Pbx.GetInboundCalls(periodFrom=${from},periodTo=${to},trunkDns='',callsType=0)?$top=3`,
+    `/xapi/v1/OutboundCall/Pbx.GetOutboundCalls(periodFrom=${from},periodTo=${to},trunkDns='',callsType=0)?$top=3`,
+    `/xapi/v1/CallHistoryView/Pbx.DownloadCallHistory()?$top=3`,
+  ];
+
+  const out: any[] = [];
+  for (const p of paths) {
+    const r = await fetch(`${SERVER}${p}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
+    const text = await r.text();
+    let parsed: any = null;
+    try { parsed = JSON.parse(text); } catch {}
+    out.push({
+      path: p,
+      status: r.status,
+      count: parsed?.value?.length ?? null,
+      first: parsed?.value?.[0] || null,
+      raw: parsed ? null : text.slice(0, 400),
+    });
+  }
+  return new Response(JSON.stringify(out, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 });
