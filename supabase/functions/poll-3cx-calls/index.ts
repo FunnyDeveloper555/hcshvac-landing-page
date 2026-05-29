@@ -37,6 +37,13 @@ async function getToken(): Promise<string> {
   });
   if (!res.ok) {
     const t = await res.text();
+    console.error("3CX token failure", {
+      status: res.status,
+      body: t,
+      server: SERVER,
+      clientIdLen: CLIENT_ID.length,
+      clientSecretLen: CLIENT_SECRET.length,
+    });
     throw new Error(`Token request failed: ${res.status} ${t}`);
   }
   const j = await res.json();
