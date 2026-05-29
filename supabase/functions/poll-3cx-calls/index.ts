@@ -1,8 +1,4 @@
 // Polls 3CX XAPI (Enterprise v20) for new call history and inserts into call_logs_3cx.
-// Auth: OAuth2 client_credentials → POST {SERVER}/connect/token
-// Data: GET {SERVER}/xapi/v1/CallHistoryView (OData)
-// Note: 3CX returns 500 for $filter on SegmentStartTime — so we fetch the most
-// recent N rows each poll and rely on upsert on external_call_id to dedupe.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
@@ -21,7 +17,6 @@ function normalizePhone(p?: string | null): string | null {
   return d.length > 10 ? d.slice(-10) : d;
 }
 
-// Convert ISO 8601 duration like "PT1M30S" to seconds
 function isoDurationToSeconds(d?: string | null): number | null {
   if (!d) return null;
   const m = /^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/.exec(d);
@@ -45,53 +40,71 @@ async function getToken(): Promise<string> {
       client_secret: CLIENT_SECRET,
     }),
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Token request failed: ${res.status} ${t}`);
-  }
+  if (!res.ok) throw new Error(`Token request failed: ${res.status} ${await res.text()}`);
   return (await res.json()).access_token as string;
+}
+
+async function tryEndpoint(token: string, path: string, params: Record<string, string> = {}) {
+  const url = new URL(`${SERVER}${path}`);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+  });
+  const text = await res.text();
+  let parsed: any = null;
+  try { parsed = JSON.parse(text); } catch {}
+  return { path, status: res.status, sample: parsed ? (parsed.value ? `value[${parsed.value.length}]` : Object.keys(parsed).slice(0,8)) : text.slice(0, 200), firstRecord: parsed?.value?.[0] || null };
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const url = new URL(req.url);
+  const debug = url.searchParams.get("debug") === "1";
+
   try {
     if (!SERVER || !CLIENT_ID || !CLIENT_SECRET) throw new Error("3CX env vars missing");
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
-
     const token = await getToken();
 
-    // Fetch most recent N rows (server-side $filter on SegmentStartTime is broken)
-    const url = new URL(`${SERVER}/xapi/v1/CallHistoryView`);
-    url.searchParams.set("$orderby", "SegmentStartTime desc");
-    url.searchParams.set("$top", String(BATCH_SIZE));
+    // DEBUG MODE: try multiple endpoints to find call data
+    if (debug) {
+      const probes = await Promise.all([
+        tryEndpoint(token, "/xapi/v1/CallHistoryView", { "$top": "3", "$orderby": "SegmentStartTime desc" }),
+        tryEndpoint(token, "/xapi/v1/CallHistoryView", { "$top": "3" }),
+        tryEndpoint(token, "/xapi/v1/ReportCallLogData", { "$top": "3" }),
+        tryEndpoint(token, "/xapi/v1/CallLogData", { "$top": "3" }),
+        tryEndpoint(token, "/xapi/v1/Pbx.GetCallHistoryView", {}),
+        tryEndpoint(token, "/xapi/v1/$metadata", {}),
+        tryEndpoint(token, "/xapi/v1/", {}),
+      ]);
+      return new Response(JSON.stringify({ ok: true, probes }, null, 2), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const resp = await fetch(url.toString(), {
+    // Normal mode: fetch most recent N rows (server-side $filter on SegmentStartTime is broken)
+    const fetchUrl = new URL(`${SERVER}/xapi/v1/CallHistoryView`);
+    fetchUrl.searchParams.set("$orderby", "SegmentStartTime desc");
+    fetchUrl.searchParams.set("$top", String(BATCH_SIZE));
+
+    const resp = await fetch(fetchUrl.toString(), {
       headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
     });
-    if (!resp.ok) {
-      const t = await resp.text();
-      throw new Error(`CallHistoryView fetch failed: ${resp.status} ${t}`);
-    }
+    if (!resp.ok) throw new Error(`CallHistoryView fetch failed: ${resp.status} ${await resp.text()}`);
     const body = await resp.json();
     const records: any[] = body.value || [];
 
-    // Pre-load existing IDs for skip-fast (avoid noisy upserts/admin_logs)
     const externalIds = records.map((r) => String(r.SegmentId)).filter(Boolean);
     const existing = new Set<string>();
     if (externalIds.length) {
       const { data: existRows } = await supabase
-        .from("call_logs_3cx")
-        .select("external_call_id")
-        .in("external_call_id", externalIds);
+        .from("call_logs_3cx").select("external_call_id").in("external_call_id", externalIds);
       (existRows || []).forEach((r: any) => existing.add(r.external_call_id));
     }
 
-    // Pre-load customers (for phone matching)
     const { data: customers } = await supabase
-      .from("customer_registrations")
-      .select("id, phone_number")
-      .limit(5000);
+      .from("customer_registrations").select("id, phone_number").limit(5000);
     const phoneMap = new Map<string, string>();
     (customers || []).forEach((c: any) => {
       const n = normalizePhone(c.phone_number);
@@ -104,70 +117,37 @@ Deno.serve(async (req) => {
     for (const r of records) {
       const externalId = String(r.SegmentId);
       if (existing.has(externalId)) continue;
-
       try {
         const srcExternal = !!r.SrcExternal;
         const dstExternal = !!r.DstExternal;
-        const direction =
-          srcExternal && !dstExternal ? "inbound"
-          : !srcExternal && dstExternal ? "outbound"
-          : "internal";
-
+        const direction = srcExternal && !dstExternal ? "inbound" : !srcExternal && dstExternal ? "outbound" : "internal";
         const fromNumber = r.SrcCallerNumber || r.SrcDn || null;
         const toNumber = r.DstCallerNumber || r.DstDn || null;
         const callerName = r.SrcDisplayName || r.SrcExtendedDisplayName || null;
         const agentExt = direction === "outbound" ? (r.SrcDn || null) : (r.DstDn || null);
-        const agentName = direction === "outbound"
-          ? (r.SrcDisplayName || r.SrcExtendedDisplayName || null)
-          : (r.DstDisplayName || r.DstExtendedDisplayName || null);
-
-        const matchPhone = direction === "outbound"
-          ? normalizePhone(toNumber)
-          : normalizePhone(fromNumber);
+        const agentName = direction === "outbound" ? (r.SrcDisplayName || null) : (r.DstDisplayName || null);
+        const matchPhone = direction === "outbound" ? normalizePhone(toNumber) : normalizePhone(fromNumber);
         const customerId = matchPhone ? phoneMap.get(matchPhone) ?? null : null;
 
         const row = {
-          external_call_id: externalId,
-          direction,
-          from_number: fromNumber,
-          to_number: toNumber,
-          caller_name: callerName,
-          agent_extension: agentExt,
-          agent_name: agentName,
-          queue_name: null,
+          external_call_id: externalId, direction, from_number: fromNumber, to_number: toNumber,
+          caller_name: callerName, agent_extension: agentExt, agent_name: agentName, queue_name: null,
           status: r.CallAnswered === false ? "unanswered" : r.CallAnswered === true ? "answered" : null,
           started_at: r.SegmentStartTime ? new Date(r.SegmentStartTime).toISOString() : null,
           ended_at: r.SegmentEndTime ? new Date(r.SegmentEndTime).toISOString() : null,
-          duration_seconds: isoDurationToSeconds(r.CallTime),
-          ring_seconds: null,
-          talk_seconds: null,
-          raw_payload: r,
-          customer_id: customerId,
-          matched_phone: matchPhone,
+          duration_seconds: isoDurationToSeconds(r.CallTime), ring_seconds: null, talk_seconds: null,
+          raw_payload: r, customer_id: customerId, matched_phone: matchPhone,
         };
 
         const { data, error } = await supabase
-          .from("call_logs_3cx")
-          .upsert(row, { onConflict: "external_call_id" })
-          .select("id")
-          .single();
+          .from("call_logs_3cx").upsert(row, { onConflict: "external_call_id" }).select("id").single();
         if (error) throw error;
 
         await supabase.from("admin_logs").insert({
-          user_id: "00000000-0000-0000-0000-000000000000",
-          user_email: "3cx-poller",
-          action: direction === "outbound" ? "call_out" : "call_in",
-          entity_type: "call",
+          user_id: "00000000-0000-0000-0000-000000000000", user_email: "3cx-poller",
+          action: direction === "outbound" ? "call_out" : "call_in", entity_type: "call",
           entity_id: data?.id ?? null,
-          details: {
-            from: fromNumber,
-            to: toNumber,
-            caller_name: callerName,
-            agent: agentName || agentExt,
-            status: row.status,
-            duration: row.duration_seconds,
-            customer_id: customerId,
-          },
+          details: { from: fromNumber, to: toNumber, caller_name: callerName, agent: agentName || agentExt, status: row.status, duration: row.duration_seconds, customer_id: customerId },
         });
         imported++;
       } catch (e) {
@@ -175,21 +155,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        fetched: records.length,
-        already_imported: records.length - imported - errors.length,
-        imported,
-        errors,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ ok: true, fetched: records.length, already_imported: records.length - imported - errors.length, imported, errors }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("poll-3cx-calls error:", err);
-    return new Response(JSON.stringify({ error: String((err as Error).message ?? err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: String((err as Error).message ?? err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
