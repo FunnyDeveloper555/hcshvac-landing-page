@@ -14,30 +14,20 @@ async function getToken() {
 
 Deno.serve(async () => {
   const token = await getToken();
-  const startDt = "2026-05-01T00:00:00Z";
-  const endDt = "2026-05-30T00:00:00Z";
 
-  // ReportCallLogData is an OData function — must be called as Pbx.ReportCallLogData with params in URL
-  const candidates = [
-    `/xapi/v1/ReportCallLogData(periodFrom=${startDt},periodTo=${endDt},sourceType=0,sourceFilter='',destinationType=0,destinationFilter='',callsType=0,callTimeFilterType=0,callTimeFilterFrom='00:00:00',callTimeFilterTo='00:00:00',hidePcalls=true)?$top=3`,
-    `/xapi/v1/Pbx.ReportCallLogData(periodFrom=${startDt},periodTo=${endDt},sourceType=0,sourceFilter='',destinationType=0,destinationFilter='',callsType=0,callTimeFilterType=0,callTimeFilterFrom='00:00:00',callTimeFilterTo='00:00:00',hidePcalls=true)?$top=3`,
-    `/xapi/v1/CallHistoryView?$count=true&$top=5`,
-  ];
+  // Pull the $metadata to find ReportCallLogData's exact function signature
+  const meta = await fetch(`${SERVER}/xapi/v1/$metadata`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/xml" } });
+  const metaText = await meta.text();
+  // extract function definitions related to call log
+  const fnMatch = metaText.match(/<Function Name="ReportCallLogData"[\s\S]*?<\/Function>/g);
+  const fnMatch2 = metaText.match(/<Function Name="GetCallHistoryView"[\s\S]*?<\/Function>/g);
+  // also list all <Function Name="...
+  const allFns = [...metaText.matchAll(/<Function Name="([^"]+)"/g)].map(m => m[1]);
+  const callFns = allFns.filter(n => /call|cdr|report|history|log/i.test(n));
 
-  const out: any[] = [];
-  for (const path of candidates) {
-    const r = await fetch(`${SERVER}${path}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
-    const text = await r.text();
-    let parsed: any = null;
-    try { parsed = JSON.parse(text); } catch {}
-    out.push({
-      path,
-      status: r.status,
-      count: parsed?.value?.length ?? null,
-      odataCount: parsed?.["@odata.count"] ?? null,
-      first: parsed?.value?.[0] || null,
-      raw: parsed ? null : text.slice(0, 400),
-    });
-  }
-  return new Response(JSON.stringify(out, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({
+    callFns,
+    ReportCallLogData: fnMatch,
+    GetCallHistoryView: fnMatch2,
+  }, null, 2), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 });
