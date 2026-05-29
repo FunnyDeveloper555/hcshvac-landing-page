@@ -77,24 +77,48 @@ Deno.serve(async (req) => {
     if (debug) {
       // Try many CallHistoryView variants to figure out why it's empty
       const variants = await Promise.all([
-        tryVariant(token, "no-params", {}),
-        tryVariant(token, "top-only", { "$top": "10" }),
-        tryVariant(token, "count-only", { "$count": "true", "$top": "0" }),
-        tryVariant(token, "orderby-asc", { "$top": "10", "$orderby": "SegmentStartTime asc" }),
-        tryVariant(token, "orderby-desc", { "$top": "10", "$orderby": "SegmentStartTime desc" }),
-        tryVariant(token, "orderby-id-asc", { "$top": "10", "$orderby": "SegmentId asc" }),
-        tryVariant(token, "orderby-id-desc", { "$top": "10", "$orderby": "SegmentId desc" }),
-        tryVariant(token, "filter-2026", { "$top": "10", "$filter": "SegmentStartTime gt 2026-01-01T00:00:00Z" }),
-        tryVariant(token, "skip-0-top-1", { "$skip": "0", "$top": "1" }),
+        tryVariant(token, "CallHistoryView", { "$top": "5" }),
+        tryVariant(token, "CallHistoryView-count", { "$count": "true", "$top": "0" }),
       ]);
 
-      // Also probe the LastCdr to confirm a CDR really exists
+      // Probe alternative endpoints
+      const altEndpoints = [
+        "/xapi/v1/ReportCallLogData",
+        "/xapi/v1/ReportExtensionStatistics",
+        "/xapi/v1/CallHistory",
+        "/xapi/v1/Cdr",
+        "/xapi/v1/ActiveCalls",
+        "/xapi/v1/CallHistoryView/Pbx.GetCallHistoryView()",
+      ];
+      const altResults = await Promise.all(
+        altEndpoints.map(async (ep) => {
+          const r = await fetch(`${SERVER}${ep}?$top=3`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+          });
+          const t = await r.text();
+          return { endpoint: ep, status: r.status, body: t.slice(0, 250) };
+        })
+      );
+
+      // Read $metadata to discover what entity sets exist for this client
+      const metaRes = await fetch(`${SERVER}/xapi/v1/$metadata`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/xml" },
+      });
+      const metaText = await metaRes.text();
+      const entitySets = [...metaText.matchAll(/<EntitySet\s+Name="([^"]+)"/g)].map(m => m[1]);
+      const callRelated = entitySets.filter(n => /call|cdr|history|report|chat/i.test(n));
+
       const lastCdrRes = await fetch(`${SERVER}/xapi/v1/LastCdrAndChatMessageTimestamp`, {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
       });
       const lastCdr = await lastCdrRes.json();
 
-      return new Response(JSON.stringify({ ok: true, lastCdr, variants }, null, 2), {
+      return new Response(JSON.stringify({
+        ok: true, lastCdr, variants, altResults,
+        callRelatedEntitySets: callRelated,
+        totalEntitySets: entitySets.length,
+        metadataStatus: metaRes.status,
+      }, null, 2), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
