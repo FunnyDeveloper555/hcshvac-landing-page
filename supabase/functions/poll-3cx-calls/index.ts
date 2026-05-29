@@ -77,24 +77,60 @@ Deno.serve(async (req) => {
     if (debug) {
       // Try many CallHistoryView variants to figure out why it's empty
       const variants = await Promise.all([
-        tryVariant(token, "no-params", {}),
-        tryVariant(token, "top-only", { "$top": "10" }),
-        tryVariant(token, "count-only", { "$count": "true", "$top": "0" }),
-        tryVariant(token, "orderby-asc", { "$top": "10", "$orderby": "SegmentStartTime asc" }),
-        tryVariant(token, "orderby-desc", { "$top": "10", "$orderby": "SegmentStartTime desc" }),
-        tryVariant(token, "orderby-id-asc", { "$top": "10", "$orderby": "SegmentId asc" }),
-        tryVariant(token, "orderby-id-desc", { "$top": "10", "$orderby": "SegmentId desc" }),
-        tryVariant(token, "filter-2026", { "$top": "10", "$filter": "SegmentStartTime gt 2026-01-01T00:00:00Z" }),
-        tryVariant(token, "skip-0-top-1", { "$skip": "0", "$top": "1" }),
+        tryVariant(token, "CallHistoryView", { "$top": "5" }),
+        tryVariant(token, "CallHistoryView-count", { "$count": "true", "$top": "0" }),
       ]);
 
-      // Also probe the LastCdr to confirm a CDR really exists
+      // Probe alternative endpoints — try entity sets + report functions with required params
+      const fromIso = "2026-05-01T00:00:00Z";
+      const toIso = "2026-05-30T00:00:00Z";
+      const altEndpoints = [
+        `/xapi/v1/CallLogData?$top=3`,
+        `/xapi/v1/OutboundCall?$top=3`,
+        `/xapi/v1/InboundCall?$top=3`,
+        `/xapi/v1/CallDistribution?$top=3`,
+        `/xapi/v1/ReportCallLogData(periodFrom=${fromIso},periodTo=${toIso},sourceType='Extension',sourceFilter=null,destinationType='Extension',destinationFilter=null,callsType=0,callTimeFilterType=0,callTimeFilterFrom='00%3A00%3A00',callTimeFilterTo='00%3A00%3A00',hidePcalls=true)?$top=3`,
+        `/xapi/v1/ReportInboundCalls(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
+        `/xapi/v1/ReportOutboundCalls(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
+        `/xapi/v1/ReportCallDistribution(periodFrom=${fromIso},periodTo=${toIso})?$top=3`,
+      ];
+      const altResults = await Promise.all(
+        altEndpoints.map(async (ep) => {
+          const r = await fetch(`${SERVER}${ep}`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+          });
+          const t = await r.text();
+          let parsed: any = null; try { parsed = JSON.parse(t); } catch {}
+          return {
+            endpoint: ep.split("?")[0].slice(0, 80),
+            status: r.status,
+            count: parsed?.value?.length ?? null,
+            firstRecord: parsed?.value?.[0] || null,
+            error: !r.ok ? t.slice(0, 250) : null,
+          };
+        })
+      );
+
+
+      // Read $metadata to discover what entity sets exist for this client
+      const metaRes = await fetch(`${SERVER}/xapi/v1/$metadata`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/xml" },
+      });
+      const metaText = await metaRes.text();
+      const entitySets = [...metaText.matchAll(/<EntitySet\s+Name="([^"]+)"/g)].map(m => m[1]);
+      const callRelated = entitySets.filter(n => /call|cdr|history|report|chat/i.test(n));
+
       const lastCdrRes = await fetch(`${SERVER}/xapi/v1/LastCdrAndChatMessageTimestamp`, {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
       });
       const lastCdr = await lastCdrRes.json();
 
-      return new Response(JSON.stringify({ ok: true, lastCdr, variants }, null, 2), {
+      return new Response(JSON.stringify({
+        ok: true, lastCdr, variants, altResults,
+        callRelatedEntitySets: callRelated,
+        totalEntitySets: entitySets.length,
+        metadataStatus: metaRes.status,
+      }, null, 2), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
