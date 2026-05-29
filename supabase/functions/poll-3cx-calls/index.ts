@@ -44,8 +44,8 @@ async function getToken(): Promise<string> {
   return (await res.json()).access_token as string;
 }
 
-async function tryEndpoint(token: string, path: string, params: Record<string, string> = {}) {
-  const url = new URL(`${SERVER}${path}`);
+async function tryVariant(token: string, label: string, params: Record<string, string>) {
+  const url = new URL(`${SERVER}/xapi/v1/CallHistoryView`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
@@ -53,7 +53,14 @@ async function tryEndpoint(token: string, path: string, params: Record<string, s
   const text = await res.text();
   let parsed: any = null;
   try { parsed = JSON.parse(text); } catch {}
-  return { path, status: res.status, sample: parsed ? (parsed.value ? `value[${parsed.value.length}]` : Object.keys(parsed).slice(0,8)) : text.slice(0, 200), firstRecord: parsed?.value?.[0] || null };
+  return {
+    label,
+    url: url.toString().replace(SERVER, ""),
+    status: res.status,
+    count: parsed?.["@odata.count"] ?? parsed?.value?.length ?? null,
+    firstRecord: parsed?.value?.[0] || null,
+    error: !res.ok ? text.slice(0, 200) : null,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -67,23 +74,33 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
     const token = await getToken();
 
-    // DEBUG MODE: try multiple endpoints to find call data
     if (debug) {
-      // Fetch catalog, then probe every entity whose name contains "call"
-      const catResp = await fetch(`${SERVER}/xapi/v1/`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
-      const cat = await catResp.json();
-      const callSets = (cat.value || []).filter((e: any) => /call|cdr|history|report/i.test(e.name));
-      const probes = await Promise.all(
-        callSets.map((e: any) => tryEndpoint(token, `/xapi/v1/${e.url}`, { "$top": "1" }))
-      );
-      return new Response(JSON.stringify({ ok: true, probes }, null, 2), {
+      // Try many CallHistoryView variants to figure out why it's empty
+      const variants = await Promise.all([
+        tryVariant(token, "no-params", {}),
+        tryVariant(token, "top-only", { "$top": "10" }),
+        tryVariant(token, "count-only", { "$count": "true", "$top": "0" }),
+        tryVariant(token, "orderby-asc", { "$top": "10", "$orderby": "SegmentStartTime asc" }),
+        tryVariant(token, "orderby-desc", { "$top": "10", "$orderby": "SegmentStartTime desc" }),
+        tryVariant(token, "orderby-id-asc", { "$top": "10", "$orderby": "SegmentId asc" }),
+        tryVariant(token, "orderby-id-desc", { "$top": "10", "$orderby": "SegmentId desc" }),
+        tryVariant(token, "filter-2026", { "$top": "10", "$filter": "SegmentStartTime gt 2026-01-01T00:00:00Z" }),
+        tryVariant(token, "skip-0-top-1", { "$skip": "0", "$top": "1" }),
+      ]);
+
+      // Also probe the LastCdr to confirm a CDR really exists
+      const lastCdrRes = await fetch(`${SERVER}/xapi/v1/LastCdrAndChatMessageTimestamp`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      });
+      const lastCdr = await lastCdrRes.json();
+
+      return new Response(JSON.stringify({ ok: true, lastCdr, variants }, null, 2), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Normal mode: fetch most recent N rows (server-side $filter on SegmentStartTime is broken)
+    // Normal mode
     const fetchUrl = new URL(`${SERVER}/xapi/v1/CallHistoryView`);
-    fetchUrl.searchParams.set("$orderby", "SegmentStartTime desc");
     fetchUrl.searchParams.set("$top", String(BATCH_SIZE));
 
     const resp = await fetch(fetchUrl.toString(), {
