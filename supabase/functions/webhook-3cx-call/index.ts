@@ -1,3 +1,29 @@
+// 3CX CDR ingestion endpoint.
+// Accepts the raw cdr.log content (text/plain or text/csv) and parses each
+// "Call ..." line into a row in call_logs_3cx. Dedupes on historyid.
+//
+// 3CX "Single file for all calls" CDR template field order:
+//  0  historyid                (segment id - unique per call leg)
+//  1  callid                   (master call id - shared by all legs)
+//  2  duration                 HH:MM:SS
+//  3  time-start               yyyy/MM/dd HH:mm:ss
+//  4  time-answered            yyyy/MM/dd HH:mm:ss (blank if unanswered)
+//  5  time-end                 yyyy/MM/dd HH:mm:ss
+//  6  reason-terminated        e.g. src_participant_terminated
+//  7  from-no                  e.g. Ext.1000 or external number
+//  8  to-no
+//  9  from-dn
+// 10  to-dn
+// 11  dial-no
+// 12  reason-changed
+// 13  final-number
+// 14  final-dn
+// 15  bill-code
+// 16  bill-rate
+// 17  bill-cost
+// 18  bill-name
+// 19  chain
+
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
@@ -9,23 +35,91 @@ function normalizePhone(p?: string | null): string | null {
   if (!p) return null;
   const digits = p.replace(/\D/g, "");
   if (!digits) return null;
-  // Return last 10 digits for matching (US-focused)
   return digits.length > 10 ? digits.slice(-10) : digits;
 }
 
-function pick<T = unknown>(obj: Record<string, unknown>, keys: string[]): T | undefined {
-  for (const k of keys) {
-    if (obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return obj[k] as T;
-  }
-  return undefined;
+function isExtension(v?: string | null): boolean {
+  if (!v) return false;
+  return /^Ext\./i.test(v) || /^\d{1,5}$/.test(v.trim());
 }
 
-function mapDirection(v: unknown): string {
-  const s = String(v ?? "").toLowerCase();
-  if (s.includes("in")) return "inbound";
-  if (s.includes("out")) return "outbound";
-  if (s.includes("internal")) return "internal";
-  return "unknown";
+function parseDuration(hms?: string | null): number | null {
+  if (!hms) return null;
+  const m = /^(\d+):(\d{1,2}):(\d{1,2})$/.exec(hms.trim());
+  if (!m) return null;
+  return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+}
+
+function parseTimestamp(s?: string | null): string | null {
+  if (!s || !s.trim()) return null;
+  // 3CX writes UTC: "2026/06/02 09:22:13"
+  const m = /^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/.exec(s.trim());
+  if (!m) {
+    const d = new Date(s);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  const [, y, mo, d, h, mi, se] = m;
+  return new Date(`${y}-${mo}-${d}T${h}:${mi}:${se}Z`).toISOString();
+}
+
+// Split a CSV line that uses comma separator. 3CX does not quote fields,
+// but the trailing "Chain:" field can contain semicolons (not commas), so a
+// simple split is safe. We still handle optional double quotes defensively.
+function splitCsv(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === "," && !inQ) { out.push(cur); cur = ""; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+interface ParsedCall {
+  historyid: string;
+  callid: string;
+  duration: number | null;
+  startedAt: string | null;
+  answeredAt: string | null;
+  endedAt: string | null;
+  reasonTerminated: string;
+  fromNo: string;
+  toNo: string;
+  fromDn: string;
+  toDn: string;
+  dialNo: string;
+  chain: string;
+  raw: string;
+}
+
+function parseLine(rawLine: string): ParsedCall | null {
+  let line = rawLine.trim();
+  if (!line) return null;
+  // Strip optional "Call " prefix
+  if (/^Call\s+/i.test(line)) line = line.replace(/^Call\s+/i, "");
+  const f = splitCsv(line);
+  if (f.length < 7) return null;
+  if (!f[0]) return null;
+  return {
+    historyid: f[0],
+    callid: f[1] || "",
+    duration: parseDuration(f[2]),
+    startedAt: parseTimestamp(f[3]),
+    answeredAt: parseTimestamp(f[4]),
+    endedAt: parseTimestamp(f[5]),
+    reasonTerminated: f[6] || "",
+    fromNo: f[7] || "",
+    toNo: f[8] || "",
+    fromDn: f[9] || "",
+    toDn: f[10] || "",
+    dialNo: f[11] || "",
+    chain: f[19] || "",
+    raw: rawLine,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -36,157 +130,137 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Auth: header OR ?secret= query param (3CX templates vary)
-    const headerSecret = req.headers.get("x-webhook-secret") || req.headers.get("X-Webhook-Secret");
     const url = new URL(req.url);
-    const querySecret = url.searchParams.get("secret");
-    const provided = headerSecret || querySecret;
-
+    const provided = req.headers.get("x-webhook-secret") || url.searchParams.get("secret");
     if (!SECRET || provided !== SECRET) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.text();
+    if (!body.trim()) {
+      return new Response(JSON.stringify({ ok: true, parsed: 0, imported: 0, message: "empty body" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    let payload: Record<string, unknown> = {};
-    const ct = req.headers.get("content-type") || "";
-    if (ct.includes("application/json")) {
-      payload = await req.json();
-    } else if (ct.includes("application/x-www-form-urlencoded") || ct.includes("multipart/form-data")) {
-      const form = await req.formData();
-      form.forEach((v, k) => (payload[k] = typeof v === "string" ? v : v.name));
-    } else {
-      const text = await req.text();
-      try {
-        payload = JSON.parse(text);
-      } catch {
-        payload = { raw: text };
-      }
+    const lines = body.split(/\r?\n/);
+    const parsed: ParsedCall[] = [];
+    for (const l of lines) {
+      const p = parseLine(l);
+      if (p) parsed.push(p);
+    }
+    if (parsed.length === 0) {
+      return new Response(JSON.stringify({ ok: true, parsed: 0, imported: 0, message: "no Call lines found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    const fromNumber = String(pick(payload, ["from", "caller", "callerNumber", "from_number", "CallerNumber", "Caller"]) ?? "") || null;
-    const toNumber = String(pick(payload, ["to", "callee", "dialed", "to_number", "CalledNumber", "Destination"]) ?? "") || null;
-    const callerName = String(pick(payload, ["caller_name", "callerName", "CallerName", "name"]) ?? "") || null;
-    const externalId = String(pick(payload, ["call_id", "callId", "id", "CallID", "uniqueId"]) ?? "") || null;
-    const direction = mapDirection(pick(payload, ["direction", "Direction", "type"]));
-    const agentExt = String(pick(payload, ["agent_extension", "extension", "Extension", "agent"]) ?? "") || null;
-    const agentName = String(pick(payload, ["agent_name", "agentName", "AgentName"]) ?? "") || null;
-    const queueName = String(pick(payload, ["queue", "queue_name", "QueueName"]) ?? "") || null;
-    const status = String(pick(payload, ["status", "Status", "result", "Result"]) ?? "") || null;
-    const startedAtRaw = pick<string>(payload, ["started_at", "start_time", "StartTime", "startTime"]);
-    const endedAtRaw = pick<string>(payload, ["ended_at", "end_time", "EndTime", "endTime"]);
-    const durationRaw = pick<number | string>(payload, ["duration", "Duration", "duration_seconds"]);
-    const ringRaw = pick<number | string>(payload, ["ring_seconds", "ringTime", "RingTime"]);
-    const talkRaw = pick<number | string>(payload, ["talk_seconds", "talkTime", "TalkTime"]);
-    const recordingUrl = String(pick(payload, ["recording_url", "recordingUrl", "RecordingUrl"]) ?? "") || null;
-    const cost = pick<number | string>(payload, ["cost", "Cost"]);
+    // Dedupe against existing external_call_ids
+    const ids = parsed.map((p) => p.historyid);
+    const { data: existRows } = await supabase
+      .from("call_logs_3cx").select("external_call_id").in("external_call_id", ids);
+    const existing = new Set((existRows || []).map((r: any) => r.external_call_id));
 
-    const toInt = (v: unknown): number | null => {
-      if (v === undefined || v === null || v === "") return null;
-      const n = Number(v);
-      return Number.isFinite(n) ? Math.round(n) : null;
-    };
-    const toTs = (v: unknown): string | null => {
-      if (!v) return null;
-      const d = new Date(String(v));
-      return Number.isNaN(d.getTime()) ? null : d.toISOString();
-    };
+    // Customer phone map (best-effort)
+    const { data: customers } = await supabase
+      .from("customer_registrations").select("id, phone_number").limit(5000);
+    const phoneMap = new Map<string, string>();
+    (customers || []).forEach((c: any) => {
+      const n = normalizePhone(c.phone_number);
+      if (n) phoneMap.set(n, c.id);
+    });
 
-    // Match customer by phone (last 10 digits)
-    const normalizedFrom = normalizePhone(fromNumber);
-    const normalizedTo = normalizePhone(toNumber);
-    const matchPhone = direction === "outbound" ? normalizedTo : normalizedFrom;
+    let imported = 0;
+    let skipped = 0;
+    const errors: string[] = [];
 
-    let customerId: string | null = null;
-    let matchedPhone: string | null = null;
-    if (matchPhone) {
-      const { data: matches } = await supabase
-        .from("customer_registrations")
-        .select("id, phone_number")
-        .limit(50);
-      if (matches) {
-        const found = matches.find((c: { phone_number: string | null }) =>
-          normalizePhone(c.phone_number) === matchPhone
-        );
-        if (found) {
-          customerId = found.id;
-          matchedPhone = matchPhone;
-        }
+    for (const p of parsed) {
+      if (existing.has(p.historyid)) { skipped++; continue; }
+
+      const srcExt = isExtension(p.fromNo);
+      const dstExt = isExtension(p.toNo);
+      const direction = srcExt && !dstExt ? "outbound"
+        : !srcExt && dstExt ? "inbound"
+        : srcExt && dstExt ? "internal" : "unknown";
+
+      const matchPhone = direction === "outbound"
+        ? normalizePhone(p.toNo)
+        : direction === "inbound" ? normalizePhone(p.fromNo) : null;
+      const customerId = matchPhone ? phoneMap.get(matchPhone) ?? null : null;
+
+      const status = p.answeredAt
+        ? "answered"
+        : /(unanswered|missed|noanswer|no_answer)/i.test(p.reasonTerminated) ? "unanswered"
+        : p.duration && p.duration > 0 ? "answered" : "unanswered";
+
+      const agentExt = direction === "outbound"
+        ? (p.fromDn || p.fromNo.replace(/^Ext\./i, ""))
+        : direction === "inbound" ? (p.toDn || p.toNo.replace(/^Ext\./i, "")) : null;
+
+      const row = {
+        external_call_id: p.historyid,
+        direction,
+        from_number: p.fromNo || null,
+        to_number: p.toNo || null,
+        caller_name: null,
+        agent_extension: agentExt || null,
+        agent_name: null,
+        queue_name: null,
+        status,
+        started_at: p.startedAt,
+        ended_at: p.endedAt,
+        duration_seconds: p.duration,
+        ring_seconds: p.startedAt && p.answeredAt
+          ? Math.max(0, Math.round((new Date(p.answeredAt).getTime() - new Date(p.startedAt).getTime()) / 1000))
+          : null,
+        talk_seconds: p.answeredAt && p.endedAt
+          ? Math.max(0, Math.round((new Date(p.endedAt).getTime() - new Date(p.answeredAt).getTime()) / 1000))
+          : null,
+        recording_url: null,
+        cost: null,
+        raw_payload: {
+          historyid: p.historyid, callid: p.callid, reason_terminated: p.reasonTerminated,
+          from_no: p.fromNo, to_no: p.toNo, from_dn: p.fromDn, to_dn: p.toDn,
+          dial_no: p.dialNo, chain: p.chain, raw: p.raw,
+        },
+        customer_id: customerId,
+        matched_phone: matchPhone,
+      };
+
+      try {
+        const { data, error } = await supabase
+          .from("call_logs_3cx").upsert(row, { onConflict: "external_call_id" })
+          .select("id").single();
+        if (error) throw error;
+
+        await supabase.from("admin_logs").insert({
+          user_id: "00000000-0000-0000-0000-000000000000",
+          user_email: "3cx-cdr",
+          action: direction === "outbound" ? "call_out" : direction === "inbound" ? "call_in" : "call_internal",
+          entity_type: "call",
+          entity_id: data?.id ?? null,
+          details: {
+            from: p.fromNo, to: p.toNo, status, duration: p.duration,
+            agent: agentExt, customer_id: customerId, reason: p.reasonTerminated,
+          },
+        });
+        imported++;
+      } catch (e) {
+        errors.push(`${p.historyid}: ${(e as Error).message ?? e}`);
       }
     }
 
-    const row = {
-      external_call_id: externalId,
-      direction,
-      from_number: fromNumber,
-      to_number: toNumber,
-      caller_name: callerName,
-      agent_extension: agentExt,
-      agent_name: agentName,
-      queue_name: queueName,
-      status,
-      started_at: toTs(startedAtRaw),
-      ended_at: toTs(endedAtRaw),
-      duration_seconds: toInt(durationRaw),
-      ring_seconds: toInt(ringRaw),
-      talk_seconds: toInt(talkRaw),
-      recording_url: recordingUrl,
-      cost: cost !== undefined ? Number(cost) : null,
-      raw_payload: payload,
-      customer_id: customerId,
-      matched_phone: matchedPhone,
-    };
-
-    // Upsert by external_call_id if present, else insert
-    let insertedId: string | null = null;
-    if (externalId) {
-      const { data, error } = await supabase
-        .from("call_logs_3cx")
-        .upsert(row, { onConflict: "external_call_id" })
-        .select("id")
-        .single();
-      if (error) throw error;
-      insertedId = data?.id ?? null;
-    } else {
-      const { data, error } = await supabase
-        .from("call_logs_3cx")
-        .insert(row)
-        .select("id")
-        .single();
-      if (error) throw error;
-      insertedId = data?.id ?? null;
-    }
-
-    // Mirror to admin_logs for Activity Logs view
-    await supabase.from("admin_logs").insert({
-      user_id: "00000000-0000-0000-0000-000000000000",
-      user_email: "3cx-webhook",
-      action: direction === "outbound" ? "call_out" : "call_in",
-      entity_type: "call",
-      entity_id: insertedId,
-      details: {
-        from: fromNumber,
-        to: toNumber,
-        caller_name: callerName,
-        agent: agentName || agentExt,
-        status,
-        duration: toInt(durationRaw),
-        customer_id: customerId,
-      },
-    });
-
-    return new Response(JSON.stringify({ ok: true, id: insertedId, matched_customer: customerId }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(JSON.stringify({
+      ok: true, parsed: parsed.length, imported, skipped, errors,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("webhook-3cx-call error:", err);
     return new Response(JSON.stringify({ error: String((err as Error).message ?? err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
