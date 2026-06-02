@@ -196,6 +196,7 @@ const staticMenuItems: MenuItem[] = [
     icon: FileText,
     children: [
       { title: "Log Call", url: "/admin/logs/call", icon: Plus },
+      { title: "Call Log", url: "/admin/logs/call-log", icon: List },
       { title: "Activity Log", url: "/admin/logs/list", icon: List },
     ]
   },
