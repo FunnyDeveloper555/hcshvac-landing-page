@@ -49,6 +49,7 @@ import HireApplicationsList from "@/components/admin/hire/HireApplicationsList";
 import AdminApplicantDetail from "@/components/admin/hire/AdminApplicantDetail";
 import LogsList from "@/components/admin/LogsList";
 import CallLogAdd from "@/components/admin/CallLogAdd";
+import CallLogsList from "@/components/admin/CallLogsList";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
@@ -238,6 +239,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/popups/edit" element={<PopupsAdd />} />
               <Route path="/page-builder/company/:companyId/domain-settings" element={<DomainSettings />} />
               <Route path="/logs/call" element={<CallLogAdd />} />
+              <Route path="/logs/call-log" element={<CallLogsList />} />
               <Route path="/logs/list" element={<LogsList />} />
               <Route path="/calendar/add" element={<CalendarAdd />} />
               <Route path="/calendar/list" element={<CalendarList />} />
