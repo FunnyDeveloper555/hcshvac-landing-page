@@ -50,6 +50,7 @@ import AdminApplicantDetail from "@/components/admin/hire/AdminApplicantDetail";
 import LogsList from "@/components/admin/LogsList";
 import CallLogAdd from "@/components/admin/CallLogAdd";
 import CallLogsList from "@/components/admin/CallLogsList";
+import CallScreenPop from "@/components/admin/CallScreenPop";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import CustomersList from "@/components/admin/CustomersList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
@@ -119,6 +120,7 @@ const Admin = () => {
 
     return (
       <div className="flex min-h-screen w-full">
+        <CallScreenPop />
         {/* Mobile sidebar via Sheet */}
         {isMobile ? (
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

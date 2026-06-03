@@ -4808,6 +4808,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_caller_by_phone: { Args: { _phone: string }; Returns: Json }
       mark_booking_invitation_opened: {
         Args: { _token: string }
         Returns: undefined
