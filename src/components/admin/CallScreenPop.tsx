@@ -27,14 +27,23 @@ type Pop = {
 export default function CallScreenPop() {
   const [pop, setPop] = useState<Pop | null>(null);
   const navigate = useNavigate();
-  const shownIds = useRef<Set<string>>(new Set());
-  const lastCheckRef = useRef<string>(new Date(Date.now() - 60_000).toISOString());
+  const SEEN_KEY = "callpop_seen_ids_v1";
+  const loadSeen = (): Set<string> => {
+    try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); } catch { return new Set(); }
+  };
+  const persistSeen = (s: Set<string>) => {
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify([...s].slice(-500))); } catch {}
+  };
+  const shownIds = useRef<Set<string>>(loadSeen());
+  // Look back 24h on mount so we catch any unseen calls the poller imported while away
+  const lastCheckRef = useRef<string>(new Date(Date.now() - 24 * 3600_000).toISOString());
 
   const handleIncoming = useCallback(async (row: any) => {
     if (!row || !row.id) return;
     if (row.direction && row.direction !== "inbound") return;
     if (shownIds.current.has(row.id)) return;
     shownIds.current.add(row.id);
+    persistSeen(shownIds.current);
 
     const phone = row.from_number || row.matched_phone;
     if (!phone) return;
