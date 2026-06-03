@@ -43,6 +43,7 @@ export default function CallScreenPop() {
     if (row.direction && row.direction !== "inbound") return;
     if (shownIds.current.has(row.id)) return;
     shownIds.current.add(row.id);
+    persistSeen(shownIds.current);
 
     const phone = row.from_number || row.matched_phone;
     if (!phone) return;
