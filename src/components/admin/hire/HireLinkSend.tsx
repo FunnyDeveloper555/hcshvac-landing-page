@@ -152,7 +152,7 @@ export default function HireLinkSend() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="company">Pick Company *</Label>
-              <Select value={formData.companyId} onValueChange={(v) => handleChange("companyId", v)}>
+              <Select value={formData.companyId || undefined} onValueChange={(v) => handleChange("companyId", v)}>
                 <SelectTrigger><SelectValue placeholder="Select a company" /></SelectTrigger>
                 <SelectContent>
                   {companies.map((c) => (
