@@ -107,7 +107,26 @@ export default function HireLinkSend() {
         if (smsResult?.error) throw new Error("SMS Error: " + smsResult.error);
       }
 
-      // Email delivery can be wired into existing send-test-email later if needed.
+      if (formData.sendMethod === "email" || formData.sendMethod === "both") {
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke(
+          "send-transactional-email",
+          {
+            body: {
+              templateName: "hire-application-invite",
+              recipientEmail: formData.recipientEmail,
+              idempotencyKey: `hire-invite-${invitation.id}`,
+              templateData: {
+                applicantName: formData.recipientName || undefined,
+                companyName,
+                applicationUrl,
+                notes: formData.notes || undefined,
+              },
+            },
+          }
+        );
+        if (emailError) throw new Error("Failed to send email: " + emailError.message);
+        if ((emailResult as any)?.error) throw new Error("Email Error: " + (emailResult as any).error);
+      }
 
       return invitation;
     },
