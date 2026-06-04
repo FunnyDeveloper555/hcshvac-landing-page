@@ -27,6 +27,9 @@ type Pop = {
 export default function CallScreenPop() {
   const [pop, setPop] = useState<Pop | null>(null);
   const navigate = useNavigate();
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("nopop") === "1") {
+    return null;
+  }
   const SEEN_KEY = "callpop_seen_ids_v1";
   const loadSeen = (): Set<string> => {
     try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); } catch { return new Set(); }
