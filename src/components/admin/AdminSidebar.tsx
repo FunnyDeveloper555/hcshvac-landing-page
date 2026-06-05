@@ -82,14 +82,6 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   { 
-    title: "SMS Link", 
-    icon: MessageSquare,
-    children: [
-      { title: "Send Link", url: "/admin/sms-link/send", icon: Send },
-      { title: "Sent Links", url: "/admin/sms-link/list", icon: List },
-    ]
-  },
-  { 
     title: "My Company", 
     icon: Building,
     children: [
