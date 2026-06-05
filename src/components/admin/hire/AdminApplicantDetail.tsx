@@ -77,6 +77,7 @@ export default function AdminApplicantDetail() {
 
   const [interviewForm, setInterviewForm] = useState({
     scheduled_at: "",
+    duration_minutes: 45,
     location: "",
     meeting_url: "",
     interviewer_name: "",
@@ -84,27 +85,33 @@ export default function AdminApplicantDetail() {
     position_title: "",
     applicant_notes: "",
     internal_notes: "",
+    generate_meet: true,
   });
 
   const scheduleInterview = useMutation({
     mutationFn: async () => {
       if (!account || !interviewForm.scheduled_at) throw new Error("Date required");
-      const { error } = await supabase.from("applicant_interviews").insert({
-        applicant_account_id: account.id,
-        user_id: account.user_id,
-        scheduled_at: new Date(interviewForm.scheduled_at).toISOString(),
-        location: interviewForm.location || null,
-        meeting_url: interviewForm.meeting_url || null,
-        interviewer_name: interviewForm.interviewer_name || null,
-        interviewer_email: interviewForm.interviewer_email || null,
-        position_title: interviewForm.position_title || null,
-        applicant_notes: interviewForm.applicant_notes || null,
-        internal_notes: interviewForm.internal_notes || null,
+      const { data, error } = await supabase.functions.invoke("schedule-interview-meeting", {
+        body: {
+          applicant_account_id: account.id,
+          scheduled_at: new Date(interviewForm.scheduled_at).toISOString(),
+          duration_minutes: Number(interviewForm.duration_minutes) || 45,
+          location: interviewForm.location || null,
+          meeting_url: interviewForm.generate_meet ? null : (interviewForm.meeting_url || null),
+          interviewer_name: interviewForm.interviewer_name || null,
+          interviewer_email: interviewForm.interviewer_email || null,
+          position_title: interviewForm.position_title || null,
+          applicant_notes: interviewForm.applicant_notes || null,
+          internal_notes: interviewForm.internal_notes || null,
+          generate_meet: interviewForm.generate_meet,
+        },
       });
       if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return data;
     },
     onSuccess: () => {
-      toast({ title: "Interview scheduled" });
+      toast({ title: "Interview scheduled", description: "Meeting link generated and email sent." });
       qc.invalidateQueries({ queryKey: ["admin-applicant-interviews", id] });
     },
     onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
@@ -203,8 +210,19 @@ export default function AdminApplicantDetail() {
                 </div>
                 <div>
                   <Label>Meeting URL</Label>
-                  <Input value={interviewForm.meeting_url}
-                    onChange={(e) => setInterviewForm({ ...interviewForm, meeting_url: e.target.value })} />
+                  <Input
+                    value={interviewForm.generate_meet ? "Will auto-generate Google Meet link" : interviewForm.meeting_url}
+                    disabled={interviewForm.generate_meet}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, meeting_url: e.target.value })}
+                  />
+                  <label className="flex items-center gap-2 text-xs mt-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={interviewForm.generate_meet}
+                      onChange={(e) => setInterviewForm({ ...interviewForm, generate_meet: e.target.checked })}
+                    />
+                    Auto-generate Google Meet link
+                  </label>
                 </div>
                 <div>
                   <Label>Interviewer Name</Label>

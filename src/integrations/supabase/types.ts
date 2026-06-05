@@ -381,6 +381,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           duration_minutes: number | null
+          google_calendar_id: string | null
+          google_event_id: string | null
           id: string
           internal_notes: string | null
           interviewer_email: string | null
@@ -399,6 +401,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           duration_minutes?: number | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
           internal_notes?: string | null
           interviewer_email?: string | null
@@ -417,6 +421,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           duration_minutes?: number | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
           internal_notes?: string | null
           interviewer_email?: string | null
