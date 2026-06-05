@@ -15,6 +15,7 @@ interface InterviewInviteProps {
   interviewLocation?: string
   interviewerName?: string
   schedulingUrl?: string
+  meetingUrl?: string
   notes?: string
 }
 
