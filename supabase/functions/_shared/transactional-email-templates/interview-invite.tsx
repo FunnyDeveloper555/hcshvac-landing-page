@@ -28,6 +28,7 @@ const InterviewInviteEmail = ({
   interviewLocation,
   interviewerName,
   schedulingUrl,
+  meetingUrl,
   notes,
 }: InterviewInviteProps) => {
   const company = companyName || PARENT_COMPANY
