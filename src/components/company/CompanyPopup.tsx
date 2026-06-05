@@ -175,8 +175,24 @@ export default function CompanyPopup({ companyId }: { companyId: string }) {
   });
 
   useEffect(() => {
-    if (popups.length > 0) setVisible(true);
-  }, [popups]);
+    if (popups.length > 0) {
+      setVisible(true);
+      setExpandedId((current) => {
+        if (current && popups.some((p) => p.id === current)) return current;
+        const firstUnread = popups.find((p) => !readIds.has(p.id));
+        const target = firstUnread ?? popups[0];
+        if (target && !readIds.has(target.id)) {
+          setReadIds((prev) => {
+            const next = new Set(prev);
+            next.add(target.id);
+            persistReadIds(companyId, next);
+            return next;
+          });
+        }
+        return target?.id ?? null;
+      });
+    }
+  }, [popups, readIds, companyId]);
 
   const markRead = useCallback(
     (id: string) => {
