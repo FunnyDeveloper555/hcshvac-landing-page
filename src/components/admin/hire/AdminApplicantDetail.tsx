@@ -210,8 +210,19 @@ export default function AdminApplicantDetail() {
                 </div>
                 <div>
                   <Label>Meeting URL</Label>
-                  <Input value={interviewForm.meeting_url}
-                    onChange={(e) => setInterviewForm({ ...interviewForm, meeting_url: e.target.value })} />
+                  <Input
+                    value={interviewForm.generate_meet ? "Will auto-generate Google Meet link" : interviewForm.meeting_url}
+                    disabled={interviewForm.generate_meet}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, meeting_url: e.target.value })}
+                  />
+                  <label className="flex items-center gap-2 text-xs mt-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={interviewForm.generate_meet}
+                      onChange={(e) => setInterviewForm({ ...interviewForm, generate_meet: e.target.checked })}
+                    />
+                    Auto-generate Google Meet link
+                  </label>
                 </div>
                 <div>
                   <Label>Interviewer Name</Label>
