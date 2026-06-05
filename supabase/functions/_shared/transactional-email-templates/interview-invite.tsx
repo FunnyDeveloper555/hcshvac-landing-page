@@ -79,7 +79,23 @@ const InterviewInviteEmail = ({
                 <Text style={infoValue}>{interviewerName}</Text>
               </>
             )}
+            {meetingUrl && (
+              <>
+                <Text style={infoLabel}>Google Meet link</Text>
+                <Text style={infoValue}>
+                  <a href={meetingUrl} style={{ color: '#0c2340' }}>{meetingUrl}</a>
+                </Text>
+              </>
+            )}
           </Section>
+
+          {meetingUrl && (
+            <Section style={{ textAlign: 'center', margin: '24px 0' }}>
+              <Button href={meetingUrl} style={button}>
+                Join Google Meet
+              </Button>
+            </Section>
+          )}
 
           {schedulingUrl && (
             <Section style={{ textAlign: 'center', margin: '24px 0' }}>
@@ -88,6 +104,7 @@ const InterviewInviteEmail = ({
               </Button>
             </Section>
           )}
+
 
           {notes && <Text style={text}>{notes}</Text>}
 
