@@ -375,7 +375,8 @@ const CustomersAdd = () => {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
+                placeholder="555-555-5555"
               />
             </div>
           </CardContent>
