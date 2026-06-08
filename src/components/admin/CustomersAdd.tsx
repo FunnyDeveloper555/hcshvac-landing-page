@@ -201,7 +201,7 @@ const CustomersAdd = () => {
         company_id: data.company_id || "",
         warranty_status: data.warranty_status || "active",
         title_to_location: data.title_to_location || "",
-        on_location_during_visit: data.on_location_during_visit || "",
+        
         initial_visit_notes: data.initial_visit_notes || "",
         security_gate_access: data.security_gate_access,
         lock_boxes_codes: data.lock_boxes_codes || "",
