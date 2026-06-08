@@ -81,6 +81,64 @@ const CustomersAdd = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [validatingShip, setValidatingShip] = useState(false);
+  const [validatingBill, setValidatingBill] = useState(false);
+  const [shipValidated, setShipValidated] = useState(false);
+  const [billValidated, setBillValidated] = useState(false);
+
+  const handleValidateAddress = async (target: "ship" | "bill") => {
+    const prefix = target === "ship" ? "ship_to" : "bill_to";
+    const line1 = (formData as any)[`${prefix}_address`];
+    const city = (formData as any)[`${prefix}_city`];
+    const state = (formData as any)[`${prefix}_state`];
+    const zip = (formData as any)[`${prefix}_zip_code`];
+    if (!line1 || (!zip && (!city || !state))) {
+      toast({
+        title: "Missing info",
+        description: "Enter street + (zip or city/state) before validating.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const oneLine = `${line1}, ${[city, state].filter(Boolean).join(", ")} ${zip}`.trim();
+    const setBusy = target === "ship" ? setValidatingShip : setValidatingBill;
+    const setOk = target === "ship" ? setShipValidated : setBillValidated;
+    setBusy(true);
+    setOk(false);
+    try {
+      const results = await validateUSAddress(oneLine);
+      if (results.length === 0) {
+        toast({
+          title: "Address not found",
+          description: "US Census could not match this address. Please check spelling.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const m = results[0];
+      setFormData((prev) => ({
+        ...prev,
+        [`${prefix}_address`]: m.address || prev[`${prefix}_address` as keyof typeof prev],
+        [`${prefix}_city`]: m.city || prev[`${prefix}_city` as keyof typeof prev],
+        [`${prefix}_state`]: m.state || prev[`${prefix}_state` as keyof typeof prev],
+        [`${prefix}_zip_code`]: m.zip || prev[`${prefix}_zip_code` as keyof typeof prev],
+      }));
+      setOk(true);
+      toast({
+        title: "Address validated",
+        description: m.matchedText,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Validation failed",
+        description: err?.message || "Network error contacting US Census Geocoder.",
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
