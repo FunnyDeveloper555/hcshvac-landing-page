@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { validateUSAddress } from "@/lib/addressValidator";
+import { MapPin, CheckCircle2 } from "lucide-react";
 
 const TITLE_OPTIONS = [
   { value: "owner_occupied", label: "Owner/Owner Occupied" },
