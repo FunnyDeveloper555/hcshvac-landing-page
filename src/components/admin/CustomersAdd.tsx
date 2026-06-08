@@ -717,34 +717,18 @@ const CustomersAdd = () => {
             )}
 
             <div>
-              <Label htmlFor="title_to_location">Your Formal Title to the Ship To Location</Label>
-              <Input
-                id="title_to_location"
-                value={formData.title_to_location}
-                onChange={(e) => setFormData({ ...formData, title_to_location: e.target.value })}
-                placeholder="e.g., Owner, Property Manager, Tenant"
-              />
-            </div>
-
-            <div>
-              <Label>Will you be on location personally during our visit?</Label>
+              <Label>Your Formal Title to the Ship To Location</Label>
               <RadioGroup
-                value={formData.on_location_during_visit}
-                onValueChange={(value) => setFormData({ ...formData, on_location_during_visit: value })}
-                className="flex gap-4 mt-2"
+                value={formData.title_to_location}
+                onValueChange={(value) => setFormData({ ...formData, title_to_location: value })}
+                className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id="on_location_yes" />
-                  <Label htmlFor="on_location_yes">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id="on_location_no" />
-                  <Label htmlFor="on_location_no">No</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="unknown" id="on_location_unknown" />
-                  <Label htmlFor="on_location_unknown">Unknown</Label>
-                </div>
+                {TITLE_OPTIONS.map((opt) => (
+                  <div key={opt.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={opt.value} id={`title_${opt.value}`} />
+                    <Label htmlFor={`title_${opt.value}`} className="font-normal">{opt.label}</Label>
+                  </div>
+                ))}
               </RadioGroup>
             </div>
 
@@ -758,13 +742,64 @@ const CustomersAdd = () => {
             </div>
 
             <div>
-              <Label htmlFor="cautions_restrictions">Cautions/Restrictions</Label>
-              <Textarea
-                id="cautions_restrictions"
-                value={formData.cautions_restrictions}
-                onChange={(e) => setFormData({ ...formData, cautions_restrictions: e.target.value })}
-              />
+              <Label>Cautions / Restrictions ALERTS</Label>
+              <div className="space-y-2 mt-2 border rounded-md p-3">
+                {CAUTION_OPTIONS.map((opt) => {
+                  const state = parseCautions(formData.cautions_restrictions);
+                  const checked = !!state.selected[opt.key];
+                  const updateSelected = (next: boolean) => {
+                    const newState = { ...state, selected: { ...state.selected, [opt.key]: next } };
+                    setFormData({ ...formData, cautions_restrictions: JSON.stringify(newState) });
+                  };
+                  const updateInput = (val: string) => {
+                    const newState = { ...state, inputs: { ...state.inputs, [opt.key]: val } };
+                    setFormData({ ...formData, cautions_restrictions: JSON.stringify(newState) });
+                  };
+                  return (
+                    <div key={opt.key} className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`caution_${opt.key}`}
+                          checked={checked}
+                          onCheckedChange={(c) => updateSelected(!!c)}
+                        />
+                        <Label htmlFor={`caution_${opt.key}`} className="font-normal">{opt.label}</Label>
+                        {opt.needsInput && checked && (
+                          <Input
+                            className="ml-2 h-8 max-w-xs"
+                            value={state.inputs[opt.key] || ""}
+                            onChange={(e) => updateInput(e.target.value)}
+                            placeholder="Enter details"
+                          />
+                        )}
+                      </div>
+                      {opt.sub && checked && (
+                        <div className="ml-6 space-y-1">
+                          {opt.sub.map((s) => {
+                            const subChecked = !!state.selected[s.key];
+                            return (
+                              <div key={s.key} className="flex items-center gap-2">
+                                <Checkbox
+                                  id={`caution_${s.key}`}
+                                  checked={subChecked}
+                                  onCheckedChange={(c) => {
+                                    const cur = parseCautions(formData.cautions_restrictions);
+                                    const ns = { ...cur, selected: { ...cur.selected, [s.key]: !!c } };
+                                    setFormData({ ...formData, cautions_restrictions: JSON.stringify(ns) });
+                                  }}
+                                />
+                                <Label htmlFor={`caution_${s.key}`} className="font-normal">{s.label}</Label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+
           </CardContent>
         </Card>
 
