@@ -198,9 +198,22 @@ export default function CallScreenPop() {
 
   const callingInName = pop.calling_in_company?.name || "—";
   const clientOfName = pop.client_company?.name || pop.customer?.company_name || "—";
+  const sameCompany =
+    pop.match_type === "customer" &&
+    (!pop.calling_in_company?.id ||
+      !pop.client_company?.id ||
+      pop.calling_in_company.id === pop.client_company.id);
+  const callingInClientDate = sameCompany ? fmtDate(pop.customer?.client_since) : "N/A";
 
   return (
     <>
+      <style>{`
+        @keyframes callpop-blink {
+          0%, 100% { background-color: hsl(var(--destructive) / 0.15); }
+          50% { background-color: hsl(var(--destructive) / 0.5); }
+        }
+        .callpop-blink { animation: callpop-blink 0.8s ease-in-out infinite; border-radius: 4px; padding: 0 4px; }
+      `}</style>
       <button
         onClick={triggerTest}
         className="fixed bottom-4 right-4 z-[55] flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 text-xs font-medium"
@@ -208,12 +221,18 @@ export default function CallScreenPop() {
         <Bell className="h-3.5 w-3.5" /> Test Pop
       </button>
 
-      <div className="fixed top-20 right-6 z-[60] w-[440px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200">
+      <div className={`fixed top-20 right-6 z-[60] w-[460px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200 ${differentCompany ? "ring-2 ring-destructive" : ""}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b bg-primary/5">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Phone className="h-4 w-4 text-primary animate-pulse" />
-            {pop.match_type === "employee" ? "Incoming Employee Call" : "Incoming Call"}
+            {pop.match_type === "employee"
+              ? "Screen Pop (Employee)"
+              : pop.match_type === "unknown"
+              ? "Screen Pop (NEW Unknown Caller)"
+              : differentCompany
+              ? "Screen Pop (Registered — Different Company)"
+              : "Screen Pop (Known Registered Caller)"}
           </div>
           <div className="flex items-center gap-2">
             <Pin className="h-4 w-4 text-muted-foreground" />
@@ -229,8 +248,8 @@ export default function CallScreenPop() {
             <>
               <div className="grid grid-cols-[110px_1fr_auto] gap-x-2 gap-y-1 text-sm">
                 <span className="text-muted-foreground">Calling In On:</span>
-                <span className={differentCompany ? "text-destructive font-medium" : "font-medium"}>{callingInName}</span>
-                <span className="text-xs text-muted-foreground">Client Date: {fmtDate(pop.receivedAt)}</span>
+                <span className={differentCompany ? "callpop-blink font-semibold" : "font-medium"}>{callingInName}</span>
+                <span className="text-xs text-muted-foreground">Client Date: {callingInClientDate}</span>
 
                 <span className="text-muted-foreground">CID NAME:</span>
                 <span className="col-span-2">{pop.callerName || pop.customer.name || "—"}</span>
@@ -241,32 +260,36 @@ export default function CallScreenPop() {
 
               <div className="border-t pt-3 grid grid-cols-[110px_1fr_auto] gap-x-2 gap-y-1 text-sm">
                 <span className="text-muted-foreground">Client of:</span>
-                <span className={differentCompany ? "text-destructive font-medium" : "font-medium"}>{clientOfName}</span>
+                <span className={differentCompany ? "callpop-blink font-semibold" : "font-medium"}>{clientOfName}</span>
                 <span className="text-xs text-muted-foreground">
                   Client Date: {fmtDate(pop.customer.client_since)}
                 </span>
               </div>
 
+              {differentCompany && (
+                <div className="callpop-blink text-xs font-semibold text-center py-2">
+                  ⚠ Registered with a DIFFERENT company — verify before assisting
+                </div>
+              )}
+
               <div className="text-xs space-y-1">
                 <div><span className="text-muted-foreground">Registered Account Name: </span><span className="font-medium">{pop.customer.name || "—"}</span></div>
                 <div><span className="text-muted-foreground">Registered Account Phone: </span><span className="font-mono">{pop.customer.registered_phone || pop.phone}</span></div>
+                <div><span className="text-muted-foreground">Registered Account Phone 2: </span><span className="font-mono">—</span></div>
                 {pop.customer.business_name && (
                   <div><span className="text-muted-foreground">Business: </span>{pop.customer.business_name}</div>
                 )}
               </div>
 
-              <div className="border-t pt-3">
-                <div className="font-bold text-sm mb-1">
+              <div className="border-t pt-3 text-sm space-y-1">
+                <div className="font-bold">
                   Active Appointments: <span className="font-normal">{pop.customer.latest_appointment ? "Yes" : "No"} ({pop.customer.pending_appointments})</span>
                 </div>
-                {pop.customer.latest_appointment && (
-                  <div className="text-xs space-y-1 mt-1">
-                    <div><span className="text-muted-foreground">Appointment Type: </span>{pop.customer.latest_appointment.type || "—"}</div>
-                    <div><span className="text-muted-foreground">Date / Time: </span>{fmtDate(pop.customer.latest_appointment.date)} {pop.customer.latest_appointment.time || ""}</div>
-                    {pop.customer.latest_appointment.notes && (
-                      <div className="text-muted-foreground italic line-clamp-2">{pop.customer.latest_appointment.notes}</div>
-                    )}
-                  </div>
+                <div className="text-xs"><span className="text-muted-foreground">Appointment Type: </span>{pop.customer.latest_appointment?.type || "N/A"}</div>
+                <div className="text-xs"><span className="text-muted-foreground">Appointment Date / Time: </span>{pop.customer.latest_appointment ? `${fmtDate(pop.customer.latest_appointment.date)} ${pop.customer.latest_appointment.time || ""}` : "N/A"}</div>
+                <div className="text-xs"><span className="text-muted-foreground">Assigned To: </span>{pop.customer.latest_appointment ? "—" : "N/A"}</div>
+                {pop.customer.latest_appointment?.notes && (
+                  <div className="text-xs text-muted-foreground italic line-clamp-2">{pop.customer.latest_appointment.notes}</div>
                 )}
               </div>
 
@@ -300,6 +323,9 @@ export default function CallScreenPop() {
                     <Label className="text-xs">Assign To (Department or Person)</Label>
                     <Input value={callbackAssign} onChange={(e) => setCallbackAssign(e.target.value)} />
                   </div>
+                  <p className="text-[11px] text-muted-foreground italic">
+                    Applied to Employee Calendar and Company General Appointment Calendars.
+                  </p>
                   <Button size="sm" onClick={saveCallback}>Save Call Back</Button>
                 </div>
               )}
@@ -340,28 +366,62 @@ export default function CallScreenPop() {
           {/* Unknown */}
           {pop.match_type === "unknown" && (
             <>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground">CID NAME</div>
-                  <div className="font-bold">{pop.callerName || "None"}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground">CID PHONE</div>
-                  <div className="font-mono">{pop.phone}</div>
-                </div>
+              <div className="grid grid-cols-[110px_1fr_auto] gap-x-2 gap-y-1 text-sm">
+                <span className="text-muted-foreground">Calling In On:</span>
+                <span className="font-medium">{callingInName}</span>
+                <span className="text-xs text-muted-foreground">Client Date: N/A</span>
+
+                <span className="text-muted-foreground">CID NAME:</span>
+                <span className="col-span-2">{pop.callerName || "Unknown / Telemarketer / SPAM"}</span>
+
+                <span className="text-muted-foreground">CID Phone:</span>
+                <span className="col-span-2 font-mono">{pop.phone}</span>
               </div>
-              <div className="text-center text-sm text-muted-foreground py-6 border-y">
-                No matching customer or employee record.
+
+              <div className="border-t pt-3 text-xs space-y-1">
+                <div><span className="text-muted-foreground">Client of: </span>N/A</div>
+                <div><span className="text-muted-foreground">Registered Account Name: </span>N/A</div>
+                <div><span className="text-muted-foreground">Registered Account Phone: </span>N/A</div>
+                <div><span className="text-muted-foreground">Registered Account Phone 2: </span>N/A</div>
               </div>
-              <div className="flex gap-2 pt-1">
+
+              <div className="border-t pt-3 text-xs space-y-1">
+                <div className="font-bold text-sm">Active Appointments: <span className="font-normal">No</span></div>
+                <div><span className="text-muted-foreground">Appointment Type: </span>N/A</div>
+                <div><span className="text-muted-foreground">Appointment Date / Time: </span>N/A</div>
+                <div><span className="text-muted-foreground">Assigned To: </span>N/A</div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-1">
                 <Button size="sm" onClick={() => { navigate(`/admin/customers/add?phone=${encodeURIComponent(pop.phone)}`); close(); }}>
                   Create Profile
                 </Button>
-                <Button size="sm" variant="destructive" onClick={markTelemarketer}>
-                  <Ban className="h-3.5 w-3.5 mr-1" /> Telemarketer (Block)
+                <Button size="sm" variant="outline" onClick={() => setShowCallback((v) => !v)}>
+                  Schedule Call Back
                 </Button>
-                <Button size="sm" variant="outline" className="ml-auto" onClick={close}>Close</Button>
+                <Button size="sm" variant="destructive" onClick={markTelemarketer}>
+                  <Ban className="h-3.5 w-3.5 mr-1" /> Block
+                </Button>
+                <Button size="sm" variant="ghost" className="ml-auto" onClick={close}>Close</Button>
               </div>
+
+              {showCallback && (
+                <div className="border-t pt-3 space-y-2 text-sm">
+                  <div>
+                    <Label className="text-xs">Scheduled For</Label>
+                    <Input type="date" value={callbackDate} onChange={(e) => setCallbackDate(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Reason / Notes</Label>
+                    <Textarea rows={2} value={callbackReason} onChange={(e) => setCallbackReason(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Assign To (Department or Person)</Label>
+                    <Input value={callbackAssign} onChange={(e) => setCallbackAssign(e.target.value)} />
+                  </div>
+                  <Button size="sm" onClick={saveCallback}>Save Call Back</Button>
+                </div>
+              )}
             </>
           )}
         </div>
