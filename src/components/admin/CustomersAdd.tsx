@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { validateUSAddress } from "@/lib/addressValidator";
+import { MapPin, CheckCircle2 } from "lucide-react";
 
 const TITLE_OPTIONS = [
   { value: "owner_occupied", label: "Owner/Owner Occupied" },
@@ -79,6 +81,64 @@ const CustomersAdd = () => {
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [validatingShip, setValidatingShip] = useState(false);
+  const [validatingBill, setValidatingBill] = useState(false);
+  const [shipValidated, setShipValidated] = useState(false);
+  const [billValidated, setBillValidated] = useState(false);
+
+  const handleValidateAddress = async (target: "ship" | "bill") => {
+    const prefix = target === "ship" ? "ship_to" : "bill_to";
+    const line1 = (formData as any)[`${prefix}_address`];
+    const city = (formData as any)[`${prefix}_city`];
+    const state = (formData as any)[`${prefix}_state`];
+    const zip = (formData as any)[`${prefix}_zip_code`];
+    if (!line1 || (!zip && (!city || !state))) {
+      toast({
+        title: "Missing info",
+        description: "Enter street + (zip or city/state) before validating.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const oneLine = `${line1}, ${[city, state].filter(Boolean).join(", ")} ${zip}`.trim();
+    const setBusy = target === "ship" ? setValidatingShip : setValidatingBill;
+    const setOk = target === "ship" ? setShipValidated : setBillValidated;
+    setBusy(true);
+    setOk(false);
+    try {
+      const results = await validateUSAddress(oneLine);
+      if (results.length === 0) {
+        toast({
+          title: "Address not found",
+          description: "US Census could not match this address. Please check spelling.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const m = results[0];
+      setFormData((prev) => ({
+        ...prev,
+        [`${prefix}_address`]: m.address || prev[`${prefix}_address` as keyof typeof prev],
+        [`${prefix}_city`]: m.city || prev[`${prefix}_city` as keyof typeof prev],
+        [`${prefix}_state`]: m.state || prev[`${prefix}_state` as keyof typeof prev],
+        [`${prefix}_zip_code`]: m.zip || prev[`${prefix}_zip_code` as keyof typeof prev],
+      }));
+      setOk(true);
+      toast({
+        title: "Address validated",
+        description: m.matchedText,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Validation failed",
+        description: err?.message || "Network error contacting US Census Geocoder.",
+        variant: "destructive",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -540,6 +600,28 @@ const CustomersAdd = () => {
                 />
               </div>
             </div>
+            <div className="flex items-center gap-3 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleValidateAddress("ship")}
+                disabled={validatingShip}
+              >
+                {validatingShip ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4 mr-2" />
+                )}
+                Validate Address
+              </Button>
+              {shipValidated && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" /> Verified by US Census
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">Free US address validation</span>
+            </div>
           </CardContent>
         </Card>
 
@@ -635,6 +717,27 @@ const CustomersAdd = () => {
                   value={formData.responsible_billing_party}
                   onChange={(e) => setFormData({ ...formData, responsible_billing_party: e.target.value })}
                 />
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleValidateAddress("bill")}
+                  disabled={validatingBill}
+                >
+                  {validatingBill ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 mr-2" />
+                  )}
+                  Validate Address
+                </Button>
+                {billValidated && (
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4" /> Verified by US Census
+                  </span>
+                )}
               </div>
             </CardContent>
           )}
