@@ -115,7 +115,7 @@ const CustomersAdd = () => {
     company_id: "",
     warranty_status: "active",
     title_to_location: "",
-    on_location_during_visit: "",
+
     initial_visit_notes: "",
     security_gate_access: null as boolean | null,
     lock_boxes_codes: "",
