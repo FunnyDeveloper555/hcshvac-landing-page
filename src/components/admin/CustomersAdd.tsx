@@ -718,6 +718,27 @@ const CustomersAdd = () => {
                   onChange={(e) => setFormData({ ...formData, responsible_billing_party: e.target.value })}
                 />
               </div>
+              <div className="flex items-center gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleValidateAddress("bill")}
+                  disabled={validatingBill}
+                >
+                  {validatingBill ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 mr-2" />
+                  )}
+                  Validate Address
+                </Button>
+                {billValidated && (
+                  <span className="text-sm text-green-600 flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4" /> Verified by US Census
+                  </span>
+                )}
+              </div>
             </CardContent>
           )}
         </Card>
