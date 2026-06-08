@@ -14,6 +14,61 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
+const TITLE_OPTIONS = [
+  { value: "owner_occupied", label: "Owner/Owner Occupied" },
+  { value: "owner_not_occupied", label: "Owner/Not Occupied" },
+  { value: "family_of_owner", label: "Family Member of Owner" },
+  { value: "tenant_renter", label: "Tenant/Renter" },
+  { value: "property_maintenance", label: "Property Maintenance Company" },
+  { value: "contractor", label: "Contractor" },
+  { value: "legal_municipality", label: "Legal/Municipality" },
+  { value: "other", label: "Other" },
+];
+
+const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; sub?: { key: string; label: string }[] }[] = [
+  { key: "call_before_arrival", label: "Call Before Arrival" },
+  { key: "has_dogs", label: "Has Dogs" },
+  {
+    key: "handicap",
+    label: "Handicap",
+    sub: [
+      { key: "hard_of_hearing", label: "Hard of Hearing" },
+      { key: "wheel_chair", label: "Wheel Chair" },
+    ],
+  },
+  { key: "doorbell_broken", label: "Doorbell Does not Work" },
+  { key: "use_side_door", label: "Use Side Door" },
+  { key: "use_back_door", label: "Use Back Door" },
+  { key: "buzz_box", label: "Buzz This on Box", needsInput: true },
+  { key: "other", label: "Other", needsInput: true },
+];
+
+const formatPhone = (input: string): string => {
+  const digits = (input || "").replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+};
+
+type CautionsState = {
+  selected: Record<string, boolean>;
+  inputs: Record<string, string>;
+};
+
+const parseCautions = (raw: string): CautionsState => {
+  if (!raw) return { selected: {}, inputs: {} };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && parsed.selected) {
+      return { selected: parsed.selected || {}, inputs: parsed.inputs || {} };
+    }
+  } catch {
+    // legacy free-text — keep in "other" input
+    return { selected: { other: true }, inputs: { other: raw } };
+  }
+  return { selected: {}, inputs: {} };
+};
+
 const CustomersAdd = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
