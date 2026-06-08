@@ -600,6 +600,28 @@ const CustomersAdd = () => {
                 />
               </div>
             </div>
+            <div className="flex items-center gap-3 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleValidateAddress("ship")}
+                disabled={validatingShip}
+              >
+                {validatingShip ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4 mr-2" />
+                )}
+                Validate Address
+              </Button>
+              {shipValidated && (
+                <span className="text-sm text-green-600 flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" /> Verified by US Census
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">Free US address validation</span>
+            </div>
           </CardContent>
         </Card>
 
