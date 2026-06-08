@@ -873,10 +873,10 @@ const CustomersAdd = () => {
           </Card>
         )}
 
-        {/* Initial Visit Notes */}
+        {/* Customer Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Initial Visit Notes</CardTitle>
+            <CardTitle>Customer Notes</CardTitle>
             <CardDescription>Any notes or memos for the initial visit</CardDescription>
           </CardHeader>
           <CardContent>
