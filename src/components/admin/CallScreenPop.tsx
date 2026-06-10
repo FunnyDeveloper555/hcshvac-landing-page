@@ -121,6 +121,17 @@ export default function CallScreenPop() {
   }, [handleIncoming]);
 
   useEffect(() => {
+    const onManual = (e: Event) => {
+      const row = (e as CustomEvent).detail;
+      if (!row) return;
+      shownIds.current.delete(row.id);
+      handleIncoming({ ...row, direction: "inbound" });
+    };
+    window.addEventListener("callpop:show", onManual as EventListener);
+    return () => window.removeEventListener("callpop:show", onManual as EventListener);
+  }, [handleIncoming]);
+
+  useEffect(() => {
     let cancelled = false;
     const tick = async () => {
       const since = lastCheckRef.current;
