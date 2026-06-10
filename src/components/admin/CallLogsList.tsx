@@ -111,7 +111,15 @@ export default function CallLogsList() {
                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No calls yet. They will appear here as 3CX posts CDR data.</TableCell></TableRow>
                 ) : data!.rows.map((r: any) => (
                   <TableRow key={r.id}>
-                    <TableCell><DirIcon d={r.direction} /></TableCell>
+                    <TableCell>
+                      <button
+                        onClick={() => window.dispatchEvent(new CustomEvent("callpop:show", { detail: r }))}
+                        title="Open screen pop"
+                        className="p-1 rounded hover:bg-muted"
+                      >
+                        <DirIcon d={r.direction} />
+                      </button>
+                    </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {r.started_at ? format(new Date(r.started_at), "yyyy-MM-dd HH:mm:ss") : "—"}
                     </TableCell>
