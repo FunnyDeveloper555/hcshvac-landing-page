@@ -993,7 +993,7 @@ const CustomersAdd = () => {
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={saving}>
+          <Button type="button" disabled={saving} onClick={handleSubmit}>
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {isEditing ? "Update Customer" : "Create Customer"}
           </Button>
@@ -1001,7 +1001,7 @@ const CustomersAdd = () => {
             Cancel
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
