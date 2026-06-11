@@ -364,7 +364,7 @@ const CustomersAdd = () => {
             <div>
               <Label htmlFor="company_id">Assign to Company</Label>
               <Select
-                value={formData.company_id}
+                value={formData.company_id || undefined}
                 onValueChange={(value) => setFormData({ ...formData, company_id: value })}
               >
                 <SelectTrigger>
