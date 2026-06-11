@@ -435,7 +435,7 @@ export default function AppointmentsAdd() {
                 <div className="space-y-2">
                   <Label htmlFor="scheduled_time">Time *</Label>
                   <Select
-                    value={formData.scheduled_time}
+                    value={formData.scheduled_time || undefined}
                     onValueChange={(v) => handleChange("scheduled_time", v)}
                   >
                     <SelectTrigger>
