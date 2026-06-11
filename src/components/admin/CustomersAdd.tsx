@@ -353,7 +353,7 @@ const CustomersAdd = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Company Assignment & Status */}
         <Card>
           <CardHeader>
