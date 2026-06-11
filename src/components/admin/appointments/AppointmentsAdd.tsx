@@ -294,7 +294,7 @@ export default function AppointmentsAdd() {
               <div className="space-y-2">
                 <Label htmlFor="company_id">Assign to Company *</Label>
                 <Select
-                  value={formData.company_id}
+                  value={formData.company_id || undefined}
                   onValueChange={(v) => handleChange("company_id", v)}
                 >
                   <SelectTrigger>
