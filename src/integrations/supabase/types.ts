@@ -501,6 +501,119 @@ export type Database = {
           },
         ]
       }
+      appointment_cart_items: {
+        Row: {
+          cart_id: string
+          created_at: string
+          description: string
+          display_order: number
+          id: string
+          is_waived: boolean
+          item_type: string
+          line_total: number
+          product_id: string | null
+          qty: number
+          unit_price: number
+          updated_at: string
+          waiver_reason: string | null
+        }
+        Insert: {
+          cart_id: string
+          created_at?: string
+          description: string
+          display_order?: number
+          id?: string
+          is_waived?: boolean
+          item_type?: string
+          line_total?: number
+          product_id?: string | null
+          qty?: number
+          unit_price?: number
+          updated_at?: string
+          waiver_reason?: string | null
+        }
+        Update: {
+          cart_id?: string
+          created_at?: string
+          description?: string
+          display_order?: number
+          id?: string
+          is_waived?: boolean
+          item_type?: string
+          line_total?: number
+          product_id?: string | null
+          qty?: number
+          unit_price?: number
+          updated_at?: string
+          waiver_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_carts: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal: number
+          tax: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_carts_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_type: Database["public"]["Enums"]["appointment_type"]
@@ -1877,6 +1990,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "customer_registrations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_fees: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          fee_amount: number
+          id: string
+          is_active: boolean
+          is_waivable: boolean
+          notes: string | null
+          updated_at: string
+          visit_type: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          fee_amount?: number
+          id?: string
+          is_active?: boolean
+          is_waivable?: boolean
+          notes?: string | null
+          updated_at?: string
+          visit_type: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          fee_amount?: number
+          id?: string
+          is_active?: boolean
+          is_waivable?: boolean
+          notes?: string | null
+          updated_at?: string
+          visit_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_fees_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -4842,6 +4999,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recalc_cart_totals: { Args: { _cart_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user" | "moderator"
