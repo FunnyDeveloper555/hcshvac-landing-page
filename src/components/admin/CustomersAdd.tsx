@@ -279,8 +279,8 @@ const CustomersAdd = () => {
     setLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    e?.preventDefault?.();
 
     if (!formData.ship_to_first_name || !formData.ship_to_last_name || !formData.ship_to_address ||
       !formData.ship_to_city || !formData.ship_to_state || !formData.ship_to_zip_code) {
