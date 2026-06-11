@@ -383,7 +383,7 @@ const CustomersAdd = () => {
             <div>
               <Label htmlFor="warranty_status">Warranty Status</Label>
               <Select
-                value={formData.warranty_status}
+                value={formData.warranty_status || undefined}
                 onValueChange={(value) => setFormData({ ...formData, warranty_status: value })}
               >
                 <SelectTrigger>
