@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import AppointmentCartPanel from "./AppointmentCartPanel";
+import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
 
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 
@@ -58,11 +60,7 @@ const appointmentTypes: { value: AppointmentType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-const visitTypes: string[] = [
-  "Estimate New AC",
-  "Estimate New Furnace",
-  "Estimate New AC and Furnace",
-];
+const visitTypes: string[] = VISIT_TYPES;
 
 const formatHour = (h: number): string => {
   const hour24 = ((h % 24) + 24) % 24;
@@ -479,6 +477,16 @@ export default function AppointmentsAdd() {
           </form>
         </CardContent>
       </Card>
+
+      {isEditing && editId && (
+        <AppointmentCartPanel
+          appointmentId={editId}
+          companyId={formData.company_id}
+          visitType={formData.visit_type}
+          customerEmail={formData.customer_email}
+          customerName={`${formData.first_name} ${formData.last_name}`.trim()}
+        />
+      )}
     </div>
   );
 }
