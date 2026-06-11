@@ -477,6 +477,16 @@ export default function AppointmentsAdd() {
           </form>
         </CardContent>
       </Card>
+
+      {isEditing && editId && (
+        <AppointmentCartPanel
+          appointmentId={editId}
+          companyId={formData.company_id}
+          visitType={formData.visit_type}
+          customerEmail={formData.customer_email}
+          customerName={`${formData.first_name} ${formData.last_name}`.trim()}
+        />
+      )}
     </div>
   );
 }

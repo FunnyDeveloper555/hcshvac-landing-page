@@ -52,6 +52,8 @@ import CallLogAdd from "@/components/admin/CallLogAdd";
 import CallLogsList from "@/components/admin/CallLogsList";
 import CallScreenPop from "@/components/admin/CallScreenPop";
 import CustomersAdd from "@/components/admin/CustomersAdd";
+import DiagnosticFeesList from "@/components/admin/DiagnosticFeesList";
+import DiagnosticFeesAdd from "@/components/admin/DiagnosticFeesAdd";
 import CustomersList from "@/components/admin/CustomersList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
@@ -179,6 +181,8 @@ const Admin = () => {
               <Route path="/appointments/open" element={<AppointmentsList />} />
               <Route path="/appointments/closed" element={<AppointmentsList />} />
               <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
+              <Route path="/diagnostic-fees" element={<DiagnosticFeesList />} />
+              <Route path="/diagnostic-fees/add" element={<DiagnosticFeesAdd />} />
               <Route path="/sms-link/send" element={<SMSLinkSend />} />
               <Route path="/sms-link/list" element={<SMSLinkList />} />
               <Route path="/new-hire/send" element={<HireLinkSend />} />

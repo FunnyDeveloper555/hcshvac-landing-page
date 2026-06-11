@@ -79,6 +79,7 @@ const staticMenuItems: MenuItem[] = [
       { title: "Open", url: "/admin/appointments/open", icon: CheckCircle },
       { title: "Closed", url: "/admin/appointments/closed", icon: FolderClosed },
       { title: "Calendar", url: "/admin/appointments/calendar", icon: Calendar },
+      { title: "Diagnostic Fees", url: "/admin/diagnostic-fees", icon: Stethoscope },
     ]
   },
   { 
