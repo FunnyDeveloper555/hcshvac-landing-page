@@ -279,8 +279,8 @@ const CustomersAdd = () => {
     setLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    e?.preventDefault?.();
 
     if (!formData.ship_to_first_name || !formData.ship_to_last_name || !formData.ship_to_address ||
       !formData.ship_to_city || !formData.ship_to_state || !formData.ship_to_zip_code) {
@@ -353,7 +353,7 @@ const CustomersAdd = () => {
     <div className="space-y-6">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Company Assignment & Status */}
         <Card>
           <CardHeader>
@@ -993,7 +993,7 @@ const CustomersAdd = () => {
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={saving}>
+          <Button type="button" disabled={saving} onClick={handleSubmit}>
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {isEditing ? "Update Customer" : "Create Customer"}
           </Button>
@@ -1001,7 +1001,7 @@ const CustomersAdd = () => {
             Cancel
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

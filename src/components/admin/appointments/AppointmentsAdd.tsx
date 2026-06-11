@@ -223,8 +223,8 @@ export default function AppointmentsAdd() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent | React.MouseEvent) => {
+    e?.preventDefault?.();
     if (!formData.first_name || !formData.last_name || !formData.customer_phone || !formData.visit_type || !formData.scheduled_date || !formData.scheduled_time || !formData.company_id) {
       toast.error("Please fill in all required fields");
       return;
@@ -269,13 +269,13 @@ export default function AppointmentsAdd() {
           <CardTitle>Appointment Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             {/* Appointment Type */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="appointment_type">Appointment Type *</Label>
                 <Select
-                  value={formData.appointment_type}
+                  value={formData.appointment_type || undefined}
                   onValueChange={(v) => handleChange("appointment_type", v)}
                 >
                   <SelectTrigger>
@@ -294,7 +294,7 @@ export default function AppointmentsAdd() {
               <div className="space-y-2">
                 <Label htmlFor="company_id">Assign to Company *</Label>
                 <Select
-                  value={formData.company_id}
+                  value={formData.company_id || undefined}
                   onValueChange={(v) => handleChange("company_id", v)}
                 >
                   <SelectTrigger>
@@ -314,7 +314,7 @@ export default function AppointmentsAdd() {
             <div className="space-y-2">
               <Label htmlFor="visit_type">Visit Type *</Label>
               <Select
-                value={formData.visit_type}
+                value={formData.visit_type || undefined}
                 onValueChange={(v) => handleChange("visit_type", v)}
               >
                 <SelectTrigger>
@@ -435,7 +435,7 @@ export default function AppointmentsAdd() {
                 <div className="space-y-2">
                   <Label htmlFor="scheduled_time">Time *</Label>
                   <Select
-                    value={formData.scheduled_time}
+                    value={formData.scheduled_time || undefined}
                     onValueChange={(v) => handleChange("scheduled_time", v)}
                   >
                     <SelectTrigger>
@@ -466,7 +466,7 @@ export default function AppointmentsAdd() {
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit" disabled={isPending}>
+              <Button type="button" disabled={isPending} onClick={handleSubmit}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditing ? "Update Appointment" : "Create Appointment"}
               </Button>
@@ -474,7 +474,7 @@ export default function AppointmentsAdd() {
                 Cancel
               </Button>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
