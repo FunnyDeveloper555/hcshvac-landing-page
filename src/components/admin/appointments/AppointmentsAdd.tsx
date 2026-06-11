@@ -275,7 +275,7 @@ export default function AppointmentsAdd() {
               <div className="space-y-2">
                 <Label htmlFor="appointment_type">Appointment Type *</Label>
                 <Select
-                  value={formData.appointment_type}
+                  value={formData.appointment_type || undefined}
                   onValueChange={(v) => handleChange("appointment_type", v)}
                 >
                   <SelectTrigger>
