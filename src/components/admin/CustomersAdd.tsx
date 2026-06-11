@@ -364,7 +364,7 @@ const CustomersAdd = () => {
             <div>
               <Label htmlFor="company_id">Assign to Company</Label>
               <Select
-                value={formData.company_id}
+                value={formData.company_id || undefined}
                 onValueChange={(value) => setFormData({ ...formData, company_id: value })}
               >
                 <SelectTrigger>
@@ -383,7 +383,7 @@ const CustomersAdd = () => {
             <div>
               <Label htmlFor="warranty_status">Warranty Status</Label>
               <Select
-                value={formData.warranty_status}
+                value={formData.warranty_status || undefined}
                 onValueChange={(value) => setFormData({ ...formData, warranty_status: value })}
               >
                 <SelectTrigger>
@@ -399,7 +399,7 @@ const CustomersAdd = () => {
             <div>
               <Label htmlFor="location_type">Location Type *</Label>
               <Select
-                value={formData.location_type}
+                value={formData.location_type || undefined}
                 onValueChange={(value) => setFormData({ ...formData, location_type: value })}
               >
                 <SelectTrigger>
@@ -766,7 +766,7 @@ const CustomersAdd = () => {
                   <div>
                     <Label htmlFor="housing_type">Housing Type</Label>
                     <Select
-                      value={formData.housing_type}
+                      value={formData.housing_type || undefined}
                       onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
                     >
                       <SelectTrigger>
@@ -785,7 +785,7 @@ const CustomersAdd = () => {
                   <div>
                     <Label htmlFor="occupied_by">Occupied By</Label>
                     <Select
-                      value={formData.occupied_by}
+                      value={formData.occupied_by || undefined}
                       onValueChange={(value) => setFormData({ ...formData, occupied_by: value })}
                     >
                       <SelectTrigger>
