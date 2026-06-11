@@ -269,7 +269,7 @@ export default function AppointmentsAdd() {
           <CardTitle>Appointment Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-6">
             {/* Appointment Type */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
