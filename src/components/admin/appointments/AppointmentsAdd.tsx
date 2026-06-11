@@ -466,7 +466,7 @@ export default function AppointmentsAdd() {
             </div>
 
             <div className="flex gap-2">
-              <Button type="submit" disabled={isPending}>
+              <Button type="button" disabled={isPending} onClick={handleSubmit}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditing ? "Update Appointment" : "Create Appointment"}
               </Button>
@@ -474,7 +474,7 @@ export default function AppointmentsAdd() {
                 Cancel
               </Button>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
