@@ -82,6 +82,14 @@ const staticMenuItems: MenuItem[] = [
       { title: "Diagnostic Fees", url: "/admin/diagnostic-fees", icon: Stethoscope },
     ]
   },
+  {
+    title: "SMS Link",
+    icon: MessageSquare,
+    children: [
+      { title: "Send", url: "/admin/sms-link/send", icon: Send },
+      { title: "List", url: "/admin/sms-link/list", icon: List },
+    ]
+  },
   { 
     title: "My Company", 
     icon: Building,
