@@ -86,6 +86,32 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
         if (smsResult?.error) throw new Error("SMS Error: " + smsResult.error);
       }
 
+      if (sendMethod === "email" || sendMethod === "both") {
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "booking-invite",
+            recipientEmail: email,
+            idempotencyKey: `booking-invite-${invitation.id}`,
+            templateData: {
+              customerName: appointment.customer_name,
+              companyName,
+              bookingUrl,
+              notes: notes || undefined,
+            },
+          },
+        });
+        if (emailError) throw new Error("Failed to send email: " + emailError.message);
+        if (emailResult?.error) throw new Error("Email Error: " + emailResult.error);
+
+        // Mark invitation as sent if only email was used
+        if (sendMethod === "email") {
+          await supabase
+            .from("booking_invitations")
+            .update({ status: "sent", sent_at: new Date().toISOString() })
+            .eq("id", invitation.id);
+        }
+      }
+
       return invitation;
     },
     onSuccess: (invitation) => {
