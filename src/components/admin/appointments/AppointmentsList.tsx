@@ -30,6 +30,7 @@ interface Appointment {
   notes: string | null;
   created_at: string;
   closed_at: string | null;
+  confirmed_at: string | null;
   company_id: string | null;
   companies?: { name: string } | null;
 }
