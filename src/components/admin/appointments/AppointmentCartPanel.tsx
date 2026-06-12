@@ -310,7 +310,10 @@ export default function AppointmentCartPanel({ appointmentId, companyId, visitTy
               <Input className="pl-8" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} />
             </div>
             <div className="max-h-96 overflow-y-auto space-y-1">
-              {products?.map(p => (
+              {productsLoading && (
+                <div className="flex justify-center py-6"><Loader2 className="w-4 h-4 animate-spin" /></div>
+              )}
+              {!productsLoading && products?.map(p => (
                 <button key={p.id} className="w-full text-left p-3 rounded border hover:bg-muted flex justify-between"
                   onClick={() => addProduct(p)}>
                   <span>
@@ -320,7 +323,7 @@ export default function AppointmentCartPanel({ appointmentId, companyId, visitTy
                   <span className="font-mono">${Number(p.price || 0).toFixed(2)}</span>
                 </button>
               ))}
-              {!products?.length && <p className="text-center text-muted-foreground py-6 text-sm">No products found</p>}
+              {!productsLoading && !products?.length && <p className="text-center text-muted-foreground py-6 text-sm">No products found</p>}
             </div>
           </div>
         </DialogContent>
