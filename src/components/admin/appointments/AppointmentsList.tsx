@@ -138,6 +138,81 @@ export default function AppointmentsList() {
     },
   });
 
+  const confirmMutation = useMutation({
+    mutationFn: async (appt: Appointment) => {
+      // Stamp confirmation
+      const { data: userData } = await supabase.auth.getUser();
+      const { error: updErr } = await supabase
+        .from("appointments")
+        .update({ confirmed_at: new Date().toISOString(), confirmed_by: userData.user?.id ?? null } as any)
+        .eq("id", appt.id);
+      if (updErr) throw updErr;
+
+      const companyName = appt.companies?.name || "Our team";
+      const dateStr = appt.scheduled_date
+        ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
+        : "";
+      const timeStr = appt.scheduled_time || "";
+
+      const results: string[] = [];
+
+      // SMS
+      if (appt.customer_phone) {
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Reply to this message if you need to reschedule.`;
+        const { error: smsErr } = await supabase.functions.invoke("send-sms", {
+          body: { phoneNumber: appt.customer_phone, message: smsBody },
+        });
+        if (smsErr) {
+          console.error("SMS send failed", smsErr);
+        } else {
+          results.push("SMS");
+        }
+      }
+
+      // Email
+      if (appt.customer_email) {
+        const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "appointment-confirmation",
+            recipientEmail: appt.customer_email,
+            idempotencyKey: `appt-confirm-${appt.id}`,
+            templateData: {
+              customerName: appt.customer_name,
+              companyName,
+              scheduledDate: dateStr,
+              scheduledTime: timeStr,
+              address: appt.customer_address || "",
+              notes: appt.notes || "",
+            },
+          },
+        });
+        if (emailErr) {
+          console.error("Email send failed", emailErr);
+        } else {
+          results.push("Email");
+        }
+      }
+
+      return { appt, results };
+    },
+    onSuccess: ({ appt, results }) => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      if (results.length === 0) {
+        toast.warning("Appointment confirmed, but no SMS/email could be sent (missing phone & email).");
+      } else {
+        toast.success(`Appointment confirmed — notified customer via ${results.join(" + ")}`);
+      }
+      logAction("update", "appointment", appt.id, {
+        action: "confirm_and_notify",
+        notified_via: results,
+        customer_name: appt.customer_name,
+      });
+    },
+    onError: (e: any) => {
+      toast.error("Failed to confirm appointment: " + (e?.message || "unknown error"));
+    },
+  });
+
   const filterAppointments = (appointments: Appointment[] | undefined): Appointment[] => {
     if (!appointments) return [];
     
