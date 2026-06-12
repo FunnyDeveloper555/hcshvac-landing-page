@@ -30,6 +30,7 @@ interface Appointment {
   notes: string | null;
   created_at: string;
   closed_at: string | null;
+  confirmed_at: string | null;
   company_id: string | null;
   companies?: { name: string } | null;
 }
@@ -134,6 +135,81 @@ export default function AppointmentsList() {
     },
     onError: () => {
       toast.error("Failed to update appointment status");
+    },
+  });
+
+  const confirmMutation = useMutation({
+    mutationFn: async (appt: Appointment) => {
+      // Stamp confirmation
+      const { data: userData } = await supabase.auth.getUser();
+      const { error: updErr } = await supabase
+        .from("appointments")
+        .update({ confirmed_at: new Date().toISOString(), confirmed_by: userData.user?.id ?? null } as any)
+        .eq("id", appt.id);
+      if (updErr) throw updErr;
+
+      const companyName = appt.companies?.name || "Our team";
+      const dateStr = appt.scheduled_date
+        ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
+        : "";
+      const timeStr = appt.scheduled_time || "";
+
+      const results: string[] = [];
+
+      // SMS
+      if (appt.customer_phone) {
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Reply to this message if you need to reschedule.`;
+        const { error: smsErr } = await supabase.functions.invoke("send-sms", {
+          body: { phoneNumber: appt.customer_phone, message: smsBody },
+        });
+        if (smsErr) {
+          console.error("SMS send failed", smsErr);
+        } else {
+          results.push("SMS");
+        }
+      }
+
+      // Email
+      if (appt.customer_email) {
+        const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "appointment-confirmation",
+            recipientEmail: appt.customer_email,
+            idempotencyKey: `appt-confirm-${appt.id}`,
+            templateData: {
+              customerName: appt.customer_name,
+              companyName,
+              scheduledDate: dateStr,
+              scheduledTime: timeStr,
+              address: appt.customer_address || "",
+              notes: appt.notes || "",
+            },
+          },
+        });
+        if (emailErr) {
+          console.error("Email send failed", emailErr);
+        } else {
+          results.push("Email");
+        }
+      }
+
+      return { appt, results };
+    },
+    onSuccess: ({ appt, results }) => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      if (results.length === 0) {
+        toast.warning("Appointment confirmed, but no SMS/email could be sent (missing phone & email).");
+      } else {
+        toast.success(`Appointment confirmed — notified customer via ${results.join(" + ")}`);
+      }
+      logAction("update", "appointment", appt.id, {
+        action: "confirm_and_notify",
+        notified_via: results.join(",") || "none",
+        customer_name: appt.customer_name,
+      });
+    },
+    onError: (e: any) => {
+      toast.error("Failed to confirm appointment: " + (e?.message || "unknown error"));
     },
   });
 
@@ -358,7 +434,14 @@ export default function AppointmentsList() {
                       </TableCell>
                       <TableCell>{getTypeBadge(appointment.appointment_type)}</TableCell>
                       <TableCell>{appointment.companies?.name || "-"}</TableCell>
-                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {getStatusBadge(appointment.status)}
+                          {appointment.confirmed_at && (
+                            <Badge className="bg-emerald-600 text-white">Confirmed</Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{getInvitationBadge(appointment)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2 flex-wrap">
@@ -388,6 +471,16 @@ export default function AppointmentsList() {
                           </Button>
                           {appointment.status === "open" && (
                             <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                                disabled={confirmMutation.isPending}
+                                onClick={() => confirmMutation.mutate(appointment)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                {appointment.confirmed_at ? "Re-notify" : "Confirm & Notify"}
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"

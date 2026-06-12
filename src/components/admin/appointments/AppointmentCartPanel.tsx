@@ -92,27 +92,50 @@ export default function AppointmentCartPanel({ appointmentId, companyId, visitTy
   }, [cart?.id, companyId, visitType, items]);
 
   // Product search
-  const { data: products } = useQuery({
-    queryKey: ["products-cart-search", search],
+  const { data: products, isLoading: productsLoading } = useQuery({
+    queryKey: ["products-cart-search", search, pickerOpen],
     enabled: pickerOpen,
     queryFn: async () => {
-      let q = supabase.from("products").select("id, name, sku, price").limit(30);
-      if (search) q = q.ilike("name", `%${search}%`);
-      const { data } = await q;
-      return (data as any[]) || [];
+      let q = supabase
+        .from("products")
+        .select("id, product_name, model_number, invoice_unit_price_text, invoice_line_description")
+        .order("product_name", { ascending: true })
+        .limit(30);
+      if (search.trim()) {
+        const term = `%${search.trim()}%`;
+        q = q.or(`product_name.ilike.${term},model_number.ilike.${term}`);
+      }
+      const { data, error } = await q;
+      if (error) {
+        console.error("Product search failed", error);
+        toast.error("Product search failed: " + error.message);
+        return [];
+      }
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.product_name,
+        sku: p.model_number || "",
+        price: Number((p.invoice_unit_price_text || "").toString().replace(/[^0-9.]/g, "")) || 0,
+        line_description: p.invoice_line_description || p.product_name,
+      }));
     },
   });
 
   const addProduct = async (p: any) => {
-    await supabase.from("appointment_cart_items" as any).insert({
+    const { error } = await supabase.from("appointment_cart_items" as any).insert({
       cart_id: cart!.id,
       product_id: p.id,
       item_type: "product",
-      description: p.name + (p.sku ? ` (${p.sku})` : ""),
+      description: p.line_description + (p.sku ? ` (${p.sku})` : ""),
       qty: 1,
       unit_price: Number(p.price || 0),
       display_order: (items?.length || 0) + 1,
     });
+    if (error) {
+      toast.error("Failed to add product: " + error.message);
+      return;
+    }
+    toast.success("Product added");
     await refetchItems();
     qc.invalidateQueries({ queryKey: ["appointment-cart", appointmentId] });
     setPickerOpen(false);
@@ -287,7 +310,10 @@ export default function AppointmentCartPanel({ appointmentId, companyId, visitTy
               <Input className="pl-8" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} />
             </div>
             <div className="max-h-96 overflow-y-auto space-y-1">
-              {products?.map(p => (
+              {productsLoading && (
+                <div className="flex justify-center py-6"><Loader2 className="w-4 h-4 animate-spin" /></div>
+              )}
+              {!productsLoading && products?.map(p => (
                 <button key={p.id} className="w-full text-left p-3 rounded border hover:bg-muted flex justify-between"
                   onClick={() => addProduct(p)}>
                   <span>
@@ -297,7 +323,7 @@ export default function AppointmentCartPanel({ appointmentId, companyId, visitTy
                   <span className="font-mono">${Number(p.price || 0).toFixed(2)}</span>
                 </button>
               ))}
-              {!products?.length && <p className="text-center text-muted-foreground py-6 text-sm">No products found</p>}
+              {!productsLoading && !products?.length && <p className="text-center text-muted-foreground py-6 text-sm">No products found</p>}
             </div>
           </div>
         </DialogContent>
