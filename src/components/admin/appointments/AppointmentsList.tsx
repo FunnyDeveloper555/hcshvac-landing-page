@@ -463,7 +463,12 @@ export default function AppointmentsList() {
       <SendInvitationDialog
         appointment={invitationTarget}
         open={!!invitationTarget}
-        onOpenChange={(v) => { if (!v) setInvitationTarget(null); }}
+        onOpenChange={(v) => {
+          if (!v) {
+            setInvitationTarget(null);
+            queryClient.invalidateQueries({ queryKey: ["booking_invitations_for_appointments"] });
+          }
+        }}
       />
     </div>
   );
