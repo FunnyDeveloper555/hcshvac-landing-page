@@ -619,6 +619,8 @@ export type Database = {
           appointment_type: Database["public"]["Enums"]["appointment_type"]
           closed_at: string | null
           company_id: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
           created_at: string
           customer_address: string | null
           customer_email: string | null
@@ -636,6 +638,8 @@ export type Database = {
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           closed_at?: string | null
           company_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           customer_address?: string | null
           customer_email?: string | null
@@ -653,6 +657,8 @@ export type Database = {
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           closed_at?: string | null
           company_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           created_at?: string
           customer_address?: string | null
           customer_email?: string | null

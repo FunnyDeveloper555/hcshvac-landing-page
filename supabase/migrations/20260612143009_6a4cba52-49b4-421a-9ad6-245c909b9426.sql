@@ -1,0 +1,1 @@
+ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMPTZ, ADD COLUMN IF NOT EXISTS confirmed_by UUID REFERENCES auth.users(id);
