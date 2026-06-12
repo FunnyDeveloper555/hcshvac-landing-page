@@ -474,6 +474,16 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                                disabled={confirmMutation.isPending}
+                                onClick={() => confirmMutation.mutate(appointment)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                {appointment.confirmed_at ? "Re-notify" : "Confirm & Notify"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "closed", customerName: appointment.customer_name })}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
