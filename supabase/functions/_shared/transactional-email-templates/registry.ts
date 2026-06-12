@@ -15,6 +15,7 @@ import { template as nextStepsRequired } from './next-steps-required.tsx'
 import { template as applicationNotSelected } from './application-not-selected.tsx'
 import { template as applicantPortalInvite } from './applicant-portal-invite.tsx'
 import { template as hireApplicationInvite } from './hire-application-invite.tsx'
+import { template as bookingInvite } from './booking-invite.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
@@ -23,5 +24,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-not-selected': applicationNotSelected,
   'applicant-portal-invite': applicantPortalInvite,
   'hire-application-invite': hireApplicationInvite,
+  'booking-invite': bookingInvite,
 }
 
