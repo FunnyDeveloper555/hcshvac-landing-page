@@ -357,6 +357,7 @@ export default function AppointmentsList() {
                       <TableCell>{getTypeBadge(appointment.appointment_type)}</TableCell>
                       <TableCell>{appointment.companies?.name || "-"}</TableCell>
                       <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                      <TableCell>{getInvitationBadge(appointment)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2 flex-wrap">
                           <Button
