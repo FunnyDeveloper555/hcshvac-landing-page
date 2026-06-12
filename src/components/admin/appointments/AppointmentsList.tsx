@@ -378,6 +378,14 @@ export default function AppointmentsList() {
                             <Send className="h-4 w-4 mr-1" />
                             Send Invitation
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSubmissionTarget(appointment)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Submission
+                          </Button>
                           {appointment.status === "open" && (
                             <>
                               <Button
