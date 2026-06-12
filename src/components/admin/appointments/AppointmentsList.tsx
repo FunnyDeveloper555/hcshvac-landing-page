@@ -318,6 +318,7 @@ export default function AppointmentsList() {
                   <TableHead>Type</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Submission</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
