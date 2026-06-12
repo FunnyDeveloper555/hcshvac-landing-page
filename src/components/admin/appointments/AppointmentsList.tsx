@@ -480,6 +480,13 @@ export default function AppointmentsList() {
           }
         }}
       />
+
+      <SubmissionDetailsDialog
+        open={!!submissionTarget}
+        onOpenChange={(v) => !v && setSubmissionTarget(null)}
+        appointment={submissionTarget}
+        invitation={submissionTarget ? getInvitationFor(submissionTarget) : null}
+      />
     </div>
   );
 }
