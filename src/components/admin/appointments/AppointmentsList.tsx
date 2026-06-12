@@ -44,6 +44,7 @@ export default function AppointmentsList() {
   const [filter, setFilter] = useState<FilterType>(routeFilter);
   const [currentPage, setCurrentPage] = useState(1);
   const [invitationTarget, setInvitationTarget] = useState<Appointment | null>(null);
+  const [submissionTarget, setSubmissionTarget] = useState<Appointment | null>(null);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
