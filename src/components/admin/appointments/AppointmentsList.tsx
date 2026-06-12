@@ -204,7 +204,7 @@ export default function AppointmentsList() {
       }
       logAction("update", "appointment", appt.id, {
         action: "confirm_and_notify",
-        notified_via: results,
+        notified_via: results.join(",") || "none",
         customer_name: appt.customer_name,
       });
     },
