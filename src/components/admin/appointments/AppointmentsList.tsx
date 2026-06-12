@@ -7,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send } from "lucide-react";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
+import SendInvitationDialog from "./SendInvitationDialog";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -41,6 +42,7 @@ export default function AppointmentsList() {
   const routeFilter: FilterType = location.pathname.endsWith("/open") ? "open" : location.pathname.endsWith("/closed") ? "closed" : "all";
   const [filter, setFilter] = useState<FilterType>(routeFilter);
   const [currentPage, setCurrentPage] = useState(1);
+  const [invitationTarget, setInvitationTarget] = useState<Appointment | null>(null);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
@@ -311,13 +313,22 @@ export default function AppointmentsList() {
                       <TableCell>{appointment.companies?.name || "-"}</TableCell>
                       <TableCell>{getStatusBadge(appointment.status)}</TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(appointment.id)}
                           >
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!appointment.customer_phone && !appointment.customer_email}
+                            onClick={() => setInvitationTarget(appointment)}
+                          >
+                            <Send className="h-4 w-4 mr-1" />
+                            Send Invitation
                           </Button>
                           {appointment.status === "open" && (
                             <>
@@ -402,6 +413,12 @@ export default function AppointmentsList() {
           </div>
         </div>
       )}
+
+      <SendInvitationDialog
+        appointment={invitationTarget}
+        open={!!invitationTarget}
+        onOpenChange={(v) => { if (!v) setInvitationTarget(null); }}
+      />
     </div>
   );
 }
