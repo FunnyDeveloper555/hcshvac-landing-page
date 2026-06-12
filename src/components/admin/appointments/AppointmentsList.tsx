@@ -325,7 +325,7 @@ export default function AppointmentsList() {
               <TableBody>
                 {filteredAppointments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No appointments found
                     </TableCell>
                   </TableRow>
