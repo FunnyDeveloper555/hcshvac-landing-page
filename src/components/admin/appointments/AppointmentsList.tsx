@@ -65,6 +65,50 @@ export default function AppointmentsList() {
     },
   });
 
+  const { data: invitations } = useQuery({
+    queryKey: ["booking_invitations_for_appointments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("booking_invitations")
+        .select("id, company_id, recipient_phone, recipient_email, status, sent_at, opened_at, completed_at, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 30000,
+  });
+
+  const normalizePhone = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-10);
+
+  const getInvitationFor = (appt: Appointment) => {
+    if (!invitations) return null;
+    const phone = normalizePhone(appt.customer_phone);
+    const email = (appt.customer_email || "").toLowerCase().trim();
+    return invitations.find((inv) => {
+      if (appt.company_id && inv.company_id && inv.company_id !== appt.company_id) return false;
+      const invPhone = normalizePhone(inv.recipient_phone);
+      const invEmail = (inv.recipient_email || "").toLowerCase().trim();
+      return (phone && invPhone && phone === invPhone) || (email && invEmail && email === invEmail);
+    }) || null;
+  };
+
+  const getInvitationBadge = (appt: Appointment) => {
+    const inv = getInvitationFor(appt);
+    if (!inv) return <Badge variant="outline" className="text-muted-foreground">Not sent</Badge>;
+    switch (inv.status) {
+      case "completed":
+        return <Badge className="bg-green-600">Submitted</Badge>;
+      case "opened":
+        return <Badge className="bg-blue-500">Opened</Badge>;
+      case "sent":
+        return <Badge className="bg-amber-500">Sent</Badge>;
+      case "pending":
+        return <Badge variant="secondary">Pending</Badge>;
+      default:
+        return <Badge variant="outline">{inv.status}</Badge>;
+    }
+  };
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, customerName }: { id: string; status: AppointmentStatus; customerName: string }) => {
       const updateData: Record<string, unknown> = { status };
@@ -274,13 +318,14 @@ export default function AppointmentsList() {
                   <TableHead>Type</TableHead>
                   <TableHead>Company</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Submission</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAppointments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No appointments found
                     </TableCell>
                   </TableRow>
@@ -312,6 +357,7 @@ export default function AppointmentsList() {
                       <TableCell>{getTypeBadge(appointment.appointment_type)}</TableCell>
                       <TableCell>{appointment.companies?.name || "-"}</TableCell>
                       <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                      <TableCell>{getInvitationBadge(appointment)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2 flex-wrap">
                           <Button
@@ -417,7 +463,12 @@ export default function AppointmentsList() {
       <SendInvitationDialog
         appointment={invitationTarget}
         open={!!invitationTarget}
-        onOpenChange={(v) => { if (!v) setInvitationTarget(null); }}
+        onOpenChange={(v) => {
+          if (!v) {
+            setInvitationTarget(null);
+            queryClient.invalidateQueries({ queryKey: ["booking_invitations_for_appointments"] });
+          }
+        }}
       />
     </div>
   );
