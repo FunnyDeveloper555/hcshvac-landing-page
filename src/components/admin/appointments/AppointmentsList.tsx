@@ -434,7 +434,14 @@ export default function AppointmentsList() {
                       </TableCell>
                       <TableCell>{getTypeBadge(appointment.appointment_type)}</TableCell>
                       <TableCell>{appointment.companies?.name || "-"}</TableCell>
-                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {getStatusBadge(appointment.status)}
+                          {appointment.confirmed_at && (
+                            <Badge className="bg-emerald-600 text-white">Confirmed</Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>{getInvitationBadge(appointment)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2 flex-wrap">
