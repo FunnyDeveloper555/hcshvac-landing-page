@@ -1016,7 +1016,7 @@ const CustomersAdd = () => {
           </CardContent>
         </Card>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button type="button" disabled={saving} onClick={handleSubmit}>
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {isEditing ? "Update Customer" : "Create Customer"}
@@ -1024,6 +1024,16 @@ const CustomersAdd = () => {
           <Button type="button" variant="outline" onClick={() => navigate("/admin/customers/list")}>
             Cancel
           </Button>
+          {isEditing && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="ml-auto"
+              onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
+            >
+              Book Appointment
+            </Button>
+          )}
         </div>
       </div>
     </div>
