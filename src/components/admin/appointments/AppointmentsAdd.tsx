@@ -530,31 +530,39 @@ export default function AppointmentsAdd() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="text-sm space-y-1">
-                      {selectedCustomer.bill_to_same_as_ship_to ? (
-                        <div className="text-muted-foreground italic">Same as Ship To</div>
-                      ) : (
-                        <>
-                          <div className="font-medium">
-                            {selectedCustomer.bill_to_first_name} {selectedCustomer.bill_to_last_name}
-                          </div>
-                          {selectedCustomer.bill_to_business_name && (
-                            <div>{selectedCustomer.bill_to_business_name}</div>
-                          )}
-                          {selectedCustomer.bill_to_address && (
-                            <div>
-                              {selectedCustomer.bill_to_address}
-                              {selectedCustomer.bill_to_suite_number ? `, ${selectedCustomer.bill_to_suite_number}` : ""}
+                      {(() => {
+                        const same = selectedCustomer.bill_to_same_as_ship_to;
+                        const b = {
+                          first_name: same ? selectedCustomer.ship_to_first_name : selectedCustomer.bill_to_first_name,
+                          last_name: same ? selectedCustomer.ship_to_last_name : selectedCustomer.bill_to_last_name,
+                          business_name: same ? selectedCustomer.ship_to_business_name : selectedCustomer.bill_to_business_name,
+                          address: same ? selectedCustomer.ship_to_address : selectedCustomer.bill_to_address,
+                          suite_number: same ? selectedCustomer.ship_to_suite_number : selectedCustomer.bill_to_suite_number,
+                          city: same ? selectedCustomer.ship_to_city : selectedCustomer.bill_to_city,
+                          state: same ? selectedCustomer.ship_to_state : selectedCustomer.bill_to_state,
+                          zip_code: same ? selectedCustomer.ship_to_zip_code : selectedCustomer.bill_to_zip_code,
+                        };
+                        return (
+                          <>
+                            <div className="font-medium">
+                              {b.first_name} {b.last_name}
                             </div>
-                          )}
-                          {(selectedCustomer.bill_to_city || selectedCustomer.bill_to_state || selectedCustomer.bill_to_zip_code) && (
-                            <div>
-                              {selectedCustomer.bill_to_city}
-                              {selectedCustomer.bill_to_state ? `, ${selectedCustomer.bill_to_state}` : ""}{" "}
-                              {selectedCustomer.bill_to_zip_code}
-                            </div>
-                          )}
-                        </>
-                      )}
+                            {b.business_name && <div>{b.business_name}</div>}
+                            {b.address && (
+                              <div>
+                                {b.address}
+                                {b.suite_number ? `, ${b.suite_number}` : ""}
+                              </div>
+                            )}
+                            {(b.city || b.state || b.zip_code) && (
+                              <div>
+                                {b.city}
+                                {b.state ? `, ${b.state}` : ""} {b.zip_code}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
 
