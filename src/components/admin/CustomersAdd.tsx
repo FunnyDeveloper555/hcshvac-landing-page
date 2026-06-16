@@ -1027,7 +1027,7 @@ const CustomersAdd = () => {
           {isEditing && (
             <Button
               type="button"
-              variant="secondary"
+              variant="destructive"
               className="ml-auto"
               onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
             >
