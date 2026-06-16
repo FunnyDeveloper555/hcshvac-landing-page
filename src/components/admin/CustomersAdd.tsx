@@ -450,6 +450,23 @@ const CustomersAdd = () => {
               <CardDescription>Commercial customer details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="business_name">Business Name</Label>
+                <Input
+                  id="business_name"
+                  value={formData.ship_to_business_name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      ship_to_business_name: e.target.value,
+                      bill_to_business_name: formData.bill_to_same_as_ship_to
+                        ? e.target.value
+                        : formData.bill_to_business_name,
+                    })
+                  }
+                  placeholder="Legal or trade business name"
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="corporation_name">Corporation Name</Label>
