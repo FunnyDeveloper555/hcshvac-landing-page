@@ -371,7 +371,15 @@ export default function AppointmentsAdd() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{isEditing ? "Edit Appointment" : "Book New Appointment"}</h2>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-2xl font-bold">{isEditing ? "Edit Appointment" : "Book New Appointment"}</h2>
+        {isEditing && appointmentNumber && (
+          <div className="text-sm">
+            <span className="text-muted-foreground mr-2">Appointment ID:</span>
+            <span className="font-mono font-semibold">{appointmentNumber}</span>
+          </div>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
