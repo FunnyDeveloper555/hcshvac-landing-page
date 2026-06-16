@@ -164,6 +164,50 @@ export default function AppointmentsAdd() {
     },
   });
 
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
+  const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
+
+  const { data: customers, isLoading: customersLoading } = useQuery({
+    queryKey: ["customers-for-appointment", customerSearch],
+    queryFn: async () => {
+      let q = supabase
+        .from("customer_registrations")
+        .select(
+          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+        )
+        .order("created_at", { ascending: false })
+        .limit(50);
+      const term = customerSearch.trim();
+      if (term) {
+        const like = `%${term}%`;
+        q = q.or(
+          `ship_to_first_name.ilike.${like},ship_to_last_name.ilike.${like},ship_to_business_name.ilike.${like},email.ilike.${like},phone.ilike.${like},account_number.ilike.${like}`
+        );
+      }
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data || []) as CustomerRecord[];
+    },
+  });
+
+  const applyCustomerToForm = (c: CustomerRecord) => {
+    setSelectedCustomer(c);
+    setFormData((prev) => ({
+      ...prev,
+      first_name: c.ship_to_first_name || "",
+      last_name: c.ship_to_last_name || "",
+      customer_email: c.email || c.point_of_contact_email || "",
+      customer_phone: formatPhone(c.phone || c.point_of_contact_phone || c.business_phone || ""),
+      address_street: [c.ship_to_address, c.ship_to_suite_number].filter(Boolean).join(", "),
+      address_city: c.ship_to_city || "",
+      address_state: c.ship_to_state || "",
+      address_zip: c.ship_to_zip_code || "",
+      appointment_type: (c.bill_to_business_name || c.ship_to_business_name) ? "commercial" : "residential",
+      company_id: c.company_id || prev.company_id,
+    }));
+  };
+
   useEffect(() => {
     if (editId) {
       fetchAppointment();
