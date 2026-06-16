@@ -85,6 +85,7 @@ const CustomersAdd = () => {
   const [validatingBill, setValidatingBill] = useState(false);
   const [shipValidated, setShipValidated] = useState(false);
   const [billValidated, setBillValidated] = useState(false);
+  const [customerAccountNumber, setCustomerAccountNumber] = useState<string | null>(null);
 
   const handleValidateAddress = async (target: "ship" | "bill") => {
     const prefix = target === "ship" ? "ship_to" : "bill_to";
@@ -226,6 +227,7 @@ const CustomersAdd = () => {
       });
       navigate("/admin/customers/list");
     } else if (data) {
+      setCustomerAccountNumber((data as any).account_number || null);
       setFormData({
         email: data.email || "",
         phone: data.phone || "",
@@ -351,7 +353,15 @@ const CustomersAdd = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
+        {isEditing && customerAccountNumber && (
+          <div className="text-sm">
+            <span className="text-muted-foreground mr-2">Customer ID:</span>
+            <span className="font-mono font-semibold">{customerAccountNumber}</span>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-6">
         {/* Company Assignment & Status */}

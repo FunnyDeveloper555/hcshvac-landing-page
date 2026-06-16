@@ -616,6 +616,7 @@ export type Database = {
       }
       appointments: {
         Row: {
+          appointment_number: string | null
           appointment_type: Database["public"]["Enums"]["appointment_type"]
           closed_at: string | null
           company_id: string | null
@@ -635,6 +636,7 @@ export type Database = {
           visit_type: string | null
         }
         Insert: {
+          appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           closed_at?: string | null
           company_id?: string | null
@@ -654,6 +656,7 @@ export type Database = {
           visit_type?: string | null
         }
         Update: {
+          appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           closed_at?: string | null
           company_id?: string | null

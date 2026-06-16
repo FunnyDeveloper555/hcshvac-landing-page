@@ -167,6 +167,7 @@ export default function AppointmentsAdd() {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
+  const [appointmentNumber, setAppointmentNumber] = useState<string | null>(null);
 
   const { data: customers, isLoading: customersLoading } = useQuery({
     queryKey: ["customers-for-appointment", customerSearch],
@@ -242,6 +243,7 @@ export default function AppointmentsAdd() {
       toast.error("Failed to load appointment");
       navigate("/admin/appointments/list");
     } else if (data) {
+      setAppointmentNumber((data as any).appointment_number || null);
       const { first, last } = splitName(data.customer_name);
       const addr = splitAddress(data.customer_address || "");
       setFormData({
@@ -369,7 +371,15 @@ export default function AppointmentsAdd() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{isEditing ? "Edit Appointment" : "Book New Appointment"}</h2>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-2xl font-bold">{isEditing ? "Edit Appointment" : "Book New Appointment"}</h2>
+        {isEditing && appointmentNumber && (
+          <div className="text-sm">
+            <span className="text-muted-foreground mr-2">Appointment ID:</span>
+            <span className="font-mono font-semibold">{appointmentNumber}</span>
+          </div>
+        )}
+      </div>
 
       <Card>
         <CardHeader>
