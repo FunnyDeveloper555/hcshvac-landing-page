@@ -227,6 +227,7 @@ const CustomersAdd = () => {
       });
       navigate("/admin/customers/list");
     } else if (data) {
+      setCustomerAccountNumber((data as any).account_number || null);
       setFormData({
         email: data.email || "",
         phone: data.phone || "",
