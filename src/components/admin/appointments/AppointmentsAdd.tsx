@@ -417,94 +417,161 @@ export default function AppointmentsAdd() {
               </Select>
             </div>
 
-            {/* Customer Info */}
+            {/* Customer Selector */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Customer Information</h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => handleChange("first_name", e.target.value)}
-                    placeholder="John"
-                  />
+              <h3 className="font-semibold text-lg">Customer *</h3>
+              <Popover open={customerPickerOpen} onOpenChange={setCustomerPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={customerPickerOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedCustomer ? (
+                      <span className="flex items-center gap-2 truncate">
+                        <User className="h-4 w-4 shrink-0" />
+                        <span className="truncate">
+                          {selectedCustomer.ship_to_first_name} {selectedCustomer.ship_to_last_name}
+                          {selectedCustomer.ship_to_business_name ? ` — ${selectedCustomer.ship_to_business_name}` : ""}
+                          {selectedCustomer.account_number ? ` (${selectedCustomer.account_number})` : ""}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Search and select a customer…</span>
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[--radix-popover-trigger-width] min-w-[360px]" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput
+                      placeholder="Search by name, business, email, phone, account #…"
+                      value={customerSearch}
+                      onValueChange={setCustomerSearch}
+                    />
+                    <CommandList>
+                      {customersLoading && (
+                        <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
+                        </div>
+                      )}
+                      {!customersLoading && (customers?.length ?? 0) === 0 && (
+                        <CommandEmpty>No customers found.</CommandEmpty>
+                      )}
+                      <CommandGroup>
+                        {customers?.map((c) => {
+                          const label = `${c.ship_to_first_name} ${c.ship_to_last_name}`.trim();
+                          const sub = [c.ship_to_business_name, c.email, c.phone, c.account_number]
+                            .filter(Boolean)
+                            .join(" • ");
+                          return (
+                            <CommandItem
+                              key={c.id}
+                              value={c.id}
+                              onSelect={() => {
+                                applyCustomerToForm(c);
+                                setCustomerPickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedCustomer?.id === c.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">{label || "(no name)"}</span>
+                                {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+                              </div>
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {selectedCustomer && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card className="bg-muted/30">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Ship To
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-1">
+                      <div className="font-medium">
+                        {selectedCustomer.ship_to_first_name} {selectedCustomer.ship_to_last_name}
+                      </div>
+                      {selectedCustomer.ship_to_business_name && (
+                        <div>{selectedCustomer.ship_to_business_name}</div>
+                      )}
+                      <div>
+                        {selectedCustomer.ship_to_address}
+                        {selectedCustomer.ship_to_suite_number ? `, ${selectedCustomer.ship_to_suite_number}` : ""}
+                      </div>
+                      <div>
+                        {selectedCustomer.ship_to_city}, {selectedCustomer.ship_to_state} {selectedCustomer.ship_to_zip_code}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-muted/30">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Bill To
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-1">
+                      {selectedCustomer.bill_to_same_as_ship_to ? (
+                        <div className="text-muted-foreground italic">Same as Ship To</div>
+                      ) : (
+                        <>
+                          <div className="font-medium">
+                            {selectedCustomer.bill_to_first_name} {selectedCustomer.bill_to_last_name}
+                          </div>
+                          {selectedCustomer.bill_to_business_name && (
+                            <div>{selectedCustomer.bill_to_business_name}</div>
+                          )}
+                          {selectedCustomer.bill_to_address && (
+                            <div>
+                              {selectedCustomer.bill_to_address}
+                              {selectedCustomer.bill_to_suite_number ? `, ${selectedCustomer.bill_to_suite_number}` : ""}
+                            </div>
+                          )}
+                          {(selectedCustomer.bill_to_city || selectedCustomer.bill_to_state || selectedCustomer.bill_to_zip_code) && (
+                            <div>
+                              {selectedCustomer.bill_to_city}
+                              {selectedCustomer.bill_to_state ? `, ${selectedCustomer.bill_to_state}` : ""}{" "}
+                              {selectedCustomer.bill_to_zip_code}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-muted/30 sm:col-span-2">
+                    <CardContent className="pt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">Phone:</span>
+                        <span>{selectedCustomer.phone || selectedCustomer.point_of_contact_phone || selectedCustomer.business_phone || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">Email:</span>
+                        <span className="truncate">{selectedCustomer.email || selectedCustomer.point_of_contact_email || "—"}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => handleChange("last_name", e.target.value)}
-                    placeholder="Doe"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customer_phone">Phone Number *</Label>
-                  <Input
-                    id="customer_phone"
-                    value={formData.customer_phone}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
-                    placeholder="111-111-1111"
-                    inputMode="tel"
-                    maxLength={12}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="customer_email">Email</Label>
-                  <Input
-                    id="customer_email"
-                    type="email"
-                    value={formData.customer_email}
-                    onChange={(e) => handleChange("customer_email", e.target.value)}
-                    placeholder="email@example.com"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Address */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Address</h3>
-              <div className="space-y-2">
-                <Label htmlFor="address_street">Street Address</Label>
-                <Input
-                  id="address_street"
-                  value={formData.address_street}
-                  onChange={(e) => handleChange("address_street", e.target.value)}
-                  placeholder="123 Main St"
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
-                  <Label htmlFor="address_city">City</Label>
-                  <Input
-                    id="address_city"
-                    value={formData.address_city}
-                    onChange={(e) => handleChange("address_city", e.target.value)}
-                    placeholder="City"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address_state">State</Label>
-                  <Input
-                    id="address_state"
-                    value={formData.address_state}
-                    onChange={(e) => handleChange("address_state", e.target.value)}
-                    placeholder="State"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address_zip">ZIP</Label>
-                  <Input
-                    id="address_zip"
-                    value={formData.address_zip}
-                    onChange={(e) => handleChange("address_zip", e.target.value)}
-                    placeholder="12345"
-                  />
-                </div>
-              </div>
-            </div>
 
             {/* Schedule */}
             <div className="space-y-4">
