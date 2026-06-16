@@ -568,6 +568,13 @@ export default function AppointmentsAdd() {
 
                   <Card className="bg-muted/30 sm:col-span-2">
                     <CardContent className="pt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                      {selectedCustomer.ship_to_business_name && (
+                        <div className="flex items-center gap-2 sm:col-span-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Business:</span>
+                          <span className="truncate">{selectedCustomer.ship_to_business_name}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">Phone:</span>
