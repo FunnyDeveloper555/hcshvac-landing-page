@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ChevronsUpDown, User, Mail, Phone, MapPin } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { cn } from "@/lib/utils";
 import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
+
+interface CustomerRecord {
+  id: string;
+  account_number: string | null;
+  ship_to_first_name: string;
+  ship_to_last_name: string;
+  ship_to_business_name: string | null;
+  ship_to_address: string;
+  ship_to_suite_number: string | null;
+  ship_to_city: string;
+  ship_to_state: string;
+  ship_to_zip_code: string;
+  bill_to_same_as_ship_to: boolean | null;
+  bill_to_first_name: string | null;
+  bill_to_last_name: string | null;
+  bill_to_business_name: string | null;
+  bill_to_address: string | null;
+  bill_to_suite_number: string | null;
+  bill_to_city: string | null;
+  bill_to_state: string | null;
+  bill_to_zip_code: string | null;
+  email: string;
+  phone: string;
+  business_phone: string | null;
+  point_of_contact_phone: string | null;
+  point_of_contact_email: string | null;
+  company_id: string | null;
+}
 
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 
