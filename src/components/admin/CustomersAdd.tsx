@@ -353,7 +353,15 @@ const CustomersAdd = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-3xl font-bold">{isEditing ? "Edit Customer" : "Add New Customer"}</h2>
+        {isEditing && customerAccountNumber && (
+          <div className="text-sm">
+            <span className="text-muted-foreground mr-2">Customer ID:</span>
+            <span className="font-mono font-semibold">{customerAccountNumber}</span>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-6">
         {/* Company Assignment & Status */}
