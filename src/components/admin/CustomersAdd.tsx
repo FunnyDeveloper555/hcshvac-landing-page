@@ -85,6 +85,7 @@ const CustomersAdd = () => {
   const [validatingBill, setValidatingBill] = useState(false);
   const [shipValidated, setShipValidated] = useState(false);
   const [billValidated, setBillValidated] = useState(false);
+  const [customerAccountNumber, setCustomerAccountNumber] = useState<string | null>(null);
 
   const handleValidateAddress = async (target: "ship" | "bill") => {
     const prefix = target === "ship" ? "ship_to" : "bill_to";
