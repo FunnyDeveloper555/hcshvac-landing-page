@@ -167,6 +167,7 @@ export default function AppointmentsAdd() {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
+  const [appointmentNumber, setAppointmentNumber] = useState<string | null>(null);
 
   const { data: customers, isLoading: customersLoading } = useQuery({
     queryKey: ["customers-for-appointment", customerSearch],
