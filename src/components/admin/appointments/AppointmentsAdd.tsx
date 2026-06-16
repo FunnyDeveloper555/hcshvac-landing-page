@@ -243,6 +243,7 @@ export default function AppointmentsAdd() {
       toast.error("Failed to load appointment");
       navigate("/admin/appointments/list");
     } else if (data) {
+      setAppointmentNumber((data as any).appointment_number || null);
       const { first, last } = splitName(data.customer_name);
       const addr = splitAddress(data.customer_address || "");
       setFormData({
