@@ -208,6 +208,22 @@ const CustomersAdd = () => {
   useEffect(() => {
     if (editId) {
       fetchCustomer();
+    } else {
+      // Prefill from query params (e.g. coming from Call Screen Pop "Create Profile")
+      const prefillPhone = searchParams.get("phone");
+      const prefillName = searchParams.get("name");
+      if (prefillPhone || prefillName) {
+        setFormData((prev) => {
+          const next = { ...prev };
+          if (prefillPhone) next.phone = formatPhone(prefillPhone);
+          if (prefillName) {
+            const parts = prefillName.trim().split(/\s+/);
+            if (!prev.ship_to_first_name) next.ship_to_first_name = parts[0] || "";
+            if (!prev.ship_to_last_name) next.ship_to_last_name = parts.slice(1).join(" ");
+          }
+          return next;
+        });
+      }
     }
   }, [editId]);
 
