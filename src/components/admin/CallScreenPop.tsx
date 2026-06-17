@@ -79,6 +79,18 @@ export default function CallScreenPop() {
     const phone = row.from_number || row.matched_phone;
     if (!phone) return;
 
+    // Suppress screen pop for blocked numbers
+    try {
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone } as any);
+      if (blocked === true) {
+        await supabase.from("call_logs_3cx").update({
+          status: "blocked",
+          notes: "Auto-suppressed: number is on blocklist",
+        }).eq("id", row.id);
+        return;
+      }
+    } catch (e) { console.error("is_phone_blocked error", e); }
+
     const { data, error } = await supabase.rpc("lookup_caller_by_phone", {
       _phone: phone,
       _to_number: row.to_number ?? null,
