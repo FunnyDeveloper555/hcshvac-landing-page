@@ -685,6 +685,33 @@ export type Database = {
           },
         ]
       }
+      blocked_numbers: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          id: string
+          original_phone: string | null
+          phone_last10: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          original_phone?: string | null
+          phone_last10: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_by?: string | null
+          created_at?: string
+          id?: string
+          original_phone?: string | null
+          phone_last10?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       booking_invitations: {
         Row: {
           company_id: string | null
@@ -4980,6 +5007,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_phone_blocked: { Args: { _phone: string }; Returns: boolean }
       lookup_caller_by_phone:
         | { Args: { _phone: string }; Returns: Json }
         | { Args: { _phone: string; _to_number?: string }; Returns: Json }
