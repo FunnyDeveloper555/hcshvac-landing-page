@@ -404,7 +404,12 @@ export default function CallScreenPop() {
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button size="sm" onClick={() => { navigate(`/admin/customers/add?phone=${encodeURIComponent(pop.phone)}`); close(); }}>
+                <Button size="sm" onClick={() => {
+                  const params = new URLSearchParams({ phone: pop.phone });
+                  if (pop.callerName) params.set("name", pop.callerName);
+                  navigate(`/admin/customers/add?${params.toString()}`);
+                  close();
+                }}>
                   Create Profile
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setShowCallback((v) => !v)}>
