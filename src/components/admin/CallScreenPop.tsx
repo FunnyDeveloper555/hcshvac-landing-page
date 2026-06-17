@@ -79,6 +79,18 @@ export default function CallScreenPop() {
     const phone = row.from_number || row.matched_phone;
     if (!phone) return;
 
+    // Suppress screen pop for blocked numbers
+    try {
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone } as any);
+      if (blocked === true) {
+        await supabase.from("call_logs_3cx").update({
+          status: "blocked",
+          notes: "Auto-suppressed: number is on blocklist",
+        }).eq("id", row.id);
+        return;
+      }
+    } catch (e) { console.error("is_phone_blocked error", e); }
+
     const { data, error } = await supabase.rpc("lookup_caller_by_phone", {
       _phone: phone,
       _to_number: row.to_number ?? null,
@@ -181,11 +193,28 @@ export default function CallScreenPop() {
 
   const markTelemarketer = async () => {
     if (!pop) return;
+    const digits = (pop.phone || "").replace(/\D/g, "");
+    const last10 = digits.slice(-10);
+    if (last10.length < 7) {
+      toast({ title: "Invalid phone number", variant: "destructive" });
+      return;
+    }
+    const { data: userData } = await supabase.auth.getUser();
+    const { error: blockErr } = await supabase.from("blocked_numbers").upsert({
+      phone_last10: last10,
+      original_phone: pop.phone,
+      reason: "telemarketer",
+      blocked_by: userData.user?.id ?? null,
+    }, { onConflict: "phone_last10" });
+    if (blockErr) {
+      toast({ title: "Failed to block number", description: blockErr.message, variant: "destructive" });
+      return;
+    }
     await supabase.from("call_logs_3cx").update({
       notes: "Marked as telemarketer / blocked",
       status: "blocked",
     }).eq("id", pop.callId);
-    toast({ title: "Marked as telemarketer" });
+    toast({ title: "Number blocked", description: "Future calls from this number will be auto-suppressed." });
     close();
   };
 
