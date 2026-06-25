@@ -872,12 +872,73 @@ const CustomersAdd = () => {
             </div>
 
             <div>
-              <Label htmlFor="equipment_location">Equipment Location</Label>
-              <Textarea
-                id="equipment_location"
-                value={formData.equipment_location}
-                onChange={(e) => setFormData({ ...formData, equipment_location: e.target.value })}
-              />
+              <Label>Equipment Location</Label>
+              {(() => {
+                const isCommercial = formData.location_type === "commercial" || formData.location_type === "industrial" || formData.location_type === "educational";
+                const suffix = isCommercial ? "Business" : "Home";
+                const LOCATION_OPTIONS = [
+                  `Left Side ${suffix} - Ground`,
+                  `Right Side ${suffix} - Ground`,
+                  `Back of ${suffix} - Ground`,
+                  `Roof Top`,
+                ];
+                const LADDER_OPTIONS = [
+                  "Nothing Additional",
+                  "Ladder 24'",
+                  "Ladder greater than 24'",
+                ];
+                let parsed: { location?: string; ladder?: string; notes?: string } = {};
+                try {
+                  const raw = formData.equipment_location;
+                  if (raw && raw.trim().startsWith("{")) parsed = JSON.parse(raw);
+                  else if (raw) parsed = { notes: raw };
+                } catch { parsed = { notes: formData.equipment_location }; }
+                const update = (next: typeof parsed) => {
+                  setFormData({ ...formData, equipment_location: JSON.stringify(next) });
+                };
+                return (
+                  <div className="space-y-3 mt-2 border rounded-md p-3">
+                    <div>
+                      <Label className="text-sm">Location</Label>
+                      <RadioGroup
+                        value={parsed.location || ""}
+                        onValueChange={(v) => update({ ...parsed, location: v })}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2"
+                      >
+                        {LOCATION_OPTIONS.map((opt) => (
+                          <div key={opt} className="flex items-center space-x-2">
+                            <RadioGroupItem value={opt} id={`eqloc_${opt}`} />
+                            <Label htmlFor={`eqloc_${opt}`} className="font-normal">{opt}</Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Will Need</Label>
+                      <RadioGroup
+                        value={parsed.ladder || ""}
+                        onValueChange={(v) => update({ ...parsed, ladder: v })}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"
+                      >
+                        {LADDER_OPTIONS.map((opt) => (
+                          <div key={opt} className="flex items-center space-x-2">
+                            <RadioGroupItem value={opt} id={`ladder_${opt}`} />
+                            <Label htmlFor={`ladder_${opt}`} className="font-normal">{opt}</Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+                    <div>
+                      <Label className="text-sm">Additional Notes</Label>
+                      <Textarea
+                        value={parsed.notes || ""}
+                        onChange={(e) => update({ ...parsed, notes: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             <div>
