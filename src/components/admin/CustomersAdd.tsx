@@ -1089,6 +1089,15 @@ const CustomersAdd = () => {
         </Card>
 
         <div className="flex flex-wrap gap-2">
+          {isEditing && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
+            >
+              Book Appointment
+            </Button>
+          )}
           <Button type="button" disabled={saving} onClick={handleSubmit}>
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {isEditing ? "Update Customer" : "Create Customer"}
@@ -1097,27 +1106,18 @@ const CustomersAdd = () => {
             Cancel
           </Button>
           {isEditing && (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                className="ml-auto"
-                onClick={() =>
-                  navigate(
-                    `/admin/sms-link/send?phone=${encodeURIComponent(formData.phone || "")}&email=${encodeURIComponent(formData.email || "")}&type=${formData.location_type}&customerType=existing&lock=1`
-                  )
-                }
-              >
-                Send Invitation
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
-              >
-                Book Appointment
-              </Button>
-            </>
+            <Button
+              type="button"
+              variant="secondary"
+              className="ml-auto"
+              onClick={() =>
+                navigate(
+                  `/admin/sms-link/send?phone=${encodeURIComponent(formData.phone || "")}&email=${encodeURIComponent(formData.email || "")}&type=${formData.location_type}&customerType=existing&lock=1`
+                )
+              }
+            >
+              Send Invitation
+            </Button>
           )}
         </div>
       </div>
