@@ -298,6 +298,8 @@ export default function SMSLinkSend() {
                   placeholder="customer@example.com"
                   value={formData.recipientEmail}
                   onChange={(e) => handleChange("recipientEmail", e.target.value)}
+                  readOnly={isLocked && !!prefillEmail}
+                  className={isLocked && prefillEmail ? "bg-muted cursor-not-allowed" : ""}
                 />
               </div>
             )}
