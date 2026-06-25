@@ -124,15 +124,30 @@
 .admin-compact select {
   height: 2rem;
 }
+.admin-compact .p-3 { padding: 0.375rem; }
 .admin-compact .p-4 { padding: 0.5rem; }
-.admin-compact .p-6 { padding: 0.75rem; }
-.admin-compact .p-8 { padding: 1rem; }
+.admin-compact .p-6 { padding: 0.625rem; }
+.admin-compact .p-8 { padding: 0.75rem; }
+.admin-compact .px-4 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.admin-compact .px-6 { padding-left: 0.625rem; padding-right: 0.625rem; }
+.admin-compact .px-8 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.admin-compact .py-3 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
 .admin-compact .py-4 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.admin-compact .py-6 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-.admin-compact .py-8 { padding-top: 1rem; padding-bottom: 1rem; }
+.admin-compact .py-6 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.admin-compact .py-8 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.admin-compact .gap-3 { gap: 0.375rem; }
 .admin-compact .gap-4 { gap: 0.5rem; }
-.admin-compact .gap-6 { gap: 0.75rem; }
-.admin-compact .gap-8 { gap: 1rem; }
+.admin-compact .gap-6 { gap: 0.625rem; }
+.admin-compact .gap-8 { gap: 0.75rem; }
+.admin-compact .space-y-3 > * + * { margin-top: 0.375rem; }
 .admin-compact .space-y-4 > * + * { margin-top: 0.5rem; }
-.admin-compact .space-y-6 > * + * { margin-top: 0.75rem; }
-.admin-compact .space-y-8 > * + * { margin-top: 1rem; }
+.admin-compact .space-y-6 > * + * { margin-top: 0.625rem; }
+.admin-compact .space-y-8 > * + * { margin-top: 0.75rem; }
+.admin-compact .mb-4 { margin-bottom: 0.5rem; }
+.admin-compact .mb-6 { margin-bottom: 0.625rem; }
+.admin-compact .mb-8 { margin-bottom: 0.75rem; }
+.admin-compact .mt-4 { margin-top: 0.5rem; }
+.admin-compact .mt-6 { margin-top: 0.625rem; }
+.admin-compact .mt-8 { margin-top: 0.75rem; }
+.admin-compact [class*="CardHeader"], .admin-compact .card-header { padding: 0.5rem 0.625rem; }
+.admin-compact [class*="CardContent"], .admin-compact .card-content { padding: 0.5rem 0.625rem; }
