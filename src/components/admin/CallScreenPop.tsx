@@ -50,6 +50,16 @@ function fmtDate(d?: string | null) {
   try { return new Date(d).toLocaleDateString(); } catch { return d; }
 }
 
+function fmtDateTime(d?: string | null) {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+  } catch { return d; }
+}
+
 export default function CallScreenPop() {
   const [pop, setPop] = useState<Pop | null>(null);
   const [showCallback, setShowCallback] = useState(false);
@@ -280,6 +290,11 @@ export default function CallScreenPop() {
               <X className="h-4 w-4" />
             </button>
           </div>
+        </div>
+
+        <div className="px-4 py-1.5 border-b bg-muted/30 text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Call received</span>
+          <span className="font-mono text-foreground">{fmtDateTime(pop.receivedAt)}</span>
         </div>
 
         <div className="p-5 space-y-4">
