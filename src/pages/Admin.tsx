@@ -156,8 +156,8 @@ const Admin = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-2 md:p-4 overflow-auto admin-compact">
-            <div className="mx-auto w-full max-w-[1024px]">
+          <main className="flex-1 p-1 md:p-2 overflow-auto admin-compact">
+            <div className="mx-auto w-full max-w-[1280px]">
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/hero/add" element={<HeroAdd />} />
