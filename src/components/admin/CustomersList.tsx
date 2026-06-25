@@ -184,7 +184,7 @@ const CustomersList = () => {
 
       <div className="rounded-md border bg-card">
         <Table>
-          <TableHeader className="bg-muted">
+          <TableHeader className="bg-card">
             <TableRow>
               <TableHead>Account #</TableHead>
               <TableHead>Name</TableHead>
@@ -197,8 +197,8 @@ const CustomersList = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCustomers.map((customer, idx) => (
-              <TableRow key={customer.id} className={idx % 2 === 0 ? "bg-background hover:bg-muted/60" : "bg-muted/30 hover:bg-muted/60"}>
+            {filteredCustomers.map((customer) => (
+              <TableRow key={customer.id} className="bg-card hover:bg-muted/40">
                 <TableCell className="font-mono text-sm">
                   {customer.account_number || "—"}
                 </TableCell>
