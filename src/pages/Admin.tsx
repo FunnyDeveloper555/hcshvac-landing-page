@@ -263,6 +263,7 @@ const Admin = () => {
               <Route path="/galleries/list" element={<GalleryList />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
+            </div>
           </main>
         </div>
       </div>
