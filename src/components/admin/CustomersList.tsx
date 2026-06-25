@@ -251,23 +251,50 @@ const CustomersList = () => {
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => navigate(`/admin/smslink/send?phone=${customer.phone}&type=${customer.location_type}`)}
-                      title="Send SMS Link"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(customer.id, `${customer.ship_to_first_name} ${customer.ship_to_last_name}`)}
-                      title="Delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon" variant="ghost" title="Actions">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52 bg-popover z-50">
+                        <DropdownMenuLabel>
+                          {customer.ship_to_first_name} {customer.ship_to_last_name}
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {customer.phone && (
+                          <DropdownMenuItem asChild>
+                            <a href={`tel:${customer.phone}`} className="cursor-pointer">
+                              <Phone className="mr-2 h-4 w-4" /> Call {customer.phone}
+                            </a>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(`/admin/sms-link/send?phone=${encodeURIComponent(customer.phone || "")}&type=${customer.location_type}`)
+                          }
+                        >
+                          <Send className="mr-2 h-4 w-4" /> Send Invitation
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/admin/appointments/add?customerId=${customer.id}`)}
+                        >
+                          <CalendarPlus className="mr-2 h-4 w-4" /> Book Appointment
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(customer.id)}>
+                          <User className="mr-2 h-4 w-4" /> View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() =>
+                            handleDelete(customer.id, `${customer.ship_to_first_name} ${customer.ship_to_last_name}`)
+                          }
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
