@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User } from "lucide-react";
+import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User, PhoneIncoming } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -235,6 +235,27 @@ const CustomersList = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() =>
+                        window.dispatchEvent(
+                          new CustomEvent("callpop:show", {
+                            detail: {
+                              id: `manual-${customer.id}-${Date.now()}`,
+                              direction: "inbound",
+                              from_number: customer.phone,
+                              to_number: null,
+                              caller_name: `${customer.ship_to_first_name ?? ""} ${customer.ship_to_last_name ?? ""}`.trim(),
+                              created_at: new Date().toISOString(),
+                            },
+                          })
+                        )
+                      }
+                      title="Simulate incoming call (Screen Pop)"
+                    >
+                      <PhoneIncoming className="h-4 w-4 text-green-600" />
+                    </Button>
                     <Button
                       size="icon"
                       variant="ghost"
