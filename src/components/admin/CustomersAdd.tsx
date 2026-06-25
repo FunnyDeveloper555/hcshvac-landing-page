@@ -1036,14 +1036,27 @@ const CustomersAdd = () => {
             Cancel
           </Button>
           {isEditing && (
-            <Button
-              type="button"
-              variant="destructive"
-              className="ml-auto"
-              onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
-            >
-              Book Appointment
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                className="ml-auto"
+                onClick={() =>
+                  navigate(
+                    `/admin/sms-link/send?phone=${encodeURIComponent(formData.phone || "")}&email=${encodeURIComponent(formData.email || "")}&type=${formData.location_type}&customerType=existing&lock=1`
+                  )
+                }
+              >
+                Send Invitation
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => navigate(`/admin/appointments/add?customerId=${editId}`)}
+              >
+                Book Appointment
+              </Button>
+            </>
           )}
         </div>
       </div>

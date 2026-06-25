@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,21 @@ const initialFormData: FormData = {
 };
 
 export default function SMSLinkSend() {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [searchParams] = useSearchParams();
+  const prefillPhone = searchParams.get("phone") || "";
+  const prefillEmail = searchParams.get("email") || "";
+  const prefillType = searchParams.get("type");
+  const prefillCustomerType = searchParams.get("customerType");
+  const isLocked = searchParams.get("lock") === "1";
+
+  const [formData, setFormData] = useState<FormData>({
+    ...initialFormData,
+    recipientPhone: prefillPhone,
+    recipientEmail: prefillEmail,
+    invitationType: prefillType === "commercial" ? "commercial" : "residential",
+    customerType: prefillCustomerType === "existing" ? "existing" : "new",
+    sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
+  });
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -265,6 +279,8 @@ export default function SMSLinkSend() {
                   placeholder="(555) 123-4567"
                   value={formData.recipientPhone}
                   onChange={(e) => handleChange("recipientPhone", e.target.value)}
+                  readOnly={isLocked && !!prefillPhone}
+                  className={isLocked && prefillPhone ? "bg-muted cursor-not-allowed" : ""}
                 />
                 <p className="text-xs text-muted-foreground">
                   Must be a textable phone number
@@ -282,6 +298,8 @@ export default function SMSLinkSend() {
                   placeholder="customer@example.com"
                   value={formData.recipientEmail}
                   onChange={(e) => handleChange("recipientEmail", e.target.value)}
+                  readOnly={isLocked && !!prefillEmail}
+                  className={isLocked && prefillEmail ? "bg-muted cursor-not-allowed" : ""}
                 />
               </div>
             )}

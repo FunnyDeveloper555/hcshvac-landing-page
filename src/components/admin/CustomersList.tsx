@@ -292,7 +292,9 @@ const CustomersList = () => {
                         )}
                         <DropdownMenuItem
                           onClick={() =>
-                            navigate(`/admin/sms-link/send?phone=${encodeURIComponent(customer.phone || "")}&type=${customer.location_type}`)
+                            navigate(
+                              `/admin/sms-link/send?phone=${encodeURIComponent(customer.phone || "")}&email=${encodeURIComponent(customer.email || "")}&type=${customer.location_type}&customerType=existing&lock=1`
+                            )
                           }
                         >
                           <Send className="mr-2 h-4 w-4" /> Send Invitation
