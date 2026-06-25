@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User } from "lucide-react";
+import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User, PhoneIncoming } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
