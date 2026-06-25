@@ -294,9 +294,12 @@ export default function CallScreenPop() {
         <Bell className="h-3.5 w-3.5" /> Test Pop
       </button>
 
-      <div className={`fixed top-20 right-6 z-[60] w-[460px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200 ${differentCompany ? "ring-2 ring-destructive" : ""}`}>
+      <div
+        className={`fixed z-[60] w-[460px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200 ${differentCompany ? "ring-2 ring-destructive" : ""}`}
+        style={pos ? { top: pos.y, left: pos.x, right: "auto" } : { top: 80, right: 24 }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-primary/5">
+        <div onMouseDown={onDragStart} className="flex items-center justify-between px-4 py-2 border-b bg-primary/5 cursor-move select-none">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Phone className="h-4 w-4 text-primary animate-pulse" />
             {pop.match_type === "employee"
