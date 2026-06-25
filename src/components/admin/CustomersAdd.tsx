@@ -384,9 +384,9 @@ const CustomersAdd = () => {
         <Card>
           <CardHeader>
             <CardTitle>Assignment & Status</CardTitle>
-            <CardDescription>Assign customer to a company and set warranty status</CardDescription>
+            <CardDescription>Assign customer to a company and set location type</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="company_id">Assign to Company</Label>
               <Select
@@ -406,22 +406,7 @@ const CustomersAdd = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="warranty_status">Warranty Status</Label>
-              <Select
-                value={formData.warranty_status || undefined}
-                onValueChange={(value) => setFormData({ ...formData, warranty_status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="expired">Expired</SelectItem>
-                  <SelectItem value="none">No Warranty</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
             <div>
               <Label htmlFor="location_type">Location Type *</Label>
               <Select
