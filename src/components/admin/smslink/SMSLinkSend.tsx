@@ -279,6 +279,8 @@ export default function SMSLinkSend() {
                   placeholder="(555) 123-4567"
                   value={formData.recipientPhone}
                   onChange={(e) => handleChange("recipientPhone", e.target.value)}
+                  readOnly={isLocked && !!prefillPhone}
+                  className={isLocked && prefillPhone ? "bg-muted cursor-not-allowed" : ""}
                 />
                 <p className="text-xs text-muted-foreground">
                   Must be a textable phone number
