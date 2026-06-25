@@ -184,7 +184,7 @@ const CustomersList = () => {
 
       <div className="rounded-md border bg-card">
         <Table>
-          <TableHeader className="bg-muted">
+          <TableHeader className="bg-card">
             <TableRow>
               <TableHead>Account #</TableHead>
               <TableHead>Name</TableHead>
