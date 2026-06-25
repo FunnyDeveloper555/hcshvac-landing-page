@@ -182,9 +182,9 @@ const CustomersList = () => {
 
       <CustomersSearch onSearch={handleSearch} onClear={handleClearSearch} />
 
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted">
             <TableRow>
               <TableHead>Account #</TableHead>
               <TableHead>Name</TableHead>
