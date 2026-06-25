@@ -334,7 +334,7 @@ export default function CallScreenPop() {
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
-                <Button size="sm" onClick={() => { navigate(`/admin/customers/list?edit=${pop.customer!.id}`); close(); }}>
+                <Button size="sm" onClick={() => { navigate(`/admin/customers/add?id=${pop.customer!.id}`); close(); }}>
                   View Profile
                 </Button>
                 {pop.customer.latest_appointment && (
