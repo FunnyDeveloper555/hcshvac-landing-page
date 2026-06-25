@@ -50,6 +50,16 @@ function fmtDate(d?: string | null) {
   try { return new Date(d).toLocaleDateString(); } catch { return d; }
 }
 
+function fmtDateTime(d?: string | null) {
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+  } catch { return d; }
+}
+
 export default function CallScreenPop() {
   const [pop, setPop] = useState<Pop | null>(null);
   const [showCallback, setShowCallback] = useState(false);
