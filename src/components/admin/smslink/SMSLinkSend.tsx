@@ -34,7 +34,21 @@ const initialFormData: FormData = {
 };
 
 export default function SMSLinkSend() {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [searchParams] = useSearchParams();
+  const prefillPhone = searchParams.get("phone") || "";
+  const prefillEmail = searchParams.get("email") || "";
+  const prefillType = searchParams.get("type");
+  const prefillCustomerType = searchParams.get("customerType");
+  const isLocked = searchParams.get("lock") === "1";
+
+  const [formData, setFormData] = useState<FormData>({
+    ...initialFormData,
+    recipientPhone: prefillPhone,
+    recipientEmail: prefillEmail,
+    invitationType: prefillType === "commercial" ? "commercial" : "residential",
+    customerType: prefillCustomerType === "existing" ? "existing" : "new",
+    sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
+  });
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
