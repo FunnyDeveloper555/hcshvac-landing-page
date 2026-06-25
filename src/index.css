@@ -102,3 +102,28 @@
   animation: marquee 30s linear infinite;
 }
 
+
+/* Compact admin UI: shrink overall scale for dense forms/lists */
+.admin-compact {
+  font-size: 13px;
+}
+.admin-compact h1 { font-size: 1.5rem; }
+.admin-compact h2 { font-size: 1.2rem; }
+.admin-compact h3 { font-size: 1.05rem; }
+.admin-compact .text-2xl { font-size: 1.25rem; }
+.admin-compact .text-3xl { font-size: 1.5rem; }
+.admin-compact .text-xl { font-size: 1.05rem; }
+.admin-compact input,
+.admin-compact select,
+.admin-compact textarea,
+.admin-compact button {
+  font-size: 13px;
+}
+.admin-compact .p-6 { padding: 1rem; }
+.admin-compact .p-8 { padding: 1.25rem; }
+.admin-compact .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+.admin-compact .py-8 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+.admin-compact .gap-6 { gap: 1rem; }
+.admin-compact .gap-8 { gap: 1.25rem; }
+.admin-compact .space-y-6 > * + * { margin-top: 1rem; }
+.admin-compact .space-y-8 > * + * { margin-top: 1.25rem; }
