@@ -292,6 +292,11 @@ export default function CallScreenPop() {
           </div>
         </div>
 
+        <div className="px-4 py-1.5 border-b bg-muted/30 text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Call received</span>
+          <span className="font-mono text-foreground">{fmtDateTime(pop.receivedAt)}</span>
+        </div>
+
         <div className="p-5 space-y-4">
           {/* Customer */}
           {pop.match_type === "customer" && pop.customer && (
