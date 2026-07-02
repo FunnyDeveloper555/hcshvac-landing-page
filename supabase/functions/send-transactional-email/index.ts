@@ -300,6 +300,12 @@ Deno.serve(async (req) => {
   // 5. Enqueue the pre-rendered email for async processing by the dispatcher.
   // The dispatcher (process-email-queue) handles sending, retries, and rate-limit backoff.
 
+  // Build From address: caller-provided company inviter email takes precedence;
+  // otherwise fall back to the project's default sender address.
+  const from = fromEmail
+    ? `${fromName || SITE_NAME} <${fromEmail}>`
+    : `${SITE_NAME} <noreply@${FROM_DOMAIN}>`
+
   // Log pending BEFORE enqueue so we have a record even if enqueue crashes
   await supabase.from('email_send_log').insert({
     message_id: messageId,
@@ -313,7 +319,7 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
@@ -325,6 +331,7 @@ Deno.serve(async (req) => {
       queued_at: new Date().toISOString(),
     },
   })
+
 
   if (enqueueError) {
     console.error('Failed to enqueue email', {
