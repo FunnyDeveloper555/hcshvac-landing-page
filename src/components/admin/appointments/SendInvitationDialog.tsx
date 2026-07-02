@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
+
 import { useAdminLog } from "@/hooks/useAdminLog";
 
 interface AppointmentLite {
