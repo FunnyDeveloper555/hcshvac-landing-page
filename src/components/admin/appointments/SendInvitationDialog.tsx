@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
+
 import { useAdminLog } from "@/hooks/useAdminLog";
 
 interface AppointmentLite {
@@ -71,6 +73,7 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
       if (inviteError) throw inviteError;
 
       const companyName = appointment.companies?.name || "Our Company";
+      const inviterEmail = getCompanyInviterEmail(companyName);
       const bookingUrl = `${window.location.origin}/book/${invitation.token}`;
 
       if (sendMethod === "sms" || sendMethod === "both") {
@@ -92,6 +95,8 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
             templateName: "booking-invite",
             recipientEmail: email,
             idempotencyKey: `booking-invite-${invitation.id}`,
+            fromEmail: inviterEmail,
+            fromName: companyName,
             templateData: {
               customerName: appointment.customer_name,
               companyName,

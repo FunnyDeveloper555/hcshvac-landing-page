@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye } from "lucide-react";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -149,6 +150,7 @@ export default function AppointmentsList() {
       if (updErr) throw updErr;
 
       const companyName = appt.companies?.name || "Our team";
+      const inviterEmail = getCompanyInviterEmail(companyName);
       const dateStr = appt.scheduled_date
         ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
         : "";
@@ -176,6 +178,8 @@ export default function AppointmentsList() {
             templateName: "appointment-confirmation",
             recipientEmail: appt.customer_email,
             idempotencyKey: `appt-confirm-${appt.id}`,
+            fromEmail: inviterEmail,
+            fromName: companyName,
             templateData: {
               customerName: appt.customer_name,
               companyName,
