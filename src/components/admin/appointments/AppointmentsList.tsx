@@ -150,6 +150,7 @@ export default function AppointmentsList() {
       if (updErr) throw updErr;
 
       const companyName = appt.companies?.name || "Our team";
+      const inviterEmail = getCompanyInviterEmail(companyName);
       const dateStr = appt.scheduled_date
         ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
         : "";
@@ -177,6 +178,8 @@ export default function AppointmentsList() {
             templateName: "appointment-confirmation",
             recipientEmail: appt.customer_email,
             idempotencyKey: `appt-confirm-${appt.id}`,
+            fromEmail: inviterEmail,
+            fromName: companyName,
             templateData: {
               customerName: appt.customer_name,
               companyName,
