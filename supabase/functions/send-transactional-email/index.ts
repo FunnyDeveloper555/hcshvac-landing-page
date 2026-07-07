@@ -329,27 +329,28 @@ Deno.serve(async (req) => {
     })
 
     try {
-      const { SMTPClient } = await import('https://deno.land/x/denomailer@1.6.0/mod.ts')
-      const client = new SMTPClient({
-        connection: {
-          hostname: smtpHost,
-          port: smtpPort,
-          tls: false, // STARTTLS upgrade on 587
-          auth: {
-            username: fromEmail,
-            password: smtpPassword,
-          },
+      const nodemailer = await import('npm:nodemailer@6.9.14')
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: false, // STARTTLS upgrade on 587
+        requireTLS: true,
+        auth: {
+          user: fromEmail,
+          pass: smtpPassword,
+        },
+        tls: {
+          rejectUnauthorized: false,
         },
       })
 
-      await client.send({
+      await transporter.sendMail({
         from: `${fromName || SITE_NAME} <${fromEmail}>`,
         to: effectiveRecipient,
         subject: resolvedSubject,
-        content: plainText,
+        text: plainText,
         html,
       })
-      await client.close()
 
       await supabase.from('email_send_log').insert({
         message_id: messageId,
