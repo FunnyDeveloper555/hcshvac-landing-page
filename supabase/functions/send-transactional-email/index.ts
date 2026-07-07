@@ -297,16 +297,82 @@ Deno.serve(async (req) => {
       ? template.subject(templateData)
       : template.subject
 
-  // 5. Enqueue the pre-rendered email for async processing by the dispatcher.
-  // The dispatcher (process-email-queue) handles sending, retries, and rate-limit backoff.
+  // 5. If a custom fromEmail (company inviter) is provided, send via Resend directly
+  // — this bypasses Lovable's queue since the From domain isn't the verified SENDER_DOMAIN.
+  // Otherwise, enqueue for the built-in dispatcher.
 
-  // Build From address: caller-provided company inviter email takes precedence;
-  // otherwise fall back to the project's default sender address.
-  const from = fromEmail
-    ? `${fromName || SITE_NAME} <${fromEmail}>`
-    : `${SITE_NAME} <noreply@${FROM_DOMAIN}>`
+  if (fromEmail) {
+    const resendKey = Deno.env.get('RESEND_API_KEY')
+    if (!resendKey) {
+      console.error('RESEND_API_KEY not configured')
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: effectiveRecipient,
+        status: 'failed',
+        error_message: 'RESEND_API_KEY not configured',
+      })
+      return new Response(JSON.stringify({ error: 'Resend not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
-  // Log pending BEFORE enqueue so we have a record even if enqueue crashes
+    await supabase.from('email_send_log').insert({
+      message_id: messageId,
+      template_name: templateName,
+      recipient_email: effectiveRecipient,
+      status: 'pending',
+    })
+
+    const resendResp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: `${fromName || SITE_NAME} <${fromEmail}>`,
+        to: [effectiveRecipient],
+        subject: resolvedSubject,
+        html,
+        text: plainText,
+      }),
+    })
+
+    if (!resendResp.ok) {
+      const errorBody = await resendResp.text()
+      console.error(`Resend send failed [${resendResp.status}]: ${errorBody}`)
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: effectiveRecipient,
+        status: 'failed',
+        error_message: `Resend ${resendResp.status}: ${errorBody}`.slice(0, 500),
+      })
+      return new Response(
+        JSON.stringify({ error: 'Resend send failed', status: resendResp.status, details: errorBody }),
+        { status: resendResp.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    await supabase.from('email_send_log').insert({
+      message_id: messageId,
+      template_name: templateName,
+      recipient_email: effectiveRecipient,
+      status: 'sent',
+    })
+
+    console.log('Transactional email sent via Resend', { templateName, effectiveRecipient, fromEmail })
+    return new Response(
+      JSON.stringify({ success: true, provider: 'resend' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Default: enqueue via Lovable Emails using the verified sender domain
+  const from = `${SITE_NAME} <noreply@${FROM_DOMAIN}>`
+
   await supabase.from('email_send_log').insert({
     message_id: messageId,
     template_name: templateName,
@@ -355,6 +421,7 @@ Deno.serve(async (req) => {
   }
 
   console.log('Transactional email enqueued', { templateName, effectiveRecipient })
+
 
   return new Response(
     JSON.stringify({ success: true, queued: true }),
