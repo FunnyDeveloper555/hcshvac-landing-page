@@ -302,17 +302,20 @@ Deno.serve(async (req) => {
   // Otherwise, enqueue for the built-in dispatcher.
 
   if (fromEmail) {
-    const resendKey = Deno.env.get('RESEND_API_KEY')
-    if (!resendKey) {
-      console.error('RESEND_API_KEY not configured')
+    const smtpHost = Deno.env.get('SMTP_HOST')
+    const smtpPort = parseInt(Deno.env.get('SMTP_PORT') || '587', 10)
+    const smtpPassword = Deno.env.get('SMTP_PASSWORD')
+
+    if (!smtpHost || !smtpPassword) {
+      console.error('SMTP not configured')
       await supabase.from('email_send_log').insert({
         message_id: messageId,
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
-        error_message: 'RESEND_API_KEY not configured',
+        error_message: 'SMTP not configured',
       })
-      return new Response(JSON.stringify({ error: 'Resend not configured' }), {
+      return new Response(JSON.stringify({ error: 'SMTP not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -325,49 +328,56 @@ Deno.serve(async (req) => {
       status: 'pending',
     })
 
-    const resendResp = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: `${fromName || SITE_NAME} <${fromEmail}>`,
-        to: [effectiveRecipient],
-        subject: resolvedSubject,
-        html,
-        text: plainText,
-      }),
-    })
+    try {
+      const { SMTPClient } = await import('https://deno.land/x/denomailer@1.6.0/mod.ts')
+      const client = new SMTPClient({
+        connection: {
+          hostname: smtpHost,
+          port: smtpPort,
+          tls: false, // STARTTLS upgrade on 587
+          auth: {
+            username: fromEmail,
+            password: smtpPassword,
+          },
+        },
+      })
 
-    if (!resendResp.ok) {
-      const errorBody = await resendResp.text()
-      console.error(`Resend send failed [${resendResp.status}]: ${errorBody}`)
+      await client.send({
+        from: `${fromName || SITE_NAME} <${fromEmail}>`,
+        to: effectiveRecipient,
+        subject: resolvedSubject,
+        content: plainText,
+        html,
+      })
+      await client.close()
+
+      await supabase.from('email_send_log').insert({
+        message_id: messageId,
+        template_name: templateName,
+        recipient_email: effectiveRecipient,
+        status: 'sent',
+      })
+
+      console.log('Transactional email sent via SMTP', { templateName, effectiveRecipient, fromEmail })
+      return new Response(
+        JSON.stringify({ success: true, provider: 'smtp' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      console.error(`SMTP send failed: ${errorMsg}`)
       await supabase.from('email_send_log').insert({
         message_id: messageId,
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
-        error_message: `Resend ${resendResp.status}: ${errorBody}`.slice(0, 500),
+        error_message: `SMTP: ${errorMsg}`.slice(0, 500),
       })
       return new Response(
-        JSON.stringify({ error: 'Resend send failed', status: resendResp.status, details: errorBody }),
-        { status: resendResp.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'SMTP send failed', details: errorMsg }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    await supabase.from('email_send_log').insert({
-      message_id: messageId,
-      template_name: templateName,
-      recipient_email: effectiveRecipient,
-      status: 'sent',
-    })
-
-    console.log('Transactional email sent via Resend', { templateName, effectiveRecipient, fromEmail })
-    return new Response(
-      JSON.stringify({ success: true, provider: 'resend' }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
   }
 
   // Default: enqueue via Lovable Emails using the verified sender domain
