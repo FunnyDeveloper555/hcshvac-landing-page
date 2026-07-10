@@ -73,6 +73,13 @@ export interface BuildIcsInput {
   scheduledDate: string; // yyyy-mm-dd
   scheduledTime?: string | null;
   durationMinutes?: number; // default 60
+  meetingUrl?: string;
+}
+
+export function buildMeetingUrl(uid: string): string {
+  // Jitsi Meet — free, zero-config, works in any browser without accounts.
+  const room = `hcs-appt-${uid}`.replace(/[^a-zA-Z0-9-]/g, "");
+  return `https://meet.jit.si/${room}`;
 }
 
 export function buildAppointmentIcs(input: BuildIcsInput): {
