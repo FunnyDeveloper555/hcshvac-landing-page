@@ -56,6 +56,8 @@ Deno.serve(async (req) => {
   let messageId: string
   let fromEmail: string | undefined
   let fromName: string | undefined
+  let bcc: string | string[] | undefined
+  let attachments: Array<{ filename: string; content: string; contentType?: string; encoding?: string }> | undefined
   let templateData: Record<string, any> = {}
   try {
     const body = await req.json()
@@ -65,6 +67,8 @@ Deno.serve(async (req) => {
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     fromEmail = body.fromEmail || body.from_email
     fromName = body.fromName || body.from_name
+    bcc = body.bcc
+    attachments = body.attachments
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
     }
