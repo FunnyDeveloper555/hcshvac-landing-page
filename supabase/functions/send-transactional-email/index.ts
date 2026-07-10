@@ -351,9 +351,25 @@ Deno.serve(async (req) => {
       await transporter.sendMail({
         from: `${fromName || SITE_NAME} <${fromEmail}>`,
         to: effectiveRecipient,
+        bcc: bcc || undefined,
         subject: resolvedSubject,
         text: plainText,
         html,
+        attachments: attachments?.map((a) => ({
+          filename: a.filename,
+          content: a.content,
+          contentType: a.contentType,
+          encoding: a.encoding || 'base64',
+        })),
+        icalEvent: attachments?.find((a) => a.contentType?.startsWith('text/calendar'))
+          ? {
+              method: 'REQUEST',
+              content: (() => {
+                const ics = attachments.find((a) => a.contentType?.startsWith('text/calendar'))!
+                return ics.encoding === 'base64' ? atob(ics.content) : ics.content
+              })(),
+            }
+          : undefined,
       })
 
       await supabase.from('email_send_log').insert({
