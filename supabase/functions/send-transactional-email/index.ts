@@ -56,6 +56,8 @@ Deno.serve(async (req) => {
   let messageId: string
   let fromEmail: string | undefined
   let fromName: string | undefined
+  let bcc: string | string[] | undefined
+  let attachments: Array<{ filename: string; content: string; contentType?: string; encoding?: string }> | undefined
   let templateData: Record<string, any> = {}
   try {
     const body = await req.json()
@@ -65,6 +67,8 @@ Deno.serve(async (req) => {
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     fromEmail = body.fromEmail || body.from_email
     fromName = body.fromName || body.from_name
+    bcc = body.bcc
+    attachments = body.attachments
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
     }
@@ -347,9 +351,25 @@ Deno.serve(async (req) => {
       await transporter.sendMail({
         from: `${fromName || SITE_NAME} <${fromEmail}>`,
         to: effectiveRecipient,
+        bcc: bcc || undefined,
         subject: resolvedSubject,
         text: plainText,
         html,
+        attachments: attachments?.map((a) => ({
+          filename: a.filename,
+          content: a.content,
+          contentType: a.contentType,
+          encoding: a.encoding || 'base64',
+        })),
+        icalEvent: attachments?.find((a) => a.contentType?.startsWith('text/calendar'))
+          ? {
+              method: 'REQUEST',
+              content: (() => {
+                const ics = attachments.find((a) => a.contentType?.startsWith('text/calendar'))!
+                return ics.encoding === 'base64' ? atob(ics.content) : ics.content
+              })(),
+            }
+          : undefined,
       })
 
       await supabase.from('email_send_log').insert({
