@@ -73,6 +73,13 @@ export interface BuildIcsInput {
   scheduledDate: string; // yyyy-mm-dd
   scheduledTime?: string | null;
   durationMinutes?: number; // default 60
+  meetingUrl?: string;
+}
+
+export function buildMeetingUrl(uid: string): string {
+  // Jitsi Meet — free, zero-config, works in any browser without accounts.
+  const room = `hcs-appt-${uid}`.replace(/[^a-zA-Z0-9-]/g, "");
+  return `https://meet.jit.si/${room}`;
 }
 
 export function buildAppointmentIcs(input: BuildIcsInput): {
@@ -101,7 +108,14 @@ export function buildAppointmentIcs(input: BuildIcsInput): {
     `DTEND:${toIcsLocal(end)}`,
     `SUMMARY:${esc(input.summary)}`,
   ];
-  if (input.description) lines.push(`DESCRIPTION:${esc(input.description)}`);
+  const desc = [input.description || "", input.meetingUrl ? `\nJoin video call: ${input.meetingUrl}` : ""].join("").trim();
+  if (desc) lines.push(`DESCRIPTION:${esc(desc)}`);
+  if (input.meetingUrl) {
+    lines.push(`URL:${input.meetingUrl}`);
+    // X-props read by Google Calendar / Outlook to render a "Join" button
+    lines.push(`X-GOOGLE-CONFERENCE:${input.meetingUrl}`);
+    lines.push(`X-MICROSOFT-SKYPETEAMSMEETINGURL:${input.meetingUrl}`);
+  }
   if (input.location) lines.push(`LOCATION:${esc(input.location)}`);
   if (input.organizerEmail) {
     lines.push(

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye } from "lucide-react";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
-import { buildAppointmentIcs } from "@/lib/appointmentIcs";
+import { buildAppointmentIcs, buildMeetingUrl } from "@/lib/appointmentIcs";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -156,12 +156,13 @@ export default function AppointmentsList() {
         ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
         : "";
       const timeStr = appt.scheduled_time || "";
+      const meetingUrl = buildMeetingUrl(appt.id);
 
       const results: string[] = [];
 
       // SMS
       if (appt.customer_phone) {
-        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Reply to this message if you need to reschedule.`;
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Video call link: ${meetingUrl}  Reply to reschedule.`;
         const { error: smsErr } = await supabase.functions.invoke("send-sms", {
           body: { phoneNumber: appt.customer_phone, message: smsBody },
         });
@@ -187,6 +188,7 @@ export default function AppointmentsList() {
           scheduledDate: appt.scheduled_date,
           scheduledTime: appt.scheduled_time,
           durationMinutes: 60,
+          meetingUrl,
         });
 
         const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
@@ -213,6 +215,7 @@ export default function AppointmentsList() {
               scheduledTime: timeStr,
               address: appt.customer_address || "",
               notes: appt.notes || "",
+              meetingUrl,
             },
           },
         });
@@ -248,6 +251,7 @@ export default function AppointmentsList() {
           scheduledDate: appt.scheduled_date,
           scheduledTime: appt.scheduled_time,
           durationMinutes: 60,
+          meetingUrl,
         });
 
         if (companyIcs) {
@@ -273,6 +277,7 @@ export default function AppointmentsList() {
                 scheduledTime: timeStr,
                 address: appt.customer_address || "",
                 notes: appt.notes || "",
+                meetingUrl,
               },
             },
           });
