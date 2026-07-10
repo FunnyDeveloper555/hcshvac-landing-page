@@ -174,6 +174,20 @@ export default function AppointmentsList() {
 
       // Email
       if (appt.customer_email) {
+        const ics = buildAppointmentIcs({
+          uid: appt.id,
+          summary: `Appointment with ${companyName}`,
+          description: appt.notes || `Appointment confirmed by ${companyName}.`,
+          location: appt.customer_address || "",
+          organizerEmail: inviterEmail,
+          organizerName: companyName,
+          attendeeEmail: appt.customer_email,
+          attendeeName: appt.customer_name,
+          scheduledDate: appt.scheduled_date,
+          scheduledTime: appt.scheduled_time,
+          durationMinutes: 60,
+        });
+
         const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: "appointment-confirmation",
@@ -181,6 +195,17 @@ export default function AppointmentsList() {
             idempotencyKey: `appt-confirm-${appt.id}`,
             fromEmail: inviterEmail,
             fromName: companyName,
+            bcc: inviterEmail, // deliver a copy (with calendar invite) to the company mailbox
+            attachments: ics
+              ? [
+                  {
+                    filename: ics.filename,
+                    content: ics.contentBase64,
+                    contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+                    encoding: 'base64',
+                  },
+                ]
+              : undefined,
             templateData: {
               customerName: appt.customer_name,
               companyName,
