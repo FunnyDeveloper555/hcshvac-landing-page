@@ -64,10 +64,12 @@ export interface BuildIcsInput {
   summary: string; // event title
   description?: string;
   location?: string;
+  method?: "REQUEST" | "PUBLISH";
   organizerEmail?: string;
   organizerName?: string;
   attendeeEmail?: string;
   attendeeName?: string;
+  extraAttendees?: Array<{ email: string; name?: string }>;
   scheduledDate: string; // yyyy-mm-dd
   scheduledTime?: string | null;
   durationMinutes?: number; // default 60
