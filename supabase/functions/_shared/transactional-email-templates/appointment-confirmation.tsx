@@ -13,9 +13,10 @@ interface Props {
   scheduledTime?: string
   address?: string
   notes?: string
+  meetingUrl?: string
 }
 
-const AppointmentConfirmation = ({ customerName, companyName, scheduledDate, scheduledTime, address, notes }: Props) => {
+const AppointmentConfirmation = ({ customerName, companyName, scheduledDate, scheduledTime, address, notes, meetingUrl }: Props) => {
   const company = companyName || PARENT_COMPANY
   return (
     <Html lang="en" dir="ltr">
