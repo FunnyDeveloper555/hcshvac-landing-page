@@ -215,6 +215,7 @@ export default function AppointmentsList() {
               scheduledTime: timeStr,
               address: appt.customer_address || "",
               notes: appt.notes || "",
+              meetingUrl,
             },
           },
         });
