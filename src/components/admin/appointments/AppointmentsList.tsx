@@ -172,13 +172,14 @@ export default function AppointmentsList() {
         }
       }
 
-      // Email
+      // Email to customer (with .ics inviting them as attendee)
       if (appt.customer_email) {
         const ics = buildAppointmentIcs({
           uid: appt.id,
           summary: `Appointment with ${companyName}`,
           description: appt.notes || `Appointment confirmed by ${companyName}.`,
           location: appt.customer_address || "",
+          method: "REQUEST",
           organizerEmail: inviterEmail,
           organizerName: companyName,
           attendeeEmail: appt.customer_email,
@@ -195,7 +196,6 @@ export default function AppointmentsList() {
             idempotencyKey: `appt-confirm-${appt.id}`,
             fromEmail: inviterEmail,
             fromName: companyName,
-            bcc: inviterEmail, // deliver a copy (with calendar invite) to the company mailbox
             attachments: ics
               ? [
                   {
@@ -222,6 +222,68 @@ export default function AppointmentsList() {
           results.push("Email");
         }
       }
+
+      // Separate calendar invite TO the company mailbox so MailEnable adds it
+      // to the mailbox calendar. MailEnable/Outlook only auto-process .ics
+      // attachments when the mailbox is a TO recipient AND listed as ATTENDEE.
+      if (inviterEmail) {
+        const companyIcs = buildAppointmentIcs({
+          uid: appt.id,
+          summary: `Appointment: ${appt.customer_name}`,
+          description: [
+            `Customer: ${appt.customer_name}`,
+            appt.customer_phone ? `Phone: ${appt.customer_phone}` : "",
+            appt.customer_email ? `Email: ${appt.customer_email}` : "",
+            appt.notes ? `\nNotes: ${appt.notes}` : "",
+          ].filter(Boolean).join("\n"),
+          location: appt.customer_address || "",
+          method: "REQUEST",
+          organizerEmail: inviterEmail,
+          organizerName: companyName,
+          attendeeEmail: inviterEmail,
+          attendeeName: companyName,
+          extraAttendees: appt.customer_email
+            ? [{ email: appt.customer_email, name: appt.customer_name }]
+            : undefined,
+          scheduledDate: appt.scheduled_date,
+          scheduledTime: appt.scheduled_time,
+          durationMinutes: 60,
+        });
+
+        if (companyIcs) {
+          const { error: companyEmailErr } = await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "appointment-confirmation",
+              recipientEmail: inviterEmail,
+              idempotencyKey: `appt-confirm-company-${appt.id}`,
+              fromEmail: inviterEmail,
+              fromName: companyName,
+              attachments: [
+                {
+                  filename: companyIcs.filename,
+                  content: companyIcs.contentBase64,
+                  contentType: 'text/calendar; charset=utf-8; method=REQUEST',
+                  encoding: 'base64',
+                },
+              ],
+              templateData: {
+                customerName: appt.customer_name,
+                companyName,
+                scheduledDate: dateStr,
+                scheduledTime: timeStr,
+                address: appt.customer_address || "",
+                notes: appt.notes || "",
+              },
+            },
+          });
+          if (companyEmailErr) {
+            console.error("Company calendar email failed", companyEmailErr);
+          } else {
+            results.push("Company Calendar");
+          }
+        }
+      }
+
 
       return { appt, results };
     },
