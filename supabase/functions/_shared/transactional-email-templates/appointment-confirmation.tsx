@@ -53,6 +53,14 @@ const AppointmentConfirmation = ({ customerName, companyName, scheduledDate, sch
             )}
           </Section>
 
+          {meetingUrl && (
+            <Section style={meetingBox}>
+              <Text style={meetingLabel}>Video call link</Text>
+              <a href={meetingUrl} style={meetingLink}>{meetingUrl}</a>
+              <Text style={meetingHint}>Click to join from any browser — no account needed.</Text>
+            </Section>
+          )}
+
           {notes && (
             <Section style={notesBox}>
               <Text style={notesLabel}>Notes</Text>
