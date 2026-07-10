@@ -93,7 +93,7 @@ export function buildAppointmentIcs(input: BuildIcsInput): {
     "VERSION:2.0",
     "PRODID:-//HCS//Appointment Booking//EN",
     "CALSCALE:GREGORIAN",
-    "METHOD:REQUEST",
+    `METHOD:${input.method || "REQUEST"}`,
     "BEGIN:VEVENT",
     `UID:appt-${input.uid}@hcshvac.com`,
     `DTSTAMP:${dtstamp}`,
@@ -112,6 +112,13 @@ export function buildAppointmentIcs(input: BuildIcsInput): {
     lines.push(
       `ATTENDEE;CN=${esc(input.attendeeName || input.attendeeEmail)};RSVP=TRUE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION:mailto:${input.attendeeEmail}`,
     );
+  }
+  if (input.extraAttendees) {
+    for (const a of input.extraAttendees) {
+      lines.push(
+        `ATTENDEE;CN=${esc(a.name || a.email)};RSVP=FALSE;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED:mailto:${a.email}`,
+      );
+    }
   }
   lines.push("STATUS:CONFIRMED", "SEQUENCE:0", "END:VEVENT", "END:VCALENDAR");
 
