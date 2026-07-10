@@ -112,3 +112,7 @@ const notesValue = { fontSize: '14px', color: '#374151', margin: '0', whiteSpace
 const text = { fontSize: '14px', color: '#374151', lineHeight: '1.6', margin: '0 0 16px' }
 const hr = { borderColor: '#e5e7eb', margin: '24px 0' }
 const signature = { fontSize: '14px', color: '#0c2340', fontWeight: '600' as const, lineHeight: '1.5', margin: '8px 0 0' }
+const meetingBox = { backgroundColor: '#eef6ff', borderLeft: '4px solid #2563eb', padding: '12px 16px', margin: '0 0 16px', borderRadius: '4px' }
+const meetingLabel = { fontSize: '11px', textTransform: 'uppercase' as const, color: '#1e40af', letterSpacing: '0.5px', margin: '0 0 4px' }
+const meetingLink = { fontSize: '14px', color: '#2563eb', fontWeight: '600' as const, wordBreak: 'break-all' as const, textDecoration: 'underline' }
+const meetingHint = { fontSize: '12px', color: '#4b5563', margin: '6px 0 0' }
