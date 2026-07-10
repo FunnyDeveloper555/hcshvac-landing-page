@@ -188,6 +188,7 @@ export default function AppointmentsList() {
           scheduledDate: appt.scheduled_date,
           scheduledTime: appt.scheduled_time,
           durationMinutes: 60,
+          meetingUrl,
         });
 
         const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
