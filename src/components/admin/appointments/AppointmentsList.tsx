@@ -251,6 +251,7 @@ export default function AppointmentsList() {
           scheduledDate: appt.scheduled_date,
           scheduledTime: appt.scheduled_time,
           durationMinutes: 60,
+          meetingUrl,
         });
 
         if (companyIcs) {
@@ -276,6 +277,7 @@ export default function AppointmentsList() {
                 scheduledTime: timeStr,
                 address: appt.customer_address || "",
                 notes: appt.notes || "",
+                meetingUrl,
               },
             },
           });
