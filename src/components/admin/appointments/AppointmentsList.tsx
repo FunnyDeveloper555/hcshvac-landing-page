@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye } from "lucide-react";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
-import { buildAppointmentIcs } from "@/lib/appointmentIcs";
+import { buildAppointmentIcs, buildMeetingUrl } from "@/lib/appointmentIcs";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
