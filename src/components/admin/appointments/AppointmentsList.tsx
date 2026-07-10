@@ -156,12 +156,13 @@ export default function AppointmentsList() {
         ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
         : "";
       const timeStr = appt.scheduled_time || "";
+      const meetingUrl = buildMeetingUrl(appt.id);
 
       const results: string[] = [];
 
       // SMS
       if (appt.customer_phone) {
-        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Reply to this message if you need to reschedule.`;
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Video call link: ${meetingUrl}  Reply to reschedule.`;
         const { error: smsErr } = await supabase.functions.invoke("send-sms", {
           body: { phoneNumber: appt.customer_phone, message: smsBody },
         });
