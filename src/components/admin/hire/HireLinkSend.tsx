@@ -88,8 +88,17 @@ export default function HireLinkSend() {
     },
   });
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleQualification = (q: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      qualifications: prev.qualifications.includes(q)
+        ? prev.qualifications.filter((x) => x !== q)
+        : [...prev.qualifications, q],
+    }));
   };
 
   const sendInvitation = useMutation({
