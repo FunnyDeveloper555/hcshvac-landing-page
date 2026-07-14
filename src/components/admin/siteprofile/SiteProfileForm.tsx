@@ -79,7 +79,7 @@ export default function SiteProfileForm() {
                 address: cust.bill_to_address || "",
                 city: cust.bill_to_city || "",
                 state: cust.bill_to_state || "",
-                zip: cust.bill_to_zip || "",
+                zip: cust.bill_to_zip_code || "",
                 phone: cust.business_phone || cust.phone || "",
                 email: cust.email || "",
               }
@@ -91,7 +91,7 @@ export default function SiteProfileForm() {
                 address: cust.ship_to_address || "",
                 city: cust.ship_to_city || "",
                 state: cust.ship_to_state || "",
-                zip: cust.ship_to_zip || "",
+                zip: cust.ship_to_zip_code || "",
                 phone: cust.phone || "",
                 email: cust.email || "",
               }
