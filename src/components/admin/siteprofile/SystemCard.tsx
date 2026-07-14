@@ -61,7 +61,9 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     cooling: "Cooling System",
     sump_pump: "Sump Pump",
     ejector_pump: "Ejector Pump",
+    water_heater: "Water Heater",
   };
+
 
   return (
     <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
