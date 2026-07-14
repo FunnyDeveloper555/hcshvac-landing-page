@@ -566,6 +566,14 @@ export default function AppointmentsList() {
                             <Eye className="h-4 w-4 mr-1" />
                             View Submission
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/admin/site-profiles/new?appointmentId=${appointment.id}`)}
+                          >
+                            <ClipboardList className="h-4 w-4 mr-1" />
+                            Site Profile
+                          </Button>
                           {appointment.status === "open" && (
                             <>
                               <Button
