@@ -117,6 +117,8 @@ export default function HireLinkSend() {
         .from("hire_invitations")
         .insert({
           company_id: formData.companyId,
+          department: formData.department || null,
+          qualifications: formData.qualifications,
           recipient_name: formData.recipientName || null,
           recipient_phone: formData.recipientPhone || null,
           recipient_email: formData.recipientEmail || null,
