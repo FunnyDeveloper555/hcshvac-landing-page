@@ -223,6 +223,41 @@ export default function HireLinkSend() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Select
+                value={formData.department || undefined}
+                onValueChange={(v) => handleChange("department", v)}
+              >
+                <SelectTrigger><SelectValue placeholder="Select a department" /></SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Qualifications</Label>
+              <p className="text-xs text-muted-foreground">Select all that apply</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-md border p-3">
+                {QUALIFICATIONS.map((q) => {
+                  const id = `qual-${q.replace(/\s+/g, "-").toLowerCase()}`;
+                  const checked = formData.qualifications.includes(q);
+                  return (
+                    <div key={q} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={id}
+                        checked={checked}
+                        onCheckedChange={() => toggleQualification(q)}
+                      />
+                      <Label htmlFor={id} className="font-normal cursor-pointer">{q}</Label>
+                    </div>
+                  );
+                })}
+              </div>
+
+            <div className="space-y-2">
               <Label htmlFor="name">Candidate Name (optional)</Label>
               <Input
                 id="name"
