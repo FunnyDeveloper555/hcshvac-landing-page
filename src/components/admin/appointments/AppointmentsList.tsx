@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye, ClipboardList } from "lucide-react";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { buildAppointmentIcs, buildMeetingUrl } from "@/lib/appointmentIcs";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
