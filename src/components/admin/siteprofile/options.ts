@@ -97,3 +97,40 @@ export const SUMP_PHOTO_SLOTS = [
 ];
 
 export const EJECTOR_PHOTO_SLOTS = SUMP_PHOTO_SLOTS;
+
+// Water Heater
+export const WATER_HEATER_TYPES = [
+  "Tank - Natural Gas", "Tank - Propane", "Tank - Electric", "Tank - Oil",
+  "Tankless - Natural Gas", "Tankless - Propane", "Tankless - Electric",
+  "Hybrid / Heat Pump", "Indirect (Boiler)", "Point-of-Use",
+];
+
+export const WATER_HEATER_CAPACITY = [
+  "20 Gallon", "30 Gallon", "40 Gallon", "50 Gallon", "55 Gallon",
+  "65 Gallon", "75 Gallon", "80 Gallon", "100 Gallon", "119 Gallon",
+  "Tankless (GPM)", "Other",
+];
+
+export const WATER_HEATER_VENT = [
+  "Atmospheric", "Power Vent", "Direct Vent", "Power Direct Vent",
+  "Condensing", "Electric (None)", "Other",
+];
+
+export const WATER_HEATER_LOCATION = [
+  "Basement", "Utility Closet", "Garage", "Attic",
+  "Crawl Space", "Mechanical Room", "Exterior", "Other",
+];
+
+export const WATER_HEATER_PHOTO_SLOTS = [
+  { key: "label_plate", label: "Label Plate" },
+  { key: "full_view", label: "Full View" },
+  { key: "top_connections", label: "Top / Connections" },
+  { key: "gas_electric_supply", label: "Gas / Electric Supply" },
+  { key: "flue_at_unit", label: "Flue / Vent At Unit" },
+  { key: "flue_termination", label: "Flue / Vent Termination" },
+  { key: "expansion_tank", label: "Expansion Tank" },
+  { key: "tp_relief", label: "T&P Relief / Drain" },
+  { key: "shutoff_valve", label: "Shutoff Valve" },
+  { key: "pan_drain", label: "Drip Pan / Drain" },
+];
+
