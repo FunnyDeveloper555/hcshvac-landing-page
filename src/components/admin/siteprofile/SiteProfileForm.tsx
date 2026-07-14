@@ -121,7 +121,7 @@ export default function SiteProfileForm() {
           const { data: created, error } = await supabase
             .from("site_profiles")
             .insert({
-              customer_id: customerId,
+              customer_id: resolvedCustomerId,
               appointment_id: appointmentId,
               location_type: cust?.location_type || "residential",
               bill_to,
