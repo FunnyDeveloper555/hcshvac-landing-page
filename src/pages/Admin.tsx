@@ -55,6 +55,8 @@ import CustomersAdd from "@/components/admin/CustomersAdd";
 import DiagnosticFeesList from "@/components/admin/DiagnosticFeesList";
 import DiagnosticFeesAdd from "@/components/admin/DiagnosticFeesAdd";
 import CustomersList from "@/components/admin/CustomersList";
+import SiteProfileForm from "@/components/admin/siteprofile/SiteProfileForm";
+import SiteProfilesList from "@/components/admin/siteprofile/SiteProfilesList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
