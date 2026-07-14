@@ -3461,10 +3461,12 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          department: string | null
           expires_at: string | null
           id: string
           notes: string | null
           opened_at: string | null
+          qualifications: string[]
           recipient_email: string | null
           recipient_name: string | null
           recipient_phone: string | null
@@ -3479,10 +3481,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          department?: string | null
           expires_at?: string | null
           id?: string
           notes?: string | null
           opened_at?: string | null
+          qualifications?: string[]
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_phone?: string | null
@@ -3497,10 +3501,12 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
+          department?: string | null
           expires_at?: string | null
           id?: string
           notes?: string | null
           opened_at?: string | null
+          qualifications?: string[]
           recipient_email?: string | null
           recipient_name?: string | null
           recipient_phone?: string | null
@@ -4971,10 +4977,12 @@ export type Database = {
           completed_at: string | null
           created_at: string
           created_by: string | null
+          department: string | null
           expires_at: string | null
           id: string
           notes: string | null
           opened_at: string | null
+          qualifications: string[]
           recipient_email: string | null
           recipient_name: string | null
           recipient_phone: string | null
