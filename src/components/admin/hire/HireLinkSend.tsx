@@ -256,6 +256,8 @@ export default function HireLinkSend() {
                   );
                 })}
               </div>
+            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="name">Candidate Name (optional)</Label>
