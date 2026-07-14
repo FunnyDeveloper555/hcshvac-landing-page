@@ -10,10 +10,13 @@ import {
   ENERGY_SUPPLY, VOLTAGE_OPTIONS, BTU_KW, AGE_OPTIONS, THERMOSTAT_OPTIONS,
   COOLING_LOCATION, COOLING_ACCESS, COOLING_MOUNTING,
   HP_OPTIONS, PIPE_OPTIONS,
+  WATER_HEATER_TYPES, WATER_HEATER_CAPACITY, WATER_HEATER_VENT, WATER_HEATER_LOCATION,
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
+  WATER_HEATER_PHOTO_SLOTS,
 } from "./options";
 
-export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump";
+export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
+
 
 export interface SystemRow {
   id: string;
