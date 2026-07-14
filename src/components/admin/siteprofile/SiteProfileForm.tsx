@@ -63,13 +63,34 @@ export default function SiteProfileForm() {
         setCompanies(co || []);
 
         let pid = urlProfileId;
+        let resolvedCustomerId = customerId;
 
-        if (!pid && customerId) {
+        // If only appointmentId provided, resolve customer by phone
+        if (!pid && !resolvedCustomerId && appointmentId) {
+          const { data: appt } = await supabase
+            .from("appointments")
+            .select("customer_phone")
+            .eq("id", appointmentId)
+            .maybeSingle();
+          if (appt?.customer_phone) {
+            const digits = appt.customer_phone.replace(/\D/g, "").slice(-10);
+            const { data: matches } = await supabase
+              .from("customer_registrations")
+              .select("id, phone")
+              .limit(50);
+            const found = (matches || []).find(
+              (m: any) => (m.phone || "").replace(/\D/g, "").slice(-10) === digits
+            );
+            if (found) resolvedCustomerId = found.id;
+          }
+        }
+
+        if (!pid && resolvedCustomerId) {
           // Snapshot customer info
           const { data: cust } = await supabase
             .from("customer_registrations")
             .select("*")
-            .eq("id", customerId)
+            .eq("id", resolvedCustomerId)
             .maybeSingle();
 
           const bill_to = cust
