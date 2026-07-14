@@ -181,6 +181,9 @@ const Admin = () => {
               <Route path="/customers/list" element={<CustomersList />} />
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
+              <Route path="/site-profiles/list" element={<SiteProfilesList />} />
+              <Route path="/site-profiles/new" element={<SiteProfileForm />} />
+              <Route path="/site-profiles/edit" element={<SiteProfileForm />} />
               <Route path="/appointments/open" element={<AppointmentsList />} />
               <Route path="/appointments/closed" element={<AppointmentsList />} />
               <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />
