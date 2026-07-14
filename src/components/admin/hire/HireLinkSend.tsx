@@ -7,14 +7,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Send, UserPlus, Mail, MessageSquare, Loader2 } from "lucide-react";
 
+const DEPARTMENTS = [
+  "Service",
+  "Installation",
+  "Estimates / Sales",
+  "Maintenance",
+  "Dispatch / Office",
+  "Warehouse",
+  "Management",
+];
+
+const QUALIFICATIONS = [
+  "Residential Service Tech",
+  "Commercial Service Tech",
+  "Residential Install Tech",
+  "Commercial Install Tech",
+  "Residential Estimates",
+  "Commercial Estimates",
+  "Maintenance Tech",
+  "Apprentice / Helper",
+  "Dispatcher",
+  "Customer Service Rep",
+  "Office Administrator",
+  "Warehouse / Parts",
+];
+
 interface FormData {
   companyId: string;
+  department: string;
+  qualifications: string[];
   recipientName: string;
   recipientPhone: string;
   recipientEmail: string;
@@ -24,6 +52,8 @@ interface FormData {
 
 const initialFormData: FormData = {
   companyId: "",
+  department: "",
+  qualifications: [],
   recipientName: "",
   recipientPhone: "",
   recipientEmail: "",
