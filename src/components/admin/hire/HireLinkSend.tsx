@@ -7,14 +7,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Send, UserPlus, Mail, MessageSquare, Loader2 } from "lucide-react";
 
+const DEPARTMENTS = [
+  "Service",
+  "Installation",
+  "Estimates / Sales",
+  "Maintenance",
+  "Dispatch / Office",
+  "Warehouse",
+  "Management",
+];
+
+const QUALIFICATIONS = [
+  "Residential Service Tech",
+  "Commercial Service Tech",
+  "Residential Install Tech",
+  "Commercial Install Tech",
+  "Residential Estimates",
+  "Commercial Estimates",
+  "Maintenance Tech",
+  "Apprentice / Helper",
+  "Dispatcher",
+  "Customer Service Rep",
+  "Office Administrator",
+  "Warehouse / Parts",
+];
+
 interface FormData {
   companyId: string;
+  department: string;
+  qualifications: string[];
   recipientName: string;
   recipientPhone: string;
   recipientEmail: string;
@@ -24,6 +52,8 @@ interface FormData {
 
 const initialFormData: FormData = {
   companyId: "",
+  department: "",
+  qualifications: [],
   recipientName: "",
   recipientPhone: "",
   recipientEmail: "",
@@ -58,8 +88,17 @@ export default function HireLinkSend() {
     },
   });
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleQualification = (q: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      qualifications: prev.qualifications.includes(q)
+        ? prev.qualifications.filter((x) => x !== q)
+        : [...prev.qualifications, q],
+    }));
   };
 
   const sendInvitation = useMutation({
@@ -78,6 +117,8 @@ export default function HireLinkSend() {
         .from("hire_invitations")
         .insert({
           company_id: formData.companyId,
+          department: formData.department || null,
+          qualifications: formData.qualifications,
           recipient_name: formData.recipientName || null,
           recipient_phone: formData.recipientPhone || null,
           recipient_email: formData.recipientEmail || null,
@@ -180,6 +221,43 @@ export default function HireLinkSend() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Select
+                value={formData.department || undefined}
+                onValueChange={(v) => handleChange("department", v)}
+              >
+                <SelectTrigger><SelectValue placeholder="Select a department" /></SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Qualifications</Label>
+              <p className="text-xs text-muted-foreground">Select all that apply</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-md border p-3">
+                {QUALIFICATIONS.map((q) => {
+                  const id = `qual-${q.replace(/\s+/g, "-").toLowerCase()}`;
+                  const checked = formData.qualifications.includes(q);
+                  return (
+                    <div key={q} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={id}
+                        checked={checked}
+                        onCheckedChange={() => toggleQualification(q)}
+                      />
+                      <Label htmlFor={id} className="font-normal cursor-pointer">{q}</Label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="name">Candidate Name (optional)</Label>
