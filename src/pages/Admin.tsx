@@ -55,6 +55,8 @@ import CustomersAdd from "@/components/admin/CustomersAdd";
 import DiagnosticFeesList from "@/components/admin/DiagnosticFeesList";
 import DiagnosticFeesAdd from "@/components/admin/DiagnosticFeesAdd";
 import CustomersList from "@/components/admin/CustomersList";
+import SiteProfileForm from "@/components/admin/siteprofile/SiteProfileForm";
+import SiteProfilesList from "@/components/admin/siteprofile/SiteProfilesList";
 import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
@@ -179,6 +181,9 @@ const Admin = () => {
               <Route path="/customers/list" element={<CustomersList />} />
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
+              <Route path="/site-profiles/list" element={<SiteProfilesList />} />
+              <Route path="/site-profiles/new" element={<SiteProfileForm />} />
+              <Route path="/site-profiles/edit" element={<SiteProfileForm />} />
               <Route path="/appointments/open" element={<AppointmentsList />} />
               <Route path="/appointments/closed" element={<AppointmentsList />} />
               <Route path="/appointments/calendar" element={<AppointmentsCalendar />} />

@@ -1098,6 +1098,15 @@ const CustomersAdd = () => {
               Book Appointment
             </Button>
           )}
+          {isEditing && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate(`/admin/site-profiles/new?customerId=${editId}`)}
+            >
+              Site Profile
+            </Button>
+          )}
           <Button type="button" disabled={saving} onClick={handleSubmit}>
             {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {isEditing ? "Update Customer" : "Create Customer"}

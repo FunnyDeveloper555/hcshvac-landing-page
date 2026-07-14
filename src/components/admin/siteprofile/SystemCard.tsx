@@ -1,0 +1,156 @@
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Trash2 } from "lucide-react";
+import PhotoSlot from "./PhotoSlot";
+import {
+  HEATING_TYPES, POISE_OPTIONS, WIDTH_OPTIONS, AFUE_OPTIONS, STAGE_OPTIONS,
+  ENERGY_SUPPLY, VOLTAGE_OPTIONS, BTU_KW, AGE_OPTIONS, THERMOSTAT_OPTIONS,
+  COOLING_LOCATION, COOLING_ACCESS, COOLING_MOUNTING,
+  HP_OPTIONS, PIPE_OPTIONS,
+  HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
+} from "./options";
+
+export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump";
+
+export interface SystemRow {
+  id: string;
+  kind: SystemKind;
+  index: number;
+  data: Record<string, any>;
+}
+
+interface Props {
+  profileId: string;
+  system: SystemRow;
+  onChange: (data: Record<string, any>) => void;
+  onDelete: () => void;
+}
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="space-y-1">
+    <Label className="text-xs">{label}</Label>
+    {children}
+  </div>
+);
+
+const SelectField = ({
+  value, onChange, options, placeholder,
+}: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
+}) => (
+  <Select value={value || ""} onValueChange={onChange}>
+    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={placeholder || "Select"} /></SelectTrigger>
+    <SelectContent>
+      {options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+    </SelectContent>
+  </Select>
+);
+
+export default function SystemCard({ profileId, system, onChange, onDelete }: Props) {
+  const d = system.data || {};
+  const set = (k: string, v: any) => onChange({ ...d, [k]: v });
+
+  const kindLabel: Record<SystemKind, string> = {
+    heating: "Heating System",
+    cooling: "Cooling System",
+    sump_pump: "Sump Pump",
+    ejector_pump: "Ejector Pump",
+  };
+
+  return (
+    <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-sm">{kindLabel[system.kind]} #{system.index}</h4>
+        <Button size="sm" variant="ghost" onClick={onDelete} type="button">
+          <Trash2 className="h-3 w-3 text-destructive" />
+        </Button>
+      </div>
+
+      {system.kind === "heating" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Type"><SelectField value={d.type} onChange={(v) => set("type", v)} options={HEATING_TYPES} /></Field>
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="Serial #"><Input className="h-8 text-xs" value={d.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} /></Field>
+            <Field label="Poise"><SelectField value={d.poise} onChange={(v) => set("poise", v)} options={POISE_OPTIONS} /></Field>
+            <Field label="Width"><SelectField value={d.width} onChange={(v) => set("width", v)} options={WIDTH_OPTIONS} /></Field>
+            <Field label="AFUE"><SelectField value={d.afue} onChange={(v) => set("afue", v)} options={AFUE_OPTIONS} /></Field>
+            <Field label="Stage"><SelectField value={d.stage} onChange={(v) => set("stage", v)} options={STAGE_OPTIONS} /></Field>
+            <Field label="Energy Supply"><SelectField value={d.energy_supply} onChange={(v) => set("energy_supply", v)} options={ENERGY_SUPPLY} /></Field>
+            <Field label="Voltage"><SelectField value={d.voltage} onChange={(v) => set("voltage", v)} options={VOLTAGE_OPTIONS} /></Field>
+            <Field label="BTU / KW"><SelectField value={d.btu_kw} onChange={(v) => set("btu_kw", v)} options={BTU_KW} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Thermostat"><SelectField value={d.thermostat} onChange={(v) => set("thermostat", v)} options={THERMOSTAT_OPTIONS} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
+
+      {system.kind === "cooling" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="Serial #"><Input className="h-8 text-xs" value={d.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Location"><SelectField value={d.location} onChange={(v) => set("location", v)} options={COOLING_LOCATION} /></Field>
+            <Field label="Access"><SelectField value={d.access} onChange={(v) => set("access", v)} options={COOLING_ACCESS} /></Field>
+            <Field label="Mounting"><SelectField value={d.mounting} onChange={(v) => set("mounting", v)} options={COOLING_MOUNTING} /></Field>
+            <Field label="Voltage"><SelectField value={d.voltage} onChange={(v) => set("voltage", v)} options={VOLTAGE_OPTIONS} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
+
+      {(system.kind === "sump_pump" || system.kind === "ejector_pump") && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="HP"><SelectField value={d.hp} onChange={(v) => set("hp", v)} options={HP_OPTIONS} /></Field>
+            <Field label="Pipe Size"><SelectField value={d.pipe_size} onChange={(v) => set("pipe_size", v)} options={PIPE_OPTIONS} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Voltage"><SelectField value={d.voltage} onChange={(v) => set("voltage", v)} options={VOLTAGE_OPTIONS} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
+
+      <div>
+        <Label className="text-xs font-semibold">Photos</Label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+          {(system.kind === "heating" ? HEATING_PHOTO_SLOTS
+            : system.kind === "cooling" ? COOLING_PHOTO_SLOTS
+            : system.kind === "sump_pump" ? SUMP_PHOTO_SLOTS
+            : EJECTOR_PHOTO_SLOTS
+          ).map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+            />
+          ))}
+          <PhotoSlot
+            profileId={profileId}
+            systemId={system.id}
+            slotKey="item_of_concern"
+            label="Item of Concern"
+            allowCustomTitle
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -83,6 +83,13 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Site Profiles",
+    icon: ClipboardList,
+    children: [
+      { title: "List", url: "/admin/site-profiles/list", icon: List },
+    ]
+  },
+  {
     title: "SMS Link",
     icon: MessageSquare,
     children: [

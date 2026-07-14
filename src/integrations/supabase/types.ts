@@ -4719,6 +4719,226 @@ export type Database = {
         }
         Relationships: []
       }
+      site_profile_photos: {
+        Row: {
+          component_slot: string
+          content_type: string | null
+          created_at: string
+          id: string
+          profile_id: string
+          public_url: string | null
+          size_bytes: number | null
+          slot_about: string | null
+          slot_title: string | null
+          storage_path: string
+          system_id: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          component_slot: string
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          profile_id: string
+          public_url?: string | null
+          size_bytes?: number | null
+          slot_about?: string | null
+          slot_title?: string | null
+          storage_path: string
+          system_id?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          component_slot?: string
+          content_type?: string | null
+          created_at?: string
+          id?: string
+          profile_id?: string
+          public_url?: string | null
+          size_bytes?: number | null
+          slot_about?: string | null
+          slot_title?: string | null
+          storage_path?: string
+          system_id?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_profile_photos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "site_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_profile_photos_system_id_fkey"
+            columns: ["system_id"]
+            isOneToOne: false
+            referencedRelation: "site_profile_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_profile_systems: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          notes: string | null
+          profile_id: string
+          sort_order: number
+          system_kind: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          notes?: string | null
+          profile_id: string
+          sort_order?: number
+          system_kind: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          sort_order?: number
+          system_kind?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_profile_systems_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "site_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_profiles: {
+        Row: {
+          appointment_id: string | null
+          assigned_company_id: string | null
+          assigned_to: string | null
+          bill_to: Json | null
+          booking_method: string | null
+          created_at: string
+          created_by: string | null
+          customer_deemed_status: string | null
+          customer_id: string | null
+          entered_by: string | null
+          equipment_location: string | null
+          equipment_type: string | null
+          id: string
+          job_number: string | null
+          location_type: string | null
+          mdu: boolean | null
+          notes: string | null
+          primary_contact: Json | null
+          profile_type: string
+          secondary_contact: Json | null
+          session_id: string | null
+          ship_to: Json | null
+          status: string
+          submitted_at: string | null
+          ticket_status: string | null
+          updated_at: string
+          visit_type: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          assigned_company_id?: string | null
+          assigned_to?: string | null
+          bill_to?: Json | null
+          booking_method?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_deemed_status?: string | null
+          customer_id?: string | null
+          entered_by?: string | null
+          equipment_location?: string | null
+          equipment_type?: string | null
+          id?: string
+          job_number?: string | null
+          location_type?: string | null
+          mdu?: boolean | null
+          notes?: string | null
+          primary_contact?: Json | null
+          profile_type?: string
+          secondary_contact?: Json | null
+          session_id?: string | null
+          ship_to?: Json | null
+          status?: string
+          submitted_at?: string | null
+          ticket_status?: string | null
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          assigned_company_id?: string | null
+          assigned_to?: string | null
+          bill_to?: Json | null
+          booking_method?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_deemed_status?: string | null
+          customer_id?: string | null
+          entered_by?: string | null
+          equipment_location?: string | null
+          equipment_type?: string | null
+          id?: string
+          job_number?: string | null
+          location_type?: string | null
+          mdu?: boolean | null
+          notes?: string | null
+          primary_contact?: Json | null
+          profile_type?: string
+          secondary_contact?: Json | null
+          session_id?: string | null
+          ship_to?: Json | null
+          status?: string
+          submitted_at?: string | null
+          ticket_status?: string | null
+          updated_at?: string
+          visit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_profiles_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_profiles_assigned_company_id_fkey"
+            columns: ["assigned_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_profiles_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
