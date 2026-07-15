@@ -143,28 +143,9 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid grid-cols-2 gap-2">
         {rows.map((r) => (
-          <div key={r.id} className="relative group">
-            {signed[r.id] ? (
-              <img src={signed[r.id]} className="w-full h-16 object-cover rounded" alt={label} />
-            ) : (
-              <div className="w-full h-16 bg-muted animate-pulse rounded" />
-            )}
-            <button
-              type="button"
-              onClick={() => remove(r)}
-              className="absolute top-0.5 right-0.5 p-0.5 bg-destructive text-destructive-foreground rounded opacity-0 group-hover:opacity-100"
-              title="Remove"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-            {(r.slot_title || r.slot_about) && (
-              <div className="text-[10px] mt-0.5 truncate" title={`${r.slot_title || ""} ${r.slot_about || ""}`}>
-                {r.slot_title} {r.slot_about ? `— ${r.slot_about}` : ""}
-              </div>
-            )}
-          </div>
+          <PhotoItem key={r.id} row={r} url={signed[r.id]} label={label} onRemove={() => remove(r)} onReload={load} />
         ))}
         {rows.length === 0 && (
           <div className="col-span-2 text-[10px] text-muted-foreground text-center py-2 border-dashed border rounded">
@@ -175,3 +156,80 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
     </div>
   );
 }
+
+function PhotoItem({
+  row,
+  url,
+  label,
+  onRemove,
+  onReload,
+}: {
+  row: PhotoRow;
+  url?: string;
+  label: string;
+  onRemove: () => void;
+  onReload: () => void;
+}) {
+  const { toast } = useToast();
+  const [note, setNote] = useState<string>(row.slot_about || "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setNote(row.slot_about || "");
+  }, [row.slot_about]);
+
+  const saveNote = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("site_profile_photos")
+      .update({ slot_about: note || null })
+      .eq("id", row.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Note saved" });
+      onReload();
+    }
+  };
+
+  return (
+    <div className="relative group border rounded p-1 bg-background">
+      {url ? (
+        <img src={url} className="w-full h-20 object-cover rounded" alt={label} />
+      ) : (
+        <div className="w-full h-20 bg-muted animate-pulse rounded" />
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-1 right-1 p-0.5 bg-destructive text-destructive-foreground rounded opacity-0 group-hover:opacity-100"
+        title="Remove"
+      >
+        <Trash2 className="h-3 w-3" />
+      </button>
+      {row.slot_title && (
+        <div className="text-[10px] mt-1 truncate font-medium" title={row.slot_title}>
+          {row.slot_title}
+        </div>
+      )}
+      <Textarea
+        className="text-[11px] min-h-[44px] mt-1"
+        placeholder="Note about this photo..."
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="h-6 px-2 mt-1 w-full text-[10px]"
+        onClick={saveNote}
+        disabled={saving || note === (row.slot_about || "")}
+      >
+        {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save note</>}
+      </Button>
+    </div>
+  );
+}
+
