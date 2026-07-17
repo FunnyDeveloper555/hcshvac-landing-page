@@ -117,7 +117,7 @@ export default function SMSLinkSend() {
 
       // Build booking URL
       const baseUrl = window.location.origin;
-      const bookingUrl = `${baseUrl}/book/${invitation.token}`;
+      const bookingUrl = `${baseUrl}/book/${invitation.token}?mode=${formData.linkType}`;
 
       // Send SMS if needed
       if (formData.sendMethod === "sms" || formData.sendMethod === "both") {
