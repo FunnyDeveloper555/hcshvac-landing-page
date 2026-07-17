@@ -176,10 +176,10 @@ export default function SMSLinkSend() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5" />
-            Send SMS/Email Booking Link
+            Send Registration / Booking Link
           </CardTitle>
           <CardDescription>
-            Send a booking link to a new or existing customer via SMS or Email
+            Send a link to a new or existing customer so they can register their profile and (optionally) book an appointment. Submissions appear in the Customers List.
           </CardDescription>
         </CardHeader>
         <CardContent>
