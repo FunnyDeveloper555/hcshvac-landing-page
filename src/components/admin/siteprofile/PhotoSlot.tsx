@@ -30,6 +30,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     let q = supabase
