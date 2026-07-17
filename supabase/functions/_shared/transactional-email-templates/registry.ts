@@ -17,6 +17,7 @@ import { template as applicantPortalInvite } from './applicant-portal-invite.tsx
 import { template as hireApplicationInvite } from './hire-application-invite.tsx'
 import { template as bookingInvite } from './booking-invite.tsx'
 import { template as appointmentConfirmation } from './appointment-confirmation.tsx'
+import { template as customerRegistrationInvite } from './customer-registration-invite.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
@@ -27,5 +28,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'hire-application-invite': hireApplicationInvite,
   'booking-invite': bookingInvite,
   'appointment-confirmation': appointmentConfirmation,
+  'customer-registration-invite': customerRegistrationInvite,
 }
 

@@ -144,7 +144,7 @@ export default function SMSLinkSend() {
       if (formData.sendMethod === "email" || formData.sendMethod === "both") {
         const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
           body: {
-            templateName: "booking-invite",
+            templateName: formData.linkType === "registration" ? "customer-registration-invite" : "booking-invite",
             recipientEmail: formData.recipientEmail,
             idempotencyKey: `booking-invite-${invitation.id}`,
             templateData: {
