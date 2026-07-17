@@ -15,6 +15,7 @@ import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
 
 interface FormData {
   companyId: string;
+  linkType: "registration" | "booking";
   invitationType: "residential" | "commercial";
   customerType: "new" | "existing";
   recipientPhone: string;
@@ -25,6 +26,7 @@ interface FormData {
 
 const initialFormData: FormData = {
   companyId: "",
+  linkType: "registration",
   invitationType: "residential",
   customerType: "new",
   recipientPhone: "",
@@ -39,6 +41,7 @@ export default function SMSLinkSend() {
   const prefillEmail = searchParams.get("email") || "";
   const prefillType = searchParams.get("type");
   const prefillCustomerType = searchParams.get("customerType");
+  const prefillLinkType = searchParams.get("linkType");
   const isLocked = searchParams.get("lock") === "1";
   const isCustomerSource = searchParams.get("source") === "customer";
 
@@ -46,6 +49,7 @@ export default function SMSLinkSend() {
     ...initialFormData,
     recipientPhone: prefillPhone,
     recipientEmail: prefillEmail,
+    linkType: prefillLinkType === "booking" ? "booking" : "registration",
     invitationType: prefillType === "commercial" ? "commercial" : "residential",
     customerType: prefillCustomerType === "existing" ? "existing" : "new",
     sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
@@ -113,7 +117,7 @@ export default function SMSLinkSend() {
 
       // Build booking URL
       const baseUrl = window.location.origin;
-      const bookingUrl = `${baseUrl}/book/${invitation.token}`;
+      const bookingUrl = `${baseUrl}/book/${invitation.token}?mode=${formData.linkType}`;
 
       // Send SMS if needed
       if (formData.sendMethod === "sms" || formData.sendMethod === "both") {
@@ -236,6 +240,28 @@ export default function SMSLinkSend() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Link Type */}
+            <div className="space-y-2">
+              <Label>Link Type</Label>
+              <RadioGroup
+                value={formData.linkType}
+                onValueChange={(value) => handleChange("linkType", value)}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="registration" id="link-registration" />
+                  <Label htmlFor="link-registration">Customer Registration</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="booking" id="link-booking" />
+                  <Label htmlFor="link-booking">Booking Appointment</Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground">
+                Registration collects profile only. Booking also schedules an appointment.
+              </p>
             </div>
 
             {/* Customer Type */}
