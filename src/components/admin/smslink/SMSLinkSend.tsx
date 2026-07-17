@@ -154,7 +154,9 @@ export default function SMSLinkSend() {
               notes: formData.notes || undefined,
             },
             companyId: formData.companyId,
-            ...(isCustomerSource ? { fromEmail: "master@hcshvac.com", fromName: "HCS HVAC" } : {}),
+            ...((isCustomerSource || formData.linkType === "registration")
+              ? { fromEmail: "master@hcshvac.com", fromName: "HCS HVAC" }
+              : {}),
           },
         });
 
