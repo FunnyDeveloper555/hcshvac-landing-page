@@ -242,6 +242,28 @@ export default function SMSLinkSend() {
               </Select>
             </div>
 
+            {/* Link Type */}
+            <div className="space-y-2">
+              <Label>Link Type</Label>
+              <RadioGroup
+                value={formData.linkType}
+                onValueChange={(value) => handleChange("linkType", value)}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="registration" id="link-registration" />
+                  <Label htmlFor="link-registration">Customer Registration</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="booking" id="link-booking" />
+                  <Label htmlFor="link-booking">Booking Appointment</Label>
+                </div>
+              </RadioGroup>
+              <p className="text-xs text-muted-foreground">
+                Registration collects profile only. Booking also schedules an appointment.
+              </p>
+            </div>
+
             {/* Customer Type */}
             <div className="space-y-2">
               <Label>Customer Type</Label>
