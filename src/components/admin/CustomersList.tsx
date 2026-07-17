@@ -181,7 +181,7 @@ const CustomersList = () => {
           </span>
           <Button
             size="sm"
-            onClick={() => navigate("/admin/sms-link/send?customerType=new")}
+            onClick={() => navigate("/admin/sms-link/send?customerType=new&source=customer")}
           >
             <Send className="mr-2 h-4 w-4" /> Send Registration Link
           </Button>
@@ -301,7 +301,7 @@ const CustomersList = () => {
                         <DropdownMenuItem
                           onClick={() =>
                             navigate(
-                              `/admin/sms-link/send?phone=${encodeURIComponent(customer.phone || "")}&email=${encodeURIComponent(customer.email || "")}&type=${customer.location_type}&customerType=existing&lock=1`
+                              `/admin/sms-link/send?phone=${encodeURIComponent(customer.phone || "")}&email=${encodeURIComponent(customer.email || "")}&type=${customer.location_type}&customerType=existing&lock=1&source=customer`
                             )
                           }
                         >

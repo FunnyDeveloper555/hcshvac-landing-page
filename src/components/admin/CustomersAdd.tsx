@@ -1121,7 +1121,7 @@ const CustomersAdd = () => {
               className="ml-auto"
               onClick={() =>
                 navigate(
-                  `/admin/sms-link/send?phone=${encodeURIComponent(formData.phone || "")}&email=${encodeURIComponent(formData.email || "")}&type=${formData.location_type}&customerType=existing&lock=1`
+                  `/admin/sms-link/send?phone=${encodeURIComponent(formData.phone || "")}&email=${encodeURIComponent(formData.email || "")}&type=${formData.location_type}&customerType=existing&lock=1&source=customer`
                 )
               }
             >
