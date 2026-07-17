@@ -175,9 +175,17 @@ const CustomersList = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold">Customers List</h2>
-        <span className="text-muted-foreground">
-          {filteredCustomers.length} of {customers?.length || 0} customers
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-muted-foreground">
+            {filteredCustomers.length} of {customers?.length || 0} customers
+          </span>
+          <Button
+            size="sm"
+            onClick={() => navigate("/admin/sms-link/send?customerType=new")}
+          >
+            <Send className="mr-2 h-4 w-4" /> Send Registration Link
+          </Button>
+        </div>
       </div>
 
       <CustomersSearch onSearch={handleSearch} onClear={handleClearSearch} />
