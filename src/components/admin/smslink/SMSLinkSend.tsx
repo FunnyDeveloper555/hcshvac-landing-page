@@ -40,6 +40,7 @@ export default function SMSLinkSend() {
   const prefillType = searchParams.get("type");
   const prefillCustomerType = searchParams.get("customerType");
   const isLocked = searchParams.get("lock") === "1";
+  const isCustomerSource = searchParams.get("source") === "customer";
 
   const [formData, setFormData] = useState<FormData>({
     ...initialFormData,
