@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2, Upload, Loader2, Save } from "lucide-react";
+import { Camera, Trash2, Upload, Loader2, Save, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -30,6 +30,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     let q = supabase
@@ -90,6 +91,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+      if (cameraRef.current) cameraRef.current.value = "";
     }
   };
 
@@ -106,10 +108,17 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         <div className="text-xs font-medium truncate">{label}</div>
         <div className="flex gap-1">
           <input
-            ref={fileRef}
+            ref={cameraRef}
             type="file"
             accept="image/*"
             capture="environment"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
+          />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
             className="hidden"
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
           />
@@ -119,9 +128,21 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
             variant="outline"
             className="h-7 px-2"
             disabled={uploading}
-            onClick={() => fileRef.current?.click()}
+            onClick={() => cameraRef.current?.click()}
+            title="Take photo"
           >
             {uploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 px-2"
+            disabled={uploading}
+            onClick={() => fileRef.current?.click()}
+            title="Choose from gallery"
+          >
+            <ImageIcon className="h-3 w-3" />
           </Button>
         </div>
       </div>
