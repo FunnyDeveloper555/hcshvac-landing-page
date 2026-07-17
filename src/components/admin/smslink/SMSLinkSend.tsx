@@ -135,7 +135,39 @@ export default function SMSLinkSend() {
         }
       }
 
-      // TODO: Email sending can be added later with Resend
+      // Send Email if needed
+      if (formData.sendMethod === "email" || formData.sendMethod === "both") {
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "booking-invite",
+            recipientEmail: formData.recipientEmail,
+            idempotencyKey: `booking-invite-${invitation.id}`,
+            templateData: {
+              customerName: "",
+              companyName,
+              bookingUrl,
+              notes: formData.notes || undefined,
+            },
+            companyId: formData.companyId,
+          },
+        });
+
+        if (emailError) {
+          console.error("Email Error:", emailError);
+          throw new Error("Failed to send email: " + emailError.message);
+        }
+        if (emailResult?.error) {
+          throw new Error("Email Error: " + emailResult.error);
+        }
+
+        // Mark invitation as sent if only email was used
+        if (formData.sendMethod === "email") {
+          await supabase
+            .from("booking_invitations")
+            .update({ status: "sent", sent_at: new Date().toISOString() })
+            .eq("id", invitation.id);
+        }
+      }
 
       return invitation;
     },
