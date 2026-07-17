@@ -15,6 +15,7 @@ import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
 
 interface FormData {
   companyId: string;
+  linkType: "registration" | "booking";
   invitationType: "residential" | "commercial";
   customerType: "new" | "existing";
   recipientPhone: string;
@@ -25,6 +26,7 @@ interface FormData {
 
 const initialFormData: FormData = {
   companyId: "",
+  linkType: "registration",
   invitationType: "residential",
   customerType: "new",
   recipientPhone: "",
