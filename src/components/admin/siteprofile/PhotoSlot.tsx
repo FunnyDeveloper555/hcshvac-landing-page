@@ -91,6 +91,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+      if (cameraRef.current) cameraRef.current.value = "";
     }
   };
 
