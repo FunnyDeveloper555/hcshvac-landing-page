@@ -41,6 +41,7 @@ export default function SMSLinkSend() {
   const prefillEmail = searchParams.get("email") || "";
   const prefillType = searchParams.get("type");
   const prefillCustomerType = searchParams.get("customerType");
+  const prefillLinkType = searchParams.get("linkType");
   const isLocked = searchParams.get("lock") === "1";
   const isCustomerSource = searchParams.get("source") === "customer";
 
@@ -48,6 +49,7 @@ export default function SMSLinkSend() {
     ...initialFormData,
     recipientPhone: prefillPhone,
     recipientEmail: prefillEmail,
+    linkType: prefillLinkType === "booking" ? "booking" : "registration",
     invitationType: prefillType === "commercial" ? "commercial" : "residential",
     customerType: prefillCustomerType === "existing" ? "existing" : "new",
     sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
