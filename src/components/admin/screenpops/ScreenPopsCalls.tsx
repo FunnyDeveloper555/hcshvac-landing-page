@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Phone, Eye, Search } from "lucide-react";
 
 type CallRow = {
@@ -29,6 +31,15 @@ export default function ScreenPopsCalls() {
   const [rows, setRows] = useState<CallRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
+  const [autoPop, setAutoPop] = useState<boolean>(() => {
+    try { return localStorage.getItem("callpop_auto_enabled") === "1"; } catch { return false; }
+  });
+
+  const toggleAuto = (enabled: boolean) => {
+    setAutoPop(enabled);
+    try { localStorage.setItem("callpop_auto_enabled", enabled ? "1" : "0"); } catch {}
+    window.dispatchEvent(new CustomEvent("callpop:auto-toggle", { detail: { enabled } }));
+  };
 
   const load = async () => {
     setLoading(true);
@@ -67,14 +78,22 @@ export default function ScreenPopsCalls() {
         <Button size="sm" variant="outline" onClick={load}>Refresh</Button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="pl-8"
-          placeholder="Search phone or name…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="relative max-w-sm flex-1 min-w-[220px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-8"
+            placeholder="Search phone or name…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch id="auto-pop" checked={autoPop} onCheckedChange={toggleAuto} />
+          <Label htmlFor="auto-pop" className="text-sm cursor-pointer">
+            Auto Screen Pop {autoPop ? "On" : "Off"}
+          </Label>
+        </div>
       </div>
 
       <Card className="overflow-hidden">
