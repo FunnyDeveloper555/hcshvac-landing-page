@@ -128,6 +128,7 @@ const Admin = () => {
     return (
       <div className="flex min-h-screen w-full">
         <CallScreenPop />
+        <SMSScreenPop />
         {/* Mobile sidebar via Sheet */}
         {isMobile ? (
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
