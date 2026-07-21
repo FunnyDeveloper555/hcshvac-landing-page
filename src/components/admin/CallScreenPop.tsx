@@ -155,16 +155,9 @@ export default function CallScreenPop() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("call-screen-pop")
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "call_logs_3cx" },
-        (payload) => handleIncoming(payload.new),
-      ).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [handleIncoming]);
-
+  // Automatic screen pop (realtime + polling) is disabled.
+  // Screen pops are only triggered manually from the ScreenPops → Calls list
+  // via the "callpop:show" window event.
   useEffect(() => {
     const onManual = (e: Event) => {
       const row = (e as CustomEvent).detail;
@@ -175,39 +168,6 @@ export default function CallScreenPop() {
     window.addEventListener("callpop:show", onManual as EventListener);
     return () => window.removeEventListener("callpop:show", onManual as EventListener);
   }, [handleIncoming]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const tick = async () => {
-      const since = lastCheckRef.current;
-      lastCheckRef.current = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("call_logs_3cx")
-        .select("id, direction, from_number, to_number, caller_name, created_at")
-        .eq("direction", "inbound")
-        .gt("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (cancelled || error || !data?.length) return;
-      const fresh = data.find((r) => !shownIds.current.has(r.id));
-      if (fresh) handleIncoming(fresh);
-    };
-    tick();
-    const id = setInterval(tick, 15_000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [handleIncoming]);
-
-  const triggerTest = async () => {
-    const { data, error } = await supabase
-      .from("call_logs_3cx")
-      .select("id, direction, from_number, to_number, caller_name, created_at")
-      .eq("direction", "inbound")
-      .order("created_at", { ascending: false })
-      .limit(1).maybeSingle();
-    if (error || !data) return;
-    shownIds.current.delete(data.id);
-    handleIncoming(data);
-  };
 
   const close = () => setPop(null);
 
@@ -252,15 +212,7 @@ export default function CallScreenPop() {
   };
 
   if (!pop) {
-    return (
-      <button
-        onClick={triggerTest}
-        title="Test screen pop with latest inbound call"
-        className="fixed bottom-4 right-4 z-[55] flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 text-xs font-medium"
-      >
-        <Bell className="h-3.5 w-3.5" /> Test Pop
-      </button>
-    );
+    return null;
   }
 
   const differentCompany =
@@ -287,12 +239,8 @@ export default function CallScreenPop() {
         }
         .callpop-blink { animation: callpop-blink 0.8s ease-in-out infinite; border-radius: 4px; padding: 0 4px; }
       `}</style>
-      <button
-        onClick={triggerTest}
-        className="fixed bottom-4 right-4 z-[55] flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 text-xs font-medium"
-      >
-        <Bell className="h-3.5 w-3.5" /> Test Pop
-      </button>
+
+
 
       <div
         className={`fixed z-[60] w-[460px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200 ${differentCompany ? "ring-2 ring-destructive" : ""}`}
