@@ -51,6 +51,7 @@ import LogsList from "@/components/admin/LogsList";
 import CallLogAdd from "@/components/admin/CallLogAdd";
 import CallLogsList from "@/components/admin/CallLogsList";
 import CallScreenPop from "@/components/admin/CallScreenPop";
+import SMSScreenPop from "@/components/admin/SMSScreenPop";
 import CustomersAdd from "@/components/admin/CustomersAdd";
 import DiagnosticFeesList from "@/components/admin/DiagnosticFeesList";
 import DiagnosticFeesAdd from "@/components/admin/DiagnosticFeesAdd";
