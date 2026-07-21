@@ -212,15 +212,7 @@ export default function CallScreenPop() {
   };
 
   if (!pop) {
-    return (
-      <button
-        onClick={triggerTest}
-        title="Test screen pop with latest inbound call"
-        className="fixed bottom-4 right-4 z-[55] flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 text-xs font-medium"
-      >
-        <Bell className="h-3.5 w-3.5" /> Test Pop
-      </button>
-    );
+    return null;
   }
 
   const differentCompany =
