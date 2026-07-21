@@ -1,12 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
-import { MessageSquare, Mail, ExternalLink, Clock, CheckCircle, Send, Eye, XCircle } from "lucide-react";
+import { MessageSquare, Mail, ExternalLink, Clock, CheckCircle, Send, Eye, XCircle, Search, Bell } from "lucide-react";
 
 interface Invitation {
   id: string;
@@ -35,6 +38,15 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 
 export default function ScreenPopsSMS() {
   const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [autoEnabled, setAutoEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem("smspop_auto_enabled") === "1"; } catch { return false; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem("smspop_auto_enabled", autoEnabled ? "1" : "0"); } catch {}
+    window.dispatchEvent(new CustomEvent("smspop:auto-toggle", { detail: { enabled: autoEnabled } }));
+  }, [autoEnabled]);
 
   const { data: invitations = [], isLoading } = useQuery({
     queryKey: ["screenpops-invitations"],
@@ -76,6 +88,21 @@ export default function ScreenPopsSMS() {
     );
   };
 
+  const filtered = invitations.filter((i) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      (i.companies?.name || "").toLowerCase().includes(q) ||
+      (i.recipient_phone || "").toLowerCase().includes(q) ||
+      (i.recipient_email || "").toLowerCase().includes(q) ||
+      (i.status || "").toLowerCase().includes(q)
+    );
+  });
+
+  const showPop = (inv: Invitation) => {
+    window.dispatchEvent(new CustomEvent("smspop:show", { detail: inv }));
+  };
+
   return (
     <div className="p-4 space-y-4">
       <div>
@@ -83,8 +110,25 @@ export default function ScreenPopsSMS() {
           <MessageSquare className="h-4 w-4" /> Screen Pops — SMS / Email Invitations
         </h2>
         <p className="text-sm text-muted-foreground">
-          Live updates for invitations sent to customers. Rows update automatically when a customer opens or completes the form.
+          Live status of invitations sent to customers. Trigger a screen pop manually or enable auto pop for new activity.
         </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-8"
+            placeholder="Search by company, phone, email or status"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Bell className="h-4 w-4 text-muted-foreground" />
+          <Label htmlFor="sms-auto" className="text-sm">Auto Screen Pop</Label>
+          <Switch id="sms-auto" checked={autoEnabled} onCheckedChange={setAutoEnabled} />
+        </div>
       </div>
 
       <Card>
@@ -94,8 +138,8 @@ export default function ScreenPopsSMS() {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-6 text-sm text-muted-foreground">Loading...</div>
-          ) : invitations.length === 0 ? (
-            <div className="text-center py-6 text-sm text-muted-foreground">No invitations yet.</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-6 text-sm text-muted-foreground">No invitations found.</div>
           ) : (
             <Table>
               <TableHeader>
@@ -107,11 +151,11 @@ export default function ScreenPopsSMS() {
                   <TableHead>Sent</TableHead>
                   <TableHead>Opened</TableHead>
                   <TableHead>Completed</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {invitations.map((inv) => (
+                {filtered.map((inv) => (
                   <TableRow key={inv.id}>
                     <TableCell className="font-medium">{inv.companies?.name || "—"}</TableCell>
                     <TableCell>
@@ -132,10 +176,13 @@ export default function ScreenPopsSMS() {
                     <TableCell className="text-xs">{inv.sent_at ? format(new Date(inv.sent_at), "MMM d, h:mm a") : "-"}</TableCell>
                     <TableCell className="text-xs">{inv.opened_at ? format(new Date(inv.opened_at), "MMM d, h:mm a") : "-"}</TableCell>
                     <TableCell className="text-xs">{inv.completed_at ? format(new Date(inv.completed_at), "MMM d, h:mm a") : "-"}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => window.open(`/book/${inv.token}`, "_blank")}>
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        <Button size="sm" variant="outline" onClick={() => showPop(inv)}>Show Pop</Button>
+                        <Button variant="ghost" size="sm" onClick={() => window.open(`/book/${inv.token}`, "_blank")}>
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
