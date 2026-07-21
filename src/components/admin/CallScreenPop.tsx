@@ -239,12 +239,8 @@ export default function CallScreenPop() {
         }
         .callpop-blink { animation: callpop-blink 0.8s ease-in-out infinite; border-radius: 4px; padding: 0 4px; }
       `}</style>
-      <button
-        onClick={triggerTest}
-        className="fixed bottom-4 right-4 z-[55] flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 text-xs font-medium"
-      >
-        <Bell className="h-3.5 w-3.5" /> Test Pop
-      </button>
+
+
 
       <div
         className={`fixed z-[60] w-[460px] max-h-[85vh] overflow-y-auto rounded-lg border bg-card text-card-foreground shadow-2xl animate-in slide-in-from-right-4 duration-200 ${differentCompany ? "ring-2 ring-destructive" : ""}`}
