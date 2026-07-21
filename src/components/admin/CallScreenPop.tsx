@@ -155,9 +155,7 @@ export default function CallScreenPop() {
     } catch {}
   }, []);
 
-  // Automatic screen pop (realtime + polling) is disabled.
-  // Screen pops are only triggered manually from the ScreenPops → Calls list
-  // via the "callpop:show" window event.
+  // Manual trigger from the ScreenPops → Calls list.
   useEffect(() => {
     const onManual = (e: Event) => {
       const row = (e as CustomEvent).detail;
@@ -168,6 +166,56 @@ export default function CallScreenPop() {
     window.addEventListener("callpop:show", onManual as EventListener);
     return () => window.removeEventListener("callpop:show", onManual as EventListener);
   }, [handleIncoming]);
+
+  // Auto Screen Pop — realtime + polling when enabled via the toggle
+  // on ScreenPops → Calls. Persisted in localStorage("callpop_auto_enabled").
+  const [autoEnabled, setAutoEnabled] = useState<boolean>(() => {
+    try { return localStorage.getItem("callpop_auto_enabled") === "1"; } catch { return false; }
+  });
+  useEffect(() => {
+    const onToggle = (e: Event) => {
+      const enabled = !!(e as CustomEvent).detail?.enabled;
+      setAutoEnabled(enabled);
+    };
+    window.addEventListener("callpop:auto-toggle", onToggle as EventListener);
+    return () => window.removeEventListener("callpop:auto-toggle", onToggle as EventListener);
+  }, []);
+
+  useEffect(() => {
+    if (!autoEnabled) return;
+    let cancelled = false;
+
+    const channel = supabase
+      .channel("callpop-inbound")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "call_logs_3cx" },
+        (payload) => { if (!cancelled) handleIncoming(payload.new); },
+      )
+      .subscribe();
+
+    const poll = async () => {
+      const since = lastCheckRef.current;
+      lastCheckRef.current = new Date().toISOString();
+      const { data } = await supabase
+        .from("call_logs_3cx")
+        .select("id, direction, from_number, to_number, caller_name, created_at")
+        .eq("direction", "inbound")
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (cancelled || !data) return;
+      for (const row of data) await handleIncoming(row);
+    };
+    poll();
+    const iv = setInterval(poll, 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+      supabase.removeChannel(channel);
+    };
+  }, [autoEnabled, handleIncoming]);
 
   const close = () => setPop(null);
 
