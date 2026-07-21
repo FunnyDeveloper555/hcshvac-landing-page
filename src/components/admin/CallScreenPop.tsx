@@ -155,16 +155,9 @@ export default function CallScreenPop() {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel("call-screen-pop")
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "call_logs_3cx" },
-        (payload) => handleIncoming(payload.new),
-      ).subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [handleIncoming]);
-
+  // Automatic screen pop (realtime + polling) is disabled.
+  // Screen pops are only triggered manually from the ScreenPops → Calls list
+  // via the "callpop:show" window event.
   useEffect(() => {
     const onManual = (e: Event) => {
       const row = (e as CustomEvent).detail;
@@ -175,39 +168,6 @@ export default function CallScreenPop() {
     window.addEventListener("callpop:show", onManual as EventListener);
     return () => window.removeEventListener("callpop:show", onManual as EventListener);
   }, [handleIncoming]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const tick = async () => {
-      const since = lastCheckRef.current;
-      lastCheckRef.current = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("call_logs_3cx")
-        .select("id, direction, from_number, to_number, caller_name, created_at")
-        .eq("direction", "inbound")
-        .gt("created_at", since)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      if (cancelled || error || !data?.length) return;
-      const fresh = data.find((r) => !shownIds.current.has(r.id));
-      if (fresh) handleIncoming(fresh);
-    };
-    tick();
-    const id = setInterval(tick, 15_000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [handleIncoming]);
-
-  const triggerTest = async () => {
-    const { data, error } = await supabase
-      .from("call_logs_3cx")
-      .select("id, direction, from_number, to_number, caller_name, created_at")
-      .eq("direction", "inbound")
-      .order("created_at", { ascending: false })
-      .limit(1).maybeSingle();
-    if (error || !data) return;
-    shownIds.current.delete(data.id);
-    handleIncoming(data);
-  };
 
   const close = () => setPop(null);
 
