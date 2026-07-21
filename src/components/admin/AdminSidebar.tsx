@@ -90,6 +90,14 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   {
+    title: "ScreenPops",
+    icon: Bell,
+    children: [
+      { title: "Calls", url: "/admin/screen-pops/calls", icon: Phone },
+      { title: "SMS", url: "/admin/screen-pops/sms", icon: MessageSquare },
+    ]
+  },
+  {
     title: "SMS Link",
     icon: MessageSquare,
     children: [

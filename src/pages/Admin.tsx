@@ -88,6 +88,9 @@ import ContentList from "@/components/admin/ContentList";
 import ContentPreview from "@/components/admin/ContentPreview";
 import GalleryAdd from "@/components/admin/GalleryAdd";
 import GalleryList from "@/components/admin/GalleryList";
+import ScreenPopsCalls from "@/components/admin/screenpops/ScreenPopsCalls";
+import ScreenPopsSMS from "@/components/admin/screenpops/ScreenPopsSMS";
+
 
 
 const Admin = () => {
@@ -266,8 +269,11 @@ const Admin = () => {
               <Route path="/contents/preview" element={<ContentPreview />} />
               <Route path="/galleries/add" element={<GalleryAdd />} />
               <Route path="/galleries/list" element={<GalleryList />} />
+              <Route path="/screen-pops/calls" element={<ScreenPopsCalls />} />
+              <Route path="/screen-pops/sms" element={<ScreenPopsSMS />} />
               <Route path="/file-manager" element={<FileManager />} />
             </Routes>
+
             </div>
           </main>
         </div>
