@@ -336,12 +336,12 @@ function PhotoItem({
       >
         <Trash2 className="h-3 w-3" />
       </button>
-      <Input
-        className="h-7 text-[11px] mt-1"
-        placeholder="Title"
-        value={titleVal}
-        onChange={(e) => setTitleVal(e.target.value)}
-      />
+      {row.slot_title && (
+        <div className="text-[11px] font-medium mt-1 truncate" title={row.slot_title}>
+          {row.slot_title}
+        </div>
+      )}
+
       <Textarea
         className="text-[11px] min-h-[44px] mt-1"
         placeholder="Note about this photo..."
