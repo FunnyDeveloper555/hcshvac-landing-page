@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2, Upload, Loader2, Save, ImageIcon } from "lucide-react";
+import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 
 
 interface PhotoSlotProps {
@@ -194,10 +195,18 @@ function PhotoItem({
   const { toast } = useToast();
   const [note, setNote] = useState<string>(row.slot_about || "");
   const [saving, setSaving] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     setNote(row.slot_about || "");
   }, [row.slot_about]);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setLightbox(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox]);
 
   const saveNote = async () => {
     setSaving(true);
@@ -217,7 +226,17 @@ function PhotoItem({
   return (
     <div className="relative group border rounded p-1 bg-background">
       {url ? (
-        <img src={url} className="w-full h-20 object-cover rounded" alt={label} />
+        <button
+          type="button"
+          onClick={() => setLightbox(true)}
+          className="block w-full relative cursor-zoom-in"
+          title="Click to expand"
+        >
+          <img src={url} className="w-full h-20 object-cover rounded" alt={label} />
+          <span className="absolute bottom-1 right-1 bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
+            <Maximize2 className="h-3 w-3" />
+          </span>
+        </button>
       ) : (
         <div className="w-full h-20 bg-muted animate-pulse rounded" />
       )}
@@ -250,7 +269,40 @@ function PhotoItem({
       >
         {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save note</>}
       </Button>
+
+      {lightbox && url && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4"
+          onClick={() => setLightbox(false)}
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setLightbox(false); }}
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2"
+            title="Close (Esc)"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={url}
+            alt={label}
+            className="max-w-full max-h-full object-contain rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {(row.slot_title || note) && (
+            <div
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-2 rounded max-w-[80%]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.slot_title && <div className="font-semibold">{row.slot_title}</div>}
+              {note && <div className="opacity-90">{note}</div>}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
 

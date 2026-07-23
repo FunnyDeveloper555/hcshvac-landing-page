@@ -35,12 +35,16 @@ export default function SiteProfileForm() {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>({
     session_id: "",
+    report_number: "",
     job_number: "",
     booking_method: "",
     location_type: "residential",
+    mdu: false,
     visit_type: "",
     equipment_type: "",
     equipment_location: "",
+    ticket_status: "ACTIVE",
+    customer_deemed_status: "ACTIVE",
     notes: "",
     status: "draft",
     bill_to: {},
@@ -49,23 +53,31 @@ export default function SiteProfileForm() {
     secondary_contact: {},
     customer_id: customerId,
     appointment_id: appointmentId,
+    created_by: null,
   });
   const [systems, setSystems] = useState<SystemRow[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [assignedCompanyId, setAssignedCompanyId] = useState<string | null>(null);
+  const [assignedToId, setAssignedToId] = useState<string | null>(null);
+  const [completedByName, setCompletedByName] = useState<string>("");
+
 
   // Load / create profile
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const { data: co } = await supabase.from("companies").select("id, name").order("name");
+        const [{ data: co }, { data: emp }] = await Promise.all([
+          supabase.from("companies").select("id, name").order("name"),
+          supabase.from("employees").select("id, first_name, last_name").order("first_name"),
+        ]);
         setCompanies(co || []);
+        setEmployees(emp || []);
 
         let pid = urlProfileId;
         let resolvedCustomerId = customerId;
 
-        // If only appointmentId provided, resolve customer by phone
         if (!pid && !resolvedCustomerId && appointmentId) {
           const { data: appt } = await supabase
             .from("appointments")
@@ -86,7 +98,6 @@ export default function SiteProfileForm() {
         }
 
         if (!pid && resolvedCustomerId) {
-          // Snapshot customer info
           const { data: cust } = await supabase
             .from("customer_registrations")
             .select("*")
@@ -133,6 +144,7 @@ export default function SiteProfileForm() {
               },
               created_by: user?.id || null,
               session_id: `SP-${Date.now().toString(36).toUpperCase()}`,
+              assigned_company_id: cust?.company_id || null,
             })
             .select("*")
             .single();
@@ -140,12 +152,25 @@ export default function SiteProfileForm() {
           pid = created.id;
           setProfileId(pid);
           setProfile({ ...created });
+          setAssignedCompanyId(created.assigned_company_id || null);
+          setAssignedToId(created.assigned_to || null);
         } else if (pid) {
           const { data: p } = await supabase.from("site_profiles").select("*").eq("id", pid).maybeSingle();
           if (p) {
             setProfile(p);
             setAssignedCompanyId(p.assigned_company_id || null);
+            setAssignedToId(p.assigned_to || null);
           }
+        }
+
+        // Resolve completed_by (logged-in user) display name
+        if (user?.id) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("display_name, email")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          setCompletedByName(prof?.display_name || prof?.email || user.email || "");
         }
 
         if (pid) {
@@ -162,6 +187,7 @@ export default function SiteProfileForm() {
           }));
           setSystems(mapped);
         }
+
       } catch (e: any) {
         toast({ title: "Load failed", description: e.message, variant: "destructive" });
       } finally {
@@ -202,16 +228,22 @@ export default function SiteProfileForm() {
     if (!profileId) return;
     setSaving(true);
     try {
+      // Session ID changes with every update (per spec)
+      const nextSession = `SP-${Date.now().toString(36).toUpperCase()}`;
       const payload: any = {
-        session_id: profile.session_id,
+        session_id: nextSession,
         job_number: profile.job_number,
         booking_method: profile.booking_method,
         location_type: profile.location_type,
+        mdu: !!profile.mdu,
         visit_type: profile.visit_type,
         equipment_type: profile.equipment_type,
         equipment_location: profile.equipment_location,
+        ticket_status: profile.ticket_status,
+        customer_deemed_status: profile.customer_deemed_status,
         notes: profile.notes,
         assigned_company_id: assignedCompanyId,
+        assigned_to: assignedToId,
       };
       if (newStatus) {
         payload.status = newStatus;
@@ -219,6 +251,7 @@ export default function SiteProfileForm() {
       }
       const { error } = await supabase.from("site_profiles").update(payload).eq("id", profileId);
       if (error) throw error;
+      setProfile((p: any) => ({ ...p, ...payload }));
       toast({ title: newStatus === "submitted" ? "Submitted" : "Saved" });
       if (newStatus === "submitted") navigate("/admin/site-profiles/list");
     } catch (e: any) {
@@ -227,6 +260,7 @@ export default function SiteProfileForm() {
       setSaving(false);
     }
   };
+
 
   if (loading) {
     return (
@@ -256,9 +290,15 @@ export default function SiteProfileForm() {
           <div className="flex items-center gap-2">
             <Button size="sm" variant="ghost" onClick={() => navigate(-1)}><ChevronLeft className="h-4 w-4" /></Button>
             <h2 className="text-lg font-semibold">Site Location Profile</h2>
+            {profile.report_number && (
+              <span className="text-xs font-mono bg-primary/10 text-primary px-2 py-0.5 rounded">
+                {profile.report_number}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Session: {profile.session_id} · Status: {profile.status}
+            {completedByName && <> · Completed By: <span className="font-medium">{completedByName}</span></>}
           </p>
         </div>
         <div className="flex gap-2">
@@ -271,24 +311,23 @@ export default function SiteProfileForm() {
       </div>
 
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-sm">Session Info</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm">Report Header</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <div className="space-y-1">
-            <Label className="text-xs">Session ID</Label>
-            <Input className="h-8 text-xs" value={profile.session_id || ""} onChange={(e) => setProfile({ ...profile, session_id: e.target.value })} />
+            <Label className="text-xs">Report Number</Label>
+            <Input className="h-8 text-xs font-mono" value={profile.report_number || "(auto)"} readOnly />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Session ID (auto-updates)</Label>
+            <Input className="h-8 text-xs" value={profile.session_id || ""} readOnly />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Completed By</Label>
+            <Input className="h-8 text-xs" value={completedByName} readOnly />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Job Number</Label>
             <Input className="h-8 text-xs" value={profile.job_number || ""} onChange={(e) => setProfile({ ...profile, job_number: e.target.value })} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Booking Method</Label>
-            <Select value={profile.booking_method || ""} onValueChange={(v) => setProfile({ ...profile, booking_method: v })}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-              <SelectContent>
-                {["Phone", "Web", "SMS", "Walk-in", "Referral", "Other"].map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Assigned Company</Label>
@@ -296,6 +335,26 @@ export default function SiteProfileForm() {
               <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 {companies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Assigned To</Label>
+            <Select value={assignedToId || ""} onValueChange={(v) => setAssignedToId(v)}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select employee" /></SelectTrigger>
+              <SelectContent>
+                {employees.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{`${e.first_name || ""} ${e.last_name || ""}`.trim()}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Booking Method</Label>
+            <Select value={profile.booking_method || ""} onValueChange={(v) => setProfile({ ...profile, booking_method: v })}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                {["Phone", "Web", "SMS", "Walk-in", "Referral", "Other"].map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -309,15 +368,48 @@ export default function SiteProfileForm() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Visit Type</Label>
-            <Input className="h-8 text-xs" value={profile.visit_type || ""} onChange={(e) => setProfile({ ...profile, visit_type: e.target.value })} />
+            <Label className="text-xs">MDU (Multi-Dwelling)</Label>
+            <Select value={profile.mdu ? "yes" : "no"} onValueChange={(v) => setProfile({ ...profile, mdu: v === "yes" })}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no">No</SelectItem>
+                <SelectItem value="yes">Yes</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <div className="space-y-1 col-span-2">
+          <div className="space-y-1">
+            <Label className="text-xs">Visit Type</Label>
+            <Input className="h-8 text-xs" placeholder="e.g. No Heat SVC Call" value={profile.visit_type || ""} onChange={(e) => setProfile({ ...profile, visit_type: e.target.value })} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Equipment Type</Label>
+            <Input className="h-8 text-xs" placeholder="e.g. Furnace (Natural Gas)" value={profile.equipment_type || ""} onChange={(e) => setProfile({ ...profile, equipment_type: e.target.value })} />
+          </div>
+          <div className="space-y-1">
             <Label className="text-xs">Equipment Location</Label>
-            <Input className="h-8 text-xs" value={profile.equipment_location || ""} onChange={(e) => setProfile({ ...profile, equipment_location: e.target.value })} />
+            <Input className="h-8 text-xs" placeholder="e.g. Basement" value={profile.equipment_location || ""} onChange={(e) => setProfile({ ...profile, equipment_location: e.target.value })} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Ticket Status</Label>
+            <Select value={profile.ticket_status || "ACTIVE"} onValueChange={(v) => setProfile({ ...profile, ticket_status: v })}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["ACTIVE", "ON HOLD", "CLOSED", "CANCELLED"].map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Customer Deemed Status</Label>
+            <Select value={profile.customer_deemed_status || "ACTIVE"} onValueChange={(v) => setProfile({ ...profile, customer_deemed_status: v })}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {["ACTIVE", "ACTIVE Owes Balance", "SUSPENDED: Bad Review", "SUSPENDED: Owes Balance", "SUSPENDED: Need Information", "BLACKLISTED: See NOTES"].map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
