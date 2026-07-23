@@ -89,8 +89,8 @@ export default function SiteProfilesList() {
             </TableHeader>
             <TableBody>
               {grouped.map(([address, rows]) => (
-                <>
-                  <TableRow key={`hdr-${address}`} className="bg-muted/40 hover:bg-muted/40">
+                <Fragment key={address}>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
                     <TableCell colSpan={7} className="py-1 text-xs font-medium text-muted-foreground">
                       <Building2 className="h-3 w-3 inline mr-1" />
                       {address}
