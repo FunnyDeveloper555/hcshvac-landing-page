@@ -228,16 +228,22 @@ export default function SiteProfileForm() {
     if (!profileId) return;
     setSaving(true);
     try {
+      // Session ID changes with every update (per spec)
+      const nextSession = `SP-${Date.now().toString(36).toUpperCase()}`;
       const payload: any = {
-        session_id: profile.session_id,
+        session_id: nextSession,
         job_number: profile.job_number,
         booking_method: profile.booking_method,
         location_type: profile.location_type,
+        mdu: !!profile.mdu,
         visit_type: profile.visit_type,
         equipment_type: profile.equipment_type,
         equipment_location: profile.equipment_location,
+        ticket_status: profile.ticket_status,
+        customer_deemed_status: profile.customer_deemed_status,
         notes: profile.notes,
         assigned_company_id: assignedCompanyId,
+        assigned_to: assignedToId,
       };
       if (newStatus) {
         payload.status = newStatus;
@@ -245,6 +251,7 @@ export default function SiteProfileForm() {
       }
       const { error } = await supabase.from("site_profiles").update(payload).eq("id", profileId);
       if (error) throw error;
+      setProfile((p: any) => ({ ...p, ...payload }));
       toast({ title: newStatus === "submitted" ? "Submitted" : "Saved" });
       if (newStatus === "submitted") navigate("/admin/site-profiles/list");
     } catch (e: any) {
@@ -253,6 +260,7 @@ export default function SiteProfileForm() {
       setSaving(false);
     }
   };
+
 
   if (loading) {
     return (
