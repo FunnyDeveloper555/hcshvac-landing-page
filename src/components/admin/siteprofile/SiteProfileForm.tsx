@@ -63,7 +63,10 @@ export default function SiteProfileForm() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [assignedCompanyId, setAssignedCompanyId] = useState<string | null>(null);
   const [assignedToId, setAssignedToId] = useState<string | null>(null);
-  const [completedByName, setCompletedByName] = useState<string>("");
+  const [sendingPdf, setSendingPdf] = useState(false);
+  const formRef = (typeof window !== "undefined") ? (window as any).__spfRef ||= { current: null as HTMLDivElement | null } : { current: null };
+
+
 
 
   // Load / create profile
