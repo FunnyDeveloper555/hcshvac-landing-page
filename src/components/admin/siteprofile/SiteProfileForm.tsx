@@ -270,6 +270,74 @@ export default function SiteProfileForm() {
     }
   };
 
+  const sendPdfToCustomer = async () => {
+    if (!profileId || !formRef.current) return;
+    const shipTo = profile.ship_to || {};
+    const billTo = profile.bill_to || {};
+    const customerEmail = shipTo.email || billTo.email || "";
+    if (!customerEmail) {
+      toast({ title: "No customer email", description: "Customer has no email on file.", variant: "destructive" });
+      return;
+    }
+    setSendingPdf(true);
+    try {
+      // Render form to canvas -> PDF
+      const canvas = await html2canvas(formRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 40;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 20;
+      pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 40);
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 20;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 40);
+      }
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Resolve company name for from/subject
+      let companyName: string | undefined;
+      if (assignedCompanyId) {
+        const co = companies.find((c) => c.id === assignedCompanyId);
+        companyName = co?.name;
+      }
+      const fromEmail = getCompanyInviterEmail(companyName) || "master@hcshvac.com";
+      const customerName = shipTo.name || billTo.name || "";
+      const filename = `${profile.report_number || "site-profile"}.pdf`;
+
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "site-profile-report",
+          recipientEmail: customerEmail,
+          fromEmail,
+          fromName: companyName,
+          bcc: "master@hcshvac.com",
+          templateData: {
+            customerName,
+            companyName,
+            reportNumber: profile.report_number,
+            notes: profile.notes,
+          },
+          attachments: [
+            { filename, content: pdfBase64, contentType: "application/pdf", encoding: "base64" },
+          ],
+        },
+      });
+      if (error) throw error;
+      toast({ title: "PDF sent", description: `Emailed to ${customerEmail} (BCC master@hcshvac.com)` });
+    } catch (e: any) {
+      toast({ title: "Send failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingPdf(false);
+    }
+  };
+
 
   if (loading) {
     return (
