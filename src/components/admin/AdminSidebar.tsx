@@ -87,6 +87,7 @@ const staticMenuItems: MenuItem[] = [
     icon: ClipboardList,
     children: [
       { title: "List", url: "/admin/site-profiles/list", icon: List },
+      { title: "Logs", url: "/admin/site-profiles/logs", icon: List },
     ]
   },
   {
