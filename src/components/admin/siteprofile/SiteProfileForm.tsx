@@ -676,11 +676,15 @@ function AddressBlock({
   onSave: (v: Record<string, any>) => Promise<void>;
   extraHeader?: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   const set = (k: string, v: string) => {
     const next = { ...value, [k]: v };
     onChange(next);
   };
   const commit = () => { onSave(value); };
+  const summary = [value.name, value.address, value.city, value.state, value.zip]
+    .filter(Boolean)
+    .join(", ");
   const field = (k: string, label: string, placeholder?: string, className = "") => (
     <div className={`space-y-1 ${className}`}>
       <Label className="text-xs">{label}</Label>
@@ -695,21 +699,33 @@ function AddressBlock({
   );
   return (
     <Card>
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm">{title}</CardTitle>
+      <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-2 flex-1 min-w-0 text-left"
+        >
+          <span className="text-xs">{open ? "▼" : "▶"}</span>
+          <CardTitle className="text-sm shrink-0">{title}</CardTitle>
+          {!open && summary && (
+            <span className="text-xs text-muted-foreground truncate">{summary}</span>
+          )}
+        </button>
         {extraHeader}
       </CardHeader>
-      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {field("name", "Contact Name", "John Doe", "md:col-span-2")}
-        {field("business_name", "Business Name (Optional)", "ACME Corp", "md:col-span-2")}
-        {field("address", "Address", "123 Main St", "md:col-span-2")}
-        {field("suite_number", "Suite / Unit")}
-        {field("city", "City")}
-        {field("state", "State", "IL")}
-        {field("zip", "Zip")}
-        {field("phone", "Phone")}
-        {field("email", "Email", undefined, "md:col-span-2")}
-      </CardContent>
+      {open && (
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {field("name", "Contact Name", "John Doe", "md:col-span-2")}
+          {field("business_name", "Business Name (Optional)", "ACME Corp", "md:col-span-2")}
+          {field("address", "Address", "123 Main St", "md:col-span-2")}
+          {field("suite_number", "Suite / Unit")}
+          {field("city", "City")}
+          {field("state", "State", "IL")}
+          {field("zip", "Zip")}
+          {field("phone", "Phone")}
+          {field("email", "Email", undefined, "md:col-span-2")}
+        </CardContent>
+      )}
     </Card>
   );
 }
