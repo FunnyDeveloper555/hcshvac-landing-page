@@ -21,7 +21,9 @@ interface PhotoRow {
   storage_path: string;
   slot_title?: string | null;
   slot_about?: string | null;
+  slot_note?: string | null;
 }
+
 
 export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle }: PhotoSlotProps) {
   const { toast } = useToast();
