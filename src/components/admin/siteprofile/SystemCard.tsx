@@ -157,7 +157,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
 
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {(system.kind === "heating" ? HEATING_PHOTO_SLOTS
             : system.kind === "cooling" ? COOLING_PHOTO_SLOTS
             : system.kind === "sump_pump" ? SUMP_PHOTO_SLOTS
