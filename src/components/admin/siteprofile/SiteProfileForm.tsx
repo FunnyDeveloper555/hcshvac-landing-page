@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Save, ChevronLeft } from "lucide-react";
+import { Loader2, Plus, Save, ChevronLeft, FileDown } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
 
 interface SystemDbRow {
   id: string;
