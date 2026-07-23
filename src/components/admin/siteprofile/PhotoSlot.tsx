@@ -85,6 +85,8 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         size_bytes: file.size,
       });
       if (insErr) throw insErr;
+      setTitle("");
+      setAbout("");
       await load();
       toast({ title: "Photo added" });
     } catch (e: any) {
@@ -277,12 +279,14 @@ function PhotoItem({
 }) {
   const { toast } = useToast();
   const [note, setNote] = useState<string>(row.slot_about || "");
+  const [titleVal, setTitleVal] = useState<string>(row.slot_title || "");
   const [saving, setSaving] = useState(false);
   const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     setNote(row.slot_about || "");
-  }, [row.slot_about]);
+    setTitleVal(row.slot_title || "");
+  }, [row.slot_about, row.slot_title]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -291,17 +295,20 @@ function PhotoItem({
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox]);
 
+  const dirty =
+    note !== (row.slot_about || "") || titleVal !== (row.slot_title || "");
+
   const saveNote = async () => {
     setSaving(true);
     const { error } = await supabase
       .from("site_profile_photos")
-      .update({ slot_about: note || null })
+      .update({ slot_about: note || null, slot_title: titleVal || null })
       .eq("id", row.id);
     setSaving(false);
     if (error) {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Note saved" });
+      toast({ title: "Saved" });
       onReload();
     }
   };
@@ -331,11 +338,12 @@ function PhotoItem({
       >
         <Trash2 className="h-3 w-3" />
       </button>
-      {row.slot_title && (
-        <div className="text-[10px] mt-1 truncate font-medium" title={row.slot_title}>
-          {row.slot_title}
-        </div>
-      )}
+      <Input
+        className="h-7 text-[11px] mt-1"
+        placeholder="Title"
+        value={titleVal}
+        onChange={(e) => setTitleVal(e.target.value)}
+      />
       <Textarea
         className="text-[11px] min-h-[44px] mt-1"
         placeholder="Note about this photo..."
@@ -348,10 +356,11 @@ function PhotoItem({
         variant="outline"
         className="h-6 px-2 mt-1 w-full text-[10px]"
         onClick={saveNote}
-        disabled={saving || note === (row.slot_about || "")}
+        disabled={saving || !dirty}
       >
-        {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save note</>}
+        {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save</>}
       </Button>
+
 
       {lightbox && url && (
         <div
