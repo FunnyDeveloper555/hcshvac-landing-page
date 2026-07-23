@@ -85,6 +85,8 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         size_bytes: file.size,
       });
       if (insErr) throw insErr;
+      setTitle("");
+      setAbout("");
       await load();
       toast({ title: "Photo added" });
     } catch (e: any) {
