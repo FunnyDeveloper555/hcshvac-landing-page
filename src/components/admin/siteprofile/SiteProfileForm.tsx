@@ -355,6 +355,15 @@ export default function SiteProfileForm() {
       } else if (currentLabel) {
         nextLabel = `${currentLabel} 2`;
       }
+
+      // Ensure the current (original) profile is marked as Unit 1 if it has no label yet
+      if (!currentLabel) {
+        await supabase
+          .from("site_profiles")
+          .update({ mdu: true, unit_label: "Unit 1" })
+          .eq("id", profileId);
+      }
+
       const { data: created, error } = await supabase
         .from("site_profiles")
         .insert({
