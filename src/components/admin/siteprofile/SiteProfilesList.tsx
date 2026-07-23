@@ -34,10 +34,24 @@ export default function SiteProfilesList() {
     },
   });
 
+  // Revision key = normalized ship-to address + unit_label. Keep only the latest per key.
+  const latestOnly = useMemo(() => {
+    const byKey = new Map<string, any>();
+    for (const p of profiles) {
+      const addr = (fmtAddr(p.ship_to) || fmtAddr(p.bill_to) || p.id).toLowerCase();
+      const key = `${addr}||${(p.unit_label || "").toLowerCase()}`;
+      const existing = byKey.get(key);
+      if (!existing || new Date(p.created_at) > new Date(existing.created_at)) {
+        byKey.set(key, p);
+      }
+    }
+    return Array.from(byKey.values());
+  }, [profiles]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return profiles;
-    return profiles.filter((p: any) => {
+    if (!q) return latestOnly;
+    return latestOnly.filter((p: any) => {
       const hay = [
         p.report_number, p.session_id, p.unit_label,
         p.ship_to?.name, p.bill_to?.name,
@@ -45,7 +59,7 @@ export default function SiteProfilesList() {
       ].filter(Boolean).join(" ").toLowerCase();
       return hay.includes(q);
     });
-  }, [profiles, search]);
+  }, [latestOnly, search]);
 
   // Group by address so multi-unit profiles cluster
   const grouped = useMemo(() => {
@@ -57,6 +71,7 @@ export default function SiteProfilesList() {
     }
     return Array.from(map.entries());
   }, [filtered]);
+
 
   return (
     <Card>
