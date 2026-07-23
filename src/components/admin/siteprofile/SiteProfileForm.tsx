@@ -573,6 +573,43 @@ export default function SiteProfileForm() {
         </CardContent>
       </Card>
 
+      <AddressBlock
+        title="Ship To"
+        value={profile.ship_to || {}}
+        onChange={(v) => setProfile({ ...profile, ship_to: v })}
+        onSave={async (v) => {
+          await supabase.from("site_profiles").update({ ship_to: v }).eq("id", profileId);
+        }}
+      />
+
+      <AddressBlock
+        title="Bill To"
+        value={profile.bill_to || {}}
+        onChange={(v) => setProfile({ ...profile, bill_to: v })}
+        onSave={async (v) => {
+          await supabase.from("site_profiles").update({ bill_to: v }).eq("id", profileId);
+        }}
+        extraHeader={
+          <label className="flex items-center gap-1 text-xs font-normal">
+            <input
+              type="checkbox"
+              checked={
+                !!profile.ship_to &&
+                JSON.stringify(profile.ship_to || {}) === JSON.stringify(profile.bill_to || {})
+              }
+              onChange={async (e) => {
+                const next = e.target.checked ? { ...(profile.ship_to || {}) } : {};
+                setProfile({ ...profile, bill_to: next });
+                await supabase.from("site_profiles").update({ bill_to: next }).eq("id", profileId);
+              }}
+            />
+            Same as Ship To
+          </label>
+        }
+      />
+
+
+
 
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
