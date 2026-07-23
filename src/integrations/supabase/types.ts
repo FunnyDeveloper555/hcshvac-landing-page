@@ -4779,6 +4779,24 @@ export type Database = {
           },
         ]
       }
+      site_profile_report_counters: {
+        Row: {
+          company_key: string
+          next_num: number
+          year_key: string
+        }
+        Insert: {
+          company_key: string
+          next_num?: number
+          year_key: string
+        }
+        Update: {
+          company_key?: string
+          next_num?: number
+          year_key?: string
+        }
+        Relationships: []
+      }
       site_profile_systems: {
         Row: {
           created_at: string
@@ -4841,6 +4859,7 @@ export type Database = {
           notes: string | null
           primary_contact: Json | null
           profile_type: string
+          report_number: string | null
           secondary_contact: Json | null
           session_id: string | null
           ship_to: Json | null
@@ -4870,6 +4889,7 @@ export type Database = {
           notes?: string | null
           primary_contact?: Json | null
           profile_type?: string
+          report_number?: string | null
           secondary_contact?: Json | null
           session_id?: string | null
           ship_to?: Json | null
@@ -4899,6 +4919,7 @@ export type Database = {
           notes?: string | null
           primary_contact?: Json | null
           profile_type?: string
+          report_number?: string | null
           secondary_contact?: Json | null
           session_id?: string | null
           ship_to?: Json | null
@@ -5128,6 +5149,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      company_initials: { Args: { _name: string }; Returns: string }
       complete_booking_invitation: {
         Args: { _token: string }
         Returns: undefined
