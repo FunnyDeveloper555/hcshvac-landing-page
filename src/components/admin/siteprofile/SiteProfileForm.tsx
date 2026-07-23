@@ -43,6 +43,7 @@ export default function SiteProfileForm() {
     booking_method: "",
     location_type: "residential",
     mdu: false,
+    unit_label: "",
     visit_type: "",
     equipment_type: "",
     equipment_location: "",
