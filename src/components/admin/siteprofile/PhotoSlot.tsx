@@ -315,7 +315,7 @@ function PhotoItem({
           className="block w-full relative cursor-zoom-in"
           title="Click to expand"
         >
-          <img src={url} className="w-full h-20 object-cover rounded" alt={label} />
+          <img src={url} className="w-full h-40 object-cover rounded" alt={label} />
           <span className="absolute bottom-1 right-1 bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
             <Maximize2 className="h-3 w-3" />
           </span>
