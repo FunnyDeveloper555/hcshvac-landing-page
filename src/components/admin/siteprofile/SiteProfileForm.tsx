@@ -68,13 +68,16 @@ export default function SiteProfileForm() {
     (async () => {
       setLoading(true);
       try {
-        const { data: co } = await supabase.from("companies").select("id, name").order("name");
+        const [{ data: co }, { data: emp }] = await Promise.all([
+          supabase.from("companies").select("id, name").order("name"),
+          supabase.from("employees").select("id, first_name, last_name").order("first_name"),
+        ]);
         setCompanies(co || []);
+        setEmployees(emp || []);
 
         let pid = urlProfileId;
         let resolvedCustomerId = customerId;
 
-        // If only appointmentId provided, resolve customer by phone
         if (!pid && !resolvedCustomerId && appointmentId) {
           const { data: appt } = await supabase
             .from("appointments")
@@ -95,7 +98,6 @@ export default function SiteProfileForm() {
         }
 
         if (!pid && resolvedCustomerId) {
-          // Snapshot customer info
           const { data: cust } = await supabase
             .from("customer_registrations")
             .select("*")
@@ -142,6 +144,7 @@ export default function SiteProfileForm() {
               },
               created_by: user?.id || null,
               session_id: `SP-${Date.now().toString(36).toUpperCase()}`,
+              assigned_company_id: cust?.company_id || null,
             })
             .select("*")
             .single();
@@ -149,12 +152,25 @@ export default function SiteProfileForm() {
           pid = created.id;
           setProfileId(pid);
           setProfile({ ...created });
+          setAssignedCompanyId(created.assigned_company_id || null);
+          setAssignedToId(created.assigned_to || null);
         } else if (pid) {
           const { data: p } = await supabase.from("site_profiles").select("*").eq("id", pid).maybeSingle();
           if (p) {
             setProfile(p);
             setAssignedCompanyId(p.assigned_company_id || null);
+            setAssignedToId(p.assigned_to || null);
           }
+        }
+
+        // Resolve completed_by (logged-in user) display name
+        if (user?.id) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("display_name, email")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          setCompletedByName(prof?.display_name || prof?.email || user.email || "");
         }
 
         if (pid) {
@@ -171,6 +187,7 @@ export default function SiteProfileForm() {
           }));
           setSystems(mapped);
         }
+
       } catch (e: any) {
         toast({ title: "Load failed", description: e.message, variant: "destructive" });
       } finally {
