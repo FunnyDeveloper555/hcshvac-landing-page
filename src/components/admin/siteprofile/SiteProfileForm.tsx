@@ -246,6 +246,7 @@ export default function SiteProfileForm() {
         booking_method: profile.booking_method,
         location_type: profile.location_type,
         mdu: !!profile.mdu,
+        unit_label: profile.unit_label || null,
         visit_type: profile.visit_type,
         equipment_type: profile.equipment_type,
         equipment_location: profile.equipment_location,
