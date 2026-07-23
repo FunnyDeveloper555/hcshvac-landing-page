@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2 } from "lucide-react";
+import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 
