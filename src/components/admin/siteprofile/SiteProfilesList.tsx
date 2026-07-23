@@ -122,7 +122,9 @@ export default function SiteProfilesList() {
                       <TableCell className="text-xs">
                         {p.unit_label ? (
                           <Badge variant="secondary" className="text-[10px]">{p.unit_label}</Badge>
-                        ) : p.mdu ? <span className="text-muted-foreground">—</span> : ""}
+                        ) : (
+                          <span className="text-muted-foreground text-[10px]">Single</span>
+                        )}
                       </TableCell>
                       <TableCell>{p.ship_to?.name || p.bill_to?.name || "—"}</TableCell>
                       <TableCell className="text-xs">{format(new Date(p.created_at), "MMM d, yyyy h:mm a")}</TableCell>
