@@ -150,30 +150,15 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         </div>
       </div>
 
-      {allowCustomTitle && (
-        <div className="space-y-1">
-          <Input
-            className="h-7 text-xs"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            className="h-7 text-xs"
-            placeholder="About"
-            value={about}
-            onChange={(e) => setAbout(e.target.value)}
-          />
-        </div>
-      )}
-
       <PhotoSlider
         rows={rows}
         signed={signed}
         label={label}
         onRemove={remove}
         onReload={load}
+        allowCustomTitle={allowCustomTitle}
       />
+
     </div>
   );
 }
