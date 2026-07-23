@@ -279,14 +279,12 @@ function PhotoItem({
 }) {
   const { toast } = useToast();
   const [note, setNote] = useState<string>(row.slot_about || "");
-  const [titleVal, setTitleVal] = useState<string>(row.slot_title || "");
   const [saving, setSaving] = useState(false);
   const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     setNote(row.slot_about || "");
-    setTitleVal(row.slot_title || "");
-  }, [row.slot_about, row.slot_title]);
+  }, [row.slot_about]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -295,14 +293,13 @@ function PhotoItem({
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox]);
 
-  const dirty =
-    note !== (row.slot_about || "") || titleVal !== (row.slot_title || "");
+  const dirty = note !== (row.slot_about || "");
 
   const saveNote = async () => {
     setSaving(true);
     const { error } = await supabase
       .from("site_profile_photos")
-      .update({ slot_about: note || null, slot_title: titleVal || null })
+      .update({ slot_about: note || null })
       .eq("id", row.id);
     setSaving(false);
     if (error) {
@@ -312,6 +309,7 @@ function PhotoItem({
       onReload();
     }
   };
+
 
   return (
     <div className="relative group border rounded p-1 bg-background">
@@ -338,12 +336,12 @@ function PhotoItem({
       >
         <Trash2 className="h-3 w-3" />
       </button>
-      <Input
-        className="h-7 text-[11px] mt-1"
-        placeholder="Title"
-        value={titleVal}
-        onChange={(e) => setTitleVal(e.target.value)}
-      />
+      {row.slot_title && (
+        <div className="text-[11px] font-medium mt-1 truncate" title={row.slot_title}>
+          {row.slot_title}
+        </div>
+      )}
+
       <Textarea
         className="text-[11px] min-h-[44px] mt-1"
         placeholder="Note about this photo..."
