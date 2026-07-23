@@ -35,12 +35,16 @@ export default function SiteProfileForm() {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>({
     session_id: "",
+    report_number: "",
     job_number: "",
     booking_method: "",
     location_type: "residential",
+    mdu: false,
     visit_type: "",
     equipment_type: "",
     equipment_location: "",
+    ticket_status: "ACTIVE",
+    customer_deemed_status: "ACTIVE",
     notes: "",
     status: "draft",
     bill_to: {},
@@ -49,10 +53,15 @@ export default function SiteProfileForm() {
     secondary_contact: {},
     customer_id: customerId,
     appointment_id: appointmentId,
+    created_by: null,
   });
   const [systems, setSystems] = useState<SystemRow[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
   const [assignedCompanyId, setAssignedCompanyId] = useState<string | null>(null);
+  const [assignedToId, setAssignedToId] = useState<string | null>(null);
+  const [completedByName, setCompletedByName] = useState<string>("");
+
 
   // Load / create profile
   useEffect(() => {
