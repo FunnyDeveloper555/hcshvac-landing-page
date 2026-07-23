@@ -124,7 +124,7 @@ export default function SiteProfilesList() {
                       </TableCell>
                     </TableRow>
                   ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
