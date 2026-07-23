@@ -419,7 +419,7 @@ function PhotoItem({
           </div>
 
           {/* Note side panel */}
-          {(row.slot_title || note) && (
+          {(row.slot_title || aboutVal || noteVal) && (
             <aside
               className="w-full md:w-96 md:max-w-[35vw] bg-background text-foreground border-l border-border overflow-y-auto p-4 max-h-[40vh] md:max-h-full"
               onClick={(e) => e.stopPropagation()}
@@ -427,13 +427,19 @@ function PhotoItem({
               {row.slot_title && (
                 <h3 className="text-sm font-semibold mb-2 pr-8">{row.slot_title}</h3>
               )}
-              {note && (
-                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                  {note}
+              {aboutVal && (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words mb-3">
+                  {aboutVal}
+                </p>
+              )}
+              {noteVal && (
+                <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
+                  {noteVal}
                 </p>
               )}
             </aside>
           )}
+
         </div>
       )}
     </div>
