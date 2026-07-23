@@ -573,6 +573,43 @@ export default function SiteProfileForm() {
         </CardContent>
       </Card>
 
+      <AddressBlock
+        title="Ship To"
+        value={profile.ship_to || {}}
+        onChange={(v) => setProfile({ ...profile, ship_to: v })}
+        onSave={async (v) => {
+          await supabase.from("site_profiles").update({ ship_to: v }).eq("id", profileId);
+        }}
+      />
+
+      <AddressBlock
+        title="Bill To"
+        value={profile.bill_to || {}}
+        onChange={(v) => setProfile({ ...profile, bill_to: v })}
+        onSave={async (v) => {
+          await supabase.from("site_profiles").update({ bill_to: v }).eq("id", profileId);
+        }}
+        extraHeader={
+          <label className="flex items-center gap-1 text-xs font-normal">
+            <input
+              type="checkbox"
+              checked={
+                !!profile.ship_to &&
+                JSON.stringify(profile.ship_to || {}) === JSON.stringify(profile.bill_to || {})
+              }
+              onChange={async (e) => {
+                const next = e.target.checked ? { ...(profile.ship_to || {}) } : {};
+                setProfile({ ...profile, bill_to: next });
+                await supabase.from("site_profiles").update({ bill_to: next }).eq("id", profileId);
+              }}
+            />
+            Same as Ship To
+          </label>
+        }
+      />
+
+
+
 
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -625,3 +662,55 @@ export default function SiteProfileForm() {
     </div>
   );
 }
+
+function AddressBlock({
+  title,
+  value,
+  onChange,
+  onSave,
+  extraHeader,
+}: {
+  title: string;
+  value: Record<string, any>;
+  onChange: (v: Record<string, any>) => void;
+  onSave: (v: Record<string, any>) => Promise<void>;
+  extraHeader?: React.ReactNode;
+}) {
+  const set = (k: string, v: string) => {
+    const next = { ...value, [k]: v };
+    onChange(next);
+  };
+  const commit = () => { onSave(value); };
+  const field = (k: string, label: string, placeholder?: string, className = "") => (
+    <div className={`space-y-1 ${className}`}>
+      <Label className="text-xs">{label}</Label>
+      <Input
+        className="h-8 text-xs"
+        placeholder={placeholder}
+        value={value[k] || ""}
+        onChange={(e) => set(k, e.target.value)}
+        onBlur={commit}
+      />
+    </div>
+  );
+  return (
+    <Card>
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        {extraHeader}
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {field("name", "Contact Name", "John Doe", "md:col-span-2")}
+        {field("business_name", "Business Name (Optional)", "ACME Corp", "md:col-span-2")}
+        {field("address", "Address", "123 Main St", "md:col-span-2")}
+        {field("suite_number", "Suite / Unit")}
+        {field("city", "City")}
+        {field("state", "State", "IL")}
+        {field("zip", "Zip")}
+        {field("phone", "Phone")}
+        {field("email", "Email", undefined, "md:col-span-2")}
+      </CardContent>
+    </Card>
+  );
+}
+
