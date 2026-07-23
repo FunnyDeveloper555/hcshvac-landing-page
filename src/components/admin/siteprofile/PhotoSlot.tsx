@@ -169,12 +169,14 @@ function PhotoSlider({
   label,
   onRemove,
   onReload,
+  allowCustomTitle,
 }: {
   rows: PhotoRow[];
   signed: Record<string, string>;
   label: string;
   onRemove: (r: PhotoRow) => void;
   onReload: () => void;
+  allowCustomTitle?: boolean;
 }) {
   const [idx, setIdx] = useState(0);
 
@@ -203,7 +205,9 @@ function PhotoSlider({
           label={label}
           onRemove={() => onRemove(current)}
           onReload={onReload}
+          allowCustomTitle={allowCustomTitle}
         />
+
         {hasMany && (
           <>
             <button
