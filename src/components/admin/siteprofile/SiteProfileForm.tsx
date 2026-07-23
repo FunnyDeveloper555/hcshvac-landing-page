@@ -421,6 +421,11 @@ export default function SiteProfileForm() {
                 {profile.report_number}
               </span>
             )}
+            {profile.unit_label && (
+              <span className="text-xs font-mono bg-secondary text-secondary-foreground px-2 py-0.5 rounded">
+                {profile.unit_label}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Session: {profile.session_id} · Status: {profile.status}
