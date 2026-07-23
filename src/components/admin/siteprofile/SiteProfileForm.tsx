@@ -520,6 +520,17 @@ export default function SiteProfileForm() {
               </SelectContent>
             </Select>
           </div>
+          {profile.mdu && (
+            <div className="space-y-1">
+              <Label className="text-xs">Unit Label</Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="e.g. Unit 1"
+                value={profile.unit_label || ""}
+                onChange={(e) => setProfile({ ...profile, unit_label: e.target.value })}
+              />
+            </div>
+          )}
           <div className="space-y-1">
             <Label className="text-xs">Visit Type</Label>
             <Input className="h-8 text-xs" placeholder="e.g. No Heat SVC Call" value={profile.visit_type || ""} onChange={(e) => setProfile({ ...profile, visit_type: e.target.value })} />
