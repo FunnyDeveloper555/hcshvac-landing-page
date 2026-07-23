@@ -21,7 +21,9 @@ interface PhotoRow {
   storage_path: string;
   slot_title?: string | null;
   slot_about?: string | null;
+  slot_note?: string | null;
 }
+
 
 export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle }: PhotoSlotProps) {
   const { toast } = useToast();
@@ -269,15 +271,17 @@ function PhotoItem({
   allowCustomTitle?: boolean;
 }) {
   const { toast } = useToast();
-  const [note, setNote] = useState<string>(row.slot_about || "");
+  const [aboutVal, setAboutVal] = useState<string>(row.slot_about || "");
   const [titleVal, setTitleVal] = useState<string>(row.slot_title || "");
+  const [noteVal, setNoteVal] = useState<string>(row.slot_note || "");
   const [saving, setSaving] = useState(false);
   const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
-    setNote(row.slot_about || "");
+    setAboutVal(row.slot_about || "");
     setTitleVal(row.slot_title || "");
-  }, [row.slot_about, row.slot_title, row.id]);
+    setNoteVal(row.slot_note || "");
+  }, [row.slot_about, row.slot_title, row.slot_note, row.id]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -287,13 +291,17 @@ function PhotoItem({
   }, [lightbox]);
 
   const dirty =
-    note !== (row.slot_about || "") ||
-    (allowCustomTitle && titleVal !== (row.slot_title || ""));
+    aboutVal !== (row.slot_about || "") ||
+    (allowCustomTitle && titleVal !== (row.slot_title || "")) ||
+    (allowCustomTitle && noteVal !== (row.slot_note || ""));
 
   const saveNote = async () => {
     setSaving(true);
-    const patch: Record<string, string | null> = { slot_about: note || null };
-    if (allowCustomTitle) patch.slot_title = titleVal || null;
+    const patch: Record<string, string | null> = { slot_about: aboutVal || null };
+    if (allowCustomTitle) {
+      patch.slot_title = titleVal || null;
+      patch.slot_note = noteVal || null;
+    }
     const { error } = await supabase
       .from("site_profile_photos")
       .update(patch)
@@ -334,24 +342,41 @@ function PhotoItem({
         <Trash2 className="h-3 w-3" />
       </button>
       {allowCustomTitle ? (
-        <Input
-          className="h-7 text-[11px] mt-1"
-          placeholder="Title"
-          value={titleVal}
-          onChange={(e) => setTitleVal(e.target.value)}
-        />
-      ) : row.slot_title ? (
-        <div className="text-[11px] font-medium mt-1 truncate" title={row.slot_title}>
-          {row.slot_title}
-        </div>
-      ) : null}
-
-      <Textarea
-        className="text-[11px] min-h-[44px] mt-1"
-        placeholder={allowCustomTitle ? "About / note..." : "Note about this photo..."}
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
+        <>
+          <Input
+            className="h-7 text-[11px] mt-1"
+            placeholder="Title"
+            value={titleVal}
+            onChange={(e) => setTitleVal(e.target.value)}
+          />
+          <Input
+            className="h-7 text-[11px] mt-1"
+            placeholder="About"
+            value={aboutVal}
+            onChange={(e) => setAboutVal(e.target.value)}
+          />
+          <Textarea
+            className="text-[11px] min-h-[44px] mt-1"
+            placeholder="Note about this photo..."
+            value={noteVal}
+            onChange={(e) => setNoteVal(e.target.value)}
+          />
+        </>
+      ) : (
+        <>
+          {row.slot_title && (
+            <div className="text-[11px] font-medium mt-1 truncate" title={row.slot_title}>
+              {row.slot_title}
+            </div>
+          )}
+          <Textarea
+            className="text-[11px] min-h-[44px] mt-1"
+            placeholder="Note about this photo..."
+            value={aboutVal}
+            onChange={(e) => setAboutVal(e.target.value)}
+          />
+        </>
+      )}
       <Button
         type="button"
         size="sm"
@@ -362,6 +387,7 @@ function PhotoItem({
       >
         {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save</>}
       </Button>
+
 
 
 
@@ -393,7 +419,7 @@ function PhotoItem({
           </div>
 
           {/* Note side panel */}
-          {(row.slot_title || note) && (
+          {(row.slot_title || aboutVal || noteVal) && (
             <aside
               className="w-full md:w-96 md:max-w-[35vw] bg-background text-foreground border-l border-border overflow-y-auto p-4 max-h-[40vh] md:max-h-full"
               onClick={(e) => e.stopPropagation()}
@@ -401,13 +427,19 @@ function PhotoItem({
               {row.slot_title && (
                 <h3 className="text-sm font-semibold mb-2 pr-8">{row.slot_title}</h3>
               )}
-              {note && (
-                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                  {note}
+              {aboutVal && (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words mb-3">
+                  {aboutVal}
+                </p>
+              )}
+              {noteVal && (
+                <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
+                  {noteVal}
                 </p>
               )}
             </aside>
           )}
+
         </div>
       )}
     </div>

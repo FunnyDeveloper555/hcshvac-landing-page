@@ -1,0 +1,1 @@
+ALTER TABLE public.site_profile_photos ADD COLUMN IF NOT EXISTS slot_note TEXT;

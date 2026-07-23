@@ -4729,6 +4729,7 @@ export type Database = {
           public_url: string | null
           size_bytes: number | null
           slot_about: string | null
+          slot_note: string | null
           slot_title: string | null
           storage_path: string
           system_id: string | null
@@ -4743,6 +4744,7 @@ export type Database = {
           public_url?: string | null
           size_bytes?: number | null
           slot_about?: string | null
+          slot_note?: string | null
           slot_title?: string | null
           storage_path: string
           system_id?: string | null
@@ -4757,6 +4759,7 @@ export type Database = {
           public_url?: string | null
           size_bytes?: number | null
           slot_about?: string | null
+          slot_note?: string | null
           slot_title?: string | null
           storage_path?: string
           system_id?: string | null
