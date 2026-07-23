@@ -272,32 +272,46 @@ function PhotoItem({
 
       {lightbox && url && (
         <div
-          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-black/90 flex flex-col md:flex-row"
           onClick={() => setLightbox(false)}
         >
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setLightbox(false); }}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2"
+            className="absolute top-3 right-3 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2"
             title="Close (Esc)"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
-          <img
-            src={url}
-            alt={label}
-            className="max-w-full max-h-full object-contain rounded shadow-2xl"
+
+          {/* Image area */}
+          <div
+            className="flex-1 flex items-center justify-center p-4 min-h-0"
             onClick={(e) => e.stopPropagation()}
-          />
+          >
+            <img
+              src={url}
+              alt={label}
+              className="max-w-full max-h-[90vh] object-contain rounded shadow-2xl"
+            />
+          </div>
+
+          {/* Note side panel */}
           {(row.slot_title || note) && (
-            <div
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-2 rounded max-w-[80%]"
+            <aside
+              className="w-full md:w-96 md:max-w-[35vw] bg-background text-foreground border-l border-border overflow-y-auto p-4 max-h-[40vh] md:max-h-full"
               onClick={(e) => e.stopPropagation()}
             >
-              {row.slot_title && <div className="font-semibold">{row.slot_title}</div>}
-              {note && <div className="opacity-90">{note}</div>}
-            </div>
+              {row.slot_title && (
+                <h3 className="text-sm font-semibold mb-2 pr-8">{row.slot_title}</h3>
+              )}
+              {note && (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                  {note}
+                </p>
+              )}
+            </aside>
           )}
         </div>
       )}
