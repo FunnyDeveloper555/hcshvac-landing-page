@@ -433,6 +433,11 @@ export default function SiteProfileForm() {
           </p>
         </div>
         <div className="flex gap-2">
+          {profile.mdu && (
+            <Button size="sm" variant="outline" disabled={saving} onClick={duplicateForNextUnit}>
+              <Copy className="h-3 w-3 mr-1" /> Duplicate for Next Unit
+            </Button>
+          )}
           <Button size="sm" variant="outline" disabled={sendingPdf} onClick={sendPdfToCustomer}>
             {sendingPdf ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileDown className="h-3 w-3 mr-1" />}
             Send PDF to Customer
