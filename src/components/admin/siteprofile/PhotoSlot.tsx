@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2 } from "lucide-react";
+import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -165,16 +165,99 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
-        {rows.map((r) => (
-          <PhotoItem key={r.id} row={r} url={signed[r.id]} label={label} onRemove={() => remove(r)} onReload={load} />
-        ))}
-        {rows.length === 0 && (
-          <div className="col-span-2 text-[10px] text-muted-foreground text-center py-2 border-dashed border rounded">
-            <Upload className="h-3 w-3 inline mr-1" /> No photos yet
-          </div>
+      <PhotoSlider
+        rows={rows}
+        signed={signed}
+        label={label}
+        onRemove={remove}
+        onReload={load}
+      />
+    </div>
+  );
+}
+
+function PhotoSlider({
+  rows,
+  signed,
+  label,
+  onRemove,
+  onReload,
+}: {
+  rows: PhotoRow[];
+  signed: Record<string, string>;
+  label: string;
+  onRemove: (r: PhotoRow) => void;
+  onReload: () => void;
+}) {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (idx > rows.length - 1) setIdx(Math.max(0, rows.length - 1));
+  }, [rows.length, idx]);
+
+  if (rows.length === 0) {
+    return (
+      <div className="text-[10px] text-muted-foreground text-center py-3 border-dashed border rounded">
+        <Upload className="h-3 w-3 inline mr-1" /> No photos yet
+      </div>
+    );
+  }
+
+  const current = rows[idx];
+  const hasMany = rows.length > 1;
+
+  return (
+    <div className="space-y-1">
+      <div className="relative">
+        <PhotoItem
+          key={current.id}
+          row={current}
+          url={signed[current.id]}
+          label={label}
+          onRemove={() => onRemove(current)}
+          onReload={onReload}
+        />
+        {hasMany && (
+          <>
+            <button
+              type="button"
+              onClick={() => setIdx((i) => (i - 1 + rows.length) % rows.length)}
+              className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+              title="Previous"
+              aria-label="Previous photo"
+            >
+              <ChevronLeft className="h-3 w-3" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIdx((i) => (i + 1) % rows.length)}
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1"
+              title="Next"
+              aria-label="Next photo"
+            >
+              <ChevronRight className="h-3 w-3" />
+            </button>
+          </>
         )}
       </div>
+      {hasMany && (
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+          <span>{idx + 1} / {rows.length}</span>
+          <div className="flex gap-1">
+            {rows.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIdx(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  i === idx ? "bg-primary w-3" : "bg-muted-foreground/40 hover:bg-muted-foreground/70"
+                }`}
+                aria-label={`Go to photo ${i + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -232,7 +315,7 @@ function PhotoItem({
           className="block w-full relative cursor-zoom-in"
           title="Click to expand"
         >
-          <img src={url} className="w-full h-20 object-cover rounded" alt={label} />
+          <img src={url} className="w-full h-40 object-cover rounded" alt={label} />
           <span className="absolute bottom-1 right-1 bg-black/60 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
             <Maximize2 className="h-3 w-3" />
           </span>
