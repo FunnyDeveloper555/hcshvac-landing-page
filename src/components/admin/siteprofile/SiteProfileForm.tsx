@@ -340,6 +340,53 @@ export default function SiteProfileForm() {
     }
   };
 
+  const duplicateForNextUnit = async () => {
+    if (!profileId) return;
+    if (!confirm("Create a new Site Profile for the next unit at this address? Header, address, and contacts will carry over. Systems and photos will start empty.")) return;
+    setSaving(true);
+    try {
+      // Determine next unit label
+      const currentLabel = (profile.unit_label || "").trim();
+      const match = currentLabel.match(/(\d+)\s*$/);
+      let nextLabel = "Unit 2";
+      if (match) {
+        const n = parseInt(match[1], 10) + 1;
+        nextLabel = currentLabel.replace(/\d+\s*$/, String(n));
+      } else if (currentLabel) {
+        nextLabel = `${currentLabel} 2`;
+      }
+      const { data: created, error } = await supabase
+        .from("site_profiles")
+        .insert({
+          customer_id: profile.customer_id,
+          appointment_id: null,
+          location_type: profile.location_type,
+          mdu: true,
+          unit_label: nextLabel,
+          bill_to: profile.bill_to || {},
+          ship_to: profile.ship_to || {},
+          primary_contact: profile.primary_contact || {},
+          secondary_contact: profile.secondary_contact || {},
+          assigned_company_id: assignedCompanyId,
+          assigned_to: assignedToId,
+          created_by: user?.id || null,
+          session_id: `SP-${Date.now().toString(36).toUpperCase()}`,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      toast({ title: "Created", description: `New profile for ${nextLabel}` });
+      navigate(`/admin/site-profiles/edit?id=${created.id}`);
+      // Force refresh
+      setTimeout(() => window.location.reload(), 50);
+    } catch (e: any) {
+      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
