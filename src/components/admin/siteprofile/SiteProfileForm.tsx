@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Save, ChevronLeft } from "lucide-react";
+import { Loader2, Plus, Save, ChevronLeft, FileDown } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
 
 interface SystemDbRow {
   id: string;
@@ -61,6 +64,12 @@ export default function SiteProfileForm() {
   const [assignedCompanyId, setAssignedCompanyId] = useState<string | null>(null);
   const [assignedToId, setAssignedToId] = useState<string | null>(null);
   const [completedByName, setCompletedByName] = useState<string>("");
+  const [sendingPdf, setSendingPdf] = useState(false);
+  const formRef = useRef<HTMLDivElement | null>(null);
+
+
+
+
 
 
   // Load / create profile
@@ -261,6 +270,74 @@ export default function SiteProfileForm() {
     }
   };
 
+  const sendPdfToCustomer = async () => {
+    if (!profileId || !formRef.current) return;
+    const shipTo = profile.ship_to || {};
+    const billTo = profile.bill_to || {};
+    const customerEmail = shipTo.email || billTo.email || "";
+    if (!customerEmail) {
+      toast({ title: "No customer email", description: "Customer has no email on file.", variant: "destructive" });
+      return;
+    }
+    setSendingPdf(true);
+    try {
+      // Render form to canvas -> PDF
+      const canvas = await html2canvas(formRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 40;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 20;
+      pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 40);
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + 20;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - 40);
+      }
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Resolve company name for from/subject
+      let companyName: string | undefined;
+      if (assignedCompanyId) {
+        const co = companies.find((c) => c.id === assignedCompanyId);
+        companyName = co?.name;
+      }
+      const fromEmail = getCompanyInviterEmail(companyName) || "master@hcshvac.com";
+      const customerName = shipTo.name || billTo.name || "";
+      const filename = `${profile.report_number || "site-profile"}.pdf`;
+
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "site-profile-report",
+          recipientEmail: customerEmail,
+          fromEmail,
+          fromName: companyName,
+          bcc: "master@hcshvac.com",
+          templateData: {
+            customerName,
+            companyName,
+            reportNumber: profile.report_number,
+            notes: profile.notes,
+          },
+          attachments: [
+            { filename, content: pdfBase64, contentType: "application/pdf", encoding: "base64" },
+          ],
+        },
+      });
+      if (error) throw error;
+      toast({ title: "PDF sent", description: `Emailed to ${customerEmail} (BCC master@hcshvac.com)` });
+    } catch (e: any) {
+      toast({ title: "Send failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingPdf(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -302,6 +379,10 @@ export default function SiteProfileForm() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" variant="outline" disabled={sendingPdf} onClick={sendPdfToCustomer}>
+            {sendingPdf ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileDown className="h-3 w-3 mr-1" />}
+            Send PDF to Customer
+          </Button>
           <Button size="sm" variant="outline" disabled={saving} onClick={() => saveProfile()}>
             {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
             Save Draft
@@ -309,6 +390,9 @@ export default function SiteProfileForm() {
           <Button size="sm" disabled={saving} onClick={() => saveProfile("submitted")}>Submit</Button>
         </div>
       </div>
+
+      <div ref={formRef} className="space-y-4">
+
 
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-sm">Report Header</CardTitle></CardHeader>
@@ -451,6 +535,9 @@ export default function SiteProfileForm() {
           />
         </CardContent>
       </Card>
+      </div>
+
+
 
       <div className="flex gap-2 justify-end">
         <Button variant="outline" disabled={saving} onClick={() => saveProfile()}>Save Draft</Button>
