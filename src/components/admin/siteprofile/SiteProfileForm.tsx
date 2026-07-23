@@ -379,6 +379,10 @@ export default function SiteProfileForm() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button size="sm" variant="outline" disabled={sendingPdf} onClick={sendPdfToCustomer}>
+            {sendingPdf ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileDown className="h-3 w-3 mr-1" />}
+            Send PDF to Customer
+          </Button>
           <Button size="sm" variant="outline" disabled={saving} onClick={() => saveProfile()}>
             {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Save className="h-3 w-3 mr-1" />}
             Save Draft
@@ -386,6 +390,9 @@ export default function SiteProfileForm() {
           <Button size="sm" disabled={saving} onClick={() => saveProfile("submitted")}>Submit</Button>
         </div>
       </div>
+
+      <div ref={formRef} className="space-y-4">
+
 
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-sm">Report Header</CardTitle></CardHeader>
