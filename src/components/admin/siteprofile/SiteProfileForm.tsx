@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Save, ChevronLeft, FileDown } from "lucide-react";
+import { Loader2, Plus, Save, ChevronLeft, FileDown, Copy } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -43,6 +43,7 @@ export default function SiteProfileForm() {
     booking_method: "",
     location_type: "residential",
     mdu: false,
+    unit_label: "",
     visit_type: "",
     equipment_type: "",
     equipment_location: "",
@@ -245,6 +246,7 @@ export default function SiteProfileForm() {
         booking_method: profile.booking_method,
         location_type: profile.location_type,
         mdu: !!profile.mdu,
+        unit_label: profile.unit_label || null,
         visit_type: profile.visit_type,
         equipment_type: profile.equipment_type,
         equipment_location: profile.equipment_location,
@@ -338,6 +340,53 @@ export default function SiteProfileForm() {
     }
   };
 
+  const duplicateForNextUnit = async () => {
+    if (!profileId) return;
+    if (!confirm("Create a new Site Profile for the next unit at this address? Header, address, and contacts will carry over. Systems and photos will start empty.")) return;
+    setSaving(true);
+    try {
+      // Determine next unit label
+      const currentLabel = (profile.unit_label || "").trim();
+      const match = currentLabel.match(/(\d+)\s*$/);
+      let nextLabel = "Unit 2";
+      if (match) {
+        const n = parseInt(match[1], 10) + 1;
+        nextLabel = currentLabel.replace(/\d+\s*$/, String(n));
+      } else if (currentLabel) {
+        nextLabel = `${currentLabel} 2`;
+      }
+      const { data: created, error } = await supabase
+        .from("site_profiles")
+        .insert({
+          customer_id: profile.customer_id,
+          appointment_id: null,
+          location_type: profile.location_type,
+          mdu: true,
+          unit_label: nextLabel,
+          bill_to: profile.bill_to || {},
+          ship_to: profile.ship_to || {},
+          primary_contact: profile.primary_contact || {},
+          secondary_contact: profile.secondary_contact || {},
+          assigned_company_id: assignedCompanyId,
+          assigned_to: assignedToId,
+          created_by: user?.id || null,
+          session_id: `SP-${Date.now().toString(36).toUpperCase()}`,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      toast({ title: "Created", description: `New profile for ${nextLabel}` });
+      navigate(`/admin/site-profiles/edit?id=${created.id}`);
+      // Force refresh
+      setTimeout(() => window.location.reload(), 50);
+    } catch (e: any) {
+      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -372,6 +421,11 @@ export default function SiteProfileForm() {
                 {profile.report_number}
               </span>
             )}
+            {profile.unit_label && (
+              <span className="text-xs font-mono bg-secondary text-secondary-foreground px-2 py-0.5 rounded">
+                {profile.unit_label}
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             Session: {profile.session_id} · Status: {profile.status}
@@ -379,6 +433,11 @@ export default function SiteProfileForm() {
           </p>
         </div>
         <div className="flex gap-2">
+          {profile.mdu && (
+            <Button size="sm" variant="outline" disabled={saving} onClick={duplicateForNextUnit}>
+              <Copy className="h-3 w-3 mr-1" /> Duplicate for Next Unit
+            </Button>
+          )}
           <Button size="sm" variant="outline" disabled={sendingPdf} onClick={sendPdfToCustomer}>
             {sendingPdf ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <FileDown className="h-3 w-3 mr-1" />}
             Send PDF to Customer
@@ -461,6 +520,17 @@ export default function SiteProfileForm() {
               </SelectContent>
             </Select>
           </div>
+          {profile.mdu && (
+            <div className="space-y-1">
+              <Label className="text-xs">Unit Label</Label>
+              <Input
+                className="h-8 text-xs"
+                placeholder="e.g. Unit 1"
+                value={profile.unit_label || ""}
+                onChange={(e) => setProfile({ ...profile, unit_label: e.target.value })}
+              />
+            </div>
+          )}
           <div className="space-y-1">
             <Label className="text-xs">Visit Type</Label>
             <Input className="h-8 text-xs" placeholder="e.g. No Heat SVC Call" value={profile.visit_type || ""} onChange={(e) => setProfile({ ...profile, visit_type: e.target.value })} />

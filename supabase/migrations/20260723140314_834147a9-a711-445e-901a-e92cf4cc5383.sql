@@ -1,0 +1,1 @@
+ALTER TABLE public.site_profiles ADD COLUMN IF NOT EXISTS unit_label text;
