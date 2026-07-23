@@ -150,30 +150,15 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         </div>
       </div>
 
-      {allowCustomTitle && (
-        <div className="space-y-1">
-          <Input
-            className="h-7 text-xs"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            className="h-7 text-xs"
-            placeholder="About"
-            value={about}
-            onChange={(e) => setAbout(e.target.value)}
-          />
-        </div>
-      )}
-
       <PhotoSlider
         rows={rows}
         signed={signed}
         label={label}
         onRemove={remove}
         onReload={load}
+        allowCustomTitle={allowCustomTitle}
       />
+
     </div>
   );
 }
@@ -184,12 +169,14 @@ function PhotoSlider({
   label,
   onRemove,
   onReload,
+  allowCustomTitle,
 }: {
   rows: PhotoRow[];
   signed: Record<string, string>;
   label: string;
   onRemove: (r: PhotoRow) => void;
   onReload: () => void;
+  allowCustomTitle?: boolean;
 }) {
   const [idx, setIdx] = useState(0);
 
@@ -218,7 +205,9 @@ function PhotoSlider({
           label={label}
           onRemove={() => onRemove(current)}
           onReload={onReload}
+          allowCustomTitle={allowCustomTitle}
         />
+
         {hasMany && (
           <>
             <button
@@ -270,21 +259,25 @@ function PhotoItem({
   label,
   onRemove,
   onReload,
+  allowCustomTitle,
 }: {
   row: PhotoRow;
   url?: string;
   label: string;
   onRemove: () => void;
   onReload: () => void;
+  allowCustomTitle?: boolean;
 }) {
   const { toast } = useToast();
   const [note, setNote] = useState<string>(row.slot_about || "");
+  const [titleVal, setTitleVal] = useState<string>(row.slot_title || "");
   const [saving, setSaving] = useState(false);
   const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => {
     setNote(row.slot_about || "");
-  }, [row.slot_about]);
+    setTitleVal(row.slot_title || "");
+  }, [row.slot_about, row.slot_title, row.id]);
 
   useEffect(() => {
     if (!lightbox) return;
@@ -293,13 +286,17 @@ function PhotoItem({
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox]);
 
-  const dirty = note !== (row.slot_about || "");
+  const dirty =
+    note !== (row.slot_about || "") ||
+    (allowCustomTitle && titleVal !== (row.slot_title || ""));
 
   const saveNote = async () => {
     setSaving(true);
+    const patch: Record<string, string | null> = { slot_about: note || null };
+    if (allowCustomTitle) patch.slot_title = titleVal || null;
     const { error } = await supabase
       .from("site_profile_photos")
-      .update({ slot_about: note || null })
+      .update(patch)
       .eq("id", row.id);
     setSaving(false);
     if (error) {
@@ -336,15 +333,22 @@ function PhotoItem({
       >
         <Trash2 className="h-3 w-3" />
       </button>
-      {row.slot_title && (
+      {allowCustomTitle ? (
+        <Input
+          className="h-7 text-[11px] mt-1"
+          placeholder="Title"
+          value={titleVal}
+          onChange={(e) => setTitleVal(e.target.value)}
+        />
+      ) : row.slot_title ? (
         <div className="text-[11px] font-medium mt-1 truncate" title={row.slot_title}>
           {row.slot_title}
         </div>
-      )}
+      ) : null}
 
       <Textarea
         className="text-[11px] min-h-[44px] mt-1"
-        placeholder="Note about this photo..."
+        placeholder={allowCustomTitle ? "About / note..." : "Note about this photo..."}
         value={note}
         onChange={(e) => setNote(e.target.value)}
       />
@@ -358,6 +362,7 @@ function PhotoItem({
       >
         {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1" />Save</>}
       </Button>
+
 
 
       {lightbox && url && (
