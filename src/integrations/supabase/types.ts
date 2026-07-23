@@ -4866,6 +4866,7 @@ export type Database = {
           status: string
           submitted_at: string | null
           ticket_status: string | null
+          unit_label: string | null
           updated_at: string
           visit_type: string | null
         }
@@ -4896,6 +4897,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           ticket_status?: string | null
+          unit_label?: string | null
           updated_at?: string
           visit_type?: string | null
         }
@@ -4926,6 +4928,7 @@ export type Database = {
           status?: string
           submitted_at?: string | null
           ticket_status?: string | null
+          unit_label?: string | null
           updated_at?: string
           visit_type?: string | null
         }
