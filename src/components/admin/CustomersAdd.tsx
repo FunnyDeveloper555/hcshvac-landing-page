@@ -17,8 +17,7 @@ import { validateUSAddress } from "@/lib/addressValidator";
 import { MapPin, CheckCircle2 } from "lucide-react";
 
 const TITLE_OPTIONS = [
-  { value: "owner_occupied", label: "Owner/Owner Occupied" },
-  { value: "owner_not_occupied", label: "Owner/Not Occupied" },
+  { value: "owner_of_property", label: "Owner of Property" },
   { value: "family_of_owner", label: "Family Member of Owner" },
   { value: "tenant_renter", label: "Tenant/Renter" },
   { value: "property_maintenance", label: "Property Maintenance Company" },
@@ -27,21 +26,45 @@ const TITLE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; sub?: { key: string; label: string }[] }[] = [
-  { key: "call_before_arrival", label: "Call Before Arrival" },
+const HOUSING_TYPE_OPTIONS = [
+  "Apartment Building", "Condominium", "Cottage", "Mansion", "Tiny Home",
+  "Houseboat", "Cabin", "Yurt", "Villa", "Accessory Dwelling Unit",
+  "Manufactured/Modular Home", "Mobile Home", "RV", "Bungalow", "Studio",
+  "Penthouse", "Single Family Home", "Townhouse", "Duplex", "Other",
+];
+
+const STATUS_OPTIONS = [
+  { value: "active", label: "ACTIVE" },
+  { value: "active_owes_balance", label: "ACTIVE — Owes Balance" },
+  { value: "suspended_bad_review", label: "SUSPENDED: Bad Review" },
+  { value: "suspended_owes_balance", label: "SUSPENDED: Owes Balance" },
+  { value: "suspended_need_info", label: "SUSPENDED: Need Information" },
+  { value: "blacklisted", label: "BLACKLISTED: See NOTES" },
+];
+
+const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; blink?: boolean; sub?: { key: string; label: string; blink?: boolean }[] }[] = [
+  { key: "call_before_arrival", label: "Call Before Arrival", blink: true },
+  { key: "text_before_arrival", label: "Text Before Arrival" },
   { key: "has_dogs", label: "Has Dogs" },
+  { key: "has_cats", label: "Has Cats (Allergy Alert)", blink: true },
   {
     key: "handicap",
     label: "Handicap",
     sub: [
-      { key: "hard_of_hearing", label: "Hard of Hearing" },
-      { key: "wheel_chair", label: "Wheel Chair" },
+      { key: "handicap_deaf", label: "Deaf" },
+      { key: "handicap_blind", label: "Blind" },
+      { key: "handicap_wheelchair", label: "Wheel Chair / Walker", blink: true },
+      { key: "handicap_bed_bound", label: "Bed Bound" },
+      { key: "handicap_other", label: "Other" },
     ],
   },
   { key: "doorbell_broken", label: "Doorbell Does not Work" },
   { key: "use_side_door", label: "Use Side Door" },
   { key: "use_back_door", label: "Use Back Door" },
+  { key: "customer_opens_garage", label: "Customer Will Open Garage" },
   { key: "buzz_box", label: "Buzz This on Box", needsInput: true },
+  { key: "buzzer_nonfunctional", label: "Buzzer System is NON FUNCTIONAL" },
+  { key: "see_neighbor", label: "See Neighbor (Name / Address / Phone)", needsInput: true, blink: true },
   { key: "other", label: "Other", needsInput: true },
 ];
 
