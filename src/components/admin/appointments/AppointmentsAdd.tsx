@@ -43,6 +43,7 @@ interface CustomerRecord {
   point_of_contact_phone: string | null;
   point_of_contact_email: string | null;
   company_id: string | null;
+  cautions_restrictions?: string | null;
 }
 
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -62,6 +63,8 @@ interface FormData {
   scheduled_time: string;
   notes: string;
   company_id: string;
+  occupied: string;
+  equipment_location: string;
 }
 
 const initialFormData: FormData = {
@@ -79,6 +82,8 @@ const initialFormData: FormData = {
   scheduled_time: "",
   notes: "",
   company_id: "",
+  occupied: "",
+  equipment_location: "",
 };
 
 const appointmentTypes: { value: AppointmentType; label: string }[] = [
