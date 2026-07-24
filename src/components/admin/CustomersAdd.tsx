@@ -197,6 +197,7 @@ const CustomersAdd = () => {
     location_age_years: null as number | null,
     // New fields
     company_id: "",
+    status: "active",
     warranty_status: "active",
     title_to_location: "",
 
@@ -207,7 +208,6 @@ const CustomersAdd = () => {
     ems_provider_info: "",
     build_year: null as number | null,
     housing_type: "",
-    occupied_by: "",
     responsible_billing_party: "",
     business_type: "",
     corporation_name: "",
