@@ -496,29 +496,8 @@ const CustomersAdd = () => {
           </CardContent>
         </Card>
 
-        {/* Business Name (available for residential and commercial) */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Name</CardTitle>
-            <CardDescription>Optional — fill in if the customer operates under a business name</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Input
-              id="business_name"
-              value={formData.ship_to_business_name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  ship_to_business_name: e.target.value,
-                  bill_to_business_name: formData.bill_to_same_as_ship_to
-                    ? e.target.value
-                    : formData.bill_to_business_name,
-                })
-              }
-              placeholder="Legal or trade business name"
-            />
-          </CardContent>
-        </Card>
+        {/* Business Name is captured in the Ship To section below (single source) */}
+
 
         {/* Commercial-specific fields */}
         {formData.location_type === "commercial" && (
