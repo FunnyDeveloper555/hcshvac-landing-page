@@ -409,7 +409,7 @@ const CustomersAdd = () => {
             <CardTitle>Assignment & Status</CardTitle>
             <CardDescription>Assign customer to a company and set location type</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="company_id">Assign to Company</Label>
               <Select
@@ -441,12 +441,32 @@ const CustomersAdd = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="residential">Residential</SelectItem>
-                  <SelectItem value="commercial">Commercial</SelectItem>
+                  <SelectItem value="commercial">Commercial (coming soon)</SelectItem>
+                  <SelectItem value="educational">Educational Facility (coming soon)</SelectItem>
+                  <SelectItem value="industrial">Industrial Facility (coming soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status *</Label>
+              <Select
+                value={formData.status || "active"}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
+
 
         {/* Contact Information */}
         <Card>
