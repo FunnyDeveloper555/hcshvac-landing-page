@@ -661,6 +661,39 @@ export default function AppointmentsAdd() {
               </div>
             </div>
 
+            {/* Occupied + Equipment Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Occupied By Customer at Time of Visit</Label>
+                <Select value={formData.occupied} onValueChange={(v) => handleChange("occupied", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="equipment_location">Equipment Location</Label>
+                <Input
+                  id="equipment_location"
+                  value={formData.equipment_location}
+                  onChange={(e) => handleChange("equipment_location", e.target.value)}
+                  placeholder="e.g. Attic, Basement, Rooftop, Closet"
+                />
+              </div>
+            </div>
+
+            {/* Customer Cautions/Restrictions (read-only mirror) */}
+            {selectedCustomer?.cautions_restrictions && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
+                <div className="text-sm font-semibold text-destructive mb-1">⚠ Customer Alerts / Cautions</div>
+                <div className="text-sm whitespace-pre-wrap">{selectedCustomer.cautions_restrictions}</div>
+                <div className="text-xs text-muted-foreground mt-1">Managed on the Customer profile.</div>
+              </div>
+            )}
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
