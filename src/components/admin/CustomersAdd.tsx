@@ -990,8 +990,8 @@ const CustomersAdd = () => {
         {/* Customer Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Customer Notes</CardTitle>
-            <CardDescription>Any notes or memos for the initial visit</CardDescription>
+            <CardTitle>Account Notes</CardTitle>
+            <CardDescription>Any notes or memos for this account</CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea

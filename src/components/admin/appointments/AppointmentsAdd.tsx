@@ -43,6 +43,7 @@ interface CustomerRecord {
   point_of_contact_phone: string | null;
   point_of_contact_email: string | null;
   company_id: string | null;
+  cautions_restrictions?: string | null;
 }
 
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -62,6 +63,8 @@ interface FormData {
   scheduled_time: string;
   notes: string;
   company_id: string;
+  occupied: string;
+  equipment_location: string;
 }
 
 const initialFormData: FormData = {
@@ -79,6 +82,8 @@ const initialFormData: FormData = {
   scheduled_time: "",
   notes: "",
   company_id: "",
+  occupied: "",
+  equipment_location: "",
 };
 
 const appointmentTypes: { value: AppointmentType; label: string }[] = [
@@ -175,7 +180,7 @@ export default function AppointmentsAdd() {
       let q = supabase
         .from("customer_registrations")
         .select(
-          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id, cautions_restrictions"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -222,7 +227,7 @@ export default function AppointmentsAdd() {
       const { data, error } = await supabase
         .from("customer_registrations")
         .select(
-          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id, cautions_restrictions"
         )
         .eq("id", preselectCustomerId)
         .maybeSingle();
@@ -261,6 +266,8 @@ export default function AppointmentsAdd() {
         scheduled_time: data.scheduled_time,
         notes: data.notes || "",
         company_id: data.company_id || "",
+        occupied: (data as any).occupied || "",
+        equipment_location: (data as any).equipment_location || "",
       });
       // Try to match an existing customer by phone
       const digits = (data.customer_phone || "").replace(/\D/g, "").slice(-10);
@@ -268,7 +275,7 @@ export default function AppointmentsAdd() {
         const { data: matches } = await supabase
           .from("customer_registrations")
           .select(
-            "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+            "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id, cautions_restrictions"
           )
           .or(`phone.ilike.%${digits}%,business_phone.ilike.%${digits}%,point_of_contact_phone.ilike.%${digits}%`)
           .limit(1);
@@ -292,6 +299,8 @@ export default function AppointmentsAdd() {
       scheduled_time: data.scheduled_time,
       notes: data.notes || null,
       company_id: data.company_id || null,
+      occupied: data.occupied || null,
+      equipment_location: data.equipment_location || null,
     };
   };
 
@@ -651,6 +660,39 @@ export default function AppointmentsAdd() {
                 </div>
               </div>
             </div>
+
+            {/* Occupied + Equipment Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Occupied By Customer at Time of Visit</Label>
+                <Select value={formData.occupied} onValueChange={(v) => handleChange("occupied", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="equipment_location">Equipment Location</Label>
+                <Input
+                  id="equipment_location"
+                  value={formData.equipment_location}
+                  onChange={(e) => handleChange("equipment_location", e.target.value)}
+                  placeholder="e.g. Attic, Basement, Rooftop, Closet"
+                />
+              </div>
+            </div>
+
+            {/* Customer Cautions/Restrictions (read-only mirror) */}
+            {selectedCustomer?.cautions_restrictions && (
+              <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
+                <div className="text-sm font-semibold text-destructive mb-1">⚠ Customer Alerts / Cautions</div>
+                <div className="text-sm whitespace-pre-wrap">{selectedCustomer.cautions_restrictions}</div>
+                <div className="text-xs text-muted-foreground mt-1">Managed on the Customer profile.</div>
+              </div>
+            )}
 
             {/* Notes */}
             <div className="space-y-2">
