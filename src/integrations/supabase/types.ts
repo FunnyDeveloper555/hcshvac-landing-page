@@ -627,8 +627,10 @@ export type Database = {
           customer_email: string | null
           customer_name: string
           customer_phone: string
+          equipment_location: string | null
           id: string
           notes: string | null
+          occupied: string | null
           scheduled_date: string
           scheduled_time: string
           status: Database["public"]["Enums"]["appointment_status"]
@@ -647,8 +649,10 @@ export type Database = {
           customer_email?: string | null
           customer_name: string
           customer_phone: string
+          equipment_location?: string | null
           id?: string
           notes?: string | null
+          occupied?: string | null
           scheduled_date: string
           scheduled_time: string
           status?: Database["public"]["Enums"]["appointment_status"]
@@ -667,8 +671,10 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
+          equipment_location?: string | null
           id?: string
           notes?: string | null
+          occupied?: string | null
           scheduled_date?: string
           scheduled_time?: string
           status?: Database["public"]["Enums"]["appointment_status"]
