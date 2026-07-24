@@ -808,73 +808,34 @@ const CustomersAdd = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {formData.location_type === "residential" && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="build_year">Build Year</Label>
-                    <Input
-                      id="build_year"
-                      type="number"
-                      value={formData.build_year || ""}
-                      onChange={(e) => setFormData({ ...formData, build_year: e.target.value ? parseInt(e.target.value) : null })}
-                      placeholder="e.g., 1995"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="housing_type">Housing Type</Label>
-                    <Select
-                      value={formData.housing_type || undefined}
-                      onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single_family">Single Family</SelectItem>
-                        <SelectItem value="townhouse">Townhouse</SelectItem>
-                        <SelectItem value="condo">Condo</SelectItem>
-                        <SelectItem value="apartment">Apartment</SelectItem>
-                        <SelectItem value="duplex">Duplex</SelectItem>
-                        <SelectItem value="mobile_home">Mobile Home</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="occupied_by">Occupied By</Label>
-                    <Select
-                      value={formData.occupied_by || undefined}
-                      onValueChange={(value) => setFormData({ ...formData, occupied_by: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="owner">Owner</SelectItem>
-                        <SelectItem value="renter">Renter</SelectItem>
-                        <SelectItem value="vacant">Vacant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="build_year">Build Year</Label>
+                  <Input
+                    id="build_year"
+                    type="number"
+                    value={formData.build_year || ""}
+                    onChange={(e) => setFormData({ ...formData, build_year: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="e.g., 1995"
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="residential_type">Residential Type</Label>
-                    <Input
-                      id="residential_type"
-                      value={formData.residential_type}
-                      onChange={(e) => setFormData({ ...formData, residential_type: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="residential_occupancy">Residential Occupancy</Label>
-                    <Input
-                      id="residential_occupancy"
-                      value={formData.residential_occupancy}
-                      onChange={(e) => setFormData({ ...formData, residential_occupancy: e.target.value })}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="housing_type">Housing Type</Label>
+                  <Select
+                    value={formData.housing_type || undefined}
+                    onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOUSING_TYPE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
+              </div>
             )}
 
             <div>
@@ -893,75 +854,7 @@ const CustomersAdd = () => {
               </RadioGroup>
             </div>
 
-            <div>
-              <Label>Equipment Location</Label>
-              {(() => {
-                const isCommercial = formData.location_type === "commercial" || formData.location_type === "industrial" || formData.location_type === "educational";
-                const suffix = isCommercial ? "Business" : "Home";
-                const LOCATION_OPTIONS = [
-                  `Left Side ${suffix} - Ground`,
-                  `Right Side ${suffix} - Ground`,
-                  `Back of ${suffix} - Ground`,
-                  `Roof Top`,
-                ];
-                const LADDER_OPTIONS = [
-                  "Nothing Additional",
-                  "Ladder 24'",
-                  "Ladder greater than 24'",
-                ];
-                let parsed: { location?: string; ladder?: string; notes?: string } = {};
-                try {
-                  const raw = formData.equipment_location;
-                  if (raw && raw.trim().startsWith("{")) parsed = JSON.parse(raw);
-                  else if (raw) parsed = { notes: raw };
-                } catch { parsed = { notes: formData.equipment_location }; }
-                const update = (next: typeof parsed) => {
-                  setFormData({ ...formData, equipment_location: JSON.stringify(next) });
-                };
-                return (
-                  <div className="space-y-3 mt-2 border rounded-md p-3">
-                    <div>
-                      <Label className="text-sm">Location</Label>
-                      <RadioGroup
-                        value={parsed.location || ""}
-                        onValueChange={(v) => update({ ...parsed, location: v })}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2"
-                      >
-                        {LOCATION_OPTIONS.map((opt) => (
-                          <div key={opt} className="flex items-center space-x-2">
-                            <RadioGroupItem value={opt} id={`eqloc_${opt}`} />
-                            <Label htmlFor={`eqloc_${opt}`} className="font-normal">{opt}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Will Need</Label>
-                      <RadioGroup
-                        value={parsed.ladder || ""}
-                        onValueChange={(v) => update({ ...parsed, ladder: v })}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"
-                      >
-                        {LADDER_OPTIONS.map((opt) => (
-                          <div key={opt} className="flex items-center space-x-2">
-                            <RadioGroupItem value={opt} id={`ladder_${opt}`} />
-                            <Label htmlFor={`ladder_${opt}`} className="font-normal">{opt}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Additional Notes</Label>
-                      <Textarea
-                        value={parsed.notes || ""}
-                        onChange={(e) => update({ ...parsed, notes: e.target.value })}
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
+
 
             <div>
               <Label>Cautions / Restrictions ALERTS</Label>
