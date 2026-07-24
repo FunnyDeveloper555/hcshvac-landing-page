@@ -17,8 +17,7 @@ import { validateUSAddress } from "@/lib/addressValidator";
 import { MapPin, CheckCircle2 } from "lucide-react";
 
 const TITLE_OPTIONS = [
-  { value: "owner_occupied", label: "Owner/Owner Occupied" },
-  { value: "owner_not_occupied", label: "Owner/Not Occupied" },
+  { value: "owner_of_property", label: "Owner of Property" },
   { value: "family_of_owner", label: "Family Member of Owner" },
   { value: "tenant_renter", label: "Tenant/Renter" },
   { value: "property_maintenance", label: "Property Maintenance Company" },
@@ -27,21 +26,45 @@ const TITLE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; sub?: { key: string; label: string }[] }[] = [
-  { key: "call_before_arrival", label: "Call Before Arrival" },
+const HOUSING_TYPE_OPTIONS = [
+  "Apartment Building", "Condominium", "Cottage", "Mansion", "Tiny Home",
+  "Houseboat", "Cabin", "Yurt", "Villa", "Accessory Dwelling Unit",
+  "Manufactured/Modular Home", "Mobile Home", "RV", "Bungalow", "Studio",
+  "Penthouse", "Single Family Home", "Townhouse", "Duplex", "Other",
+];
+
+const STATUS_OPTIONS = [
+  { value: "active", label: "ACTIVE" },
+  { value: "active_owes_balance", label: "ACTIVE — Owes Balance" },
+  { value: "suspended_bad_review", label: "SUSPENDED: Bad Review" },
+  { value: "suspended_owes_balance", label: "SUSPENDED: Owes Balance" },
+  { value: "suspended_need_info", label: "SUSPENDED: Need Information" },
+  { value: "blacklisted", label: "BLACKLISTED: See NOTES" },
+];
+
+const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; blink?: boolean; sub?: { key: string; label: string; blink?: boolean }[] }[] = [
+  { key: "call_before_arrival", label: "Call Before Arrival", blink: true },
+  { key: "text_before_arrival", label: "Text Before Arrival" },
   { key: "has_dogs", label: "Has Dogs" },
+  { key: "has_cats", label: "Has Cats (Allergy Alert)", blink: true },
   {
     key: "handicap",
     label: "Handicap",
     sub: [
-      { key: "hard_of_hearing", label: "Hard of Hearing" },
-      { key: "wheel_chair", label: "Wheel Chair" },
+      { key: "handicap_deaf", label: "Deaf" },
+      { key: "handicap_blind", label: "Blind" },
+      { key: "handicap_wheelchair", label: "Wheel Chair / Walker", blink: true },
+      { key: "handicap_bed_bound", label: "Bed Bound" },
+      { key: "handicap_other", label: "Other" },
     ],
   },
   { key: "doorbell_broken", label: "Doorbell Does not Work" },
   { key: "use_side_door", label: "Use Side Door" },
   { key: "use_back_door", label: "Use Back Door" },
+  { key: "customer_opens_garage", label: "Customer Will Open Garage" },
   { key: "buzz_box", label: "Buzz This on Box", needsInput: true },
+  { key: "buzzer_nonfunctional", label: "Buzzer System is NON FUNCTIONAL" },
+  { key: "see_neighbor", label: "See Neighbor (Name / Address / Phone)", needsInput: true, blink: true },
   { key: "other", label: "Other", needsInput: true },
 ];
 
@@ -174,6 +197,7 @@ const CustomersAdd = () => {
     location_age_years: null as number | null,
     // New fields
     company_id: "",
+    status: "active",
     warranty_status: "active",
     title_to_location: "",
 
@@ -184,7 +208,6 @@ const CustomersAdd = () => {
     ems_provider_info: "",
     build_year: null as number | null,
     housing_type: "",
-    occupied_by: "",
     responsible_billing_party: "",
     business_type: "",
     corporation_name: "",
@@ -277,6 +300,7 @@ const CustomersAdd = () => {
         hours_of_operation: data.hours_of_operation || "",
         location_age_years: data.location_age_years,
         company_id: data.company_id || "",
+        status: (data as any).status || "active",
         warranty_status: data.warranty_status || "active",
         title_to_location: data.title_to_location || "",
         
@@ -287,7 +311,6 @@ const CustomersAdd = () => {
         ems_provider_info: data.ems_provider_info || "",
         build_year: data.build_year,
         housing_type: data.housing_type || "",
-        occupied_by: data.occupied_by || "",
         responsible_billing_party: data.responsible_billing_party || "",
         business_type: data.business_type || "",
         corporation_name: data.corporation_name || "",
@@ -386,7 +409,7 @@ const CustomersAdd = () => {
             <CardTitle>Assignment & Status</CardTitle>
             <CardDescription>Assign customer to a company and set location type</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="company_id">Assign to Company</Label>
               <Select
@@ -418,12 +441,32 @@ const CustomersAdd = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="residential">Residential</SelectItem>
-                  <SelectItem value="commercial">Commercial</SelectItem>
+                  <SelectItem value="commercial">Commercial (coming soon)</SelectItem>
+                  <SelectItem value="educational">Educational Facility (coming soon)</SelectItem>
+                  <SelectItem value="industrial">Industrial Facility (coming soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status *</Label>
+              <Select
+                value={formData.status || "active"}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
         </Card>
+
 
         {/* Contact Information */}
         <Card>
@@ -453,29 +496,8 @@ const CustomersAdd = () => {
           </CardContent>
         </Card>
 
-        {/* Business Name (available for residential and commercial) */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Business Name</CardTitle>
-            <CardDescription>Optional — fill in if the customer operates under a business name</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Input
-              id="business_name"
-              value={formData.ship_to_business_name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  ship_to_business_name: e.target.value,
-                  bill_to_business_name: formData.bill_to_same_as_ship_to
-                    ? e.target.value
-                    : formData.bill_to_business_name,
-                })
-              }
-              placeholder="Legal or trade business name"
-            />
-          </CardContent>
-        </Card>
+        {/* Business Name is captured in the Ship To section below (single source) */}
+
 
         {/* Commercial-specific fields */}
         {formData.location_type === "commercial" && (
@@ -786,73 +808,34 @@ const CustomersAdd = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {formData.location_type === "residential" && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="build_year">Build Year</Label>
-                    <Input
-                      id="build_year"
-                      type="number"
-                      value={formData.build_year || ""}
-                      onChange={(e) => setFormData({ ...formData, build_year: e.target.value ? parseInt(e.target.value) : null })}
-                      placeholder="e.g., 1995"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="housing_type">Housing Type</Label>
-                    <Select
-                      value={formData.housing_type || undefined}
-                      onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="single_family">Single Family</SelectItem>
-                        <SelectItem value="townhouse">Townhouse</SelectItem>
-                        <SelectItem value="condo">Condo</SelectItem>
-                        <SelectItem value="apartment">Apartment</SelectItem>
-                        <SelectItem value="duplex">Duplex</SelectItem>
-                        <SelectItem value="mobile_home">Mobile Home</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="occupied_by">Occupied By</Label>
-                    <Select
-                      value={formData.occupied_by || undefined}
-                      onValueChange={(value) => setFormData({ ...formData, occupied_by: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="owner">Owner</SelectItem>
-                        <SelectItem value="renter">Renter</SelectItem>
-                        <SelectItem value="vacant">Vacant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="build_year">Build Year</Label>
+                  <Input
+                    id="build_year"
+                    type="number"
+                    value={formData.build_year || ""}
+                    onChange={(e) => setFormData({ ...formData, build_year: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="e.g., 1995"
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="residential_type">Residential Type</Label>
-                    <Input
-                      id="residential_type"
-                      value={formData.residential_type}
-                      onChange={(e) => setFormData({ ...formData, residential_type: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="residential_occupancy">Residential Occupancy</Label>
-                    <Input
-                      id="residential_occupancy"
-                      value={formData.residential_occupancy}
-                      onChange={(e) => setFormData({ ...formData, residential_occupancy: e.target.value })}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="housing_type">Housing Type</Label>
+                  <Select
+                    value={formData.housing_type || undefined}
+                    onValueChange={(value) => setFormData({ ...formData, housing_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HOUSING_TYPE_OPTIONS.map((opt) => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </>
+              </div>
             )}
 
             <div>
@@ -871,75 +854,7 @@ const CustomersAdd = () => {
               </RadioGroup>
             </div>
 
-            <div>
-              <Label>Equipment Location</Label>
-              {(() => {
-                const isCommercial = formData.location_type === "commercial" || formData.location_type === "industrial" || formData.location_type === "educational";
-                const suffix = isCommercial ? "Business" : "Home";
-                const LOCATION_OPTIONS = [
-                  `Left Side ${suffix} - Ground`,
-                  `Right Side ${suffix} - Ground`,
-                  `Back of ${suffix} - Ground`,
-                  `Roof Top`,
-                ];
-                const LADDER_OPTIONS = [
-                  "Nothing Additional",
-                  "Ladder 24'",
-                  "Ladder greater than 24'",
-                ];
-                let parsed: { location?: string; ladder?: string; notes?: string } = {};
-                try {
-                  const raw = formData.equipment_location;
-                  if (raw && raw.trim().startsWith("{")) parsed = JSON.parse(raw);
-                  else if (raw) parsed = { notes: raw };
-                } catch { parsed = { notes: formData.equipment_location }; }
-                const update = (next: typeof parsed) => {
-                  setFormData({ ...formData, equipment_location: JSON.stringify(next) });
-                };
-                return (
-                  <div className="space-y-3 mt-2 border rounded-md p-3">
-                    <div>
-                      <Label className="text-sm">Location</Label>
-                      <RadioGroup
-                        value={parsed.location || ""}
-                        onValueChange={(v) => update({ ...parsed, location: v })}
-                        className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2"
-                      >
-                        {LOCATION_OPTIONS.map((opt) => (
-                          <div key={opt} className="flex items-center space-x-2">
-                            <RadioGroupItem value={opt} id={`eqloc_${opt}`} />
-                            <Label htmlFor={`eqloc_${opt}`} className="font-normal">{opt}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Will Need</Label>
-                      <RadioGroup
-                        value={parsed.ladder || ""}
-                        onValueChange={(v) => update({ ...parsed, ladder: v })}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"
-                      >
-                        {LADDER_OPTIONS.map((opt) => (
-                          <div key={opt} className="flex items-center space-x-2">
-                            <RadioGroupItem value={opt} id={`ladder_${opt}`} />
-                            <Label htmlFor={`ladder_${opt}`} className="font-normal">{opt}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Additional Notes</Label>
-                      <Textarea
-                        value={parsed.notes || ""}
-                        onChange={(e) => update({ ...parsed, notes: e.target.value })}
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
+
 
             <div>
               <Label>Cautions / Restrictions ALERTS</Label>

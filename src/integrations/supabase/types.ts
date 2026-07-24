@@ -1913,6 +1913,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number: string | null
           ship_to_zip_code: string
+          status: string
           title_to_location: string | null
           type_of_use: string | null
           warranty_status: string | null
@@ -1966,6 +1967,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number?: string | null
           ship_to_zip_code: string
+          status?: string
           title_to_location?: string | null
           type_of_use?: string | null
           warranty_status?: string | null
@@ -2019,6 +2021,7 @@ export type Database = {
           ship_to_state?: string
           ship_to_suite_number?: string | null
           ship_to_zip_code?: string
+          status?: string
           title_to_location?: string | null
           type_of_use?: string | null
           warranty_status?: string | null
