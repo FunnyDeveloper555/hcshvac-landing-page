@@ -180,7 +180,7 @@ export default function AppointmentsAdd() {
       let q = supabase
         .from("customer_registrations")
         .select(
-          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id, cautions_restrictions"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -227,7 +227,7 @@ export default function AppointmentsAdd() {
       const { data, error } = await supabase
         .from("customer_registrations")
         .select(
-          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id"
+          "id, account_number, ship_to_first_name, ship_to_last_name, ship_to_business_name, ship_to_address, ship_to_suite_number, ship_to_city, ship_to_state, ship_to_zip_code, bill_to_same_as_ship_to, bill_to_first_name, bill_to_last_name, bill_to_business_name, bill_to_address, bill_to_suite_number, bill_to_city, bill_to_state, bill_to_zip_code, email, phone, business_phone, point_of_contact_phone, point_of_contact_email, company_id, cautions_restrictions"
         )
         .eq("id", preselectCustomerId)
         .maybeSingle();
