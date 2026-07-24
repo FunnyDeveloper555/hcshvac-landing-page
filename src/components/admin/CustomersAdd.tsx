@@ -300,6 +300,7 @@ const CustomersAdd = () => {
         hours_of_operation: data.hours_of_operation || "",
         location_age_years: data.location_age_years,
         company_id: data.company_id || "",
+        status: (data as any).status || "active",
         warranty_status: data.warranty_status || "active",
         title_to_location: data.title_to_location || "",
         
@@ -310,7 +311,6 @@ const CustomersAdd = () => {
         ems_provider_info: data.ems_provider_info || "",
         build_year: data.build_year,
         housing_type: data.housing_type || "",
-        occupied_by: data.occupied_by || "",
         responsible_billing_party: data.responsible_billing_party || "",
         business_type: data.business_type || "",
         corporation_name: data.corporation_name || "",
