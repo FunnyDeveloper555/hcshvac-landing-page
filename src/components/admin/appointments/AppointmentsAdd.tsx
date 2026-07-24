@@ -266,6 +266,8 @@ export default function AppointmentsAdd() {
         scheduled_time: data.scheduled_time,
         notes: data.notes || "",
         company_id: data.company_id || "",
+        occupied: (data as any).occupied || "",
+        equipment_location: (data as any).equipment_location || "",
       });
       // Try to match an existing customer by phone
       const digits = (data.customer_phone || "").replace(/\D/g, "").slice(-10);
@@ -297,6 +299,8 @@ export default function AppointmentsAdd() {
       scheduled_time: data.scheduled_time,
       notes: data.notes || null,
       company_id: data.company_id || null,
+      occupied: data.occupied || null,
+      equipment_location: data.equipment_location || null,
     };
   };
 
