@@ -460,9 +460,9 @@ export default function AppointmentsList() {
       </div>
 
       {/* Filter */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <Select value={filter} onValueChange={(v) => handleFilterChange(v as FilterType)}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter appointments" />
           </SelectTrigger>
           <SelectContent>
@@ -476,7 +476,7 @@ export default function AppointmentsList() {
             <SelectItem value="closed_year">Closed This Year</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-muted-foreground">
+        <span className="text-xs sm:text-sm text-muted-foreground">
           Showing {paginatedAppointments.length} of {filteredAppointments.length} appointments
         </span>
       </div>
