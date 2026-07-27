@@ -481,8 +481,8 @@ export default function AppointmentsList() {
         </span>
       </div>
 
-      {/* Table */}
-      <Card>
+      {/* Table - desktop */}
+      <Card className="hidden md:block">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
@@ -624,6 +624,133 @@ export default function AppointmentsList() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-3">
+        {filteredAppointments.length === 0 ? (
+          <Card>
+            <CardContent className="p-6 text-center text-muted-foreground text-sm">
+              No appointments found
+            </CardContent>
+          </Card>
+        ) : (
+          paginatedAppointments.map((appointment) => (
+            <Card key={appointment.id} className="overflow-hidden">
+              <CardContent className="p-3 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold truncate">{appointment.customer_name}</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Calendar className="h-3 w-3" />
+                      {format(parseISO(appointment.scheduled_date), "MMM d, yyyy")}
+                      {appointment.scheduled_time ? ` · ${appointment.scheduled_time}` : ""}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {getStatusBadge(appointment.status)}
+                    {appointment.confirmed_at && (
+                      <Badge className="bg-emerald-600 text-white text-[10px]">Confirmed</Badge>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-xs space-y-0.5">
+                  {appointment.customer_phone && (
+                    <div>
+                      <a href={`tel:${appointment.customer_phone}`} className="text-primary underline">
+                        {appointment.customer_phone}
+                      </a>
+                    </div>
+                  )}
+                  {appointment.customer_email && (
+                    <div className="truncate">
+                      <a href={`mailto:${appointment.customer_email}`} className="text-primary underline">
+                        {appointment.customer_email}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 text-xs">
+                  {getTypeBadge(appointment.appointment_type)}
+                  {appointment.companies?.name && (
+                    <Badge variant="outline">{appointment.companies.name}</Badge>
+                  )}
+                  {getInvitationBadge(appointment)}
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(appointment.id)}>
+                    <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!appointment.customer_phone && !appointment.customer_email}
+                    onClick={() => setInvitationTarget(appointment)}
+                  >
+                    <Send className="h-3.5 w-3.5 mr-1" /> Invite
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setSubmissionTarget(appointment)}>
+                    <Eye className="h-3.5 w-3.5 mr-1" /> Submission
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/admin/site-profiles/new?appointmentId=${appointment.id}`)}
+                  >
+                    <ClipboardList className="h-3.5 w-3.5 mr-1" /> Profile
+                  </Button>
+                  {appointment.status === "open" && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-emerald-600 text-emerald-700 hover:bg-emerald-50 col-span-2"
+                        disabled={confirmMutation.isPending}
+                        onClick={() => confirmMutation.mutate(appointment)}
+                      >
+                        <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                        {appointment.confirmed_at ? "Re-notify" : "Confirm & Notify"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          updateStatusMutation.mutate({ id: appointment.id, status: "closed", customerName: appointment.customer_name })
+                        }
+                      >
+                        <CheckCircle className="h-3.5 w-3.5 mr-1" /> Close
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })
+                        }
+                      >
+                        <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel
+                      </Button>
+                    </>
+                  )}
+                  {appointment.status === "closed" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="col-span-2"
+                      onClick={() =>
+                        updateStatusMutation.mutate({ id: appointment.id, status: "open", customerName: appointment.customer_name })
+                      }
+                    >
+                      <Clock className="h-3.5 w-3.5 mr-1" /> Reopen
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
