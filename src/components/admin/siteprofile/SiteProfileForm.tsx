@@ -139,12 +139,24 @@ export default function SiteProfileForm() {
               }
             : {};
 
+          // Look up appointment number if we have an appointment_id
+          let apptNumber: string | null = null;
+          if (appointmentId) {
+            const { data: appt } = await supabase
+              .from("appointments")
+              .select("appointment_number")
+              .eq("id", appointmentId)
+              .maybeSingle();
+            apptNumber = appt?.appointment_number || null;
+          }
+
           const { data: created, error } = await supabase
             .from("site_profiles")
             .insert({
               customer_id: resolvedCustomerId,
               appointment_id: appointmentId,
               location_type: cust?.location_type || "residential",
+              job_number: apptNumber,
               bill_to,
               ship_to,
               primary_contact: {
@@ -167,11 +179,27 @@ export default function SiteProfileForm() {
         } else if (pid) {
           const { data: p } = await supabase.from("site_profiles").select("*").eq("id", pid).maybeSingle();
           if (p) {
+            // Backfill job_number from linked appointment if missing
+            if (!p.job_number && p.appointment_id) {
+              const { data: appt } = await supabase
+                .from("appointments")
+                .select("appointment_number")
+                .eq("id", p.appointment_id)
+                .maybeSingle();
+              if (appt?.appointment_number) {
+                p.job_number = appt.appointment_number;
+                await supabase
+                  .from("site_profiles")
+                  .update({ job_number: appt.appointment_number })
+                  .eq("id", pid);
+              }
+            }
             setProfile(p);
             setAssignedCompanyId(p.assigned_company_id || null);
             setAssignedToId(p.assigned_to || null);
           }
         }
+
 
         // Resolve completed_by (logged-in user) display name
         if (user?.id) {
