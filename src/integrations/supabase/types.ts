@@ -3527,6 +3527,98 @@ export type Database = {
         }
         Relationships: []
       }
+      installation_records: {
+        Row: {
+          appointment_id: string | null
+          brand_name: string | null
+          category: string
+          company_id: string | null
+          completed_by_employee_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          equipment_warranty_years: number | null
+          id: string
+          install_date: string | null
+          item_type: string
+          labor_warranty_years: number | null
+          model_number: string | null
+          notes: string | null
+          serial_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          brand_name?: string | null
+          category: string
+          company_id?: string | null
+          completed_by_employee_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          equipment_warranty_years?: number | null
+          id?: string
+          install_date?: string | null
+          item_type: string
+          labor_warranty_years?: number | null
+          model_number?: string | null
+          notes?: string | null
+          serial_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          brand_name?: string | null
+          category?: string
+          company_id?: string | null
+          completed_by_employee_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          equipment_warranty_years?: number | null
+          id?: string
+          install_date?: string | null
+          item_type?: string
+          labor_warranty_years?: number | null
+          model_number?: string | null
+          notes?: string | null
+          serial_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_records_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_records_completed_by_employee_id_fkey"
+            columns: ["completed_by_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
