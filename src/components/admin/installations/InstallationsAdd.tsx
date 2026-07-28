@@ -19,7 +19,7 @@ import {
 
 interface CustomerOpt { id: string; first: string; last: string; business?: string | null; account?: string | null; }
 interface EmployeeOpt { id: string; first: string; last: string; }
-interface AppointmentOpt { id: string; appointment_number?: string | null; scheduled_at?: string | null; }
+interface AppointmentOpt { id: string; appointment_number?: string | null; scheduled_date?: string | null; }
 
 export default function InstallationsAdd() {
   const navigate = useNavigate();
@@ -80,15 +80,18 @@ export default function InstallationsAdd() {
   }, []);
 
   useEffect(() => {
-    if (!form.customer_id) return;
+    if (!form.customer_id) { setAppointments([]); return; }
+    const cust = customers.find((c) => c.id === form.customer_id);
+    if (!cust) return;
+    const fullName = `${cust.first} ${cust.last}`.trim();
     supabase
       .from("appointments")
-      .select("id, appointment_number, scheduled_at")
-      .eq("customer_id", form.customer_id)
-      .order("scheduled_at", { ascending: false })
+      .select("id, appointment_number, scheduled_date")
+      .eq("customer_name", fullName)
+      .order("scheduled_date", { ascending: false })
       .limit(50)
-      .then(({ data }) => setAppointments(data || []));
-  }, [form.customer_id]);
+      .then(({ data }) => setAppointments((data as AppointmentOpt[] | null) || []));
+  }, [form.customer_id, customers]);
 
   useEffect(() => {
     if (!editId) return;
@@ -185,7 +188,7 @@ export default function InstallationsAdd() {
                 <SelectItem value="none">— None —</SelectItem>
                 {appointments.map((a) => (
                   <SelectItem key={a.id} value={a.id}>
-                    {a.appointment_number || a.id.slice(0, 8)} {a.scheduled_at ? `— ${new Date(a.scheduled_at).toLocaleDateString()}` : ""}
+                    {a.appointment_number || a.id.slice(0, 8)} {a.scheduled_date ? `— ${a.scheduled_date}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
