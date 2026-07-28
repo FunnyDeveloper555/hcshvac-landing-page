@@ -91,6 +91,14 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Installations",
+    icon: Wrench,
+    children: [
+      { title: "Add", url: "/admin/installations/add", icon: Plus },
+      { title: "History", url: "/admin/installations/list", icon: List },
+    ]
+  },
+  {
     title: "ScreenPops",
     icon: Bell,
     children: [
