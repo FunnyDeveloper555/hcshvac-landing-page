@@ -101,7 +101,8 @@ export default function InstallationsList() {
         <span className="text-sm text-muted-foreground ml-auto">{filtered.length} record(s)</span>
       </Card>
 
-      <Card className="overflow-x-auto bg-card">
+      {/* Desktop table */}
+      <Card className="hidden md:block overflow-x-auto bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left">
             <tr>
@@ -147,6 +148,55 @@ export default function InstallationsList() {
           </tbody>
         </table>
       </Card>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-2">
+        {loading ? (
+          <Card className="p-6 text-center text-muted-foreground text-sm">Loading...</Card>
+        ) : filtered.length === 0 ? (
+          <Card className="p-6 text-center text-muted-foreground text-sm">No installation records yet.</Card>
+        ) : filtered.map((r) => (
+          <Card key={r.id} className="p-3 bg-card space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                {r.customer?.ship_to_business_name && (
+                  <div className="font-medium truncate">{r.customer.ship_to_business_name}</div>
+                )}
+                <div className="text-sm truncate">
+                  {r.customer?.ship_to_first_name} {r.customer?.ship_to_last_name}
+                </div>
+                {r.customer?.account_number && (
+                  <div className="text-xs text-muted-foreground">{r.customer.account_number}</div>
+                )}
+              </div>
+              <Badge variant="secondary" className="shrink-0">{CATEGORY_LABEL[r.category]}</Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+              <div><span className="text-muted-foreground">Date:</span> {r.install_date || "—"}</div>
+              <div><span className="text-muted-foreground">Item:</span> {r.item_type}</div>
+              <div><span className="text-muted-foreground">Brand:</span> {r.brand_name || "—"}</div>
+              <div><span className="text-muted-foreground">Tech:</span> {r.completed_by_name || "—"}</div>
+              <div className="col-span-2">
+                <span className="text-muted-foreground">Model:</span> {r.model_number || "—"}
+                {r.serial_number ? <span className="text-muted-foreground"> · SN {r.serial_number}</span> : null}
+              </div>
+              <div className="col-span-2">
+                <span className="text-muted-foreground">Warranty (L/E):</span> {(r.labor_warranty_years ?? 0)}y / {(r.equipment_warranty_years ?? 0)}y
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-1 pt-1 border-t">
+              <Button asChild size="sm" variant="ghost">
+                <Link to={`/admin/installations/add?id=${r.id}`}><Pencil className="w-4 h-4 mr-1" />Edit</Link>
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => handleDelete(r.id)}>
+                <Trash2 className="w-4 h-4 mr-1 text-destructive" />Delete
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
