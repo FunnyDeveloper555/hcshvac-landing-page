@@ -234,6 +234,7 @@ export default function InstallationsAdd() {
         labor_warranty_years: it.labor_warranty_years || null,
         equipment_warranty_years: it.equipment_warranty_years || null,
         notes: it.notes || null,
+        spec: it.spec || {},
       };
       if (it.id) {
         await supabase.from("installation_records").update(itemPayload).eq("id", it.id);
