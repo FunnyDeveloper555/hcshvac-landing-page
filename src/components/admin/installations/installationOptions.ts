@@ -192,6 +192,7 @@ export function specFieldsFor(category: InstallCategory, itemType: string): Spec
   }
   if (category === "electrical") return ELECTRICAL_SPEC;
   // HVAC categories
+  if (/^coil$/i.test(itemType)) return COIL_SPEC;
   if (/furnace/i.test(itemType)) return FURNACE_SPEC;
   if (/thermostat/i.test(itemType)) {
     return [
@@ -213,10 +214,11 @@ export const INSTALL_PHOTO_SLOTS: { key: string; label: string }[] = [
   { key: "nameplate", label: "Name Plate / Label" },
   { key: "installed_front", label: "Installed — Front" },
   { key: "installed_side", label: "Installed — Side" },
-  { key: "connections", label: "Connections / Whip / Line-set" },
-  { key: "disconnect", label: "Disconnect / Breaker" },
+  { key: "connections", label: "Connections" },
+  { key: "electrical", label: "Electrical" },
   { key: "venting", label: "Venting / Flue" },
   { key: "condensate", label: "Condensate / Drain" },
-  { key: "area_wide", label: "Area Wide Shot" },
+  { key: "general", label: "General Photo" },
+  { key: "area_of_concern", label: "Area of Concern" },
 ];
 
