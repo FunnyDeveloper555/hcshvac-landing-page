@@ -165,6 +165,7 @@ export default function InstallationsAdd() {
           supply_vendor_id: j.supply_vendor_id || "",
           completed_by_employee_id: j.completed_by_employee_id || "",
           install_date: j.install_date || new Date().toISOString().slice(0, 10),
+          pickup_date: j.pickup_date || j.install_date || new Date().toISOString().slice(0, 10),
         });
       }
       if (its && its.length) setItems(its.map(mapRow));
