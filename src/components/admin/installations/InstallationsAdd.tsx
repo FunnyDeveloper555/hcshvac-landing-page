@@ -34,6 +34,7 @@ interface Item {
   brand_name: string;
   model_number: string;
   serial_number: string;
+  supply_vendor_id: string;
   labor_warranty_years: number;
   equipment_warranty_years: number;
   notes: string;
@@ -47,6 +48,7 @@ const emptyItem = (): Item => ({
   brand_name: "",
   model_number: "",
   serial_number: "",
+  supply_vendor_id: "",
   labor_warranty_years: 0,
   equipment_warranty_years: 0,
   notes: "",
