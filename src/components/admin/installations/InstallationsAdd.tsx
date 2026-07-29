@@ -8,151 +8,263 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { Plus, Trash2 } from "lucide-react";
 import {
   CATEGORY_LABEL,
-  HVAC_BRANDS,
   ITEM_TYPES,
   InstallCategory,
-  PLUMBING_BRANDS,
+  PICKUP_SLOTS,
   WARRANTY_YEARS,
+  brandsFor,
 } from "./installationOptions";
+import PickupPhotoSlot from "./PickupPhotoSlot";
 
 interface CustomerOpt { id: string; first: string; last: string; business?: string | null; account?: string | null; }
 interface EmployeeOpt { id: string; first: string; last: string; }
 interface AppointmentOpt { id: string; appointment_number?: string | null; scheduled_date?: string | null; }
+interface VendorOpt { id: string; name: string; }
+
+interface Item {
+  id?: string;
+  _new?: boolean;
+  category: InstallCategory;
+  item_type: string;
+  brand_name: string;
+  model_number: string;
+  serial_number: string;
+  labor_warranty_years: number;
+  equipment_warranty_years: number;
+  notes: string;
+}
+
+const emptyItem = (): Item => ({
+  _new: true,
+  category: "residential_hvac",
+  item_type: "Coil",
+  brand_name: "",
+  model_number: "",
+  serial_number: "",
+  labor_warranty_years: 0,
+  equipment_warranty_years: 0,
+  notes: "",
+});
 
 export default function InstallationsAdd() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const editId = params.get("id");
+  const editJobId = params.get("jobId");
+  const legacyItemId = params.get("id"); // legacy single-record edit
   const preselectCustomer = params.get("customerId") || "";
   const preselectAppointment = params.get("appointmentId") || "";
 
   const [customers, setCustomers] = useState<CustomerOpt[]>([]);
   const [employees, setEmployees] = useState<EmployeeOpt[]>([]);
   const [appointments, setAppointments] = useState<AppointmentOpt[]>([]);
+  const [vendors, setVendors] = useState<VendorOpt[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(editJobId);
 
-  const [form, setForm] = useState({
+  const [job, setJob] = useState({
     customer_id: preselectCustomer,
     appointment_id: preselectAppointment,
+    supply_vendor_id: "",
     completed_by_employee_id: "",
-    category: "residential_hvac" as InstallCategory,
-    item_type: "Coil",
     install_date: new Date().toISOString().slice(0, 10),
-    brand_name: "",
-    model_number: "",
-    serial_number: "",
-    labor_warranty_years: 0,
-    equipment_warranty_years: 0,
-    notes: "",
   });
 
-  const brandList = useMemo(
-    () => (form.category === "plumbing" ? PLUMBING_BRANDS : HVAC_BRANDS),
-    [form.category]
-  );
+  const [items, setItems] = useState<Item[]>([emptyItem()]);
 
   useEffect(() => {
     (async () => {
-      const [c, e] = await Promise.all([
+      const [c, e, v] = await Promise.all([
         supabase
           .from("customer_registrations")
           .select("id, ship_to_first_name, ship_to_last_name, ship_to_business_name, account_number")
-          .order("created_at", { ascending: false })
-          .limit(500),
+          .order("created_at", { ascending: false }).limit(500),
         supabase.from("employees").select("id, first_name, last_name").order("first_name"),
+        supabase.from("vendors").select("id, vendor_name").order("vendor_name"),
       ]);
-      setCustomers(
-        (c.data || []).map((r: any) => ({
-          id: r.id,
-          first: r.ship_to_first_name || "",
-          last: r.ship_to_last_name || "",
-          business: r.ship_to_business_name,
-          account: r.account_number,
-        }))
-      );
-      setEmployees(
-        (e.data || []).map((r: any) => ({ id: r.id, first: r.first_name || "", last: r.last_name || "" }))
-      );
+      setCustomers((c.data || []).map((r: any) => ({
+        id: r.id, first: r.ship_to_first_name || "", last: r.ship_to_last_name || "",
+        business: r.ship_to_business_name, account: r.account_number,
+      })));
+      setEmployees((e.data || []).map((r: any) => ({ id: r.id, first: r.first_name || "", last: r.last_name || "" })));
+      setVendors((v.data || []).map((r: any) => ({ id: r.id, name: r.vendor_name })));
     })();
   }, []);
 
   useEffect(() => {
-    if (!form.customer_id) { setAppointments([]); return; }
-    const cust = customers.find((c) => c.id === form.customer_id);
+    if (!job.customer_id) { setAppointments([]); return; }
+    const cust = customers.find((c) => c.id === job.customer_id);
     if (!cust) return;
     const fullName = `${cust.first} ${cust.last}`.trim();
     supabase
       .from("appointments")
       .select("id, appointment_number, scheduled_date")
       .eq("customer_name", fullName)
-      .order("scheduled_date", { ascending: false })
-      .limit(50)
-      .then(({ data }) => setAppointments((data as AppointmentOpt[] | null) || []));
-  }, [form.customer_id, customers]);
+      .order("scheduled_date", { ascending: false }).limit(50)
+      .then(({ data }) => setAppointments((data as AppointmentOpt[]) || []));
+  }, [job.customer_id, customers]);
 
   useEffect(() => {
-    if (!editId) return;
+    if (!editJobId && !legacyItemId) return;
     setLoading(true);
-    supabase
-      .from("installation_records")
-      .select("*")
-      .eq("id", editId)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          setForm({
-            customer_id: data.customer_id || "",
-            appointment_id: data.appointment_id || "",
-            completed_by_employee_id: data.completed_by_employee_id || "",
-            category: data.category as InstallCategory,
-            item_type: data.item_type,
-            install_date: data.install_date || "",
-            brand_name: data.brand_name || "",
-            model_number: data.model_number || "",
-            serial_number: data.serial_number || "",
-            labor_warranty_years: data.labor_warranty_years || 0,
-            equipment_warranty_years: data.equipment_warranty_years || 0,
-            notes: data.notes || "",
-          });
+    (async () => {
+      // Legacy: single record without job — auto-adopt into a fresh job or standalone edit
+      if (!editJobId && legacyItemId) {
+        const { data: r } = await supabase
+          .from("installation_records").select("*").eq("id", legacyItemId).single();
+        if (r) {
+          if (r.job_id) {
+            // has a job — redirect via state
+            setJobId(r.job_id);
+            const [{ data: j }, { data: its }] = await Promise.all([
+              supabase.from("installation_jobs").select("*").eq("id", r.job_id).single(),
+              supabase.from("installation_records").select("*").eq("job_id", r.job_id).order("created_at"),
+            ]);
+            if (j) setJob({
+              customer_id: j.customer_id || "",
+              appointment_id: j.appointment_id || "",
+              supply_vendor_id: j.supply_vendor_id || "",
+              completed_by_employee_id: j.completed_by_employee_id || "",
+              install_date: j.install_date || new Date().toISOString().slice(0, 10),
+            });
+            if (its && its.length) setItems(its.map(mapRow));
+          } else {
+            setJob({
+              customer_id: r.customer_id || "",
+              appointment_id: r.appointment_id || "",
+              supply_vendor_id: "",
+              completed_by_employee_id: r.completed_by_employee_id || "",
+              install_date: r.install_date || new Date().toISOString().slice(0, 10),
+            });
+            setItems([mapRow(r)]);
+          }
         }
         setLoading(false);
-      });
-  }, [editId]);
+        return;
+      }
+      const [{ data: j }, { data: its }] = await Promise.all([
+        supabase.from("installation_jobs").select("*").eq("id", editJobId).single(),
+        supabase.from("installation_records").select("*").eq("job_id", editJobId).order("created_at"),
+      ]);
+      if (j) {
+        setJob({
+          customer_id: j.customer_id || "",
+          appointment_id: j.appointment_id || "",
+          supply_vendor_id: j.supply_vendor_id || "",
+          completed_by_employee_id: j.completed_by_employee_id || "",
+          install_date: j.install_date || new Date().toISOString().slice(0, 10),
+        });
+      }
+      if (its && its.length) setItems(its.map(mapRow));
+      setLoading(false);
+    })();
+  }, [editJobId, legacyItemId]);
 
-  useEffect(() => {
-    const types = ITEM_TYPES[form.category];
-    if (!types.includes(form.item_type)) setForm((f) => ({ ...f, item_type: types[0] }));
-  }, [form.category]); // eslint-disable-line
-
-  async function handleSave() {
-    if (!form.customer_id) {
-      toast({ title: "Please select a customer", variant: "destructive" });
-      return;
-    }
-    setSaving(true);
-    const emp = employees.find((e) => e.id === form.completed_by_employee_id);
-    const payload = {
-      ...form,
-      appointment_id: form.appointment_id || null,
-      completed_by_employee_id: form.completed_by_employee_id || null,
-      completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
-      install_date: form.install_date || null,
-      labor_warranty_years: form.labor_warranty_years || null,
-      equipment_warranty_years: form.equipment_warranty_years || null,
+  function mapRow(r: any): Item {
+    return {
+      id: r.id,
+      category: r.category,
+      item_type: r.item_type,
+      brand_name: r.brand_name || "",
+      model_number: r.model_number || "",
+      serial_number: r.serial_number || "",
+      labor_warranty_years: r.labor_warranty_years || 0,
+      equipment_warranty_years: r.equipment_warranty_years || 0,
+      notes: r.notes || "",
     };
-    const { error } = editId
-      ? await supabase.from("installation_records").update(payload).eq("id", editId)
-      : await supabase.from("installation_records").insert(payload);
-    setSaving(false);
-    if (error) {
-      toast({ title: "Save failed", description: error.message, variant: "destructive" });
-      return;
+  }
+
+  function updateItem(i: number, patch: Partial<Item>) {
+    setItems((prev) => prev.map((it, idx) => idx === i ? { ...it, ...patch } : it));
+  }
+
+  function changeCategory(i: number, cat: InstallCategory) {
+    const types = ITEM_TYPES[cat];
+    setItems((prev) => prev.map((it, idx) => idx === i
+      ? { ...it, category: cat, item_type: types.includes(it.item_type) ? it.item_type : types[0] }
+      : it));
+  }
+
+  async function saveJob(): Promise<string | null> {
+    if (!job.customer_id) {
+      toast({ title: "Please select a customer", variant: "destructive" });
+      return null;
     }
-    toast({ title: editId ? "Installation updated" : "Installation added" });
-    navigate("/admin/installations/list");
+    const emp = employees.find((e) => e.id === job.completed_by_employee_id);
+    const payload = {
+      customer_id: job.customer_id,
+      appointment_id: job.appointment_id || null,
+      supply_vendor_id: job.supply_vendor_id || null,
+      completed_by_employee_id: job.completed_by_employee_id || null,
+      completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
+      install_date: job.install_date || null,
+    };
+    let id = jobId;
+    if (id) {
+      const { error } = await supabase.from("installation_jobs").update(payload).eq("id", id);
+      if (error) { toast({ title: "Save failed", description: error.message, variant: "destructive" }); return null; }
+    } else {
+      const { data, error } = await supabase.from("installation_jobs").insert(payload).select("id").single();
+      if (error || !data) { toast({ title: "Save failed", description: error?.message, variant: "destructive" }); return null; }
+      id = data.id; setJobId(id);
+    }
+
+    // Upsert items
+    for (const it of items) {
+      const itemPayload = {
+        job_id: id,
+        customer_id: job.customer_id,
+        appointment_id: job.appointment_id || null,
+        completed_by_employee_id: job.completed_by_employee_id || null,
+        completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
+        install_date: job.install_date || null,
+        category: it.category,
+        item_type: it.item_type,
+        brand_name: it.brand_name || null,
+        model_number: it.model_number || null,
+        serial_number: it.serial_number || null,
+        labor_warranty_years: it.labor_warranty_years || null,
+        equipment_warranty_years: it.equipment_warranty_years || null,
+        notes: it.notes || null,
+      };
+      if (it.id) {
+        await supabase.from("installation_records").update(itemPayload).eq("id", it.id);
+      } else {
+        const { data } = await supabase.from("installation_records").insert(itemPayload).select("id").single();
+        if (data) it.id = data.id;
+      }
+    }
+    setItems([...items]);
+    return id;
+  }
+
+  async function handleSaveProgress() {
+    setSaving(true);
+    const id = await saveJob();
+    setSaving(false);
+    if (id) toast({ title: "Progress saved" });
+  }
+
+  async function handleDone() {
+    setSaving(true);
+    const id = await saveJob();
+    setSaving(false);
+    if (id) {
+      toast({ title: editJobId ? "Installation updated" : "Installation saved" });
+      navigate("/admin/installations/list");
+    }
+  }
+
+  async function removeItem(i: number) {
+    const it = items[i];
+    if (it.id) {
+      if (!confirm("Delete this item?")) return;
+      await supabase.from("installation_records").delete().eq("id", it.id);
+    }
+    setItems((prev) => prev.filter((_, idx) => idx !== i));
   }
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -160,16 +272,20 @@ export default function InstallationsAdd() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold">{editId ? "Edit" : "Add"} Installation Record</h2>
-        <p className="text-sm text-muted-foreground">Track equipment installed at a customer site.</p>
+        <h2 className="text-2xl font-bold">{editJobId ? "Edit" : "Add"} Installation Job</h2>
+        <p className="text-sm text-muted-foreground">
+          Log equipment picked up from a supply vendor and installed at a customer site.
+        </p>
       </div>
 
+      {/* Assignment */}
       <Card>
         <CardHeader><CardTitle className="text-base">Assignment</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div>
             <Label>Customer *</Label>
-            <Select value={form.customer_id} onValueChange={(v) => setForm({ ...form, customer_id: v, appointment_id: "" })}>
+            <Select value={job.customer_id}
+              onValueChange={(v) => setJob({ ...job, customer_id: v, appointment_id: "" })}>
               <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
               <SelectContent>
                 {customers.map((c) => (
@@ -182,7 +298,8 @@ export default function InstallationsAdd() {
           </div>
           <div>
             <Label>Appointment (optional)</Label>
-            <Select value={form.appointment_id || "none"} onValueChange={(v) => setForm({ ...form, appointment_id: v === "none" ? "" : v })}>
+            <Select value={job.appointment_id || "none"}
+              onValueChange={(v) => setJob({ ...job, appointment_id: v === "none" ? "" : v })}>
               <SelectTrigger><SelectValue placeholder="Select appointment" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">— None —</SelectItem>
@@ -195,8 +312,22 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
+            <Label>Supply Vendor</Label>
+            <Select value={job.supply_vendor_id || "none"}
+              onValueChange={(v) => setJob({ ...job, supply_vendor_id: v === "none" ? "" : v })}>
+              <SelectTrigger><SelectValue placeholder="Select supply house" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— None —</SelectItem>
+                {vendors.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
             <Label>Completed By (Technician)</Label>
-            <Select value={form.completed_by_employee_id} onValueChange={(v) => setForm({ ...form, completed_by_employee_id: v })}>
+            <Select value={job.completed_by_employee_id}
+              onValueChange={(v) => setJob({ ...job, completed_by_employee_id: v })}>
               <SelectTrigger><SelectValue placeholder="Select technician" /></SelectTrigger>
               <SelectContent>
                 {employees.map((e) => (
@@ -206,100 +337,125 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
-            <Label>Installation Date</Label>
-            <Input type="date" value={form.install_date} onChange={(e) => setForm({ ...form, install_date: e.target.value })} />
+            <Label>Installation / Pickup Date</Label>
+            <Input type="date" value={job.install_date}
+              onChange={(e) => setJob({ ...job, install_date: e.target.value })} />
           </div>
         </CardContent>
       </Card>
 
+      {/* Items */}
+      {items.map((it, i) => (
+        <Card key={i}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-base">Equipment #{i + 1}</CardTitle>
+            {items.length > 1 && (
+              <Button type="button" size="sm" variant="ghost" onClick={() => removeItem(i)}>
+                <Trash2 className="w-4 h-4 mr-1 text-destructive" /> Remove
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2">
+            <div>
+              <Label>Equipment Category *</Label>
+              <Select value={it.category} onValueChange={(v) => changeCategory(i, v as InstallCategory)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(CATEGORY_LABEL) as InstallCategory[]).map((k) => (
+                    <SelectItem key={k} value={k}>{CATEGORY_LABEL[k]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Sub Category / Item Type *</Label>
+              <Select value={it.item_type} onValueChange={(v) => updateItem(i, { item_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ITEM_TYPES[it.category].map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Brand Name</Label>
+              <Input list={`brands-${i}`} value={it.brand_name}
+                onChange={(e) => updateItem(i, { brand_name: e.target.value })}
+                placeholder="Select or type brand" />
+              <datalist id={`brands-${i}`}>
+                {brandsFor(it.category).map((b) => <option key={b} value={b} />)}
+              </datalist>
+            </div>
+            <div />
+            <div>
+              <Label>Model Number</Label>
+              <Input value={it.model_number} onChange={(e) => updateItem(i, { model_number: e.target.value })} />
+            </div>
+            <div>
+              <Label>Serial Number</Label>
+              <Input value={it.serial_number} onChange={(e) => updateItem(i, { serial_number: e.target.value })} />
+            </div>
+            <div>
+              <Label>Years Labor Warranty</Label>
+              <Select value={String(it.labor_warranty_years || 0)}
+                onValueChange={(v) => updateItem(i, { labor_warranty_years: Number(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">None</SelectItem>
+                  {WARRANTY_YEARS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Years Equipment Warranty</Label>
+              <Select value={String(it.equipment_warranty_years || 0)}
+                onValueChange={(v) => updateItem(i, { equipment_warranty_years: Number(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">None</SelectItem>
+                  {WARRANTY_YEARS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label>Notes</Label>
+              <Textarea rows={2} value={it.notes} onChange={(e) => updateItem(i, { notes: e.target.value })} />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      <div className="flex justify-start">
+        <Button type="button" variant="outline" onClick={() => setItems([...items, emptyItem()])}>
+          <Plus className="w-4 h-4 mr-1" /> Add Another Item
+        </Button>
+      </div>
+
+      {/* Pickup / Delivery Package Photos */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Equipment</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          <div>
-            <Label>Category *</Label>
-            <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v as InstallCategory })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {(Object.keys(CATEGORY_LABEL) as InstallCategory[]).map((k) => (
-                  <SelectItem key={k} value={k}>{CATEGORY_LABEL[k]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Item Type *</Label>
-            <Select value={form.item_type} onValueChange={(v) => setForm({ ...form, item_type: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ITEM_TYPES[form.category].map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Brand Name</Label>
-            <Input
-              list="install-brands"
-              value={form.brand_name}
-              onChange={(e) => setForm({ ...form, brand_name: e.target.value })}
-              placeholder="Select or type brand"
-            />
-            <datalist id="install-brands">
-              {brandList.map((b) => <option key={b} value={b} />)}
-            </datalist>
-          </div>
-          <div />
-          <div>
-            <Label>Model Number</Label>
-            <Input value={form.model_number} onChange={(e) => setForm({ ...form, model_number: e.target.value })} />
-          </div>
-          <div>
-            <Label>Serial Number</Label>
-            <Input value={form.serial_number} onChange={(e) => setForm({ ...form, serial_number: e.target.value })} />
-          </div>
+        <CardHeader>
+          <CardTitle className="text-base">Pickup / Delivery Package Photos</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Photos representing the condition of the package at time of pickup/delivery.
+            {!jobId && " Save progress first to enable uploads."}
+          </p>
+        </CardHeader>
+        <CardContent className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+          {PICKUP_SLOTS.map((s) => (
+            <PickupPhotoSlot key={s.key} jobId={jobId} slot={s.key} label={s.label} />
+          ))}
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Warranty</CardTitle></CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-2">
-          <div>
-            <Label>Years Labor Warranty Given</Label>
-            <Select
-              value={String(form.labor_warranty_years || 0)}
-              onValueChange={(v) => setForm({ ...form, labor_warranty_years: Number(v) })}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">None</SelectItem>
-                {WARRANTY_YEARS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Years Equipment Warranty</Label>
-            <Select
-              value={String(form.equipment_warranty_years || 0)}
-              onValueChange={(v) => setForm({ ...form, equipment_warranty_years: Number(v) })}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">None</SelectItem>
-                {WARRANTY_YEARS.map((y) => <SelectItem key={y} value={String(y)}>{y} year{y > 1 ? "s" : ""}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="md:col-span-2">
-            <Label>Notes</Label>
-            <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-wrap gap-2 justify-end">
         <Button variant="outline" onClick={() => navigate("/admin/installations/list")}>Cancel</Button>
-        <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : editId ? "Update" : "Save"}</Button>
+        <Button variant="secondary" onClick={handleSaveProgress} disabled={saving}>
+          {saving ? "Saving..." : "Save Progress"}
+        </Button>
+        <Button onClick={handleDone} disabled={saving}>
+          {saving ? "Saving..." : editJobId ? "Update" : "Save"}
+        </Button>
       </div>
     </div>
   );
