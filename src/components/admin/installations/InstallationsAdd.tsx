@@ -566,21 +566,6 @@ export default function InstallationsAdd() {
         </Button>
       </div>
 
-      {/* Pickup / Delivery Package Photos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pickup / Delivery Package Photos</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Photos representing the condition of the package at time of pickup/delivery.
-            {!jobId && " Save progress first to enable uploads."}
-          </p>
-        </CardHeader>
-        <CardContent className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {PICKUP_SLOTS.map((s) => (
-            <PickupPhotoSlot key={s.key} jobId={jobId} slot={s.key} label={s.label} />
-          ))}
-        </CardContent>
-      </Card>
 
       <div className="flex flex-wrap gap-2 justify-end">
         <Button variant="outline" onClick={() => navigate("/admin/installations/list")}>Cancel</Button>
