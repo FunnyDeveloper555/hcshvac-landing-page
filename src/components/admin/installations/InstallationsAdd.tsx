@@ -146,6 +146,7 @@ export default function InstallationsAdd() {
               supply_vendor_id: "",
               completed_by_employee_id: r.completed_by_employee_id || "",
               install_date: r.install_date || new Date().toISOString().slice(0, 10),
+              pickup_date: r.pickup_date || r.install_date || new Date().toISOString().slice(0, 10),
             });
             setItems([mapRow(r)]);
           }
