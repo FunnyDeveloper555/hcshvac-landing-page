@@ -439,7 +439,21 @@ export default function InstallationsAdd() {
                 {brandsFor(it.category).map((b) => <option key={b} value={b} />)}
               </datalist>
             </div>
-            <div />
+            <div>
+              <Label>Supply Vendor</Label>
+              <Select
+                value={it.supply_vendor_id || "none"}
+                onValueChange={(v) => updateItem(i, { supply_vendor_id: v === "none" ? "" : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select supply house" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label>Model Number</Label>
               <Input value={it.model_number} onChange={(e) => updateItem(i, { model_number: e.target.value })} />
