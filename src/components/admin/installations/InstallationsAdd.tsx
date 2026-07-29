@@ -178,6 +178,7 @@ export default function InstallationsAdd() {
       labor_warranty_years: r.labor_warranty_years || 0,
       equipment_warranty_years: r.equipment_warranty_years || 0,
       notes: r.notes || "",
+      spec: (r.spec && typeof r.spec === "object") ? r.spec : {},
     };
   }
 
