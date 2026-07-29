@@ -3538,6 +3538,7 @@ export type Database = {
           id: string
           install_date: string | null
           notes: string | null
+          pickup_date: string | null
           status: string
           supply_vendor_id: string | null
           updated_at: string
@@ -3552,6 +3553,7 @@ export type Database = {
           id?: string
           install_date?: string | null
           notes?: string | null
+          pickup_date?: string | null
           status?: string
           supply_vendor_id?: string | null
           updated_at?: string
@@ -3566,6 +3568,7 @@ export type Database = {
           id?: string
           install_date?: string | null
           notes?: string | null
+          pickup_date?: string | null
           status?: string
           supply_vendor_id?: string | null
           updated_at?: string
@@ -3671,6 +3674,7 @@ export type Database = {
           labor_warranty_years: number | null
           model_number: string | null
           notes: string | null
+          pickup_date: string | null
           serial_number: string | null
           spec: Json
           supply_vendor_id: string | null
@@ -3694,6 +3698,7 @@ export type Database = {
           labor_warranty_years?: number | null
           model_number?: string | null
           notes?: string | null
+          pickup_date?: string | null
           serial_number?: string | null
           spec?: Json
           supply_vendor_id?: string | null
@@ -3717,6 +3722,7 @@ export type Database = {
           labor_warranty_years?: number | null
           model_number?: string | null
           notes?: string | null
+          pickup_date?: string | null
           serial_number?: string | null
           spec?: Json
           supply_vendor_id?: string | null
