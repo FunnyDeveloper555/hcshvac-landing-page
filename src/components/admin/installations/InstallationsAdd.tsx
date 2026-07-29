@@ -377,19 +377,6 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
-            <Label>Supply Vendor</Label>
-            <Select value={job.supply_vendor_id || "none"}
-              onValueChange={(v) => setJob({ ...job, supply_vendor_id: v === "none" ? "" : v })}>
-              <SelectTrigger><SelectValue placeholder="Select supply house" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {vendors.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
             <Label>Completed By (Technician)</Label>
             <Select value={job.completed_by_employee_id}
               onValueChange={(v) => setJob({ ...job, completed_by_employee_id: v })}>
