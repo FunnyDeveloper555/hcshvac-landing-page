@@ -281,9 +281,9 @@ export default function InstallationsAdd() {
     let fromEmail: string | undefined;
     if (cust.company_id) {
       const { data: co } = await supabase
-        .from("companies").select("name, company_email").eq("id", cust.company_id).single();
+        .from("companies").select("name, company_email_primary").eq("id", cust.company_id).single();
       companyName = co?.name;
-      fromEmail = co?.company_email || undefined;
+      fromEmail = co?.company_email_primary || undefined;
     }
     const templateData = {
       customerName: `${cust.ship_to_first_name || ""} ${cust.ship_to_last_name || ""}`.trim(),
