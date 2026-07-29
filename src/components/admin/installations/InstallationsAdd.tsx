@@ -179,6 +179,7 @@ export default function InstallationsAdd() {
       serial_number: r.serial_number || "",
       labor_warranty_years: r.labor_warranty_years || 0,
       equipment_warranty_years: r.equipment_warranty_years || 0,
+      supply_vendor_id: r.supply_vendor_id || "",
       notes: r.notes || "",
       spec: (r.spec && typeof r.spec === "object") ? r.spec : {},
     };
