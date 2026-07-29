@@ -428,6 +428,63 @@ export default function InstallationsAdd() {
               <Label>Notes</Label>
               <Textarea rows={2} value={it.notes} onChange={(e) => updateItem(i, { notes: e.target.value })} />
             </div>
+
+            {/* On-Location Install Profile — Specs */}
+            <div className="md:col-span-2 pt-3 border-t">
+              <div className="text-sm font-medium mb-2">On-Location Install Profile — Specs</div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {specFieldsFor(it.category, it.item_type).map((f) => (
+                  <div key={f.key}>
+                    <Label className="text-xs">{f.label}{f.suffix ? ` (${f.suffix})` : ""}</Label>
+                    {f.type === "select" ? (
+                      <Select
+                        value={it.spec?.[f.key] || ""}
+                        onValueChange={(v) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: v } })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>
+                          {(f.options || []).map((o) => (
+                            <SelectItem key={o} value={o}>{o}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : f.type === "textarea" ? (
+                      <Textarea
+                        rows={2}
+                        value={it.spec?.[f.key] || ""}
+                        onChange={(e) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: e.target.value } })}
+                      />
+                    ) : (
+                      <Input
+                        value={it.spec?.[f.key] || ""}
+                        onChange={(e) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: e.target.value } })}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* On-Location Install Photos */}
+            <div className="md:col-span-2 pt-3 border-t">
+              <div className="text-sm font-medium mb-2">On-Location Install Photos</div>
+              {!it.id ? (
+                <p className="text-xs text-muted-foreground">Save progress first to enable photo uploads for this item.</p>
+              ) : (
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+                  {INSTALL_PHOTO_SLOTS.map((s) => (
+                    <PickupPhotoSlot
+                      key={s.key}
+                      jobId={jobId}
+                      itemId={it.id}
+                      phase="install"
+                      slot={s.key}
+                      label={s.label}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}
