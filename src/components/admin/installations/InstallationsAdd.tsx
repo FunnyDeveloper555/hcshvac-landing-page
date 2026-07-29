@@ -395,7 +395,12 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
-            <Label>Installation / Pickup Date</Label>
+            <Label>Pickup Date</Label>
+            <Input type="date" value={job.pickup_date}
+              onChange={(e) => setJob({ ...job, pickup_date: e.target.value })} />
+          </div>
+          <div>
+            <Label>Installation Date</Label>
             <Input type="date" value={job.install_date}
               onChange={(e) => setJob({ ...job, install_date: e.target.value })} />
           </div>
