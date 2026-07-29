@@ -11,11 +11,13 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import {
   CATEGORY_LABEL,
+  INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
   PICKUP_SLOTS,
   WARRANTY_YEARS,
   brandsFor,
+  specFieldsFor,
 } from "./installationOptions";
 import PickupPhotoSlot from "./PickupPhotoSlot";
 
