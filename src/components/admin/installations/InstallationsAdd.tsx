@@ -14,7 +14,6 @@ import {
   INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
-  PICKUP_SLOTS,
   WARRANTY_YEARS,
   brandsFor,
   specFieldsFor,
@@ -77,6 +76,7 @@ export default function InstallationsAdd() {
     supply_vendor_id: "",
     completed_by_employee_id: "",
     install_date: new Date().toISOString().slice(0, 10),
+    pickup_date: new Date().toISOString().slice(0, 10),
   });
 
   const [items, setItems] = useState<Item[]>([emptyItem()]);
@@ -135,6 +135,7 @@ export default function InstallationsAdd() {
               supply_vendor_id: j.supply_vendor_id || "",
               completed_by_employee_id: j.completed_by_employee_id || "",
               install_date: j.install_date || new Date().toISOString().slice(0, 10),
+              pickup_date: j.pickup_date || j.install_date || new Date().toISOString().slice(0, 10),
             });
             if (its && its.length) setItems(its.map(mapRow));
           } else {
@@ -144,6 +145,7 @@ export default function InstallationsAdd() {
               supply_vendor_id: "",
               completed_by_employee_id: r.completed_by_employee_id || "",
               install_date: r.install_date || new Date().toISOString().slice(0, 10),
+              pickup_date: r.pickup_date || r.install_date || new Date().toISOString().slice(0, 10),
             });
             setItems([mapRow(r)]);
           }
@@ -162,6 +164,7 @@ export default function InstallationsAdd() {
           supply_vendor_id: j.supply_vendor_id || "",
           completed_by_employee_id: j.completed_by_employee_id || "",
           install_date: j.install_date || new Date().toISOString().slice(0, 10),
+          pickup_date: j.pickup_date || j.install_date || new Date().toISOString().slice(0, 10),
         });
       }
       if (its && its.length) setItems(its.map(mapRow));
@@ -209,6 +212,7 @@ export default function InstallationsAdd() {
       completed_by_employee_id: job.completed_by_employee_id || null,
       completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
       install_date: job.install_date || null,
+      pickup_date: job.pickup_date || null,
     };
     let id = jobId;
     if (id) {
@@ -229,6 +233,7 @@ export default function InstallationsAdd() {
         completed_by_employee_id: job.completed_by_employee_id || null,
         completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
         install_date: job.install_date || null,
+        pickup_date: job.pickup_date || null,
         category: it.category,
         item_type: it.item_type,
         brand_name: it.brand_name || null,
@@ -389,7 +394,12 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
-            <Label>Installation / Pickup Date</Label>
+            <Label>Pickup Date</Label>
+            <Input type="date" value={job.pickup_date}
+              onChange={(e) => setJob({ ...job, pickup_date: e.target.value })} />
+          </div>
+          <div>
+            <Label>Installation Date</Label>
             <Input type="date" value={job.install_date}
               onChange={(e) => setJob({ ...job, install_date: e.target.value })} />
           </div>
@@ -420,7 +430,7 @@ export default function InstallationsAdd() {
               </Select>
             </div>
             <div>
-              <Label>Sub Category / Item Type *</Label>
+              <Label>Item Type *</Label>
               <Select value={it.item_type} onValueChange={(v) => updateItem(i, { item_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -555,21 +565,6 @@ export default function InstallationsAdd() {
         </Button>
       </div>
 
-      {/* Pickup / Delivery Package Photos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pickup / Delivery Package Photos</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Photos representing the condition of the package at time of pickup/delivery.
-            {!jobId && " Save progress first to enable uploads."}
-          </p>
-        </CardHeader>
-        <CardContent className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {PICKUP_SLOTS.map((s) => (
-            <PickupPhotoSlot key={s.key} jobId={jobId} slot={s.key} label={s.label} />
-          ))}
-        </CardContent>
-      </Card>
 
       <div className="flex flex-wrap gap-2 justify-end">
         <Button variant="outline" onClick={() => navigate("/admin/installations/list")}>Cancel</Button>
