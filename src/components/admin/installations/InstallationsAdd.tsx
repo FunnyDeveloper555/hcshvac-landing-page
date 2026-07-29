@@ -14,7 +14,6 @@ import {
   INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
-  PICKUP_SLOTS,
   WARRANTY_YEARS,
   brandsFor,
   specFieldsFor,
