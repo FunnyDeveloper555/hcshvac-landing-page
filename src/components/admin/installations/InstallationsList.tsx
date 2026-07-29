@@ -93,8 +93,11 @@ export default function InstallationsList() {
           <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="residential_hvac">Residential HVAC</SelectItem>
-            <SelectItem value="commercial_hvac">Commercial HVAC</SelectItem>
+            <SelectItem value="residential_hvac">HVAC Residential</SelectItem>
+            <SelectItem value="commercial_hvac">HVAC Commercial</SelectItem>
+            <SelectItem value="educational_hvac">HVAC Educational</SelectItem>
+            <SelectItem value="industrial_hvac">HVAC Industrial</SelectItem>
+            <SelectItem value="electrical">Electrical</SelectItem>
             <SelectItem value="plumbing">Plumbing</SelectItem>
           </SelectContent>
         </Select>
