@@ -431,7 +431,7 @@ export default function InstallationsAdd() {
               </Select>
             </div>
             <div>
-              <Label>Sub Category / Item Type *</Label>
+              <Label>Item Type *</Label>
               <Select value={it.item_type} onValueChange={(v) => updateItem(i, { item_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
