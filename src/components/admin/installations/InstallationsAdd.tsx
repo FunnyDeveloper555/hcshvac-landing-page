@@ -77,6 +77,7 @@ export default function InstallationsAdd() {
     supply_vendor_id: "",
     completed_by_employee_id: "",
     install_date: new Date().toISOString().slice(0, 10),
+    pickup_date: new Date().toISOString().slice(0, 10),
   });
 
   const [items, setItems] = useState<Item[]>([emptyItem()]);
