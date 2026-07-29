@@ -151,6 +151,13 @@ const HVAC_COMMON: SpecField[] = [
   { key: "breaker_amps", label: "Breaker (A)", type: "text" },
 ];
 
+const COIL_SPEC: SpecField[] = [
+  { key: "tonnage", label: "Tonnage", type: "select", options: ["1.5","2","2.5","3","3.5","4","5"] },
+  { key: "btu", label: "BTU", type: "text" },
+  { key: "seer", label: "SEER / SEER2", type: "text" },
+  { key: "refrigerant", label: "Refrigerant", type: "select", options: ["R-410A","R-32","R-454B","R-22"] },
+];
+
 const FURNACE_SPEC: SpecField[] = [
   { key: "input_btu", label: "Input BTU", type: "text" },
   { key: "afue", label: "AFUE %", type: "text" },
@@ -164,7 +171,6 @@ const WATER_HEATER_SPEC: SpecField[] = [
   { key: "capacity_gal", label: "Capacity (gal)", type: "text" },
   { key: "fuel", label: "Fuel", type: "select", options: ["Natural Gas","Propane","Electric"] },
   { key: "input_btu", label: "Input BTU", type: "text" },
-  { key: "gpm", label: "Flow (GPM)", type: "text" },
   { key: "vent_type", label: "Vent Type", type: "select", options: ["Atmospheric","Power Vent","Direct Vent","Concentric"] },
   { key: "warranty_tank", label: "Tank Warranty (yrs)", type: "text" },
 ];
