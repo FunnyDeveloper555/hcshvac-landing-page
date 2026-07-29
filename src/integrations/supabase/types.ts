@@ -3527,6 +3527,128 @@ export type Database = {
         }
         Relationships: []
       }
+      installation_jobs: {
+        Row: {
+          appointment_id: string | null
+          completed_by_employee_id: string | null
+          completed_by_name: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          id: string
+          install_date: string | null
+          notes: string | null
+          status: string
+          supply_vendor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          completed_by_employee_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          install_date?: string | null
+          notes?: string | null
+          status?: string
+          supply_vendor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          completed_by_employee_id?: string | null
+          completed_by_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          id?: string
+          install_date?: string | null
+          notes?: string | null
+          status?: string
+          supply_vendor_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_jobs_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_jobs_completed_by_employee_id_fkey"
+            columns: ["completed_by_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_jobs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_jobs_supply_vendor_id_fkey"
+            columns: ["supply_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      installation_pickup_photos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          item_id: string | null
+          job_id: string
+          note: string | null
+          slot: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id?: string | null
+          job_id: string
+          note?: string | null
+          slot: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id?: string | null
+          job_id?: string
+          note?: string | null
+          slot?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_pickup_photos_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "installation_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_pickup_photos_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "installation_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installation_records: {
         Row: {
           appointment_id: string | null
@@ -3542,6 +3664,7 @@ export type Database = {
           id: string
           install_date: string | null
           item_type: string
+          job_id: string | null
           labor_warranty_years: number | null
           model_number: string | null
           notes: string | null
@@ -3562,6 +3685,7 @@ export type Database = {
           id?: string
           install_date?: string | null
           item_type: string
+          job_id?: string | null
           labor_warranty_years?: number | null
           model_number?: string | null
           notes?: string | null
@@ -3582,6 +3706,7 @@ export type Database = {
           id?: string
           install_date?: string | null
           item_type?: string
+          job_id?: string | null
           labor_warranty_years?: number | null
           model_number?: string | null
           notes?: string | null
@@ -3615,6 +3740,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_records_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "installation_jobs"
             referencedColumns: ["id"]
           },
         ]
