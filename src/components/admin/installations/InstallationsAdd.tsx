@@ -234,6 +234,7 @@ export default function InstallationsAdd() {
         completed_by_employee_id: job.completed_by_employee_id || null,
         completed_by_name: emp ? `${emp.first} ${emp.last}`.trim() : null,
         install_date: job.install_date || null,
+        pickup_date: job.pickup_date || null,
         category: it.category,
         item_type: it.item_type,
         brand_name: it.brand_name || null,
