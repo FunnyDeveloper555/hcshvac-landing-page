@@ -3673,6 +3673,7 @@ export type Database = {
           notes: string | null
           serial_number: string | null
           spec: Json
+          supply_vendor_id: string | null
           updated_at: string
         }
         Insert: {
@@ -3695,6 +3696,7 @@ export type Database = {
           notes?: string | null
           serial_number?: string | null
           spec?: Json
+          supply_vendor_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -3717,6 +3719,7 @@ export type Database = {
           notes?: string | null
           serial_number?: string | null
           spec?: Json
+          supply_vendor_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3753,6 +3756,13 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "installation_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_records_supply_vendor_id_fkey"
+            columns: ["supply_vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]

@@ -1,0 +1,1 @@
+ALTER TABLE public.installation_records ADD COLUMN IF NOT EXISTS supply_vendor_id uuid REFERENCES public.vendors(id) ON DELETE SET NULL;
