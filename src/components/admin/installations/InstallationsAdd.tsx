@@ -8,14 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Send } from "lucide-react";
 import {
   CATEGORY_LABEL,
+  INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
   PICKUP_SLOTS,
   WARRANTY_YEARS,
   brandsFor,
+  specFieldsFor,
 } from "./installationOptions";
 import PickupPhotoSlot from "./PickupPhotoSlot";
 
@@ -35,6 +37,7 @@ interface Item {
   labor_warranty_years: number;
   equipment_warranty_years: number;
   notes: string;
+  spec: Record<string, string>;
 }
 
 const emptyItem = (): Item => ({
@@ -47,6 +50,7 @@ const emptyItem = (): Item => ({
   labor_warranty_years: 0,
   equipment_warranty_years: 0,
   notes: "",
+  spec: {},
 });
 
 export default function InstallationsAdd() {
@@ -174,6 +178,7 @@ export default function InstallationsAdd() {
       labor_warranty_years: r.labor_warranty_years || 0,
       equipment_warranty_years: r.equipment_warranty_years || 0,
       notes: r.notes || "",
+      spec: (r.spec && typeof r.spec === "object") ? r.spec : {},
     };
   }
 
@@ -229,6 +234,7 @@ export default function InstallationsAdd() {
         labor_warranty_years: it.labor_warranty_years || null,
         equipment_warranty_years: it.equipment_warranty_years || null,
         notes: it.notes || null,
+        spec: it.spec || {},
       };
       if (it.id) {
         await supabase.from("installation_records").update(itemPayload).eq("id", it.id);
@@ -255,6 +261,61 @@ export default function InstallationsAdd() {
     if (id) {
       toast({ title: editJobId ? "Installation updated" : "Installation saved" });
       navigate("/admin/installations/list");
+    }
+  }
+
+  async function handleSendToCustomer() {
+    const id = await saveJob();
+    if (!id) return;
+    if (!job.customer_id) return;
+    const { data: cust } = await supabase
+      .from("customer_registrations")
+      .select("email, ship_to_first_name, ship_to_last_name, company_id")
+      .eq("id", job.customer_id).single();
+    if (!cust?.email) {
+      toast({ title: "Customer has no email on file", variant: "destructive" });
+      return;
+    }
+    const emp = employees.find((e) => e.id === job.completed_by_employee_id);
+    let companyName: string | undefined;
+    let fromEmail: string | undefined;
+    if (cust.company_id) {
+      const { data: co } = await supabase
+        .from("companies").select("name, company_email_primary").eq("id", cust.company_id).single();
+      companyName = co?.name;
+      fromEmail = co?.company_email_primary || undefined;
+    }
+    const templateData = {
+      customerName: `${cust.ship_to_first_name || ""} ${cust.ship_to_last_name || ""}`.trim(),
+      companyName,
+      installDate: job.install_date,
+      completedBy: emp ? `${emp.first} ${emp.last}`.trim() : null,
+      items: items.map((it) => ({
+        category: it.category,
+        item_type: it.item_type,
+        brand_name: it.brand_name,
+        model_number: it.model_number,
+        serial_number: it.serial_number,
+        labor_warranty_years: it.labor_warranty_years,
+        equipment_warranty_years: it.equipment_warranty_years,
+        spec: it.spec,
+        notes: it.notes,
+      })),
+    };
+    const { error } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "installation-summary",
+        recipientEmail: cust.email,
+        templateData,
+        fromEmail: fromEmail || "master@hcshvac.com",
+        fromName: companyName || "HCS Inc.",
+        bcc: ["master@hcshvac.com"],
+      },
+    });
+    if (error) {
+      toast({ title: "Send failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Installation summary sent to customer" });
     }
   }
 
@@ -422,6 +483,63 @@ export default function InstallationsAdd() {
               <Label>Notes</Label>
               <Textarea rows={2} value={it.notes} onChange={(e) => updateItem(i, { notes: e.target.value })} />
             </div>
+
+            {/* On-Location Install Profile — Specs */}
+            <div className="md:col-span-2 pt-3 border-t">
+              <div className="text-sm font-medium mb-2">On-Location Install Profile — Specs</div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {specFieldsFor(it.category, it.item_type).map((f) => (
+                  <div key={f.key}>
+                    <Label className="text-xs">{f.label}{f.suffix ? ` (${f.suffix})` : ""}</Label>
+                    {f.type === "select" ? (
+                      <Select
+                        value={it.spec?.[f.key] || ""}
+                        onValueChange={(v) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: v } })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>
+                          {(f.options || []).map((o) => (
+                            <SelectItem key={o} value={o}>{o}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : f.type === "textarea" ? (
+                      <Textarea
+                        rows={2}
+                        value={it.spec?.[f.key] || ""}
+                        onChange={(e) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: e.target.value } })}
+                      />
+                    ) : (
+                      <Input
+                        value={it.spec?.[f.key] || ""}
+                        onChange={(e) => updateItem(i, { spec: { ...(it.spec || {}), [f.key]: e.target.value } })}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* On-Location Install Photos */}
+            <div className="md:col-span-2 pt-3 border-t">
+              <div className="text-sm font-medium mb-2">On-Location Install Photos</div>
+              {!it.id ? (
+                <p className="text-xs text-muted-foreground">Save progress first to enable photo uploads for this item.</p>
+              ) : (
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+                  {INSTALL_PHOTO_SLOTS.map((s) => (
+                    <PickupPhotoSlot
+                      key={s.key}
+                      jobId={jobId}
+                      itemId={it.id}
+                      phase="install"
+                      slot={s.key}
+                      label={s.label}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -450,6 +568,9 @@ export default function InstallationsAdd() {
 
       <div className="flex flex-wrap gap-2 justify-end">
         <Button variant="outline" onClick={() => navigate("/admin/installations/list")}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={handleSendToCustomer} disabled={saving || !job.customer_id}>
+          <Send className="w-4 h-4 mr-1" /> Send to Customer
+        </Button>
         <Button variant="secondary" onClick={handleSaveProgress} disabled={saving}>
           {saving ? "Saving..." : "Save Progress"}
         </Button>

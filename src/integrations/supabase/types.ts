@@ -3609,6 +3609,7 @@ export type Database = {
           item_id: string | null
           job_id: string
           note: string | null
+          phase: string
           slot: string
           storage_path: string
         }
@@ -3619,6 +3620,7 @@ export type Database = {
           item_id?: string | null
           job_id: string
           note?: string | null
+          phase?: string
           slot: string
           storage_path: string
         }
@@ -3629,6 +3631,7 @@ export type Database = {
           item_id?: string | null
           job_id?: string
           note?: string | null
+          phase?: string
           slot?: string
           storage_path?: string
         }
@@ -3669,6 +3672,7 @@ export type Database = {
           model_number: string | null
           notes: string | null
           serial_number: string | null
+          spec: Json
           updated_at: string
         }
         Insert: {
@@ -3690,6 +3694,7 @@ export type Database = {
           model_number?: string | null
           notes?: string | null
           serial_number?: string | null
+          spec?: Json
           updated_at?: string
         }
         Update: {
@@ -3711,6 +3716,7 @@ export type Database = {
           model_number?: string | null
           notes?: string | null
           serial_number?: string | null
+          spec?: Json
           updated_at?: string
         }
         Relationships: [
