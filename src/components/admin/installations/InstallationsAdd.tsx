@@ -37,6 +37,7 @@ interface Item {
   labor_warranty_years: number;
   equipment_warranty_years: number;
   notes: string;
+  spec: Record<string, string>;
 }
 
 const emptyItem = (): Item => ({
@@ -49,6 +50,7 @@ const emptyItem = (): Item => ({
   labor_warranty_years: 0,
   equipment_warranty_years: 0,
   notes: "",
+  spec: {},
 });
 
 export default function InstallationsAdd() {
