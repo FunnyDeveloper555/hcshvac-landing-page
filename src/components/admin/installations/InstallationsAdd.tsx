@@ -264,6 +264,61 @@ export default function InstallationsAdd() {
     }
   }
 
+  async function handleSendToCustomer() {
+    const id = await saveJob();
+    if (!id) return;
+    if (!job.customer_id) return;
+    const { data: cust } = await supabase
+      .from("customer_registrations")
+      .select("email, ship_to_first_name, ship_to_last_name, company_id")
+      .eq("id", job.customer_id).single();
+    if (!cust?.email) {
+      toast({ title: "Customer has no email on file", variant: "destructive" });
+      return;
+    }
+    const emp = employees.find((e) => e.id === job.completed_by_employee_id);
+    let companyName: string | undefined;
+    let fromEmail: string | undefined;
+    if (cust.company_id) {
+      const { data: co } = await supabase
+        .from("companies").select("name, company_email").eq("id", cust.company_id).single();
+      companyName = co?.name;
+      fromEmail = co?.company_email || undefined;
+    }
+    const templateData = {
+      customerName: `${cust.ship_to_first_name || ""} ${cust.ship_to_last_name || ""}`.trim(),
+      companyName,
+      installDate: job.install_date,
+      completedBy: emp ? `${emp.first} ${emp.last}`.trim() : null,
+      items: items.map((it) => ({
+        category: it.category,
+        item_type: it.item_type,
+        brand_name: it.brand_name,
+        model_number: it.model_number,
+        serial_number: it.serial_number,
+        labor_warranty_years: it.labor_warranty_years,
+        equipment_warranty_years: it.equipment_warranty_years,
+        spec: it.spec,
+        notes: it.notes,
+      })),
+    };
+    const { error } = await supabase.functions.invoke("send-transactional-email", {
+      body: {
+        templateName: "installation-summary",
+        recipientEmail: cust.email,
+        templateData,
+        fromEmail: fromEmail || "master@hcshvac.com",
+        fromName: companyName || "HCS Inc.",
+        bcc: ["master@hcshvac.com"],
+      },
+    });
+    if (error) {
+      toast({ title: "Send failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Installation summary sent to customer" });
+    }
+  }
+
   async function removeItem(i: number) {
     const it = items[i];
     if (it.id) {
