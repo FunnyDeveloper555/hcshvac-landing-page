@@ -15,11 +15,13 @@ interface Photo {
 
 interface Props {
   jobId: string | null;
-  slot: "front" | "left" | "right" | "back" | "top" | "bottom";
+  slot: string;
   label: string;
+  phase?: "pickup" | "install";
+  itemId?: string | null;
 }
 
-export default function PickupPhotoSlot({ jobId, slot, label }: Props) {
+export default function PickupPhotoSlot({ jobId, slot, label, phase = "pickup", itemId = null }: Props) {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [idx, setIdx] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -28,13 +30,14 @@ export default function PickupPhotoSlot({ jobId, slot, label }: Props) {
 
   async function load() {
     if (!jobId) { setPhotos([]); return; }
-    const { data } = await supabase
+    let q = supabase
       .from("installation_pickup_photos")
       .select("id, storage_path, note")
       .eq("job_id", jobId)
-      .is("item_id", null)
-      .eq("slot", slot)
-      .order("created_at");
+      .eq("phase", phase)
+      .eq("slot", slot);
+    q = itemId ? q.eq("item_id", itemId) : q.is("item_id", null);
+    const { data } = await q.order("created_at");
     const list = (data as Photo[]) || [];
     for (const p of list) {
       const { data: signed } = await supabase.storage
@@ -46,16 +49,20 @@ export default function PickupPhotoSlot({ jobId, slot, label }: Props) {
     setIdx(0);
   }
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [jobId, slot]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [jobId, slot, phase, itemId]);
 
   async function handleUpload(file: File) {
     if (!jobId) {
       toast({ title: "Save the job first before adding photos", variant: "destructive" });
       return;
     }
+    if (phase === "install" && !itemId) {
+      toast({ title: "Save progress first to enable install photos", variant: "destructive" });
+      return;
+    }
     setUploading(true);
     const ext = file.name.split(".").pop() || "jpg";
-    const path = `${jobId}/pickup/${slot}/${Date.now()}.${ext}`;
+    const path = `${jobId}/${phase}/${itemId || "job"}/${slot}/${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("installation-photos")
       .upload(path, file, { upsert: false });
@@ -65,8 +72,8 @@ export default function PickupPhotoSlot({ jobId, slot, label }: Props) {
       return;
     }
     const { error: dbErr } = await supabase.from("installation_pickup_photos").insert({
-      job_id: jobId, slot, storage_path: path, item_id: null,
-    });
+      job_id: jobId, slot, storage_path: path, item_id: itemId, phase,
+    } as any);
     setUploading(false);
     if (dbErr) return toast({ title: "Save failed", description: dbErr.message, variant: "destructive" });
     await load();
