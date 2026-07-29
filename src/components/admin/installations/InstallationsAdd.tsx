@@ -34,6 +34,7 @@ interface Item {
   brand_name: string;
   model_number: string;
   serial_number: string;
+  supply_vendor_id: string;
   labor_warranty_years: number;
   equipment_warranty_years: number;
   notes: string;
@@ -47,6 +48,7 @@ const emptyItem = (): Item => ({
   brand_name: "",
   model_number: "",
   serial_number: "",
+  supply_vendor_id: "",
   labor_warranty_years: 0,
   equipment_warranty_years: 0,
   notes: "",
@@ -177,6 +179,7 @@ export default function InstallationsAdd() {
       serial_number: r.serial_number || "",
       labor_warranty_years: r.labor_warranty_years || 0,
       equipment_warranty_years: r.equipment_warranty_years || 0,
+      supply_vendor_id: r.supply_vendor_id || "",
       notes: r.notes || "",
       spec: (r.spec && typeof r.spec === "object") ? r.spec : {},
     };
@@ -231,6 +234,7 @@ export default function InstallationsAdd() {
         brand_name: it.brand_name || null,
         model_number: it.model_number || null,
         serial_number: it.serial_number || null,
+        supply_vendor_id: it.supply_vendor_id || null,
         labor_warranty_years: it.labor_warranty_years || null,
         equipment_warranty_years: it.equipment_warranty_years || null,
         notes: it.notes || null,
@@ -373,19 +377,6 @@ export default function InstallationsAdd() {
             </Select>
           </div>
           <div>
-            <Label>Supply Vendor</Label>
-            <Select value={job.supply_vendor_id || "none"}
-              onValueChange={(v) => setJob({ ...job, supply_vendor_id: v === "none" ? "" : v })}>
-              <SelectTrigger><SelectValue placeholder="Select supply house" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">— None —</SelectItem>
-                {vendors.map((v) => (
-                  <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
             <Label>Completed By (Technician)</Label>
             <Select value={job.completed_by_employee_id}
               onValueChange={(v) => setJob({ ...job, completed_by_employee_id: v })}>
@@ -448,7 +439,21 @@ export default function InstallationsAdd() {
                 {brandsFor(it.category).map((b) => <option key={b} value={b} />)}
               </datalist>
             </div>
-            <div />
+            <div>
+              <Label>Supply Vendor</Label>
+              <Select
+                value={it.supply_vendor_id || "none"}
+                onValueChange={(v) => updateItem(i, { supply_vendor_id: v === "none" ? "" : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="Select supply house" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None —</SelectItem>
+                  {vendors.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label>Model Number</Label>
               <Input value={it.model_number} onChange={(e) => updateItem(i, { model_number: e.target.value })} />
