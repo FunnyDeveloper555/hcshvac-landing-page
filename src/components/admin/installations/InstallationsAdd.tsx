@@ -568,6 +568,9 @@ export default function InstallationsAdd() {
 
       <div className="flex flex-wrap gap-2 justify-end">
         <Button variant="outline" onClick={() => navigate("/admin/installations/list")}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={handleSendToCustomer} disabled={saving || !job.customer_id}>
+          <Send className="w-4 h-4 mr-1" /> Send to Customer
+        </Button>
         <Button variant="secondary" onClick={handleSaveProgress} disabled={saving}>
           {saving ? "Saving..." : "Save Progress"}
         </Button>
