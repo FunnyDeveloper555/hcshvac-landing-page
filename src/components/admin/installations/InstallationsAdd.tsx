@@ -234,6 +234,7 @@ export default function InstallationsAdd() {
         brand_name: it.brand_name || null,
         model_number: it.model_number || null,
         serial_number: it.serial_number || null,
+        supply_vendor_id: it.supply_vendor_id || null,
         labor_warranty_years: it.labor_warranty_years || null,
         equipment_warranty_years: it.equipment_warranty_years || null,
         notes: it.notes || null,
