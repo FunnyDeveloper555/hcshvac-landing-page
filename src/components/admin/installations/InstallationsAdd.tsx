@@ -538,23 +538,30 @@ export default function InstallationsAdd() {
             {/* On-Location Install Photos */}
             <div className="md:col-span-2 pt-3 border-t">
               <div className="text-sm font-medium mb-2">On-Location Install Photos</div>
-              {!it.id ? (
-                <p className="text-xs text-muted-foreground">Save progress first to enable photo uploads for this item.</p>
-              ) : (
-                <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-                  {INSTALL_PHOTO_SLOTS.map((s) => (
-                    <PickupPhotoSlot
-                      key={s.key}
-                      jobId={jobId}
-                      itemId={it.id}
-                      phase="install"
-                      slot={s.key}
-                      label={s.label}
-                    />
-                  ))}
-                </div>
+              {!it.id && (
+                <p className="text-xs text-muted-foreground mb-2">
+                  Uploading a photo will save this installation automatically (a customer must be selected).
+                </p>
               )}
+              <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+                {INSTALL_PHOTO_SLOTS.map((s) => (
+                  <PickupPhotoSlot
+                    key={s.key}
+                    jobId={jobId}
+                    itemId={it.id}
+                    phase="install"
+                    slot={s.key}
+                    label={s.label}
+                    ensureIds={async () => {
+                      const id = await saveJob();
+                      if (!id) return null;
+                      return { jobId: id, itemId: items[i]?.id ?? it.id ?? null };
+                    }}
+                  />
+                ))}
+              </div>
             </div>
+
           </CardContent>
         </Card>
       ))}
