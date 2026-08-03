@@ -94,6 +94,8 @@ import ScreenPopsCalls from "@/components/admin/screenpops/ScreenPopsCalls";
 import ScreenPopsSMS from "@/components/admin/screenpops/ScreenPopsSMS";
 import InstallationsAdd from "@/components/admin/installations/InstallationsAdd";
 import InstallationsList from "@/components/admin/installations/InstallationsList";
+import InventoryAdd from "@/components/admin/inventory/InventoryAdd";
+import InventoryList from "@/components/admin/inventory/InventoryList";
 
 
 
@@ -280,6 +282,9 @@ const Admin = () => {
               <Route path="/file-manager" element={<FileManager />} />
               <Route path="/installations/add" element={<InstallationsAdd />} />
               <Route path="/installations/list" element={<InstallationsList />} />
+              <Route path="/inventory/add" element={<InventoryAdd />} />
+              <Route path="/inventory/receiving" element={<InventoryList mode="receiving" />} />
+              <Route path="/inventory/history" element={<InventoryList mode="history" />} />
             </Routes>
 
             </div>
