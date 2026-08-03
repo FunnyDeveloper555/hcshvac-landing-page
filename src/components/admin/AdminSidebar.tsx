@@ -99,6 +99,15 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   {
+    title: "Inventory",
+    icon: Warehouse,
+    children: [
+      { title: "Receiving", url: "/admin/inventory/receiving", icon: Archive },
+      { title: "Add New Inventory", url: "/admin/inventory/add", icon: Plus },
+      { title: "History", url: "/admin/inventory/history", icon: List },
+    ]
+  },
+  {
     title: "ScreenPops",
     icon: Bell,
     children: [

@@ -94,6 +94,8 @@ import ScreenPopsCalls from "@/components/admin/screenpops/ScreenPopsCalls";
 import ScreenPopsSMS from "@/components/admin/screenpops/ScreenPopsSMS";
 import InstallationsAdd from "@/components/admin/installations/InstallationsAdd";
 import InstallationsList from "@/components/admin/installations/InstallationsList";
+import InventoryAdd from "@/components/admin/inventory/InventoryAdd";
+import InventoryList from "@/components/admin/inventory/InventoryList";
 
 
 
