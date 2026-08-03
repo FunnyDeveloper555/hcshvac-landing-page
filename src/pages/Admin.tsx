@@ -282,6 +282,9 @@ const Admin = () => {
               <Route path="/file-manager" element={<FileManager />} />
               <Route path="/installations/add" element={<InstallationsAdd />} />
               <Route path="/installations/list" element={<InstallationsList />} />
+              <Route path="/inventory/add" element={<InventoryAdd />} />
+              <Route path="/inventory/receiving" element={<InventoryList mode="receiving" />} />
+              <Route path="/inventory/history" element={<InventoryList mode="history" />} />
             </Routes>
 
             </div>
