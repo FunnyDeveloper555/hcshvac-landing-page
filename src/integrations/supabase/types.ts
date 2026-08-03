@@ -3773,6 +3773,83 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          appointment_id: string | null
+          assign_type: string
+          brand_name: string | null
+          company_id: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          item_type: string | null
+          model_number: string | null
+          notes: string | null
+          po_number: string | null
+          product_id: string | null
+          quantity: number
+          received_date: string | null
+          seer_rating: string | null
+          serial_number: string | null
+          status: string
+          supply_vendor_id: string | null
+          tons_btu: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          assign_type?: string
+          brand_name?: string | null
+          company_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          item_type?: string | null
+          model_number?: string | null
+          notes?: string | null
+          po_number?: string | null
+          product_id?: string | null
+          quantity?: number
+          received_date?: string | null
+          seer_rating?: string | null
+          serial_number?: string | null
+          status?: string
+          supply_vendor_id?: string | null
+          tons_btu?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          assign_type?: string
+          brand_name?: string | null
+          company_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          item_type?: string | null
+          model_number?: string | null
+          notes?: string | null
+          po_number?: string | null
+          product_id?: string | null
+          quantity?: number
+          received_date?: string | null
+          seer_rating?: string | null
+          serial_number?: string | null
+          status?: string
+          supply_vendor_id?: string | null
+          tons_btu?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
