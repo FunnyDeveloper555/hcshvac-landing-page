@@ -23,46 +23,43 @@ const AmerceHero = ({
 }: AmerceHeroProps) => {
   const location = [city, state].filter(Boolean).join(", ");
 
+  const background = heroImageUrl
+    ? `linear-gradient(90deg, rgba(12,12,20,0.85) 0%, rgba(12,12,20,0.55) 55%, rgba(12,12,20,0.25) 100%), url("${heroImageUrl}") center/cover no-repeat`
+    : "linear-gradient(120deg, var(--bg-3) 0%, rgba(0,0,0,0.85) 100%)";
+
   return (
     <div className="tf-slideshow">
       <div className="container-full">
-        <div className="slider-wrap slideshow-wrap rounded-20 overflow-hidden position-relative">
-          <div className="sld_image">
-            {heroImageUrl ? (
-              <img
-                src={heroImageUrl}
-                alt={companyName}
-                width={1770}
-                height={680}
-                loading="eager"
-                className="scale-item scale-item-1"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <div style={{ width: "100%", minHeight: 520, background: "var(--bg-3)" }} />
-            )}
-          </div>
-          <div className="sld_content type-4">
-            <div className="content-sld_wrap">
-              <h6 className="mb-12 text-white fade-item fade-item-1">
-                {tagline || `Trusted HVAC Experts${location ? ` in ${location}` : ""}`}
-              </h6>
-              <div className="h1 mb-20 text-white fade-item fade-item-2">{title || companyName}</div>
-              {description && (
-                <p className="text-body-1 text-white fade-item fade-item-3 mb-32">{description}</p>
-              )}
-              <div className="d-flex flex-wrap gap-12 fade-item fade-item-4">
-                <button type="button" className="tf-btn animate-btn" onClick={onPrimaryCta}>
-                  Book a Service
-                </button>
-                {phone && (
-                  <a
-                    href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-                    className="tf-btn btn-white animate-btn animate-dark"
+        <div
+          className="slideshow-wrap rounded-20 overflow-hidden d-flex align-items-center"
+          style={{ background, minHeight: 560 }}
+        >
+          <div className="container py-5">
+            <div className="row">
+              <div className="col-lg-7">
+                <h6 className="mb-12" style={{ color: "var(--primary)" }}>
+                  {tagline || `Trusted HVAC Experts${location ? ` in ${location}` : ""}`}
+                </h6>
+                <div className="h1 mb-20 text-white">{title || companyName}</div>
+                {description && <p className="text-body-1 text-white mb-32">{description}</p>}
+                <div className="d-flex flex-wrap gap-12">
+                  <button
+                    type="button"
+                    className="tf-btn animate-btn"
+                    onClick={onPrimaryCta}
+                    style={{ backgroundColor: "var(--primary)", borderColor: "var(--primary)", color: "#fff" }}
                   >
-                    {phone}
-                  </a>
-                )}
+                    Book a Service
+                  </button>
+                  {phone && (
+                    <a
+                      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+                      className="tf-btn btn-white animate-btn animate-dark"
+                    >
+                      {phone}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
