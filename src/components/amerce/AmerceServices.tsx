@@ -1,3 +1,5 @@
+import { Wrench } from "lucide-react";
+
 interface ServiceItem {
   id: string;
   title: string;
@@ -35,7 +37,7 @@ const AmerceServices = ({ services, companyName, onCta }: AmerceServicesProps) =
             <div className="col-lg-4 col-sm-6" key={service.id}>
               <div className="tf-icon-box h-100 p-4 rounded-20 bg-surface">
                 <div className="icon mb-3">
-                  <i className="icon icon-Wrench fs-24 text-primary" />
+                  <Wrench size={24} style={{ color: "var(--primary)" }} />
                 </div>
                 <div className="h5 mb-2">{service.title}</div>
                 <p className="text-body-2 cl-text-2 mb-0">{service.description}</p>

@@ -202,7 +202,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
         </AmerceTailwindScope>
 
         <AmerceHeader
-          companyName={company.website_title || company.name}
+          companyName={company.name}
           logoUrl={company.logo_url}
           phone={company.company_phone}
           email={company.company_email_primary}
@@ -351,7 +351,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
         </main>
 
         <AmerceFooter
-          companyName={company.website_title || company.name}
+          companyName={company.name}
           logoUrl={company.logo_url}
           phone={company.company_phone}
           email={company.company_email_primary}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Clock, Mail, Phone } from "lucide-react";
 
 export interface AmerceNavItem {
   key: string;
@@ -39,17 +40,17 @@ const AmerceHeader = ({
         <div className="container">
           <div className="topbar-inner d-flex align-items-center justify-content-between py-2 gap-16">
             <p className="text-caption-01 text-white mb-0">
-              <i className="icon icon-Clock me-1" /> 24/7 Emergency Service
+              <Clock size={14} className="me-1" /> 24/7 Emergency Service
             </p>
             <div className="d-flex align-items-center gap-24">
               {email && (
                 <a href={`mailto:${email}`} className="text-caption-01 cl-text-3 link d-none d-md-inline">
-                  <i className="icon icon-Envelope me-1" /> {email}
+                  <Mail size={14} className="me-1" /> {email}
                 </a>
               )}
               {phone && (
                 <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="text-caption-01 text-white link">
-                  <i className="icon icon-Phone me-1" /> {phone}
+                  <Phone size={14} className="me-1" /> {phone}
                 </a>
               )}
             </div>
@@ -116,7 +117,7 @@ const AmerceHeader = ({
                     href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
                     className="tf-btn animate-btn d-none d-sm-inline-flex"
                   >
-                    <i className="icon icon-Phone me-1" /> Call Now
+                    <Phone size={16} className="me-1" /> Call Now
                   </a>
                 )}
               </div>
