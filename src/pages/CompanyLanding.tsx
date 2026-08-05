@@ -23,6 +23,12 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
+import AmerceShell from "@/components/amerce/AmerceShell";
+import AmerceTailwindScope from "@/components/amerce/AmerceTailwindScope";
+import AmerceHeader from "@/components/amerce/AmerceHeader";
+import AmerceHero from "@/components/amerce/AmerceHero";
+import AmerceServices from "@/components/amerce/AmerceServices";
+import AmerceFooter from "@/components/amerce/AmerceFooter";
 
 interface PageContent {
   title: string;
