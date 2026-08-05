@@ -16,7 +16,7 @@ const AmerceTailwindScope = ({ themeStyle, className, children }: AmerceTailwind
 
   return (
     <div
-      className={className}
+      className={`amerce-tw ${className || ""}`}
       style={
         {
           "--primary": theme.colors.primary,
