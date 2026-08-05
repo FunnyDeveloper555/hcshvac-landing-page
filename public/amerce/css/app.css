@@ -4823,7 +4823,7 @@ body.nav-dropdown-reset .tf-header .menu-item:hover .sub-menu {
 
 .offcanvas-backdrop {
   z-index: 2999;
-  cursor: url(/assets/images/cursor-close.svg), auto;
+  cursor: url(/amerce/images/cursor-close.svg), auto;
 }
 
 .overflow-x-auto::-webkit-scrollbar,
@@ -4832,7 +4832,7 @@ body.nav-dropdown-reset .tf-header .menu-item:hover .sub-menu {
 }
 
 .modal {
-  cursor: url(/assets/images/cursor-close.svg), auto;
+  cursor: url(/amerce/images/cursor-close.svg), auto;
 }
 .modal .icon-close-popup {
   top: 10px;
@@ -11204,7 +11204,7 @@ html:not([dir=rtl]) .noUi-horizontal .noUi-handle {
   -ms-transition: all 0.3s ease;
   -o-transition: all 0.3s ease;
   transition: all 0.3s ease;
-  cursor: url(/assets/images/cursor-close.svg), auto;
+  cursor: url(/amerce/images/cursor-close.svg), auto;
 }
 .overlay-filter.show {
   opacity: 1;
@@ -19900,7 +19900,7 @@ html:not([dir=rtl]) .noUi-horizontal .noUi-handle {
   font-size: 174px;
   line-height: 119px;
   font-weight: 700;
-  background-image: url("/assets/images/section/text-image.jpg");
+  background-image: url("/amerce/images/section/text-image.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   background-clip: text;
