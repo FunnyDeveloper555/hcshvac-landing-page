@@ -35,7 +35,29 @@ const AmerceShell = ({ brandColor, children }: AmerceShellProps) => {
         document.head.appendChild(link);
       });
     }
+
+    // Bootstrap ships utility class names that collide with Tailwind's
+    // (bg-primary, text-white, ...). Restore Tailwind's meaning inside
+    // subtrees that still use the shadcn components.
+    if (!document.getElementById("amerce-tw-reset")) {
+      const style = document.createElement("style");
+      style.id = "amerce-tw-reset";
+      style.setAttribute(ATTR, "");
+      style.textContent = `
+        .amerce-tw .bg-primary { background-color: hsl(var(--primary)) !important; }
+        .amerce-tw .text-primary { color: hsl(var(--primary)) !important; }
+        .amerce-tw .bg-secondary { background-color: hsl(var(--secondary)) !important; }
+        .amerce-tw .text-secondary { color: hsl(var(--secondary)) !important; }
+        .amerce-tw .bg-white { background-color: #fff !important; }
+        .amerce-tw .text-white { color: #fff !important; }
+        .amerce-tw .bg-card { background-color: hsl(var(--card)) !important; }
+        .amerce-tw .text-muted-foreground { color: hsl(var(--muted-foreground)) !important; }
+        .amerce-tw .text-primary-foreground { color: hsl(var(--primary-foreground)) !important; }
+      `;
+      document.head.appendChild(style);
+    }
     document.body.classList.add("amerce-body");
+
 
     return () => {
       document.head.querySelectorAll(`[${ATTR}]`).forEach((el) => el.remove());
