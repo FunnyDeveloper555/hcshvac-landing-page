@@ -23,6 +23,12 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
+import AmerceShell from "@/components/amerce/AmerceShell";
+import AmerceTailwindScope from "@/components/amerce/AmerceTailwindScope";
+import AmerceHeader from "@/components/amerce/AmerceHeader";
+import AmerceHero from "@/components/amerce/AmerceHero";
+import AmerceServices from "@/components/amerce/AmerceServices";
+import AmerceFooter from "@/components/amerce/AmerceFooter";
 
 interface PageContent {
   title: string;
@@ -180,153 +186,187 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   // Get active page content
   const activePageContent = activePage ? company.header_pages?.[activePage] : null;
 
+  const scrollToContact = () => {
+    setActivePage(null);
+    setSelectedProductId(null);
+    setTimeout(() => {
+      document.getElementById("company-contact")?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+  };
+
   return (
-    <div 
-      className="min-h-screen flex flex-col"
-      style={{
-        "--primary": theme.colors.primary,
-        "--secondary": theme.colors.secondary,
-        "--accent": theme.colors.accent,
-        "--background": theme.colors.background,
-        "--foreground": theme.colors.foreground,
-        "--muted": theme.colors.muted,
-        "--muted-foreground": theme.colors.mutedForeground,
-        "--card": theme.colors.card,
-        "--card-foreground": theme.colors.cardForeground,
-        "--border": theme.colors.border,
-        "--ring": theme.colors.primary,
-      } as React.CSSProperties}
-    >
-      <CompanyPopup companyId={company.id} />
-      <CompanyHeader 
-        company={company} 
-        theme={theme} 
-        activePage={activePage || undefined}
-        onPageChange={handlePageChange}
-        onGoHome={handleBackToHome}
-      />
-      <main className="flex-1">
-        {activePage === "products" ? (
-          <section className="pt-24 pb-16">
-            <div className="container mx-auto px-4">
-              {selectedProductId ? (
-                <>
-                  <CompanyProductDetail
-                    productId={selectedProductId}
-                    companyId={company.id}
-                    onBack={() => {
-                      setSelectedProductId(null);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    onProductClick={(id) => {
-                      setSelectedProductId(id);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  <button 
+    <AmerceShell brandColor={company.primary_color}>
+      <div className="min-h-screen d-flex flex-column">
+        <AmerceTailwindScope themeStyle={themeStyle}>
+          <CompanyPopup companyId={company.id} />
+        </AmerceTailwindScope>
+
+        <AmerceHeader
+          companyName={company.name}
+          logoUrl={company.logo_url}
+          phone={company.company_phone}
+          email={company.company_email_primary}
+          navItems={HEADER_PAGES}
+          activePage={activePage || undefined}
+          onPageChange={handlePageChange}
+          onGoHome={handleBackToHome}
+        />
+
+        <main className="flex-1">
+          {activePage === "products" ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <section className="pt-24 pb-16">
+                <div className="container mx-auto px-4">
+                  {selectedProductId ? (
+                    <CompanyProductDetail
+                      productId={selectedProductId}
+                      companyId={company.id}
+                      onBack={() => {
+                        setSelectedProductId(null);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      onProductClick={(id) => {
+                        setSelectedProductId(id);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleBackToHome}
+                        className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                      >
+                        ← Back to Home
+                      </button>
+                      <CompanyProductsList
+                        companyId={company.id}
+                        onProductClick={(id) => {
+                          setSelectedProductId(id);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              </section>
+            </AmerceTailwindScope>
+          ) : activePage ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <section className="pt-24 pb-16">
+                <div className="container mx-auto px-4">
+                  <button
                     onClick={handleBackToHome}
                     className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                   >
                     ← Back to Home
                   </button>
-                  <CompanyProductsList
-                    companyId={company.id}
-                    onProductClick={(id) => {
-                      setSelectedProductId(id);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
+                  <CompanyPageContent
+                    pageContent={activePageContent as any}
+                    pageLabel={getPageLabel(activePage)}
                   />
-                </>
-              )}
-            </div>
-          </section>
-        ) : activePage ? (
-          // Show the selected page content
-          <section className="pt-24 pb-16">
-            <div className="container mx-auto px-4">
-              <button 
-                onClick={handleBackToHome}
-                className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                ← Back to Home
-              </button>
-              <CompanyPageContent
-                pageContent={activePageContent as any}
-                pageLabel={getPageLabel(activePage)}
-              />
-            </div>
-            {/* CTA Icons for this page */}
-            <CompanyCTAIcons companyId={company.id} pageName={activePage} />
-          </section>
-        ) : (
-          // Show the home page content
-          <>
-            <CompanyHero company={company} theme={theme} />
-            {/* Accordion Section */}
-            {((company.service_areas && company.service_areas.length > 0) || 
-              (company.hvac_brands_install && company.hvac_brands_install.length > 0) ||
-              (company.hvac_brands_service && company.hvac_brands_service.length > 0) ||
-              (company.hvac_brands_repair && company.hvac_brands_repair.length > 0) ||
-              (company.plumbing_equipment_install && company.plumbing_equipment_install.length > 0) ||
-              (company.plumbing_equipment_service && company.plumbing_equipment_service.length > 0) ||
-              (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0)) && (
-              <section className="py-8 bg-muted/30">
-                <div className="container mx-auto px-4">
-                  <div className="max-w-4xl mx-auto">
-                    <Accordion type="multiple" className="w-full space-y-2">
-                      <CompanyServiceAreasAccordion 
-                        companyName={company.name}
-                        serviceAreas={company.service_areas}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <CompanyBrandsAccordion 
-                        companyName={company.name}
-                        brands={company.hvac_brands_install}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <CompanyBrandsServiceAccordion 
-                        companyName={company.name}
-                        brands={company.hvac_brands_service}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <CompanyBrandsRepairAccordion 
-                        companyName={company.name}
-                        brands={company.hvac_brands_repair}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <PlumbingTypesInstallAccordion 
-                        companyName={company.name}
-                        types={company.plumbing_equipment_install}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <PlumbingTypesServiceAccordion 
-                        companyName={company.name}
-                        types={company.plumbing_equipment_service}
-                        primaryColor={theme.colors.primary}
-                      />
-                      <PlumbingTypesRepairAccordion 
-                        companyName={company.name}
-                        types={company.plumbing_equipment_repair}
-                        primaryColor={theme.colors.primary}
-                      />
-                    </Accordion>
-                  </div>
                 </div>
+                <CompanyCTAIcons companyId={company.id} pageName={activePage} />
               </section>
-            )}
-            <CompanyPartnerAccordion companyId={company.id} primaryColor={theme.colors.primary} />
-            <CompanyCoupons coupons={company.coupons || []} primaryColor={theme.colors.primary} />
-            <CompanyServices company={company} services={services} theme={theme} />
-            <CompanyContact company={company} theme={theme} />
-          </>
-        )}
-      </main>
-      <CompanyFooter company={company} theme={theme} />
-    </div>
+            </AmerceTailwindScope>
+          ) : (
+            <>
+              <AmerceHero
+                companyName={company.name}
+                title={company.website_title}
+                tagline={company.website_tagline}
+                description={company.website_description}
+                heroImageUrl={company.hero_image_url}
+                phone={company.company_phone}
+                city={company.company_city}
+                state={company.company_state}
+                onPrimaryCta={scrollToContact}
+              />
+
+              <AmerceServices
+                services={services}
+                companyName={company.name}
+                onCta={scrollToContact}
+              />
+
+              <AmerceTailwindScope themeStyle={themeStyle}>
+                {((company.service_areas && company.service_areas.length > 0) ||
+                  (company.hvac_brands_install && company.hvac_brands_install.length > 0) ||
+                  (company.hvac_brands_service && company.hvac_brands_service.length > 0) ||
+                  (company.hvac_brands_repair && company.hvac_brands_repair.length > 0) ||
+                  (company.plumbing_equipment_install && company.plumbing_equipment_install.length > 0) ||
+                  (company.plumbing_equipment_service && company.plumbing_equipment_service.length > 0) ||
+                  (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0)) && (
+                  <section className="py-8 bg-muted/30">
+                    <div className="container mx-auto px-4">
+                      <div className="max-w-4xl mx-auto">
+                        <Accordion type="multiple" className="w-full space-y-2">
+                          <CompanyServiceAreasAccordion
+                            companyName={company.name}
+                            serviceAreas={company.service_areas}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <CompanyBrandsAccordion
+                            companyName={company.name}
+                            brands={company.hvac_brands_install}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <CompanyBrandsServiceAccordion
+                            companyName={company.name}
+                            brands={company.hvac_brands_service}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <CompanyBrandsRepairAccordion
+                            companyName={company.name}
+                            brands={company.hvac_brands_repair}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <PlumbingTypesInstallAccordion
+                            companyName={company.name}
+                            types={company.plumbing_equipment_install}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <PlumbingTypesServiceAccordion
+                            companyName={company.name}
+                            types={company.plumbing_equipment_service}
+                            primaryColor={theme.colors.primary}
+                          />
+                          <PlumbingTypesRepairAccordion
+                            companyName={company.name}
+                            types={company.plumbing_equipment_repair}
+                            primaryColor={theme.colors.primary}
+                          />
+                        </Accordion>
+                      </div>
+                    </div>
+                  </section>
+                )}
+                <CompanyPartnerAccordion companyId={company.id} primaryColor={theme.colors.primary} />
+                <CompanyCoupons coupons={company.coupons || []} primaryColor={theme.colors.primary} />
+                <div id="company-contact">
+                  <CompanyContact company={company} theme={theme} />
+                </div>
+              </AmerceTailwindScope>
+            </>
+          )}
+        </main>
+
+        <AmerceFooter
+          companyName={company.name}
+          logoUrl={company.logo_url}
+          phone={company.company_phone}
+          email={company.company_email_primary}
+          address={company.company_address}
+          city={company.company_city}
+          state={company.company_state}
+          zip={company.company_zip_code}
+          serviceAreas={company.service_areas}
+          navItems={HEADER_PAGES}
+          onPageChange={handlePageChange}
+        />
+      </div>
+    </AmerceShell>
   );
 };
 
 export default CompanyLanding;
+
