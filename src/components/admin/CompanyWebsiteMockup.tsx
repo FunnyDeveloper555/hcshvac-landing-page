@@ -315,7 +315,7 @@ const CompanyWebsiteMockup = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.open(`/company/${selectedCompany.slug}`, '_blank')}
+            onClick={() => window.open(`https://${selectedCompany.slug}.hcshvac.com`, '_blank', 'noopener,noreferrer')}
             className="shrink-0"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
