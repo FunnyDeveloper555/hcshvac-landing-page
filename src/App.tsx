@@ -18,6 +18,7 @@ import FileServer from "./pages/FileServer";
 import Unsubscribe from "./pages/Unsubscribe";
 import ApplicantPortal from "./pages/ApplicantPortal";
 import ApplicantSetPassword from "./pages/ApplicantSetPassword";
+import AmerceTemplateDemo from "./pages/AmerceTemplateDemo";
 
 import { getSubdomainSlug } from "./hooks/useSubdomainSlug";
 
