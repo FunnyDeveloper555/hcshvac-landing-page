@@ -185,11 +185,11 @@ export default function FileServer() {
         prev.map((u, idx) => (idx === i ? { ...u, status: "saving", percent: 100 } : u))
       );
 
-      const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(storagePath);
+      // Private bucket: store the object path, not a public URL.
       const { error: dbErr } = await supabase.from("fileserver_items").insert({
         name: file.name,
         storage_path: storagePath,
-        file_url: urlData.publicUrl,
+        file_url: `fileserver/${storagePath}`,
         file_size: file.size,
         mime_type: file.type || null,
         uploaded_by: session.user.id,
