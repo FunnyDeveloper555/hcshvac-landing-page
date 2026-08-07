@@ -15,7 +15,20 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <script>
+      // template.hcshvac.com serves the original Amerce HTML demo (static files
+      // in /amerce-template). Redirect before the app bundle loads.
+      (function () {
+        var h = location.hostname, p = location.pathname;
+        if ((h === "template.hcshvac.com" || p === "/template" || p === "/template/") &&
+            p.indexOf("/amerce-template") !== 0) {
+          location.replace("/amerce-template/index.html");
+        }
+      })();
+    </script>
   </head>
+
 
   <body>
     <div id="root"></div>
