@@ -292,7 +292,13 @@ export default function FileServer() {
 
   const handleDownload = async (file: FileServerItem) => {
     try {
-      const res = await fetch(file.file_url);
+      // Bucket is private — mint a short-lived signed URL for each access.
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("fileserver")
+        .createSignedUrl(file.storage_path, 60);
+      if (signErr || !signed?.signedUrl) throw signErr || new Error("Could not create download link");
+
+      const res = await fetch(signed.signedUrl);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -302,9 +308,8 @@ export default function FileServer() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch {
-      // Fallback: open in new tab
-      window.open(file.file_url, "_blank");
+    } catch (err: any) {
+      toast.error(err?.message || "Download failed");
     }
   };
 
