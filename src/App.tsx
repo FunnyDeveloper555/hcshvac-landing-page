@@ -44,7 +44,16 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/fileserver" element={<FileServer />} />
-            <Route path="*" element={<CompanyLanding subdomainSlug={subdomainSlug} />} />
+            <Route
+              path="*"
+              element={
+                subdomainSlug === "template" ? (
+                  <AmerceTemplateDemo />
+                ) : (
+                  <CompanyLanding subdomainSlug={subdomainSlug} />
+                )
+              }
+            />
           </Routes>
         ) : (
           <Routes>
