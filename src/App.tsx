@@ -18,13 +18,23 @@ import FileServer from "./pages/FileServer";
 import Unsubscribe from "./pages/Unsubscribe";
 import ApplicantPortal from "./pages/ApplicantPortal";
 import ApplicantSetPassword from "./pages/ApplicantSetPassword";
-import AmerceTemplateDemo from "./pages/AmerceTemplateDemo";
 
 import { getSubdomainSlug } from "./hooks/useSubdomainSlug";
 
 const queryClient = new QueryClient();
 
 const subdomainSlug = getSubdomainSlug();
+
+/**
+ * template.hcshvac.com serves the original Amerce HTML demo, which lives as
+ * static files in /public/amerce-template. Redirect before React routing so
+ * the browser loads the real theme pages (index.html, shop, product, ...).
+ */
+if (subdomainSlug === "template" && !window.location.pathname.startsWith("/amerce-template")) {
+  window.location.replace("/amerce-template/index.html");
+}
+
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -44,16 +54,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/fileserver" element={<FileServer />} />
-            <Route
-              path="*"
-              element={
-                subdomainSlug === "template" ? (
-                  <AmerceTemplateDemo />
-                ) : (
-                  <CompanyLanding subdomainSlug={subdomainSlug} />
-                )
-              }
-            />
+            <Route path="*" element={<CompanyLanding subdomainSlug={subdomainSlug} />} />
+
           </Routes>
         ) : (
           <Routes>
