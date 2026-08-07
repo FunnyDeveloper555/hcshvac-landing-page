@@ -117,8 +117,6 @@ async function processUpload(supabase: any, jobId: string, url: string, userId: 
     throw new Error(uploadErr.message);
   }
 
-  const { data: urlData } = supabase.storage.from("fileserver").getPublicUrl(storagePath);
-
   // Update progress: saving record
   await supabase
     .from("fileserver_jobs")
@@ -130,7 +128,7 @@ async function processUpload(supabase: any, jobId: string, url: string, userId: 
     .insert({
       name: fileName,
       storage_path: storagePath,
-      file_url: urlData.publicUrl,
+      file_url: `fileserver/${storagePath}`,
       file_size: blob.size,
       mime_type: mimeType,
       uploaded_by: userId,
