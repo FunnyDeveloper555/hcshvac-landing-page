@@ -30,7 +30,11 @@ const subdomainSlug = getSubdomainSlug();
  * static files in /public/amerce-template. Redirect before React routing so
  * the browser loads the real theme pages (index.html, shop, product, ...).
  */
-if (subdomainSlug === "template" && !window.location.pathname.startsWith("/amerce-template")) {
+if (
+  (subdomainSlug === "template" && !window.location.pathname.startsWith("/amerce-template")) ||
+  window.location.pathname === "/template" ||
+  window.location.pathname === "/template/"
+) {
   window.location.replace("/amerce-template/index.html");
 }
 
