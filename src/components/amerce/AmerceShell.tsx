@@ -70,7 +70,9 @@ const AmerceShell = ({ brandColor, useBrandColor = false, children }: AmerceShel
     };
   }, []);
 
-  const accent = brandColor || "#DC4646";
+  // Template palette (assets/css/styles.css :root)
+  const accent = useBrandColor && brandColor ? brandColor : "#DC4646";
+  const secondary = useBrandColor && brandColor ? brandColor : "#70857A";
 
   return (
     <div
@@ -78,7 +80,7 @@ const AmerceShell = ({ brandColor, useBrandColor = false, children }: AmerceShel
       style={
         {
           "--primary": accent,
-          "--secondary": accent,
+          "--secondary": secondary,
         } as React.CSSProperties
       }
     >
