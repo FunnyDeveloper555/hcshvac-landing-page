@@ -26,9 +26,13 @@ import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 import AmerceShell from "@/components/amerce/AmerceShell";
 import AmerceTailwindScope from "@/components/amerce/AmerceTailwindScope";
 import AmerceHeader from "@/components/amerce/AmerceHeader";
-import AmerceHero from "@/components/amerce/AmerceHero";
+import AmerceTopbar from "@/components/amerce/AmerceTopbar";
+import AmerceConstructionHero from "@/components/amerce/AmerceConstructionHero";
+import AmerceServiceCategories from "@/components/amerce/AmerceServiceCategories";
+import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
+
 
 interface PageContent {
   title: string;
