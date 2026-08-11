@@ -457,7 +457,9 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           serviceAreas={company.service_areas}
           navItems={HEADER_PAGES}
           onPageChange={handlePageChange}
+          variant={isOrganicLayout ? "light" : "dark"}
         />
+
       </div>
     </AmerceShell>
   );
