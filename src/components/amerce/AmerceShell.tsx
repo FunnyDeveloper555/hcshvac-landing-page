@@ -17,12 +17,17 @@ const THEME_STYLESHEETS = [
 const ATTR = "data-amerce-theme";
 
 interface AmerceShellProps {
-  /** Company brand color (hex). Drives the theme accent color. */
+  /**
+   * Company brand color (hex). Ignored by default so the site matches the
+   * Amerce template palette exactly; pass `useBrandColor` to override.
+   */
   brandColor?: string | null;
+  /** Opt in to tinting the theme accent with the company brand color. */
+  useBrandColor?: boolean;
   children: React.ReactNode;
 }
 
-const AmerceShell = ({ brandColor, children }: AmerceShellProps) => {
+const AmerceShell = ({ brandColor, useBrandColor = false, children }: AmerceShellProps) => {
   useEffect(() => {
     // Avoid double-inject when several company views mount/unmount quickly.
     const existing = document.head.querySelectorAll(`[${ATTR}]`);
