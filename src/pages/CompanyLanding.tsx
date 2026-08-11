@@ -36,6 +36,7 @@ import AmerceOrganicHero from "@/components/amerce/organic/AmerceOrganicHero";
 import AmerceOrganicCategories from "@/components/amerce/organic/AmerceOrganicCategories";
 import AmerceOrganicPromo from "@/components/amerce/organic/AmerceOrganicPromo";
 import AmerceOrganicTestimonials from "@/components/amerce/organic/AmerceOrganicTestimonials";
+import AmerceOrganicPopularProducts from "@/components/amerce/organic/AmerceOrganicPopularProducts";
 
 
 interface PageContent {
