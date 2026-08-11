@@ -173,6 +173,9 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
 
   const themeStyle = company.theme_style || 'modern';
   const theme = getThemeConfig(themeStyle);
+  // Companies mapped to the Amerce "home-organic" homepage layout.
+  const ORGANIC_LAYOUT_SLUGS = ["blueflameheatingcooling"];
+  const isOrganicLayout = ORGANIC_LAYOUT_SLUGS.includes(company.slug || "");
 
   const handlePageChange = (pageKey: string) => {
     setActivePage(pageKey);
