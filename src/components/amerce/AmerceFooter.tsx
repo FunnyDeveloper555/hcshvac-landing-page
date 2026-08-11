@@ -191,7 +191,7 @@ const AmerceFooter = ({
                 {phone && (
                   <a
                     href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-                    className={isLight ? "tf-btn btn-dark animate-btn" : "tf-btn btn-white animate-btn animate-dark"}
+                    className={isLight ? "tf-btn animate-btn" : "tf-btn btn-white animate-btn animate-dark"}
                   >
                     Call {companyName}
                   </a>
