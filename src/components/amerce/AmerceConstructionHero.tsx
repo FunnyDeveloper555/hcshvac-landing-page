@@ -64,6 +64,14 @@ const AmerceConstructionHero = ({
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           </div>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(90deg, rgba(15,17,20,0.82) 0%, rgba(15,17,20,0.62) 45%, rgba(15,17,20,0.1) 100%)",
+            }}
+          />
           <div className="sld_content type-4">
             <div className="content-sld_wrap">
               <h6 className="mb-12 text-white fade-item fade-item-1">
