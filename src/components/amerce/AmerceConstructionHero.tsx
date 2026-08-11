@@ -39,7 +39,16 @@ const AmerceConstructionHero = ({
 
   return (
     <div className="tf-slideshow tf-btn-swiper-main">
-      <div className="mb-40" style={{ overflow: "hidden", width: "100%", padding: "14px 0" }}>
+      <div
+        className="mb-40"
+        style={{
+          overflow: "hidden",
+          width: "100%",
+          padding: "14px 0",
+          borderTop: "1px solid var(--line, rgba(0,0,0,0.12))",
+          borderBottom: "1px solid var(--line, rgba(0,0,0,0.12))",
+        }}
+      >
         <div
           className="animate-marquee"
           style={{ display: "flex", alignItems: "center", width: "max-content", whiteSpace: "nowrap" }}
