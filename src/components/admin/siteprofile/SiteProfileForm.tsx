@@ -11,9 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Plus, Save, ChevronLeft, FileDown, Copy } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
+import { buildSiteProfilePdf } from "@/lib/siteProfilePdf";
+
 
 interface SystemDbRow {
   id: string;
