@@ -11,6 +11,8 @@ interface AmerceHeaderProps {
   logoUrl?: string | null;
   phone?: string | null;
   email?: string | null;
+  city?: string | null;
+  state?: string | null;
   navItems: AmerceNavItem[];
   activePage?: string;
   onPageChange: (key: string) => void;
@@ -22,12 +24,27 @@ const AmerceHeader = ({
   logoUrl,
   phone,
   email,
+  city,
+  state,
   navItems,
   activePage,
   onPageChange,
   onGoHome,
 }: AmerceHeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = [city, state].filter(Boolean).join(", ");
+
+  const messages = [
+    "24/7 Emergency Heating & Cooling Service — Same Day Appointments",
+    phone ? `Call ${phone} for a free estimate` : "Free estimates on new system installations",
+    location ? `Proudly serving ${location} and surrounding areas` : "Licensed, bonded & insured technicians",
+  ];
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setMsgIndex((i) => (i + 1) % messages.length), 4000);
+    return () => clearInterval(timer);
+  }, [messages.length]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -35,28 +52,51 @@ const AmerceHeader = ({
 
   return (
     <>
-      {/* Top bar */}
+      {/* Top bar — single row */}
       <div className="tf-topbar bg-dark">
         <div className="container">
-          <div className="topbar-inner d-flex align-items-center justify-content-between py-2 gap-16">
-            <p className="text-caption-01 text-white mb-0">
-              <Clock size={14} className="me-1" /> 24/7 Emergency Service
-            </p>
-            <div className="d-flex align-items-center gap-24">
+          <div className="topbar-inner d-flex align-items-center justify-content-between py-2 gap-16 flex-nowrap">
+            <span
+              className="text-caption-01 text-white mb-0 d-none d-lg-inline-flex align-items-center"
+              style={{ whiteSpace: "nowrap" }}
+            >
+              <Clock size={14} style={{ display: "inline-block", marginRight: 6, flex: "0 0 auto" }} />
+              24/7 Emergency Service
+            </span>
+
+            <span
+              className="text-caption-01 text-white mb-0 text-truncate flex-grow-1 text-center"
+              style={{ minWidth: 0 }}
+            >
+              {messages[msgIndex]}
+            </span>
+
+            <div className="d-flex align-items-center gap-24 flex-nowrap">
               {email && (
-                <a href={`mailto:${email}`} className="text-caption-01 cl-text-3 link d-none d-md-inline">
-                  <Mail size={14} className="me-1" /> {email}
+                <a
+                  href={`mailto:${email}`}
+                  className="text-caption-01 cl-text-3 link d-none d-md-inline-flex align-items-center"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <Mail size={14} style={{ display: "inline-block", marginRight: 6, flex: "0 0 auto" }} />
+                  {email}
                 </a>
               )}
               {phone && (
-                <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="text-caption-01 text-white link">
-                  <Phone size={14} className="me-1" /> {phone}
+                <a
+                  href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+                  className="text-caption-01 text-white link d-inline-flex align-items-center"
+                  style={{ whiteSpace: "nowrap" }}
+                >
+                  <Phone size={14} style={{ display: "inline-block", marginRight: 6, flex: "0 0 auto" }} />
+                  {phone}
                 </a>
               )}
             </div>
           </div>
         </div>
       </div>
+
 
       <header className="tf-header header-s3 header-fixed">
         <div className="header-inner_wrap">
