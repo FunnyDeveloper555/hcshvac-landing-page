@@ -39,16 +39,20 @@ const AmerceConstructionHero = ({
 
   return (
     <div className="tf-slideshow tf-btn-swiper-main">
-      <div className="infiniteSlide-text-v03 mb-40">
-        <div className="infiniteSlide infiniteSlide-wrapper">
-          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((text, i) => (
-            <span key={`${text}-${i}`} className="d-inline-flex align-items-center">
-              <p className="text fw-medium mb-0">{text}</p>
+      <div className="mb-40" style={{ overflow: "hidden", width: "100%", padding: "14px 0" }}>
+        <div
+          className="animate-marquee"
+          style={{ display: "flex", alignItems: "center", width: "max-content", whiteSpace: "nowrap" }}
+        >
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((text, i) => (
+            <span key={`${text}-${i}`} className="d-inline-flex align-items-center" style={{ flex: "0 0 auto" }}>
+              <span className="text fw-medium">{text}</span>
               <i className="icon-Star2 mx-3" />
             </span>
           ))}
         </div>
       </div>
+
 
       <div className="container-full">
         <div
