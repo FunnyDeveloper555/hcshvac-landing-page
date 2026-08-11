@@ -301,7 +301,7 @@ export default function SiteProfileForm() {
   };
 
   const sendPdfToCustomer = async () => {
-    if (!profileId || !formRef.current) return;
+    if (!profileId) return;
     const shipTo = profile.ship_to || {};
     const billTo = profile.bill_to || {};
     const customerEmail = shipTo.email || billTo.email || "";
@@ -311,25 +311,21 @@ export default function SiteProfileForm() {
     }
     setSendingPdf(true);
     try {
-      // Render form to canvas -> PDF
-      const canvas = await html2canvas(formRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
-      const imgData = canvas.toDataURL("image/jpeg", 0.85);
-      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth - 40;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 20;
-      pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
-      heightLeft -= (pageHeight - 40);
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight + 20;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 20, position, imgWidth, imgHeight);
-        heightLeft -= (pageHeight - 40);
-      }
+      const companyNameForPdf = assignedCompanyId
+        ? companies.find((c) => c.id === assignedCompanyId)?.name
+        : undefined;
+      const emp = employees.find((e) => e.id === assignedToId);
+      const assignedToName = emp ? `${emp.first_name || ""} ${emp.last_name || ""}`.trim() : "";
+
+      const pdf = await buildSiteProfilePdf({
+        profile: { ...profile, id: profileId },
+        systems,
+        completedByName,
+        companyName: companyNameForPdf,
+        assignedToName,
+      });
       const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
 
       // Resolve company name for from/subject
       let companyName: string | undefined;
