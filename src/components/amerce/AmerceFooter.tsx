@@ -50,7 +50,7 @@ const AmerceFooter = ({
   const colB = navItems.slice(midpoint);
 
   return (
-    <footer className={isLight ? "tf-footer footer-s6" : "tf-footer footer-s5 bg-dark"}>
+    <footer className={isLight ? "tf-footer footer-s5 bg-white" : "tf-footer footer-s5 bg-dark"}>
       {/* Trust strip */}
       <div className="flat-spacing-4">
         <div className="container">
