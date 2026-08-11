@@ -45,7 +45,8 @@ const AmerceServiceCategories = ({ services, onSelect }: AmerceServiceCategories
               <button
                 type="button"
                 onClick={onSelect}
-                className="w-100 bg-transparent border-0 p-0 text-start hover-img"
+                className="w-100 bg-transparent border-0 p-0 text-start"
+                style={{ display: "block" }}
               >
                 <div
                   className="img-style rounded-16 overflow-hidden"
