@@ -291,6 +291,17 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
 
               <AmerceServiceCategories services={services} onSelect={scrollToContact} />
 
+              <AmerceTopProducts
+                companyId={company.id}
+                onProductClick={(id) => {
+                  setActivePage("products");
+                  setSelectedProductId(id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                onViewAll={() => handlePageChange("products")}
+              />
+
+
               <AmerceFeatureBanner
                 companyName={company.name}
                 city={company.company_city}
