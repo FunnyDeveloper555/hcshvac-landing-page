@@ -30,6 +30,7 @@ import AmerceConstructionHero from "@/components/amerce/AmerceConstructionHero";
 import AmerceServiceCategories from "@/components/amerce/AmerceServiceCategories";
 import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
+import AmerceTopProducts from "@/components/amerce/AmerceTopProducts";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
 
 
