@@ -205,23 +205,20 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           <CompanyPopup companyId={company.id} />
         </AmerceTailwindScope>
 
-        <AmerceTopbar
-          phone={company.company_phone}
-          city={company.company_city}
-          state={company.company_state}
-        />
-
         <AmerceHeader
 
           companyName={company.name}
           logoUrl={company.logo_url}
           phone={company.company_phone}
           email={company.company_email_primary}
+          city={company.company_city}
+          state={company.company_state}
           navItems={HEADER_PAGES}
           activePage={activePage || undefined}
           onPageChange={handlePageChange}
           onGoHome={handleBackToHome}
         />
+
 
         <main className="flex-1">
           {activePage === "products" ? (
