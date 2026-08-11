@@ -1,3 +1,6 @@
+import imgInstall from "@/assets/amerce/hvac-install.jpg";
+import imgService from "@/assets/amerce/hvac-service.jpg";
+
 interface AmerceFeatureBannerProps {
   companyName: string;
   city?: string | null;
