@@ -34,7 +34,7 @@ const AmerceOrganicTestimonials = ({ companyName }: AmerceOrganicTestimonialsPro
       <div className="row g-4 mt-2">
         {REVIEWS.map((review) => (
           <div className="col-lg-4 col-md-6" key={review.name}>
-            <div className="testimonial-v01 style-def h-100 p-4 rounded-16" style={{ border: "1px solid var(--line, rgba(0,0,0,0.1))" }}>
+            <div className="h-100 p-4 rounded-16 bg-white" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
               <div className="star-wrap d-flex align-items-center gap-1 mb-3" style={{ color: "var(--primary)" }}>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <i className="icon-Star fs-16" key={i} />
