@@ -26,9 +26,13 @@ import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 import AmerceShell from "@/components/amerce/AmerceShell";
 import AmerceTailwindScope from "@/components/amerce/AmerceTailwindScope";
 import AmerceHeader from "@/components/amerce/AmerceHeader";
-import AmerceHero from "@/components/amerce/AmerceHero";
+import AmerceTopbar from "@/components/amerce/AmerceTopbar";
+import AmerceConstructionHero from "@/components/amerce/AmerceConstructionHero";
+import AmerceServiceCategories from "@/components/amerce/AmerceServiceCategories";
+import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
+
 
 interface PageContent {
   title: string;
@@ -201,7 +205,14 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           <CompanyPopup companyId={company.id} />
         </AmerceTailwindScope>
 
+        <AmerceTopbar
+          phone={company.company_phone}
+          city={company.company_city}
+          state={company.company_state}
+        />
+
         <AmerceHeader
+
           companyName={company.name}
           logoUrl={company.logo_url}
           phone={company.company_phone}
@@ -270,7 +281,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
             </AmerceTailwindScope>
           ) : (
             <>
-              <AmerceHero
+              <AmerceConstructionHero
                 companyName={company.name}
                 title={company.website_title}
                 tagline={company.website_tagline}
@@ -282,11 +293,22 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 onPrimaryCta={scrollToContact}
               />
 
+              <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+
+              <AmerceFeatureBanner
+                companyName={company.name}
+                city={company.company_city}
+                state={company.company_state}
+                phone={company.company_phone}
+                onCta={scrollToContact}
+              />
+
               <AmerceServices
                 services={services}
                 companyName={company.name}
                 onCta={scrollToContact}
               />
+
 
               <AmerceTailwindScope themeStyle={themeStyle}>
                 {((company.service_areas && company.service_areas.length > 0) ||
