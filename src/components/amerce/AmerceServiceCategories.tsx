@@ -39,24 +39,34 @@ const AmerceServiceCategories = ({ services, onSelect }: AmerceServiceCategories
           </p>
         </div>
 
-        <div className="tf-grid-layout xl-col-5 lg-col-4 md-col-3 sm-col-3 col-2 gap-15">
+        <div className="row g-3 mt-4">
           {items.map((item, i) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={onSelect}
-              className="category-v04 hover-img bg-transparent border-0 p-0 text-start"
-            >
-              <div className="cate-image img-style">
-                <img loading="lazy" width={240} height={180} src={CATE_IMAGES[i % CATE_IMAGES.length]} alt={item.title} />
-              </div>
-              <div className="cate-content text-center">
-                <div className="h5 cate_name link-underline-text">{item.title}</div>
-                <p className="cate_quantity text-caption-01 cl-text-2 mb-0">Request service</p>
-              </div>
-            </button>
+            <div className="col-6 col-md-4 col-xl-3" key={item.id}>
+              <button
+                type="button"
+                onClick={onSelect}
+                className="w-100 bg-transparent border-0 p-0 text-start hover-img"
+              >
+                <div
+                  className="img-style rounded-16 overflow-hidden"
+                  style={{ aspectRatio: "4 / 3", position: "relative" }}
+                >
+                  <img
+                    loading="lazy"
+                    src={CATE_IMAGES[i % CATE_IMAGES.length]}
+                    alt={item.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                </div>
+                <div className="text-center mt-3">
+                  <div className="h5 mb-1 link-underline-text">{item.title}</div>
+                  <p className="text-caption-01 cl-text-2 mb-0">Request service</p>
+                </div>
+              </button>
+            </div>
           ))}
         </div>
+
       </div>
     </section>
   );
