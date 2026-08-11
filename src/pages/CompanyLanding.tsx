@@ -30,6 +30,7 @@ import AmerceConstructionHero from "@/components/amerce/AmerceConstructionHero";
 import AmerceServiceCategories from "@/components/amerce/AmerceServiceCategories";
 import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
+import AmerceTopProducts from "@/components/amerce/AmerceTopProducts";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
 
 
@@ -290,6 +291,17 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
               />
 
               <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+
+              <AmerceTopProducts
+                companyId={company.id}
+                onProductClick={(id) => {
+                  setActivePage("products");
+                  setSelectedProductId(id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                onViewAll={() => handlePageChange("products")}
+              />
+
 
               <AmerceFeatureBanner
                 companyName={company.name}
