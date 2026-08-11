@@ -51,7 +51,10 @@ const AmerceConstructionHero = ({
       </div>
 
       <div className="container-full">
-        <div className="slider-wrap slideshow-wrap rounded-20 overflow-hidden">
+        <div
+          className="slider-wrap slideshow-wrap rounded-20 overflow-hidden"
+          style={{ position: "relative" }}
+        >
           <div className="sld_image">
             <img
               width={1770}
@@ -63,15 +66,16 @@ const AmerceConstructionHero = ({
               className="scale-item scale-item-1"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
+                background:
+                  "linear-gradient(90deg, rgba(15,17,20,0.85) 0%, rgba(15,17,20,0.65) 45%, rgba(15,17,20,0.15) 100%)",
+              }}
+            />
           </div>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(90deg, rgba(15,17,20,0.82) 0%, rgba(15,17,20,0.62) 45%, rgba(15,17,20,0.1) 100%)",
-            }}
-          />
           <div className="sld_content type-4">
             <div className="content-sld_wrap">
               <h6 className="mb-12 text-white fade-item fade-item-1">
