@@ -274,7 +274,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
             </AmerceTailwindScope>
           ) : (
             <>
-              <AmerceHero
+              <AmerceConstructionHero
                 companyName={company.name}
                 title={company.website_title}
                 tagline={company.website_tagline}
@@ -286,11 +286,22 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 onPrimaryCta={scrollToContact}
               />
 
+              <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+
+              <AmerceFeatureBanner
+                companyName={company.name}
+                city={company.company_city}
+                state={company.company_state}
+                phone={company.company_phone}
+                onCta={scrollToContact}
+              />
+
               <AmerceServices
                 services={services}
                 companyName={company.name}
                 onCta={scrollToContact}
               />
+
 
               <AmerceTailwindScope themeStyle={themeStyle}>
                 {((company.service_areas && company.service_areas.length > 0) ||
