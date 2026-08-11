@@ -76,9 +76,14 @@ const AmerceFooter = ({
                   <img
                     src={logoUrl}
                     alt={companyName}
-                    height={40}
-                    style={{ maxHeight: 40, width: "auto" }}
-                    className="mb-3"
+                    style={{
+                      height: 40,
+                      maxHeight: 40,
+                      width: "auto",
+                      maxWidth: 200,
+                      objectFit: "contain",
+                    }}
+                    className="mb-3 d-block"
                   />
                 ) : null}
                 <p className="footer-heading text-white">OUR OFFICE</p>
