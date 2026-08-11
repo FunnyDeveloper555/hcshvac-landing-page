@@ -1,3 +1,5 @@
+import heroFallback from "@/assets/amerce/hvac-hero.jpg";
+
 interface AmerceConstructionHeroProps {
   companyName: string;
   title?: string | null;
