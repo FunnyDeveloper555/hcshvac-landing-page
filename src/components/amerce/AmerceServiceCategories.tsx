@@ -1,3 +1,7 @@
+import imgHero from "@/assets/amerce/hvac-hero.jpg";
+import imgInstall from "@/assets/amerce/hvac-install.jpg";
+import imgService from "@/assets/amerce/hvac-service.jpg";
+
 interface ServiceItem {
   id: string;
   title: string;
@@ -10,18 +14,8 @@ interface AmerceServiceCategoriesProps {
   onSelect?: () => void;
 }
 
-const CATE_IMAGES = [
-  "/amerce-template/assets/images/category/cate-48.jpg",
-  "/amerce-template/assets/images/category/cate-49.jpg",
-  "/amerce-template/assets/images/category/cate-50.jpg",
-  "/amerce-template/assets/images/category/cate-51.jpg",
-  "/amerce-template/assets/images/category/cate-52.jpg",
-  "/amerce-template/assets/images/category/cate-53.jpg",
-  "/amerce-template/assets/images/category/cate-54.jpg",
-  "/amerce-template/assets/images/category/cate-55.jpg",
-  "/amerce-template/assets/images/category/cate-56.jpg",
-  "/amerce-template/assets/images/category/cate-57.jpg",
-];
+const CATE_IMAGES = [imgInstall, imgService, imgHero];
+
 
 const FALLBACK: ServiceItem[] = [
   { id: "c1", title: "Furnace Repair", description: "", icon: "" },
