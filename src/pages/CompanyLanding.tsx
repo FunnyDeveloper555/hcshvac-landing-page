@@ -320,6 +320,17 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                     onCta={scrollToContact}
                   />
 
+                  <AmerceOrganicPopularProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
+
+
                   <AmerceServices
                     services={services}
                     companyName={company.name}
