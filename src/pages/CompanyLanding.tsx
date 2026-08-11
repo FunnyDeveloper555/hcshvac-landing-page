@@ -32,6 +32,10 @@ import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
 import AmerceTopProducts from "@/components/amerce/AmerceTopProducts";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
+import AmerceOrganicHero from "@/components/amerce/organic/AmerceOrganicHero";
+import AmerceOrganicCategories from "@/components/amerce/organic/AmerceOrganicCategories";
+import AmerceOrganicPromo from "@/components/amerce/organic/AmerceOrganicPromo";
+import AmerceOrganicTestimonials from "@/components/amerce/organic/AmerceOrganicTestimonials";
 
 
 interface PageContent {
@@ -169,6 +173,9 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
 
   const themeStyle = company.theme_style || 'modern';
   const theme = getThemeConfig(themeStyle);
+  // Companies mapped to the Amerce "home-organic" homepage layout.
+  const ORGANIC_LAYOUT_SLUGS = ["blueflameheatingcooling"];
+  const isOrganicLayout = ORGANIC_LAYOUT_SLUGS.includes(company.slug || "");
 
   const handlePageChange = (pageKey: string) => {
     setActivePage(pageKey);
@@ -278,44 +285,90 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
             </AmerceTailwindScope>
           ) : (
             <>
-              <AmerceConstructionHero
-                companyName={company.name}
-                title={company.website_title}
-                tagline={company.website_tagline}
-                description={company.website_description}
-                heroImageUrl={company.hero_image_url}
-                phone={company.company_phone}
-                city={company.company_city}
-                state={company.company_state}
-                onPrimaryCta={scrollToContact}
-              />
+              {isOrganicLayout ? (
+                <>
+                  <AmerceOrganicHero
+                    companyName={company.name}
+                    title={company.website_title}
+                    tagline={company.website_tagline}
+                    description={company.website_description}
+                    heroImageUrl={company.hero_image_url}
+                    phone={company.company_phone}
+                    city={company.company_city}
+                    state={company.company_state}
+                    onPrimaryCta={scrollToContact}
+                  />
 
-              <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+                  <AmerceOrganicCategories services={services} onSelect={scrollToContact} />
 
-              <AmerceTopProducts
-                companyId={company.id}
-                onProductClick={(id) => {
-                  setActivePage("products");
-                  setSelectedProductId(id);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                onViewAll={() => handlePageChange("products")}
-              />
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
 
+                  <AmerceOrganicPromo
+                    companyName={company.name}
+                    city={company.company_city}
+                    state={company.company_state}
+                    phone={company.company_phone}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceFeatureBanner
-                companyName={company.name}
-                city={company.company_city}
-                state={company.company_state}
-                phone={company.company_phone}
-                onCta={scrollToContact}
-              />
+                  <AmerceServices
+                    services={services}
+                    companyName={company.name}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceServices
-                services={services}
-                companyName={company.name}
-                onCta={scrollToContact}
-              />
+                  <AmerceOrganicTestimonials companyName={company.name} />
+                </>
+              ) : (
+                <>
+                  <AmerceConstructionHero
+                    companyName={company.name}
+                    title={company.website_title}
+                    tagline={company.website_tagline}
+                    description={company.website_description}
+                    heroImageUrl={company.hero_image_url}
+                    phone={company.company_phone}
+                    city={company.company_city}
+                    state={company.company_state}
+                    onPrimaryCta={scrollToContact}
+                  />
+
+                  <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
+
+                  <AmerceFeatureBanner
+                    companyName={company.name}
+                    city={company.company_city}
+                    state={company.company_state}
+                    phone={company.company_phone}
+                    onCta={scrollToContact}
+                  />
+
+                  <AmerceServices
+                    services={services}
+                    companyName={company.name}
+                    onCta={scrollToContact}
+                  />
+                </>
+              )}
+
 
 
               <AmerceTailwindScope themeStyle={themeStyle}>
