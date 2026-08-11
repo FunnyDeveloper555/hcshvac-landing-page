@@ -317,14 +317,24 @@ export default function SiteProfileForm() {
       const emp = employees.find((e) => e.id === assignedToId);
       const assignedToName = emp ? `${emp.first_name || ""} ${emp.last_name || ""}`.trim() : "";
 
-      const pdf = await buildSiteProfilePdf({
-        profile: { ...profile, id: profileId },
-        systems,
-        completedByName,
-        companyName: companyNameForPdf,
-        assignedToName,
-      });
-      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+      const buildPdf = (includePhotos: boolean) =>
+        buildSiteProfilePdf({
+          profile: { ...profile, id: profileId },
+          systems,
+          completedByName,
+          companyName: companyNameForPdf,
+          assignedToName,
+          includePhotos,
+        });
+
+      let pdf = await buildPdf(true);
+      let pdfBase64 = pdf.output("datauristring").split(",")[1];
+      // Email payload cap (~3.5MB base64) — retry without photos if too large.
+      if (pdfBase64.length > 3_500_000) {
+        pdf = await buildPdf(false);
+        pdfBase64 = pdf.output("datauristring").split(",")[1];
+      }
+
 
 
       // Resolve company name for from/subject

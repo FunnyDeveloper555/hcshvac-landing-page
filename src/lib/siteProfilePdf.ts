@@ -312,16 +312,25 @@ function drawPhotoGrid(
   ctx.set(ctx.get() + 4);
 }
 
-async function toDataUrl(url: string): Promise<string | null> {
+// Downscale + re-encode photos so the resulting PDF stays small enough to email.
+async function toDataUrl(url: string, maxDim = 700, quality = 0.6): Promise<string | null> {
   try {
     const res = await fetch(url);
     const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(String(reader.result));
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
+    const bitmap = await createImageBitmap(blob);
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    return canvas.toDataURL("image/jpeg", quality);
   } catch {
     return null;
   }
