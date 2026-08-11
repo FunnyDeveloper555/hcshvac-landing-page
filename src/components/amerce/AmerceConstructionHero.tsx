@@ -35,7 +35,7 @@ const AmerceConstructionHero = ({
   onPrimaryCta,
 }: AmerceConstructionHeroProps) => {
   const location = [city, state].filter(Boolean).join(", ");
-  const image = heroImageUrl || "/amerce-template/assets/images/slider/slider-34.jpg";
+  const image = heroImageUrl || heroFallback;
 
   return (
     <div className="tf-slideshow tf-btn-swiper-main">
