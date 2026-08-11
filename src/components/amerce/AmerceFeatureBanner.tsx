@@ -46,7 +46,7 @@ const AmerceFeatureBanner = ({ companyName, city, state, phone, onCta }: AmerceF
                 height={580}
                 loading="lazy"
                 decoding="async"
-                src="/amerce-template/assets/images/section/banner-55.jpg"
+                src={imgInstall}
                 alt="Technician at work"
               />
             </div>
@@ -59,7 +59,7 @@ const AmerceFeatureBanner = ({ companyName, city, state, phone, onCta }: AmerceF
                 height={580}
                 loading="lazy"
                 decoding="async"
-                src="/amerce-template/assets/images/section/banner-56.jpg"
+                src={imgService}
                 alt="Equipment install"
               />
             </div>
