@@ -32,6 +32,10 @@ import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
 import AmerceServices from "@/components/amerce/AmerceServices";
 import AmerceTopProducts from "@/components/amerce/AmerceTopProducts";
 import AmerceFooter from "@/components/amerce/AmerceFooter";
+import AmerceOrganicHero from "@/components/amerce/organic/AmerceOrganicHero";
+import AmerceOrganicCategories from "@/components/amerce/organic/AmerceOrganicCategories";
+import AmerceOrganicPromo from "@/components/amerce/organic/AmerceOrganicPromo";
+import AmerceOrganicTestimonials from "@/components/amerce/organic/AmerceOrganicTestimonials";
 
 
 interface PageContent {
