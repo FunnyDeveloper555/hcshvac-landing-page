@@ -205,7 +205,14 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           <CompanyPopup companyId={company.id} />
         </AmerceTailwindScope>
 
+        <AmerceTopbar
+          phone={company.company_phone}
+          city={company.company_city}
+          state={company.company_state}
+        />
+
         <AmerceHeader
+
           companyName={company.name}
           logoUrl={company.logo_url}
           phone={company.company_phone}
