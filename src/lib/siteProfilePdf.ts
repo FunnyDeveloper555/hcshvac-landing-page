@@ -250,7 +250,11 @@ export async function buildSiteProfilePdf({
       ["belt_equipment_id", "Belt Unit / Equipment ID Tag #"],
       ["belt_notes", "Belt Notes / Comments"],
     ];
-    fieldGrid([...fields, ...filterFields, ...beltFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
+    const fieldDocsFields: [string, string][] = [
+      ["field_documents_equipment_id", "Field Documents Unit / Equipment ID Tag #"],
+      ["field_documents_notes", "Field Documents Notes / Comments"],
+    ];
+    fieldGrid([...fields, ...filterFields, ...beltFields, ...fieldDocsFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
     const notes = (s.data || {}).notes;
     if (notes) {
       pdf.setFont("helvetica", "normal");
