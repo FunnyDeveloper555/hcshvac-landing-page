@@ -605,6 +605,37 @@ const CompaniesAdd = () => {
     });
   };
 
+  const toggleSelectAllStates = () => {
+    const allSelected = availableStates.length > 0 && selectedStates.length === availableStates.length;
+    setSelectedStates(allSelected ? [] : availableStates.map(s => s.code));
+  };
+
+  const selectAllCountiesForState = (stateCode: string) => {
+    const stateCounties = countiesByState.get(stateCode) || [];
+    const allSelected = stateCounties.length > 0 && stateCounties.every(county =>
+      selectedCounties.some(c => c.county === county && c.stateCode === stateCode)
+    );
+    if (allSelected) {
+      setSelectedCounties(prev => prev.filter(c => c.stateCode !== stateCode));
+    } else {
+      setSelectedCounties(prev => {
+        const withoutState = prev.filter(c => c.stateCode !== stateCode);
+        const additions = stateCounties.map(county => ({ county, stateCode }));
+        return [...withoutState, ...additions];
+      });
+    }
+  };
+
+  const selectAllCitiesForCounty = (countyKey: string) => {
+    const cities = citiesByCounty.get(countyKey) || [];
+    const allSelected = cities.length > 0 && cities.every(city => selectedCities.includes(city.id));
+    if (allSelected) {
+      setSelectedCities(prev => prev.filter(id => !cities.some(c => c.id === id)));
+    } else {
+      setSelectedCities(prev => Array.from(new Set([...prev, ...cities.map(c => c.id)])));
+    }
+  };
+
   // Legacy brand functions (keeping for backwards compatibility)
   const addBrand = () => {
     if (brandInput.trim()) {
