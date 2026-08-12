@@ -32,8 +32,8 @@ interface Props {
   onDelete: () => void;
 }
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-1">
+const Field = ({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) => (
+  <div className={cn("space-y-1", className)}>
     <Label className="text-xs">{label}</Label>
     {children}
   </div>
