@@ -155,9 +155,12 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </>
       )}
 
-      <div>
-        <Label className="text-xs font-semibold">Filter Size</Label>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
+      <div className="border rounded-lg p-2 bg-background space-y-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-xs font-semibold">Filter Size</Label>
+          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
@@ -167,8 +170,6 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               label={s.label}
             />
           ))}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2">
           <Field label="Quantity">
             <SelectField
               value={d.filter_quantity}
