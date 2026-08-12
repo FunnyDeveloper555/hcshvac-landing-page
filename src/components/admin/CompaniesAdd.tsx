@@ -85,6 +85,8 @@ const CompaniesAdd = () => {
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+  // City ids restored from a saved company's service areas, applied once cities load
+  const [pendingCityIds, setPendingCityIds] = useState<string[] | null>(null);
   
   // Brand input states
   const [hvacBrandInstallInput, setHvacBrandInstallInput] = useState("");
@@ -285,12 +287,53 @@ const CompaniesAdd = () => {
           plumbing_equipment_service: Array.isArray(companyData.plumbing_equipment_service) ? companyData.plumbing_equipment_service as string[] : [],
           plumbing_equipment_repair: Array.isArray(companyData.plumbing_equipment_repair) ? companyData.plumbing_equipment_repair as string[] : [],
         });
+
+        // Restore the state / county / city selections from the saved service areas
+        const savedAreas = Array.isArray(data.service_areas) ? (data.service_areas as string[]) : [];
+        if (savedAreas.length > 0) {
+          const parsed = savedAreas
+            .map((area) => {
+              const parts = String(area).split(",").map((p) => p.trim());
+              if (parts.length < 2) return null;
+              return { name: parts[0], stateCode: parts[parts.length - 1] };
+            })
+            .filter(Boolean) as Array<{ name: string; stateCode: string }>;
+
+          if (parsed.length > 0) {
+            const { data: cityRows } = await supabase
+              .from("cities")
+              .select("id, name, state_code, county")
+              .in("state_code", [...new Set(parsed.map((p) => p.stateCode))])
+              .in("name", [...new Set(parsed.map((p) => p.name))]);
+
+            const matched = (cityRows || []).filter((c) =>
+              parsed.some((p) => p.name === c.name && p.stateCode === c.state_code)
+            );
+
+            if (matched.length > 0) {
+              setSelectedStates([...new Set(matched.map((c) => c.state_code))]);
+              const countyKeys = new Set<string>();
+              const counties: Array<{ county: string; stateCode: string }> = [];
+              matched.forEach((c) => {
+                if (!c.county) return;
+                const key = `${c.county}|${c.state_code}`;
+                if (!countyKeys.has(key)) {
+                  countyKeys.add(key);
+                  counties.push({ county: c.county, stateCode: c.state_code });
+                }
+              });
+              setSelectedCounties(counties);
+              setPendingCityIds(matched.map((c) => c.id));
+            }
+          }
+        }
       }
       setLoading(false);
     };
 
     loadCompanyData();
   }, [editId, toast]);
+
 
   // Load services, states, and brands on mount
   useEffect(() => {
@@ -422,7 +465,12 @@ const CompaniesAdd = () => {
 
         setCitiesByCounty(newCitiesByCounty);
         const allAvailableCityIds = Array.from(newCitiesByCounty.values()).flat().map(c => c.id);
-        setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        if (pendingCityIds) {
+          setSelectedCities(pendingCityIds.filter(id => allAvailableCityIds.includes(id)));
+          setPendingCityIds(null);
+        } else {
+          setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        }
       } catch (error) {
         console.error("Error loading cities:", error);
       }
