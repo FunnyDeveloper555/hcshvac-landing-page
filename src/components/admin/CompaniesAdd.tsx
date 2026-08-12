@@ -1296,6 +1296,21 @@ const CompaniesAdd = () => {
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
                         </CollapsibleTrigger>
+
+                        {counties.length > 0 && (
+                          <div className="flex justify-end pl-4">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => selectAllCountiesForState(stateCode)}
+                            >
+                              {counties.every(county => selectedCounties.some(c => c.county === county && c.stateCode === stateCode))
+                                ? "Clear All"
+                                : "Select All"}
+                            </Button>
+                          </div>
+                        )}
                         
                         <CollapsibleContent className="space-y-1 pl-4">
                           <div className="border rounded p-3 bg-background grid grid-cols-2 md:grid-cols-3 gap-2">
