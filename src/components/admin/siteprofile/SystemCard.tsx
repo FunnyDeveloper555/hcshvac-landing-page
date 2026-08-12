@@ -32,8 +32,8 @@ interface Props {
   onDelete: () => void;
 }
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-1">
+const Field = ({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) => (
+  <div className={`space-y-1 ${className || ""}`}>
     <Label className="text-xs">{label}</Label>
     {children}
   </div>
@@ -157,7 +157,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
 
       <div>
         <Label className="text-xs font-semibold">Filter Size</Label>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 mt-1">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
@@ -168,7 +168,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             />
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2">
           <Field label="Quantity">
             <SelectField
               value={d.filter_quantity}
@@ -183,7 +183,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               onChange={(e) => set("filter_equipment_id", e.target.value)}
             />
           </Field>
-          <Field label="Notes/Comments">
+          <Field className="md:col-span-2" label="Notes/Comments">
             <Input
               className="h-8 text-xs"
               value={d.filter_notes || ""}
