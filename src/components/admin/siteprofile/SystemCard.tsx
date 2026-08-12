@@ -183,7 +183,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               onChange={(e) => set("filter_equipment_id", e.target.value)}
             />
           </Field>
-          <Field label="Notes/Comments">
+          <Field className="md:col-span-2" label="Notes/Comments">
             <Input
               className="h-8 text-xs"
               value={d.filter_notes || ""}
