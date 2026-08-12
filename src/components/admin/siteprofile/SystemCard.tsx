@@ -168,29 +168,33 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               systemId={system.id}
               slotKey={s.key}
               label={s.label}
+              footer={
+                <div className="space-y-2">
+                  <Field label="Quantity">
+                    <SelectField
+                      value={d.filter_quantity}
+                      onChange={(v) => set("filter_quantity", v)}
+                      options={FILTER_QUANTITY_OPTIONS}
+                    />
+                  </Field>
+                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.filter_equipment_id || ""}
+                      onChange={(e) => set("filter_equipment_id", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Notes/Comments">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.filter_notes || ""}
+                      onChange={(e) => set("filter_notes", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              }
             />
           ))}
-          <Field label="Quantity">
-            <SelectField
-              value={d.filter_quantity}
-              onChange={(v) => set("filter_quantity", v)}
-              options={FILTER_QUANTITY_OPTIONS}
-            />
-          </Field>
-          <Field label="Unit/Equipment ID TAG/NUMBER">
-            <Input
-              className="h-8 text-xs"
-              value={d.filter_equipment_id || ""}
-              onChange={(e) => set("filter_equipment_id", e.target.value)}
-            />
-          </Field>
-          <Field className="md:col-span-2" label="Notes/Comments">
-            <Input
-              className="h-8 text-xs"
-              value={d.filter_notes || ""}
-              onChange={(e) => set("filter_notes", e.target.value)}
-            />
-          </Field>
         </div>
       </div>
 
