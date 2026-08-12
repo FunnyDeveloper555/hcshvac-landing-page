@@ -13,7 +13,7 @@ import {
   WATER_HEATER_TYPES, WATER_HEATER_CAPACITY, WATER_HEATER_VENT, WATER_HEATER_LOCATION,
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
   WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS,
-  BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS,
+  BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS, LOCATION_PHOTO_SLOTS,
 } from "./options";
 
 export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
@@ -159,6 +159,16 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
+          {LOCATION_PHOTO_SLOTS.map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+            />
+          ))}
+
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
