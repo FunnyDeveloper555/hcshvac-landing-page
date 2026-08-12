@@ -235,6 +235,43 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </div>
       </div>
 
+      <div className="border rounded-lg p-2 bg-background space-y-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-xs font-semibold">Field Documents</Label>
+          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          {FIELD_DOCUMENTS_PHOTO_SLOTS.map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+              footer={
+                <div className="space-y-2">
+                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.field_documents_equipment_id || ""}
+                      onChange={(e) => set("field_documents_equipment_id", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Notes/Comments">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.field_documents_notes || ""}
+                      onChange={(e) => set("field_documents_notes", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
