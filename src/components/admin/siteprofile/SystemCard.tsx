@@ -33,7 +33,7 @@ interface Props {
 }
 
 const Field = ({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) => (
-  <div className={cn("space-y-1", className)}>
+  <div className={`space-y-1 ${className || ""}`}>
     <Label className="text-xs">{label}</Label>
     {children}
   </div>
