@@ -72,6 +72,12 @@ export const BELT_SIZE_PHOTO_SLOTS = [
   { key: "belt_size", label: "Belt Size" },
 ];
 
+// Field documents photo (shared across all system kinds)
+export const FIELD_DOCUMENTS_PHOTO_SLOTS = [
+  { key: "field_documents", label: "Field Documents" },
+];
+
+
 
 // Photo slots per system kind
 export const HEATING_PHOTO_SLOTS = [
