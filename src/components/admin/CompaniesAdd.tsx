@@ -1226,7 +1226,19 @@ const CompaniesAdd = () => {
         <CardContent className="space-y-4">
           {/* State Selection */}
           <div className="space-y-2">
-            <Label>Select your State/s you Operate In</Label>
+            <div className="flex items-center justify-between">
+              <Label>Select your State/s you Operate In</Label>
+              {availableStates.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleSelectAllStates}
+                >
+                  {selectedStates.length === availableStates.length ? "Clear All" : "Select All"}
+                </Button>
+              )}
+            </div>
             <div className="border rounded-lg p-4">
               {availableStates.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Loading states...</p>
