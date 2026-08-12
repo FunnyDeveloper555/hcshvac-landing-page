@@ -14,7 +14,9 @@ interface PhotoSlotProps {
   slotKey: string;
   label: string;
   allowCustomTitle?: boolean;
+  footer?: React.ReactNode;
 }
+
 
 interface PhotoRow {
   id: string;
@@ -25,7 +27,7 @@ interface PhotoRow {
 }
 
 
-export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle }: PhotoSlotProps) {
+export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle, footer }: PhotoSlotProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<PhotoRow[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
@@ -160,6 +162,8 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         onReload={load}
         allowCustomTitle={allowCustomTitle}
       />
+
+      {footer && <div className="space-y-2">{footer}</div>}
 
     </div>
   );
