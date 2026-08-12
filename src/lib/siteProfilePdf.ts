@@ -241,7 +241,12 @@ export async function buildSiteProfilePdf({
     pdf.text(`${KIND_LABEL[s.kind] || s.kind} #${s.index}`, M, y + 10);
     y += 20;
     const fields = SYSTEM_FIELDS[s.kind] || [];
-    fieldGrid(fields.map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
+    const filterFields: [string, string][] = [
+      ["filter_quantity", "Filter Quantity"],
+      ["filter_equipment_id", "Unit / Equipment ID Tag #"],
+      ["filter_notes", "Filter Notes / Comments"],
+    ];
+    fieldGrid([...fields, ...filterFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
     const notes = (s.data || {}).notes;
     if (notes) {
       pdf.setFont("helvetica", "normal");
