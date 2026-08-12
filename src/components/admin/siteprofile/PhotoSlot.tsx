@@ -163,6 +163,8 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         allowCustomTitle={allowCustomTitle}
       />
 
+      {footer && <div className="space-y-2">{footer}</div>}
+
     </div>
   );
 }
