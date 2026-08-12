@@ -156,12 +156,9 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </>
       )}
 
-      <div className="border rounded-lg p-2 bg-background space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-semibold">Filter Size</Label>
-          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+      <div>
+        <Label className="text-xs font-semibold">Photos</Label>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
@@ -196,15 +193,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               }
             />
           ))}
-        </div>
-      </div>
 
-      <div className="border rounded-lg p-2 bg-background space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-semibold">Belt Size</Label>
-          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           {BELT_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
@@ -232,15 +221,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               }
             />
           ))}
-        </div>
-      </div>
 
-      <div className="border rounded-lg p-2 bg-background space-y-2">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs font-semibold">Field Documents</Label>
-          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           {FIELD_DOCUMENTS_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
@@ -268,13 +249,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               }
             />
           ))}
-        </div>
-      </div>
 
-
-      <div>
-        <Label className="text-xs font-semibold">Photos</Label>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {(system.kind === "heating" ? HEATING_PHOTO_SLOTS
             : system.kind === "cooling" ? COOLING_PHOTO_SLOTS
             : system.kind === "sump_pump" ? SUMP_PHOTO_SLOTS
@@ -299,6 +274,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
           />
         </div>
       </div>
+
     </div>
   );
 }
