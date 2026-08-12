@@ -157,7 +157,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
 
       <div>
         <Label className="text-xs font-semibold">Filter Size</Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 mt-1">
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
               key={s.key}
