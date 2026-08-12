@@ -12,7 +12,7 @@ import {
   HP_OPTIONS, PIPE_OPTIONS,
   WATER_HEATER_TYPES, WATER_HEATER_CAPACITY, WATER_HEATER_VENT, WATER_HEATER_LOCATION,
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
-  WATER_HEATER_PHOTO_SLOTS,
+  WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS,
 } from "./options";
 
 export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
@@ -154,6 +154,44 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
           </Field>
         </>
       )}
+
+      <div>
+        <Label className="text-xs font-semibold">Filter Size</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-1">
+          {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+            />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
+          <Field label="Quantity">
+            <SelectField
+              value={d.filter_quantity}
+              onChange={(v) => set("filter_quantity", v)}
+              options={FILTER_QUANTITY_OPTIONS}
+            />
+          </Field>
+          <Field label="Unit/Equipment ID TAG/NUMBER">
+            <Input
+              className="h-8 text-xs"
+              value={d.filter_equipment_id || ""}
+              onChange={(e) => set("filter_equipment_id", e.target.value)}
+            />
+          </Field>
+          <Field label="Notes/Comments">
+            <Input
+              className="h-8 text-xs"
+              value={d.filter_notes || ""}
+              onChange={(e) => set("filter_notes", e.target.value)}
+            />
+          </Field>
+        </div>
+      </div>
 
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
