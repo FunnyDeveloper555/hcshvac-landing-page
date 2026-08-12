@@ -60,10 +60,16 @@ export const COOLING_MOUNTING = [
 export const HP_OPTIONS = ["¼ HP", "1/3 HP", "½ HP", "¾ HP", "1 HP", "Other", "UNKNOWN"];
 export const PIPE_OPTIONS = ["1 ¼\" PVC", "1 ½\" PVC", "2\" PVC", "Other", "UNKNOWN"];
 
+// Location photo (shared across all system kinds)
+export const LOCATION_PHOTO_SLOTS = [
+  { key: "location", label: "Location" },
+];
+
 // Filter size photo (shared across all system kinds)
 export const FILTER_SIZE_PHOTO_SLOTS = [
   { key: "filter_size", label: "Filter Size" },
 ];
+
 
 export const FILTER_QUANTITY_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
