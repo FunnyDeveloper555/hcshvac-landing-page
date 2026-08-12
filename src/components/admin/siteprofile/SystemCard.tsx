@@ -13,6 +13,7 @@ import {
   WATER_HEATER_TYPES, WATER_HEATER_CAPACITY, WATER_HEATER_VENT, WATER_HEATER_LOCATION,
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
   WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS,
+  BELT_SIZE_PHOTO_SLOTS,
 } from "./options";
 
 export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
@@ -189,6 +190,42 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
                       className="h-8 text-xs"
                       value={d.filter_notes || ""}
                       onChange={(e) => set("filter_notes", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="border rounded-lg p-2 bg-background space-y-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-xs font-semibold">Belt Size</Label>
+          <span className="text-[10px] text-muted-foreground">(photo + details)</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          {BELT_SIZE_PHOTO_SLOTS.map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+              footer={
+                <div className="space-y-2">
+                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.belt_equipment_id || ""}
+                      onChange={(e) => set("belt_equipment_id", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Notes/Comments">
+                    <Input
+                      className="h-8 text-xs"
+                      value={d.belt_notes || ""}
+                      onChange={(e) => set("belt_notes", e.target.value)}
                     />
                   </Field>
                 </div>

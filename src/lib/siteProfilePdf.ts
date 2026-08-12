@@ -246,7 +246,11 @@ export async function buildSiteProfilePdf({
       ["filter_equipment_id", "Unit / Equipment ID Tag #"],
       ["filter_notes", "Filter Notes / Comments"],
     ];
-    fieldGrid([...fields, ...filterFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
+    const beltFields: [string, string][] = [
+      ["belt_equipment_id", "Belt Unit / Equipment ID Tag #"],
+      ["belt_notes", "Belt Notes / Comments"],
+    ];
+    fieldGrid([...fields, ...filterFields, ...beltFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
     const notes = (s.data || {}).notes;
     if (notes) {
       pdf.setFont("helvetica", "normal");
