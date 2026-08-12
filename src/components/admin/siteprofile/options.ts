@@ -67,6 +67,12 @@ export const FILTER_SIZE_PHOTO_SLOTS = [
 
 export const FILTER_QUANTITY_OPTIONS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
+// Belt size photo (shared across all system kinds)
+export const BELT_SIZE_PHOTO_SLOTS = [
+  { key: "belt_size", label: "Belt Size" },
+];
+
+
 // Photo slots per system kind
 export const HEATING_PHOTO_SLOTS = [
   { key: "label_plate", label: "Label Plate" },
