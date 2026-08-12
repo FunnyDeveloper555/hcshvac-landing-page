@@ -85,6 +85,8 @@ const CompaniesAdd = () => {
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+  // City ids restored from a saved company's service areas, applied once cities load
+  const [pendingCityIds, setPendingCityIds] = useState<string[] | null>(null);
   
   // Brand input states
   const [hvacBrandInstallInput, setHvacBrandInstallInput] = useState("");
