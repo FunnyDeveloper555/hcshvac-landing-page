@@ -465,7 +465,12 @@ const CompaniesAdd = () => {
 
         setCitiesByCounty(newCitiesByCounty);
         const allAvailableCityIds = Array.from(newCitiesByCounty.values()).flat().map(c => c.id);
-        setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        if (pendingCityIds) {
+          setSelectedCities(pendingCityIds.filter(id => allAvailableCityIds.includes(id)));
+          setPendingCityIds(null);
+        } else {
+          setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        }
       } catch (error) {
         console.error("Error loading cities:", error);
       }
