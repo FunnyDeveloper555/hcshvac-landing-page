@@ -10,6 +10,8 @@ const KIND_LABEL: Record<string, string> = {
   sump_pump: "Sump Pump",
   ejector_pump: "Ejector Pump",
   water_heater: "Water Heater",
+  boiler: "Boiler",
+  rtu: "RTU (Roof Top Unit)",
 };
 
 const SYSTEM_FIELDS: Record<string, [string, string][]> = {
@@ -37,7 +39,19 @@ const SYSTEM_FIELDS: Record<string, [string, string][]> = {
     ["btu_kw", "BTU / KW"], ["venting", "Venting"], ["location", "Location"], ["age", "Age"],
     ["expansion_tank", "Expansion Tank"], ["recirc_pump", "Recirculation Pump"], ["drip_pan", "Drip Pan"],
   ],
+  boiler: [
+    ["type", "Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
+    ["energy_supply", "Energy Supply"], ["voltage", "Voltage"], ["btu_kw", "BTU / KW"],
+    ["input_output", "Input / Output"], ["max_pressure", "Max Pressure"], ["age", "Age"],
+    ["pump", "Pump"], ["zone_valves", "Zone Valves"],
+  ],
+  rtu: [
+    ["type", "Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
+    ["tonnage", "Tonnage"], ["voltage", "Voltage"], ["phase", "Phase"], ["energy_supply", "Energy Supply"],
+    ["age", "Age"], ["economizer", "Economizer"], ["filter_size", "Filter Size"], ["thermostat", "Thermostat"],
+  ],
 };
+
 
 const ADDRESS_FIELDS: [string, string][] = [
   ["name", "Contact Name"], ["business_name", "Business Name"], ["address", "Address"],

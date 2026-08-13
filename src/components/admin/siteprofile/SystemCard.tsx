@@ -14,9 +14,11 @@ import {
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
   WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS,
   BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS, LOCATION_PHOTO_SLOTS,
+  BOILER_TYPES, BOILER_PHOTO_SLOTS, RTU_TYPES, RTU_TONNAGE, PHASE_OPTIONS, RTU_PHOTO_SLOTS,
 } from "./options";
 
-export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
+
+export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater" | "boiler" | "rtu";
 
 
 export interface SystemRow {
@@ -63,7 +65,10 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     sump_pump: "Sump Pump",
     ejector_pump: "Ejector Pump",
     water_heater: "Water Heater",
+    boiler: "Boiler",
+    rtu: "RTU (Roof Top Unit)",
   };
+
 
 
   return (
@@ -156,8 +161,53 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </>
       )}
 
+      {system.kind === "boiler" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Type"><SelectField value={d.type} onChange={(v) => set("type", v)} options={BOILER_TYPES} /></Field>
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="Serial #"><Input className="h-8 text-xs" value={d.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} /></Field>
+            <Field label="Energy Supply"><SelectField value={d.energy_supply} onChange={(v) => set("energy_supply", v)} options={ENERGY_SUPPLY} /></Field>
+            <Field label="Voltage"><SelectField value={d.voltage} onChange={(v) => set("voltage", v)} options={VOLTAGE_OPTIONS} /></Field>
+            <Field label="BTU / KW"><SelectField value={d.btu_kw} onChange={(v) => set("btu_kw", v)} options={BTU_KW} /></Field>
+            <Field label="Input / Output"><Input className="h-8 text-xs" value={d.input_output || ""} onChange={(e) => set("input_output", e.target.value)} /></Field>
+            <Field label="Max Pressure"><Input className="h-8 text-xs" value={d.max_pressure || ""} onChange={(e) => set("max_pressure", e.target.value)} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Pump"><Input className="h-8 text-xs" value={d.pump || ""} onChange={(e) => set("pump", e.target.value)} /></Field>
+            <Field label="Zone Valves"><Input className="h-8 text-xs" value={d.zone_valves || ""} onChange={(e) => set("zone_valves", e.target.value)} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
+
+      {system.kind === "rtu" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Type"><SelectField value={d.type} onChange={(v) => set("type", v)} options={RTU_TYPES} /></Field>
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="Serial #"><Input className="h-8 text-xs" value={d.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} /></Field>
+            <Field label="Tonnage"><SelectField value={d.tonnage} onChange={(v) => set("tonnage", v)} options={RTU_TONNAGE} /></Field>
+            <Field label="Voltage"><SelectField value={d.voltage} onChange={(v) => set("voltage", v)} options={VOLTAGE_OPTIONS} /></Field>
+            <Field label="Phase"><SelectField value={d.phase} onChange={(v) => set("phase", v)} options={PHASE_OPTIONS} /></Field>
+            <Field label="Energy Supply"><SelectField value={d.energy_supply} onChange={(v) => set("energy_supply", v)} options={ENERGY_SUPPLY} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Economizer"><SelectField value={d.economizer} onChange={(v) => set("economizer", v)} options={["Yes", "No", "UNKNOWN"]} /></Field>
+            <Field label="Filter Size"><Input className="h-8 text-xs" value={d.filter_size || ""} onChange={(e) => set("filter_size", e.target.value)} /></Field>
+            <Field label="Thermostat"><SelectField value={d.thermostat} onChange={(v) => set("thermostat", v)} options={THERMOSTAT_OPTIONS} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
+
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {LOCATION_PHOTO_SLOTS.map((s) => (
             <PhotoSlot
@@ -264,8 +314,11 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "cooling" ? COOLING_PHOTO_SLOTS
             : system.kind === "sump_pump" ? SUMP_PHOTO_SLOTS
             : system.kind === "water_heater" ? WATER_HEATER_PHOTO_SLOTS
+            : system.kind === "boiler" ? BOILER_PHOTO_SLOTS
+            : system.kind === "rtu" ? RTU_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
           ).map((s) => (
+
 
             <PhotoSlot
               key={s.key}

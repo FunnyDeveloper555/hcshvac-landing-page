@@ -651,9 +651,12 @@ export default function SiteProfileForm() {
           <div className="flex flex-wrap gap-1">
             <Button size="sm" variant="outline" type="button" onClick={() => addSystem("heating")}><Plus className="h-3 w-3 mr-1" />Heating</Button>
             <Button size="sm" variant="outline" type="button" onClick={() => addSystem("cooling")}><Plus className="h-3 w-3 mr-1" />Cooling</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => addSystem("boiler")}><Plus className="h-3 w-3 mr-1" />Boiler</Button>
+            <Button size="sm" variant="outline" type="button" onClick={() => addSystem("rtu")}><Plus className="h-3 w-3 mr-1" />RTU</Button>
             <Button size="sm" variant="outline" type="button" onClick={() => addSystem("sump_pump")}><Plus className="h-3 w-3 mr-1" />Sump Pump</Button>
             <Button size="sm" variant="outline" type="button" onClick={() => addSystem("ejector_pump")}><Plus className="h-3 w-3 mr-1" />Ejector Pump</Button>
             <Button size="sm" variant="outline" type="button" onClick={() => addSystem("water_heater")}><Plus className="h-3 w-3 mr-1" />Water Heater</Button>
+
 
           </div>
         </CardHeader>

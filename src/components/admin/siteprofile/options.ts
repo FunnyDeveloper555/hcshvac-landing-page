@@ -146,6 +146,48 @@ export const WATER_HEATER_LOCATION = [
   "Crawl Space", "Mechanical Room", "Exterior", "Other",
 ];
 
+// Boiler
+export const BOILER_TYPES = [
+  "Steam", "Hot Water", "Condensing", "High Efficiency", "Cast Iron", "Electric", "Other",
+];
+
+export const BOILER_PHOTO_SLOTS = [
+  { key: "label_plate", label: "Label Plate" },
+  { key: "full_view", label: "Full View" },
+  { key: "controls", label: "Controls" },
+  { key: "supply_return", label: "Supply / Return" },
+  { key: "vent_flue", label: "Vent / Flue" },
+  { key: "gas_electric", label: "Gas / Electric Supply" },
+  { key: "pump", label: "Pump" },
+  { key: "zone_valves", label: "Zone Valves" },
+];
+
+// RTU (Roof Top Unit)
+export const RTU_TYPES = [
+  "Single Zone", "Multi-Zone", "Heat Pump", "Gas / Electric", "Electric", "Other",
+];
+
+export const RTU_TONNAGE = [
+  "1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton",
+  "6 Ton", "7.5 Ton", "10 Ton", "15 Ton", "20 Ton", "25 Ton", "30 Ton", "Other",
+];
+
+export const PHASE_OPTIONS = [
+  "Single Phase", "Three Phase", "Other", "UNKNOWN",
+];
+
+export const RTU_PHOTO_SLOTS = [
+  { key: "label_plate", label: "Label Plate" },
+  { key: "full_view", label: "Full View" },
+  { key: "curb", label: "Curb" },
+  { key: "disconnect", label: "Disconnect" },
+  { key: "control_panel", label: "Control Panel" },
+  { key: "supply_return", label: "Supply / Return" },
+  { key: "economizer", label: "Economizer" },
+  { key: "filters", label: "Filters" },
+];
+
+
 export const WATER_HEATER_PHOTO_SLOTS = [
   { key: "label_plate", label: "Label Plate" },
   { key: "full_view", label: "Full View" },
