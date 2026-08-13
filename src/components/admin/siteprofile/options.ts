@@ -147,9 +147,22 @@ export const WATER_HEATER_LOCATION = [
 ];
 
 // Boiler
+export const BOILER_HEATING_TYPES = ["Hot Water", "Steam"];
+
 export const BOILER_TYPES = [
-  "Steam", "Hot Water", "Condensing", "High Efficiency", "Cast Iron", "Electric", "Other",
+  "Conventional/Natural Draft",
+  "Tankless (Residential)",
+  "Tankless (Commercial)",
 ];
+
+export const BOILER_SIZE_CATEGORY = [
+  "Residential", "Light Commercial", "Commercial", "Industrial",
+];
+
+export const BOILER_ENERGY_SUPPLY = [
+  "Gas", "Electric", "Propane", "Solar", "Geothermal",
+];
+
 
 export const BOILER_PHOTO_SLOTS = [
   { key: "label_plate", label: "Label Plate" },
