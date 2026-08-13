@@ -40,11 +40,16 @@ const SYSTEM_FIELDS: Record<string, [string, string][]> = {
     ["expansion_tank", "Expansion Tank"], ["recirc_pump", "Recirculation Pump"], ["drip_pan", "Drip Pan"],
   ],
   boiler: [
-    ["type", "Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
-    ["energy_supply", "Energy Supply"], ["voltage", "Voltage"], ["btu_kw", "BTU / KW"],
-    ["input_output", "Input / Output"], ["max_pressure", "Max Pressure"], ["age", "Age"],
-    ["pump", "Pump"], ["zone_valves", "Zone Valves"],
+    ["heating_type", "Heating Type"], ["type", "Boiler Type"], ["size_category", "Size Category"],
+    ["energy_supply", "Energy Supply"], ["voltage", "Voltage"],
+    ["circ_pump_supply", "Circulating Pump Supply"], ["circ_pump_supply_label", "Supply Pump Label"],
+    ["circ_pump_supply_number", "Supply Pump Number"], ["circ_pump_supply_of", "Supply Pump Of"],
+    ["circ_pump_return", "Circulating Pump Return"], ["circ_pump_return_label", "Return Pump Label"],
+    ["circ_pump_return_number", "Return Pump Number"], ["circ_pump_return_of", "Return Pump Of"],
+    ["zoning_controller", "Zoning Controller"], ["zone_count", "Number of Zones"],
+    ["expansion_tank", "Expansion Tank"], ["indirect_fire_tank", "Indirect Fire Tank"],
   ],
+
   rtu: [
     ["type", "Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
     ["tonnage", "Tonnage"], ["voltage", "Voltage"], ["phase", "Phase"], ["energy_supply", "Energy Supply"],
