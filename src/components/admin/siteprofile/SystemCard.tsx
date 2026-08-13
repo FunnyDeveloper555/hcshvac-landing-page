@@ -16,7 +16,7 @@ import {
   BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS, LOCATION_PHOTO_SLOTS,
 } from "./options";
 
-export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater";
+export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater" | "boiler" | "rtu";
 
 
 export interface SystemRow {
@@ -63,7 +63,10 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     sump_pump: "Sump Pump",
     ejector_pump: "Ejector Pump",
     water_heater: "Water Heater",
+    boiler: "Boiler",
+    rtu: "RTU (Roof Top Unit)",
   };
+
 
 
   return (
