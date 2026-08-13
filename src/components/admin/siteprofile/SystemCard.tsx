@@ -314,8 +314,11 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "cooling" ? COOLING_PHOTO_SLOTS
             : system.kind === "sump_pump" ? SUMP_PHOTO_SLOTS
             : system.kind === "water_heater" ? WATER_HEATER_PHOTO_SLOTS
+            : system.kind === "boiler" ? BOILER_PHOTO_SLOTS
+            : system.kind === "rtu" ? RTU_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
           ).map((s) => (
+
 
             <PhotoSlot
               key={s.key}
