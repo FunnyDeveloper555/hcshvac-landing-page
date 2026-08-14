@@ -236,17 +236,8 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         <Label className="text-xs font-semibold">Photos</Label>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
-          {LOCATION_PHOTO_SLOTS.map((s) => (
-            <PhotoSlot
-              key={s.key}
-              profileId={profileId}
-              systemId={system.id}
-              slotKey={s.key}
-              label={s.label}
-            />
-          ))}
-
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
+
             <PhotoSlot
               key={s.key}
               profileId={profileId}
