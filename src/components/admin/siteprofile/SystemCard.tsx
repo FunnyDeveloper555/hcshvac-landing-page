@@ -175,34 +175,18 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Field label="Circulating Pump Supply"><SelectField value={d.circ_pump_supply} onChange={(v) => set("circ_pump_supply", v)} options={["Yes", "No"]} /></Field>
             {d.circ_pump_supply === "Yes" && (
-              <>
-                <Field label="Number of Pumps">
-                  <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_supply_count || ""} onChange={(e) => set("circ_pump_supply_count", e.target.value)} />
-                </Field>
-                <PhotoSlot
-                  profileId={profileId}
-                  systemId={system.id}
-                  slotKey="circ_pump_supply_photo"
-                  label="Circ Pump Supply Photo"
-                />
-              </>
+              <Field label="Number of Pumps">
+                <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_supply_count || ""} onChange={(e) => set("circ_pump_supply_count", e.target.value)} />
+              </Field>
             )}
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Field label="Circulating Pump Return"><SelectField value={d.circ_pump_return} onChange={(v) => set("circ_pump_return", v)} options={["Yes", "No"]} /></Field>
             {d.circ_pump_return === "Yes" && (
-              <>
-                <Field label="Number of Pumps">
-                  <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_return_count || ""} onChange={(e) => set("circ_pump_return_count", e.target.value)} />
-                </Field>
-                <PhotoSlot
-                  profileId={profileId}
-                  systemId={system.id}
-                  slotKey="circ_pump_return_photo"
-                  label="Circ Pump Return Photo"
-                />
-              </>
+              <Field label="Number of Pumps">
+                <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_return_count || ""} onChange={(e) => set("circ_pump_return_count", e.target.value)} />
+              </Field>
             )}
           </div>
 
