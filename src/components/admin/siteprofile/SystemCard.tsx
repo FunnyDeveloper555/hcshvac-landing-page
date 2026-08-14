@@ -176,9 +176,15 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             <Field label="Circulating Pump Supply"><SelectField value={d.circ_pump_supply} onChange={(v) => set("circ_pump_supply", v)} options={["Yes", "No"]} /></Field>
             {d.circ_pump_supply === "Yes" && (
               <>
-                <Field label="Supply Pump Label (optional)"><Input className="h-8 text-xs" value={d.circ_pump_supply_label || ""} onChange={(e) => set("circ_pump_supply_label", e.target.value)} /></Field>
-                <Field label="Supply Pump Number (optional)"><Input className="h-8 text-xs" value={d.circ_pump_supply_number || ""} onChange={(e) => set("circ_pump_supply_number", e.target.value)} /></Field>
-                <Field label="Supply Pump Of (optional)"><Input className="h-8 text-xs" value={d.circ_pump_supply_of || ""} onChange={(e) => set("circ_pump_supply_of", e.target.value)} /></Field>
+                <Field label="Number of Pumps">
+                  <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_supply_count || ""} onChange={(e) => set("circ_pump_supply_count", e.target.value)} />
+                </Field>
+                <PhotoSlot
+                  profileId={profileId}
+                  systemId={system.id}
+                  slotKey="circ_pump_supply_photo"
+                  label="Circ Pump Supply Photo"
+                />
               </>
             )}
           </div>
@@ -187,12 +193,19 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             <Field label="Circulating Pump Return"><SelectField value={d.circ_pump_return} onChange={(v) => set("circ_pump_return", v)} options={["Yes", "No"]} /></Field>
             {d.circ_pump_return === "Yes" && (
               <>
-                <Field label="Return Pump Label (optional)"><Input className="h-8 text-xs" value={d.circ_pump_return_label || ""} onChange={(e) => set("circ_pump_return_label", e.target.value)} /></Field>
-                <Field label="Return Pump Number (optional)"><Input className="h-8 text-xs" value={d.circ_pump_return_number || ""} onChange={(e) => set("circ_pump_return_number", e.target.value)} /></Field>
-                <Field label="Return Pump Of (optional)"><Input className="h-8 text-xs" value={d.circ_pump_return_of || ""} onChange={(e) => set("circ_pump_return_of", e.target.value)} /></Field>
+                <Field label="Number of Pumps">
+                  <Input className="h-8 text-xs" type="number" min={1} value={d.circ_pump_return_count || ""} onChange={(e) => set("circ_pump_return_count", e.target.value)} />
+                </Field>
+                <PhotoSlot
+                  profileId={profileId}
+                  systemId={system.id}
+                  slotKey="circ_pump_return_photo"
+                  label="Circ Pump Return Photo"
+                />
               </>
             )}
           </div>
+
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Field label="Zoning Controller"><SelectField value={d.zoning_controller} onChange={(v) => set("zoning_controller", v)} options={["Yes", "No"]} /></Field>

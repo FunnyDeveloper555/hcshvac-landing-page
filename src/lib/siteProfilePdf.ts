@@ -42,10 +42,9 @@ const SYSTEM_FIELDS: Record<string, [string, string][]> = {
   boiler: [
     ["heating_type", "Heating Type"], ["type", "Boiler Type"], ["size_category", "Size Category"],
     ["energy_supply", "Energy Supply"], ["voltage", "Voltage"],
-    ["circ_pump_supply", "Circulating Pump Supply"], ["circ_pump_supply_label", "Supply Pump Label"],
-    ["circ_pump_supply_number", "Supply Pump Number"], ["circ_pump_supply_of", "Supply Pump Of"],
-    ["circ_pump_return", "Circulating Pump Return"], ["circ_pump_return_label", "Return Pump Label"],
-    ["circ_pump_return_number", "Return Pump Number"], ["circ_pump_return_of", "Return Pump Of"],
+    ["circ_pump_supply", "Circulating Pump Supply"], ["circ_pump_supply_count", "Supply Number of Pumps"],
+    ["circ_pump_return", "Circulating Pump Return"], ["circ_pump_return_count", "Return Number of Pumps"],
+
     ["zoning_controller", "Zoning Controller"], ["zone_count", "Number of Zones"],
     ["expansion_tank", "Expansion Tank"], ["indirect_fire_tank", "Indirect Fire Tank"],
   ],
