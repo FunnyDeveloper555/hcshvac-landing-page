@@ -13,8 +13,8 @@ import { Loader2, Plus, Save, ChevronLeft, FileDown, Copy } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { buildSiteProfilePdf } from "@/lib/siteProfilePdf";
-import PhotoSlot from "./PhotoSlot";
-import { LOCATION_PHOTO_SLOTS } from "./options";
+import LocationPhotoCard from "./LocationPhotoCard";
+
 
 
 
@@ -645,25 +645,8 @@ export default function SiteProfileForm() {
         }
       />
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Location Photo</CardTitle>
-          <p className="text-xs text-muted-foreground">General photo of the outside of the building.</p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-            {LOCATION_PHOTO_SLOTS.map((s) => (
-              <PhotoSlot
-                key={s.key}
-                profileId={profileId}
-                systemId={null}
-                slotKey={s.key}
-                label={s.label}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <LocationPhotoCard profileId={profileId} />
+
 
 
 
