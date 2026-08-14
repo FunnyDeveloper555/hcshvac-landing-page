@@ -52,27 +52,30 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
     if (!files || files.length === 0) return;
     setUploading(true);
     try {
-      for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop() || "jpg";
-        const path = `${profileId}/profile/${SLOT_KEY}/${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2)}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from("site-profile-photos")
-          .upload(path, file, { contentType: file.type });
-        if (upErr) throw upErr;
-        const { error: insErr } = await supabase.from("site_profile_photos").insert({
-          profile_id: profileId,
-          system_id: null,
-          component_slot: SLOT_KEY,
-          storage_path: path,
-          content_type: file.type,
-          size_bytes: file.size,
-        });
-        if (insErr) throw insErr;
-      }
+      const filesArray = Array.from(files);
+      await Promise.all(
+        filesArray.map(async (file) => {
+          const ext = file.name.split(".").pop() || "jpg";
+          const path = `${profileId}/profile/${SLOT_KEY}/${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(2)}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("site-profile-photos")
+            .upload(path, file, { contentType: file.type });
+          if (upErr) throw upErr;
+          const { error: insErr } = await supabase.from("site_profile_photos").insert({
+            profile_id: profileId,
+            system_id: null,
+            component_slot: SLOT_KEY,
+            storage_path: path,
+            content_type: file.type,
+            size_bytes: file.size,
+          });
+          if (insErr) throw insErr;
+        })
+      );
       await load();
-      toast({ title: "Location photo added" });
+      toast({ title: `${filesArray.length} location photo${filesArray.length === 1 ? "" : "s"} added` });
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
