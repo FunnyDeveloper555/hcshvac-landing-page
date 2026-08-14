@@ -70,6 +70,15 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     rtu: "RTU (Roof Top Unit)",
   };
 
+  const boilerLabel = (label: string) => {
+    if (system.kind !== "boiler") return label;
+    if (label === "Filter Size") return "Pre Filter";
+    if (label === "Belt Size") return "Expansion Tank";
+    if (label === "Field Documents") return "Site Glass";
+    return label;
+  };
+
+
 
 
   return (
@@ -240,7 +249,8 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
-              label={s.label}
+              label={boilerLabel(s.label)}
+
               footer={
                 <div className="space-y-2">
                   <Field label="Quantity">
@@ -275,7 +285,8 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
-              label={s.label}
+              label={boilerLabel(s.label)}
+
               footer={
                 <div className="space-y-2">
                   <Field label="Unit/Equipment ID TAG/NUMBER">
@@ -303,7 +314,8 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
-              label={s.label}
+              label={boilerLabel(s.label)}
+
               footer={
                 <div className="space-y-2">
                   <Field label="Unit/Equipment ID TAG/NUMBER">
