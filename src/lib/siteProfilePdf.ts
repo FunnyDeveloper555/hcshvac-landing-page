@@ -259,20 +259,22 @@ export async function buildSiteProfilePdf({
     pdf.text(`${KIND_LABEL[s.kind] || s.kind} #${s.index}`, M, y + 10);
     y += 20;
     const fields = SYSTEM_FIELDS[s.kind] || [];
+    const isBoiler = s.kind === "boiler";
     const filterFields: [string, string][] = [
-      ["filter_quantity", "Filter Quantity"],
-      ["filter_equipment_id", "Unit / Equipment ID Tag #"],
-      ["filter_notes", "Filter Notes / Comments"],
+      ["filter_quantity", isBoiler ? "Pre Filter Quantity" : "Filter Quantity"],
+      ["filter_equipment_id", isBoiler ? "Pre Filter Unit / Equipment ID Tag #" : "Unit / Equipment ID Tag #"],
+      ["filter_notes", isBoiler ? "Pre Filter Notes / Comments" : "Filter Notes / Comments"],
     ];
     const beltFields: [string, string][] = [
-      ["belt_equipment_id", "Belt Unit / Equipment ID Tag #"],
-      ["belt_notes", "Belt Notes / Comments"],
+      ["belt_equipment_id", isBoiler ? "Expansion Tank Unit / Equipment ID Tag #" : "Belt Unit / Equipment ID Tag #"],
+      ["belt_notes", isBoiler ? "Expansion Tank Notes / Comments" : "Belt Notes / Comments"],
     ];
     const fieldDocsFields: [string, string][] = [
-      ["field_documents_equipment_id", "Field Documents Unit / Equipment ID Tag #"],
-      ["field_documents_notes", "Field Documents Notes / Comments"],
+      ["field_documents_equipment_id", isBoiler ? "Site Glass Unit / Equipment ID Tag #" : "Field Documents Unit / Equipment ID Tag #"],
+      ["field_documents_notes", isBoiler ? "Site Glass Notes / Comments" : "Field Documents Notes / Comments"],
     ];
     fieldGrid([...fields, ...filterFields, ...beltFields, ...fieldDocsFields].map(([k, l]) => [l, dash((s.data || {})[k])] as [string, string]));
+
     const notes = (s.data || {}).notes;
     if (notes) {
       pdf.setFont("helvetica", "normal");
