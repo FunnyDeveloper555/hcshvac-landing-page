@@ -102,6 +102,7 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
             type="file"
             accept="image/*"
             capture="environment"
+            multiple
             className="hidden"
             onChange={(e) => upload(e.target.files)}
           />
