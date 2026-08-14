@@ -70,6 +70,15 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     rtu: "RTU (Roof Top Unit)",
   };
 
+  const boilerLabel = (label: string) => {
+    if (system.kind !== "boiler") return label;
+    if (label === "Filter Size") return "Pre Filter";
+    if (label === "Belt Size") return "Expansion Tank";
+    if (label === "Field Documents") return "Site Glass";
+    return label;
+  };
+
+
 
 
   return (
