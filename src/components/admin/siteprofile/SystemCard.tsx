@@ -285,7 +285,8 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
-              label={s.label}
+              label={boilerLabel(s.label)}
+
               footer={
                 <div className="space-y-2">
                   <Field label="Unit/Equipment ID TAG/NUMBER">
