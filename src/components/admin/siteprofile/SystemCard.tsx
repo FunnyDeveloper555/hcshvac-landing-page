@@ -343,6 +343,14 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               label={s.label}
             />
           ))}
+          {(system.kind === "boiler" && (d.circ_pump_supply === "Yes" || d.circ_pump_return === "Yes")) && (
+            <PhotoSlot
+              profileId={profileId}
+              systemId={system.id}
+              slotKey="circ_pump_photo"
+              label="Circ Pump Photo"
+            />
+          )}
           <PhotoSlot
             profileId={profileId}
             systemId={system.id}
