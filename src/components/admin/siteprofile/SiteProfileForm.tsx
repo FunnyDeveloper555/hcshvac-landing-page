@@ -13,6 +13,9 @@ import { Loader2, Plus, Save, ChevronLeft, FileDown, Copy } from "lucide-react";
 import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { buildSiteProfilePdf } from "@/lib/siteProfilePdf";
+import PhotoSlot from "./PhotoSlot";
+import { LOCATION_PHOTO_SLOTS } from "./options";
+
 
 
 interface SystemDbRow {
