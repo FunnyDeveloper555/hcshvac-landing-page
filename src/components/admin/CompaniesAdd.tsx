@@ -25,6 +25,11 @@ interface City {
   zip_codes: string | null;
 }
 
+const splitCountyNames = (county: string | null) =>
+  county
+    ? county.split("/").map((name) => name.trim()).filter(Boolean)
+    : [];
+
 interface PartnerCompany {
   name: string;
   url: string;
@@ -342,11 +347,15 @@ const CompaniesAdd = () => {
             // unambiguous saved city. Never guess: choosing an arbitrary county
             // makes the edit form select cities the company never saved.
             const knownCounties = new Set(
-              matched.filter((m) => m.county).map((m) => `${m.county}|${m.state_code}`)
+              matched.flatMap((m) =>
+                splitCountyNames(m.county).map((county) => `${county}|${m.state_code}`)
+              )
             );
             ambiguous.forEach(({ candidates }) => {
               const preferred = candidates.find((c) =>
-                knownCounties.has(`${c.county}|${c.state_code}`)
+                splitCountyNames(c.county).some((county) =>
+                  knownCounties.has(`${county}|${c.state_code}`)
+                )
               );
               if (preferred && !matched.some((m) => m.id === preferred.id)) {
                 matched.push(preferred);
@@ -359,12 +368,13 @@ const CompaniesAdd = () => {
               const countyKeys = new Set<string>();
               const counties: Array<{ county: string; stateCode: string }> = [];
               matched.forEach((c) => {
-                if (!c.county) return;
-                const key = `${c.county}|${c.state_code}`;
-                if (!countyKeys.has(key)) {
-                  countyKeys.add(key);
-                  counties.push({ county: c.county, stateCode: c.state_code });
-                }
+                splitCountyNames(c.county).forEach((county) => {
+                  const key = `${county}|${c.state_code}`;
+                  if (!countyKeys.has(key)) {
+                    countyKeys.add(key);
+                    counties.push({ county, stateCode: c.state_code });
+                  }
+                });
               });
               setSelectedCounties(counties);
               setPendingCityIds(matched.map((c) => c.id));
@@ -467,7 +477,9 @@ const CompaniesAdd = () => {
         const newCountiesByState = new Map<string, string[]>();
         (data || []).forEach((item: { county: string; state_code: string }) => {
           const counties = newCountiesByState.get(item.state_code) || [];
-          counties.push(item.county);
+          splitCountyNames(item.county).forEach((county) => {
+            if (!counties.includes(county)) counties.push(county);
+          });
           newCountiesByState.set(item.state_code, counties);
         });
 
@@ -490,27 +502,32 @@ const CompaniesAdd = () => {
       }
 
       try {
-        const counties = selectedCounties.map(c => c.county);
         const stateCodes = [...new Set(selectedCounties.map(c => c.stateCode))];
+        const countyFilters = [...new Set(selectedCounties.map(c => c.county))]
+          .map((county) => `county.ilike.%${county}%`)
+          .join(",");
 
-        const { data, error } = await supabase
+        let cityQuery = supabase
           .from("cities")
           .select("id, name, state, state_code, county, zip_codes")
           .in("state_code", stateCodes)
-          .in("county", counties)
           .order("name");
+        if (countyFilters) cityQuery = cityQuery.or(countyFilters);
+        const { data, error } = await cityQuery;
 
         if (error) throw error;
 
         const newCitiesByCounty = new Map<string, City[]>();
         (data || []).forEach(city => {
           if (!city.county) return;
-          const countyKey = `${city.county}|${city.state_code}`;
-          if (selectedCounties.some(c => c.county === city.county && c.stateCode === city.state_code)) {
-            const existing = newCitiesByCounty.get(countyKey) || [];
-            existing.push(city);
-            newCitiesByCounty.set(countyKey, existing);
-          }
+          splitCountyNames(city.county).forEach((county) => {
+            const countyKey = `${county}|${city.state_code}`;
+            if (selectedCounties.some(c => c.county === county && c.stateCode === city.state_code)) {
+              const existing = newCitiesByCounty.get(countyKey) || [];
+              if (!existing.some((item) => item.id === city.id)) existing.push(city);
+              newCitiesByCounty.set(countyKey, existing);
+            }
+          });
         });
 
         setCitiesByCounty(newCitiesByCounty);
