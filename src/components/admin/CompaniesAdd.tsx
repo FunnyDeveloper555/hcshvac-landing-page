@@ -786,12 +786,18 @@ const CompaniesAdd = () => {
 
       // Prefer the loaded city objects, then fall back to a lookup for any
       // selected id whose county list is no longer in memory.
+      // Labels include the county so they can be mapped back unambiguously
+      // (many Illinois city/township names repeat across counties).
       const seenIds = new Set<string>();
       citiesByCounty.forEach((cities) => {
         cities.forEach((city) => {
           if (selectedSet.has(city.id)) {
             seenIds.add(city.id);
-            labels.add(`${city.name}, ${city.state_code}`);
+            labels.add(
+              city.county
+                ? `${city.name}, ${city.county}, ${city.state_code}`
+                : `${city.name}, ${city.state_code}`
+            );
           }
         });
       });
@@ -800,12 +806,17 @@ const CompaniesAdd = () => {
       if (missingIds.length > 0) {
         const { data: extraCities } = await supabase
           .from("cities")
-          .select("id, name, state_code")
+          .select("id, name, county, state_code")
           .in("id", missingIds);
         (extraCities || []).forEach((city) => {
-          labels.add(`${city.name}, ${city.state_code}`);
+          labels.add(
+            city.county
+              ? `${city.name}, ${city.county}, ${city.state_code}`
+              : `${city.name}, ${city.state_code}`
+          );
         });
       }
+
 
       serviceAreas = Array.from(labels).sort();
     }
