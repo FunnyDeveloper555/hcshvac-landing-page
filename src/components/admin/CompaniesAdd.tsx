@@ -87,6 +87,10 @@ const CompaniesAdd = () => {
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   // City ids restored from a saved company's service areas, applied once cities load
   const [pendingCityIds, setPendingCityIds] = useState<string[] | null>(null);
+  // True once the saved service areas were successfully mapped back to city selections
+  // (or when there is nothing to map). Guards against wiping saved areas on save.
+  const [areasHydrated, setAreasHydrated] = useState(false);
+
   
   // Brand input states
   const [hvacBrandInstallInput, setHvacBrandInstallInput] = useState("");
@@ -324,9 +328,14 @@ const CompaniesAdd = () => {
               });
               setSelectedCounties(counties);
               setPendingCityIds(matched.map((c) => c.id));
+              setAreasHydrated(true);
             }
           }
+        } else {
+          // Nothing saved yet — selections are authoritative from the start
+          setAreasHydrated(true);
         }
+
       }
       setLoading(false);
     };
@@ -767,18 +776,40 @@ const CompaniesAdd = () => {
       return;
     }
 
-    // Build service areas from selected cities (only for new entries or if cities were selected)
+    // Build service areas from the current city selection.
+    // When the saved areas could not be mapped back to cities (areasHydrated === false)
+    // we keep whatever was stored so an edit never silently wipes them.
     let serviceAreas: string[] = formData.service_areas;
-    if (selectedCities.length > 0) {
-      serviceAreas = [];
+    if (areasHydrated || !isEditing) {
+      const selectedSet = new Set(selectedCities);
+      const labels = new Set<string>();
+
+      // Prefer the loaded city objects, then fall back to a lookup for any
+      // selected id whose county list is no longer in memory.
+      const seenIds = new Set<string>();
       citiesByCounty.forEach((cities) => {
-        cities.forEach(city => {
-          if (selectedCities.includes(city.id)) {
-            serviceAreas.push(`${city.name}, ${city.state_code}`);
+        cities.forEach((city) => {
+          if (selectedSet.has(city.id)) {
+            seenIds.add(city.id);
+            labels.add(`${city.name}, ${city.state_code}`);
           }
         });
       });
+
+      const missingIds = selectedCities.filter((id) => !seenIds.has(id));
+      if (missingIds.length > 0) {
+        const { data: extraCities } = await supabase
+          .from("cities")
+          .select("id, name, state_code")
+          .in("id", missingIds);
+        (extraCities || []).forEach((city) => {
+          labels.add(`${city.name}, ${city.state_code}`);
+        });
+      }
+
+      serviceAreas = Array.from(labels).sort();
     }
+
 
     const companyData = {
       ...formData,
