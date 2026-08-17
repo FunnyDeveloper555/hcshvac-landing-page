@@ -460,6 +460,8 @@ const CompaniesAdd = () => {
 
   // Load counties when states are selected using RPC
   useEffect(() => {
+    let cancelled = false;
+
     const loadCounties = async () => {
       if (selectedStates.length === 0) {
         setCountiesByState(new Map());
@@ -473,6 +475,7 @@ const CompaniesAdd = () => {
         });
 
         if (error) throw error;
+        if (cancelled) return;
 
         const newCountiesByState = new Map<string, string[]>();
         (data || []).forEach((item: { county: string; state_code: string }) => {
@@ -490,10 +493,15 @@ const CompaniesAdd = () => {
       }
     };
     loadCounties();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStates]);
 
   // Load cities when counties are selected - single batched query
   useEffect(() => {
+    let cancelled = false;
+
     const loadCities = async () => {
       if (selectedCounties.length === 0) {
         setCitiesByCounty(new Map());
@@ -516,6 +524,7 @@ const CompaniesAdd = () => {
         const { data, error } = await cityQuery;
 
         if (error) throw error;
+        if (cancelled) return;
 
         const newCitiesByCounty = new Map<string, City[]>();
         (data || []).forEach(city => {
@@ -560,6 +569,9 @@ const CompaniesAdd = () => {
       }
     };
     loadCities();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedCounties]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
