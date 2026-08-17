@@ -338,15 +338,16 @@ const CompaniesAdd = () => {
             });
 
             // Pass 2: for legacy "City, ST" labels that match several counties,
-            // keep the candidate inside a county we already know about so the
-            // form doesn't light up unrelated counties across the state.
+            // only restore a candidate when its county was established by an
+            // unambiguous saved city. Never guess: choosing an arbitrary county
+            // makes the edit form select cities the company never saved.
             const knownCounties = new Set(
               matched.filter((m) => m.county).map((m) => `${m.county}|${m.state_code}`)
             );
             ambiguous.forEach(({ candidates }) => {
-              const preferred =
-                candidates.find((c) => knownCounties.has(`${c.county}|${c.state_code}`)) ||
-                [...candidates].sort((a, b) => (a.county || "").localeCompare(b.county || ""))[0];
+              const preferred = candidates.find((c) =>
+                knownCounties.has(`${c.county}|${c.state_code}`)
+              );
               if (preferred && !matched.some((m) => m.id === preferred.id)) {
                 matched.push(preferred);
               }
