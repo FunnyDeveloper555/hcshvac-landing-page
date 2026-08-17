@@ -295,13 +295,18 @@ const CompaniesAdd = () => {
         // Restore the state / county / city selections from the saved service areas
         const savedAreas = Array.isArray(data.service_areas) ? (data.service_areas as string[]) : [];
         if (savedAreas.length > 0) {
+          // Labels are either "City, ST" (legacy) or "City, County, ST".
           const parsed = savedAreas
             .map((area) => {
               const parts = String(area).split(",").map((p) => p.trim());
               if (parts.length < 2) return null;
-              return { name: parts[0], stateCode: parts[parts.length - 1] };
+              return {
+                name: parts[0],
+                county: parts.length >= 3 ? parts[parts.length - 2] : null,
+                stateCode: parts[parts.length - 1],
+              };
             })
-            .filter(Boolean) as Array<{ name: string; stateCode: string }>;
+            .filter(Boolean) as Array<{ name: string; county: string | null; stateCode: string }>;
 
           if (parsed.length > 0) {
             const { data: cityRows } = await supabase
@@ -310,9 +315,29 @@ const CompaniesAdd = () => {
               .in("state_code", [...new Set(parsed.map((p) => p.stateCode))])
               .in("name", [...new Set(parsed.map((p) => p.name))]);
 
-            const matched = (cityRows || []).filter((c) =>
-              parsed.some((p) => p.name === c.name && p.stateCode === c.state_code)
-            );
+            const rows = cityRows || [];
+            const matched: Array<{ id: string; name: string; state_code: string; county: string | null }> = [];
+
+            parsed.forEach((p) => {
+              const candidates = rows.filter(
+                (c) => c.name === p.name && c.state_code === p.stateCode
+              );
+              if (candidates.length === 0) return;
+              // Exact county match when the label carries one; otherwise the
+              // name is ambiguous so pick a single deterministic city instead of
+              // pulling in every same-named city across the state.
+              const exact = p.county
+                ? candidates.find((c) => c.county === p.county)
+                : undefined;
+              const chosen =
+                exact ||
+                [...candidates].sort((a, b) =>
+                  (a.county || "").localeCompare(b.county || "")
+                )[0];
+              if (chosen && !matched.some((m) => m.id === chosen.id)) {
+                matched.push(chosen);
+              }
+            });
 
             if (matched.length > 0) {
               setSelectedStates([...new Set(matched.map((c) => c.state_code))]);
@@ -332,6 +357,7 @@ const CompaniesAdd = () => {
             }
           }
         } else {
+
           // Nothing saved yet — selections are authoritative from the start
           setAreasHydrated(true);
         }
