@@ -90,8 +90,6 @@ const CompaniesAdd = () => {
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
-  // City ids restored from a saved company's service areas, applied once cities load
-  const pendingCityIdsRef = useRef<string[] | null>(null);
   // True once the saved service areas were successfully mapped back to city selections
   // (or when there is nothing to map). Guards against wiping saved areas on save.
   const [areasHydrated, setAreasHydrated] = useState(false);
@@ -376,7 +374,7 @@ const CompaniesAdd = () => {
                   }
                 });
               });
-              pendingCityIdsRef.current = matched.map((c) => c.id);
+              setSelectedCities(matched.map((c) => c.id));
               setSelectedCounties(counties);
               setAreasHydrated(true);
             }
@@ -532,12 +530,7 @@ const CompaniesAdd = () => {
 
         setCitiesByCounty(newCitiesByCounty);
         const allAvailableCityIds = Array.from(newCitiesByCounty.values()).flat().map(c => c.id);
-        if (pendingCityIdsRef.current) {
-          setSelectedCities(pendingCityIdsRef.current.filter(id => allAvailableCityIds.includes(id)));
-          pendingCityIdsRef.current = null;
-        } else {
-          setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
-        }
+        setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
       } catch (error) {
         console.error("Error loading cities:", error);
       }
