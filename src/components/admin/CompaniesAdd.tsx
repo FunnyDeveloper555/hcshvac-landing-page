@@ -856,43 +856,42 @@ const CompaniesAdd = () => {
     // we keep whatever was stored so an edit never silently wipes them.
     let serviceAreas: string[] = formData.service_areas;
     if (areasHydrated || !isEditing) {
-      const selectedSet = new Set(selectedCities);
       const labels = new Set<string>();
 
-      // Prefer the loaded city objects, then fall back to a lookup for any
-      // selected id whose county list is no longer in memory.
-      // Labels include the county so they can be mapped back unambiguously
-      // (many Illinois city/township names repeat across counties).
-      const seenIds = new Set<string>();
-      citiesByCounty.forEach((cities) => {
-        cities.forEach((city) => {
-          if (selectedSet.has(city.id)) {
-            seenIds.add(city.id);
-            labels.add(
-              city.county
-                ? `${city.name}, ${city.county}, ${city.state_code}`
-                : `${city.name}, ${city.state_code}`
-            );
-          }
-        });
-      });
-
-      const missingIds = selectedCities.filter((id) => !seenIds.has(id));
-      if (missingIds.length > 0) {
-        const { data: extraCities } = await supabase
+      // State/county changes can occur immediately before Save, before the
+      // dependent city-loading effect has pruned selectedCities. Re-read the
+      // selected rows and keep only cities that still belong to the current
+      // state/county selection so stale IDs can never restore old areas.
+      if (selectedCities.length > 0 && selectedStates.length > 0 && selectedCounties.length > 0) {
+        const { data: selectedCityRows, error: cityLookupError } = await supabase
           .from("cities")
           .select("id, name, county, state_code")
-          .in("id", missingIds);
-        (extraCities || []).forEach((city) => {
+          .in("id", selectedCities);
+
+        if (cityLookupError) {
+          toast({
+            title: "Error",
+            description: "Failed to validate the selected service areas",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        (selectedCityRows || []).forEach((city) => {
+          const matchingCounty = splitCountyNames(city.county).find((county) =>
+            selectedCounties.some(
+              (selected) => selected.county === county && selected.stateCode === city.state_code
+            )
+          );
+          if (!selectedStates.includes(city.state_code) || !matchingCounty) return;
+
           labels.add(
-            city.county
-              ? `${city.name}, ${city.county}, ${city.state_code}`
+            matchingCounty
+              ? `${city.name}, ${matchingCounty}, ${city.state_code}`
               : `${city.name}, ${city.state_code}`
           );
         });
       }
-
-
       serviceAreas = Array.from(labels).sort();
     }
 
@@ -919,14 +918,18 @@ const CompaniesAdd = () => {
     };
 
     let error;
+    let savedCompany: { id: string; service_areas: string[] | null } | null = null;
 
     if (isEditing && editId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await supabase
         .from("companies")
         .update(companyData as any)
-        .eq("id", editId);
+        .eq("id", editId)
+        .select("id, service_areas")
+        .maybeSingle();
       error = result.error;
+      savedCompany = result.data as { id: string; service_areas: string[] | null } | null;
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await supabase
@@ -935,10 +938,10 @@ const CompaniesAdd = () => {
       error = result.error;
     }
 
-    if (error) {
+    if (error || (isEditing && !savedCompany)) {
       toast({
         title: "Error",
-        description: isEditing ? "Failed to update company" : "Failed to create company",
+        description: error?.message || (isEditing ? "Company update was not saved" : "Failed to create company"),
         variant: "destructive",
       });
     } else {
