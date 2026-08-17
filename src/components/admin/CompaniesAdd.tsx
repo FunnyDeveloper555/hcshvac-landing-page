@@ -515,19 +515,25 @@ const CompaniesAdd = () => {
           .map((county) => `county.ilike.%${county}%`)
           .join(",");
 
-        let cityQuery = supabase
-          .from("cities")
-          .select("id, name, state, state_code, county, zip_codes")
-          .in("state_code", stateCodes)
-          .order("name");
-        if (countyFilters) cityQuery = cityQuery.or(countyFilters);
-        const { data, error } = await cityQuery;
-
-        if (error) throw error;
+        const cityRows: City[] = [];
+        const pageSize = 1000;
+        for (let from = 0; ; from += pageSize) {
+          let cityQuery = supabase
+            .from("cities")
+            .select("id, name, state, state_code, county, zip_codes")
+            .in("state_code", stateCodes)
+            .order("name")
+            .range(from, from + pageSize - 1);
+          if (countyFilters) cityQuery = cityQuery.or(countyFilters);
+          const { data: pageRows, error } = await cityQuery;
+          if (error) throw error;
+          cityRows.push(...((pageRows || []) as City[]));
+          if (!pageRows || pageRows.length < pageSize) break;
+        }
         if (cancelled) return;
 
         const newCitiesByCounty = new Map<string, City[]>();
-        (data || []).forEach(city => {
+        cityRows.forEach(city => {
           if (!city.county) return;
           splitCountyNames(city.county).forEach((county) => {
             const countyKey = `${county}|${city.state_code}`;
@@ -551,7 +557,7 @@ const CompaniesAdd = () => {
               stateCode: parts[parts.length - 1],
             };
           });
-          const restoredIds = (data || [])
+          const restoredIds = cityRows
             .filter((city) => savedKeys.some((saved) =>
               city.name === saved.name &&
               city.state_code === saved.stateCode &&
