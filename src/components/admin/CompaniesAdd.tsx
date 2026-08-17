@@ -87,6 +87,10 @@ const CompaniesAdd = () => {
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
   // City ids restored from a saved company's service areas, applied once cities load
   const [pendingCityIds, setPendingCityIds] = useState<string[] | null>(null);
+  // True once the saved service areas were successfully mapped back to city selections
+  // (or when there is nothing to map). Guards against wiping saved areas on save.
+  const [areasHydrated, setAreasHydrated] = useState(false);
+
   
   // Brand input states
   const [hvacBrandInstallInput, setHvacBrandInstallInput] = useState("");
