@@ -90,6 +90,9 @@ const CompaniesAdd = () => {
   const [citiesByCounty, setCitiesByCounty] = useState<Map<string, City[]>>(new Map());
   const [expandedStates, setExpandedStates] = useState<Set<string>>(new Set());
   const [expandedCounties, setExpandedCounties] = useState<Set<string>>(new Set());
+  // Saved labels are consumed after the selected counties' city rows load.
+  // Restoring ids earlier is racy because the dependent city effect can clear them.
+  const pendingSavedAreasRef = useRef<string[] | null>(null);
   // True once the saved service areas were successfully mapped back to city selections
   // (or when there is nothing to map). Guards against wiping saved areas on save.
   const [areasHydrated, setAreasHydrated] = useState(false);
@@ -298,6 +301,7 @@ const CompaniesAdd = () => {
         // Restore the state / county / city selections from the saved service areas
         const savedAreas = Array.isArray(data.service_areas) ? (data.service_areas as string[]) : [];
         if (savedAreas.length > 0) {
+          pendingSavedAreasRef.current = savedAreas;
           // Labels are either "City, ST" (legacy) or "City, County, ST".
           const parsed = savedAreas
             .map((area) => {
@@ -374,7 +378,6 @@ const CompaniesAdd = () => {
                   }
                 });
               });
-              setSelectedCities(matched.map((c) => c.id));
               setSelectedCounties(counties);
               setAreasHydrated(true);
             }
@@ -530,7 +533,28 @@ const CompaniesAdd = () => {
 
         setCitiesByCounty(newCitiesByCounty);
         const allAvailableCityIds = Array.from(newCitiesByCounty.values()).flat().map(c => c.id);
-        setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        const pendingSavedAreas = pendingSavedAreasRef.current;
+        if (pendingSavedAreas) {
+          const savedKeys = pendingSavedAreas.map((area) => {
+            const parts = String(area).split(",").map((part) => part.trim());
+            return {
+              name: parts[0],
+              county: parts.length >= 3 ? parts[parts.length - 2] : null,
+              stateCode: parts[parts.length - 1],
+            };
+          });
+          const restoredIds = (data || [])
+            .filter((city) => savedKeys.some((saved) =>
+              city.name === saved.name &&
+              city.state_code === saved.stateCode &&
+              (!saved.county || splitCountyNames(city.county).includes(saved.county))
+            ))
+            .map((city) => city.id);
+          setSelectedCities([...new Set(restoredIds)]);
+          pendingSavedAreasRef.current = null;
+        } else {
+          setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
+        }
       } catch (error) {
         console.error("Error loading cities:", error);
       }
