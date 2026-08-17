@@ -328,9 +328,14 @@ const CompaniesAdd = () => {
               });
               setSelectedCounties(counties);
               setPendingCityIds(matched.map((c) => c.id));
+              setAreasHydrated(true);
             }
           }
+        } else {
+          // Nothing saved yet — selections are authoritative from the start
+          setAreasHydrated(true);
         }
+
       }
       setLoading(false);
     };
