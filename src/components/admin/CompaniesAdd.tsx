@@ -295,13 +295,18 @@ const CompaniesAdd = () => {
         // Restore the state / county / city selections from the saved service areas
         const savedAreas = Array.isArray(data.service_areas) ? (data.service_areas as string[]) : [];
         if (savedAreas.length > 0) {
+          // Labels are either "City, ST" (legacy) or "City, County, ST".
           const parsed = savedAreas
             .map((area) => {
               const parts = String(area).split(",").map((p) => p.trim());
               if (parts.length < 2) return null;
-              return { name: parts[0], stateCode: parts[parts.length - 1] };
+              return {
+                name: parts[0],
+                county: parts.length >= 3 ? parts[parts.length - 2] : null,
+                stateCode: parts[parts.length - 1],
+              };
             })
-            .filter(Boolean) as Array<{ name: string; stateCode: string }>;
+            .filter(Boolean) as Array<{ name: string; county: string | null; stateCode: string }>;
 
           if (parsed.length > 0) {
             const { data: cityRows } = await supabase
@@ -310,9 +315,43 @@ const CompaniesAdd = () => {
               .in("state_code", [...new Set(parsed.map((p) => p.stateCode))])
               .in("name", [...new Set(parsed.map((p) => p.name))]);
 
-            const matched = (cityRows || []).filter((c) =>
-              parsed.some((p) => p.name === c.name && p.stateCode === c.state_code)
+            const rows = cityRows || [];
+            type CityRow = { id: string; name: string; state_code: string; county: string | null };
+            const matched: CityRow[] = [];
+            const ambiguous: Array<{ p: typeof parsed[number]; candidates: CityRow[] }> = [];
+
+            // Pass 1: resolve labels that map to exactly one city (or carry a county).
+            parsed.forEach((p) => {
+              const candidates = rows.filter(
+                (c) => c.name === p.name && c.state_code === p.stateCode
+              );
+              if (candidates.length === 0) return;
+              const exact = p.county
+                ? candidates.find((c) => c.county === p.county)
+                : undefined;
+              if (exact || candidates.length === 1) {
+                const chosen = exact || candidates[0];
+                if (!matched.some((m) => m.id === chosen.id)) matched.push(chosen);
+              } else {
+                ambiguous.push({ p, candidates });
+              }
+            });
+
+            // Pass 2: for legacy "City, ST" labels that match several counties,
+            // keep the candidate inside a county we already know about so the
+            // form doesn't light up unrelated counties across the state.
+            const knownCounties = new Set(
+              matched.filter((m) => m.county).map((m) => `${m.county}|${m.state_code}`)
             );
+            ambiguous.forEach(({ candidates }) => {
+              const preferred =
+                candidates.find((c) => knownCounties.has(`${c.county}|${c.state_code}`)) ||
+                [...candidates].sort((a, b) => (a.county || "").localeCompare(b.county || ""))[0];
+              if (preferred && !matched.some((m) => m.id === preferred.id)) {
+                matched.push(preferred);
+              }
+            });
+
 
             if (matched.length > 0) {
               setSelectedStates([...new Set(matched.map((c) => c.state_code))]);
@@ -332,6 +371,7 @@ const CompaniesAdd = () => {
             }
           }
         } else {
+
           // Nothing saved yet — selections are authoritative from the start
           setAreasHydrated(true);
         }
@@ -786,12 +826,18 @@ const CompaniesAdd = () => {
 
       // Prefer the loaded city objects, then fall back to a lookup for any
       // selected id whose county list is no longer in memory.
+      // Labels include the county so they can be mapped back unambiguously
+      // (many Illinois city/township names repeat across counties).
       const seenIds = new Set<string>();
       citiesByCounty.forEach((cities) => {
         cities.forEach((city) => {
           if (selectedSet.has(city.id)) {
             seenIds.add(city.id);
-            labels.add(`${city.name}, ${city.state_code}`);
+            labels.add(
+              city.county
+                ? `${city.name}, ${city.county}, ${city.state_code}`
+                : `${city.name}, ${city.state_code}`
+            );
           }
         });
       });
@@ -800,12 +846,17 @@ const CompaniesAdd = () => {
       if (missingIds.length > 0) {
         const { data: extraCities } = await supabase
           .from("cities")
-          .select("id, name, state_code")
+          .select("id, name, county, state_code")
           .in("id", missingIds);
         (extraCities || []).forEach((city) => {
-          labels.add(`${city.name}, ${city.state_code}`);
+          labels.add(
+            city.county
+              ? `${city.name}, ${city.county}, ${city.state_code}`
+              : `${city.name}, ${city.state_code}`
+          );
         });
       }
+
 
       serviceAreas = Array.from(labels).sort();
     }
