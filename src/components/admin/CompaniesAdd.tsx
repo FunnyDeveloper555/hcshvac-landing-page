@@ -379,7 +379,6 @@ const CompaniesAdd = () => {
                 });
               });
               setSelectedCounties(counties);
-              setAreasHydrated(true);
             }
           }
         } else {
@@ -552,6 +551,7 @@ const CompaniesAdd = () => {
             .map((city) => city.id);
           setSelectedCities([...new Set(restoredIds)]);
           pendingSavedAreasRef.current = null;
+          setAreasHydrated(true);
         } else {
           setSelectedCities(prev => prev.filter(id => allAvailableCityIds.includes(id)));
         }
