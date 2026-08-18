@@ -403,7 +403,13 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                   (company.hvac_brands_repair && company.hvac_brands_repair.length > 0) ||
                   (company.plumbing_equipment_install && company.plumbing_equipment_install.length > 0) ||
                   (company.plumbing_equipment_service && company.plumbing_equipment_service.length > 0) ||
-                  (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0)) && (
+                  (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0) ||
+                  ([
+                    "boilers_install", "boilers_service", "boilers_repair",
+                    "water_heaters_install", "water_heaters_service", "water_heaters_repair",
+                    "coils_install", "coils_service", "coils_repair",
+                    "gas_pipe_install", "gas_pipe_service", "gas_pipe_repair",
+                  ] as const).some((f) => (company[f] as string[] | null)?.length)) && (
                   <section className="py-8 bg-muted/30">
                     <div className="container mx-auto px-4">
                       <div className="max-w-4xl mx-auto">
