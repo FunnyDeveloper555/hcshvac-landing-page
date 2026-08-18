@@ -36,6 +36,9 @@ interface Company {
   brands_installed?: Json | null;
   brands_serviced?: Json | null;
   affiliations?: Json | null;
+  plumbing_equipment_install?: Json | null;
+  plumbing_equipment_service?: Json | null;
+  plumbing_equipment_repair?: Json | null;
   boilers_install?: Json | null;
   boilers_service?: Json | null;
   boilers_repair?: Json | null;
