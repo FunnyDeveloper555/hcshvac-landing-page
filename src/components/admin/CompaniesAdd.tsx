@@ -957,6 +957,18 @@ const CompaniesAdd = () => {
       plumbing_equipment_install: formData.plumbing_equipment_install,
       plumbing_equipment_service: formData.plumbing_equipment_service,
       plumbing_equipment_repair: formData.plumbing_equipment_repair,
+      boilers_install: formData.boilers_install,
+      boilers_service: formData.boilers_service,
+      boilers_repair: formData.boilers_repair,
+      water_heaters_install: formData.water_heaters_install,
+      water_heaters_service: formData.water_heaters_service,
+      water_heaters_repair: formData.water_heaters_repair,
+      coils_install: formData.coils_install,
+      coils_service: formData.coils_service,
+      coils_repair: formData.coils_repair,
+      gas_pipe_install: formData.gas_pipe_install,
+      gas_pipe_service: formData.gas_pipe_service,
+      gas_pipe_repair: formData.gas_pipe_repair,
     };
 
     let error;
