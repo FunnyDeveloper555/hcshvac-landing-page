@@ -1136,6 +1136,7 @@ export type Database = {
           secondary_poc_title: string | null
           service_areas: Json | null
           services_provided: Json | null
+          site_template: string | null
           slug: string | null
           theme_style: string | null
           water_heaters_install: Json
@@ -1213,6 +1214,7 @@ export type Database = {
           secondary_poc_title?: string | null
           service_areas?: Json | null
           services_provided?: Json | null
+          site_template?: string | null
           slug?: string | null
           theme_style?: string | null
           water_heaters_install?: Json
@@ -1290,6 +1292,7 @@ export type Database = {
           secondary_poc_title?: string | null
           service_areas?: Json | null
           services_provided?: Json | null
+          site_template?: string | null
           slug?: string | null
           theme_style?: string | null
           water_heaters_install?: Json
