@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
 import { Textarea } from "@/components/ui/textarea";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
+import EquipmentListEditor from "@/components/admin/companies/EquipmentListEditor";
 
 interface City {
   id: string;
@@ -173,6 +174,18 @@ const CompaniesAdd = () => {
     plumbing_equipment_install: [] as string[],
     plumbing_equipment_service: [] as string[],
     plumbing_equipment_repair: [] as string[],
+    boilers_install: [] as string[],
+    boilers_service: [] as string[],
+    boilers_repair: [] as string[],
+    water_heaters_install: [] as string[],
+    water_heaters_service: [] as string[],
+    water_heaters_repair: [] as string[],
+    coils_install: [] as string[],
+    coils_service: [] as string[],
+    coils_repair: [] as string[],
+    gas_pipe_install: [] as string[],
+    gas_pipe_service: [] as string[],
+    gas_pipe_repair: [] as string[],
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -296,6 +309,18 @@ const CompaniesAdd = () => {
           plumbing_equipment_install: Array.isArray(companyData.plumbing_equipment_install) ? companyData.plumbing_equipment_install as string[] : [],
           plumbing_equipment_service: Array.isArray(companyData.plumbing_equipment_service) ? companyData.plumbing_equipment_service as string[] : [],
           plumbing_equipment_repair: Array.isArray(companyData.plumbing_equipment_repair) ? companyData.plumbing_equipment_repair as string[] : [],
+          boilers_install: Array.isArray(companyData.boilers_install) ? companyData.boilers_install as string[] : [],
+          boilers_service: Array.isArray(companyData.boilers_service) ? companyData.boilers_service as string[] : [],
+          boilers_repair: Array.isArray(companyData.boilers_repair) ? companyData.boilers_repair as string[] : [],
+          water_heaters_install: Array.isArray(companyData.water_heaters_install) ? companyData.water_heaters_install as string[] : [],
+          water_heaters_service: Array.isArray(companyData.water_heaters_service) ? companyData.water_heaters_service as string[] : [],
+          water_heaters_repair: Array.isArray(companyData.water_heaters_repair) ? companyData.water_heaters_repair as string[] : [],
+          coils_install: Array.isArray(companyData.coils_install) ? companyData.coils_install as string[] : [],
+          coils_service: Array.isArray(companyData.coils_service) ? companyData.coils_service as string[] : [],
+          coils_repair: Array.isArray(companyData.coils_repair) ? companyData.coils_repair as string[] : [],
+          gas_pipe_install: Array.isArray(companyData.gas_pipe_install) ? companyData.gas_pipe_install as string[] : [],
+          gas_pipe_service: Array.isArray(companyData.gas_pipe_service) ? companyData.gas_pipe_service as string[] : [],
+          gas_pipe_repair: Array.isArray(companyData.gas_pipe_repair) ? companyData.gas_pipe_repair as string[] : [],
         });
 
         // Restore the state / county / city selections from the saved service areas
@@ -933,6 +958,18 @@ const CompaniesAdd = () => {
       plumbing_equipment_install: formData.plumbing_equipment_install,
       plumbing_equipment_service: formData.plumbing_equipment_service,
       plumbing_equipment_repair: formData.plumbing_equipment_repair,
+      boilers_install: formData.boilers_install,
+      boilers_service: formData.boilers_service,
+      boilers_repair: formData.boilers_repair,
+      water_heaters_install: formData.water_heaters_install,
+      water_heaters_service: formData.water_heaters_service,
+      water_heaters_repair: formData.water_heaters_repair,
+      coils_install: formData.coils_install,
+      coils_service: formData.coils_service,
+      coils_repair: formData.coils_repair,
+      gas_pipe_install: formData.gas_pipe_install,
+      gas_pipe_service: formData.gas_pipe_service,
+      gas_pipe_repair: formData.gas_pipe_repair,
     };
 
     let error;
@@ -1882,6 +1919,40 @@ const CompaniesAdd = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Boilers / Water Heaters / Coils / Gas Pipe */}
+      {([
+        { key: "boilers", title: "Boilers" },
+        { key: "water_heaters", title: "Water Heaters" },
+        { key: "coils", title: "Coils" },
+        { key: "gas_pipe", title: "Gas Pipe" },
+      ] as const).map(({ key, title }) => (
+        <Card key={key}>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>Add the {title.toLowerCase()} this company installs, services, and repairs</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {([
+              { suffix: "install", label: `${title} We Install` },
+              { suffix: "service", label: `${title} We Service` },
+              { suffix: "repair", label: `${title} We Repair` },
+            ] as const).map(({ suffix, label }) => {
+              const field = `${key}_${suffix}` as keyof typeof formData;
+              return (
+                <EquipmentListEditor
+                  key={field as string}
+                  label={label}
+                  items={formData[field] as string[]}
+                  onChange={(items) => setFormData((prev) => ({ ...prev, [field]: items }))}
+                />
+              );
+            })}
+          </CardContent>
+        </Card>
+      ))}
+
+
 
       {/* Home Page Coupons */}
       <Card>

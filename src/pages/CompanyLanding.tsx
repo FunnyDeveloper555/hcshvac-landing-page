@@ -11,6 +11,7 @@ import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepa
 import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
+import CompanyEquipmentListAccordion from "@/components/company/CompanyEquipmentListAccordion";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
@@ -74,6 +75,18 @@ interface Company {
   plumbing_equipment_install: string[] | null;
   plumbing_equipment_service: string[] | null;
   plumbing_equipment_repair: string[] | null;
+  boilers_install?: string[] | null;
+  boilers_service?: string[] | null;
+  boilers_repair?: string[] | null;
+  water_heaters_install?: string[] | null;
+  water_heaters_service?: string[] | null;
+  water_heaters_repair?: string[] | null;
+  coils_install?: string[] | null;
+  coils_service?: string[] | null;
+  coils_repair?: string[] | null;
+  gas_pipe_install?: string[] | null;
+  gas_pipe_service?: string[] | null;
+  gas_pipe_repair?: string[] | null;
   website_title: string | null;
   website_tagline: string | null;
   website_description: string | null;
@@ -390,7 +403,13 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                   (company.hvac_brands_repair && company.hvac_brands_repair.length > 0) ||
                   (company.plumbing_equipment_install && company.plumbing_equipment_install.length > 0) ||
                   (company.plumbing_equipment_service && company.plumbing_equipment_service.length > 0) ||
-                  (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0)) && (
+                  (company.plumbing_equipment_repair && company.plumbing_equipment_repair.length > 0) ||
+                  ([
+                    "boilers_install", "boilers_service", "boilers_repair",
+                    "water_heaters_install", "water_heaters_service", "water_heaters_repair",
+                    "coils_install", "coils_service", "coils_repair",
+                    "gas_pipe_install", "gas_pipe_service", "gas_pipe_repair",
+                  ] as const).some((f) => (company[f] as string[] | null)?.length)) && (
                   <section className="py-8 bg-muted/30">
                     <div className="container mx-auto px-4">
                       <div className="max-w-4xl mx-auto">
@@ -430,6 +449,29 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                             types={company.plumbing_equipment_repair}
                             primaryColor={theme.colors.primary}
                           />
+                          {([
+                            { key: "boilers", title: "Boilers" },
+                            { key: "water_heaters", title: "Water Heaters" },
+                            { key: "coils", title: "Coils" },
+                            { key: "gas_pipe", title: "Gas Pipe" },
+                          ] as const).flatMap(({ key, title }) =>
+                            ([
+                              { suffix: "install", label: `${title} We Install` },
+                              { suffix: "service", label: `${title} We Service` },
+                              { suffix: "repair", label: `${title} We Repair` },
+                            ] as const).map(({ suffix, label }) => {
+                              const field = `${key}_${suffix}` as keyof typeof company;
+                              return (
+                                <CompanyEquipmentListAccordion
+                                  key={field as string}
+                                  value={field as string}
+                                  title={label}
+                                  items={(company[field] as string[] | null) ?? null}
+                                  primaryColor={theme.colors.primary}
+                                />
+                              );
+                            })
+                          )}
                         </Accordion>
                       </div>
                     </div>

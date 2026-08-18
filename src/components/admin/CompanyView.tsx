@@ -36,6 +36,21 @@ interface Company {
   brands_installed?: Json | null;
   brands_serviced?: Json | null;
   affiliations?: Json | null;
+  plumbing_equipment_install?: Json | null;
+  plumbing_equipment_service?: Json | null;
+  plumbing_equipment_repair?: Json | null;
+  boilers_install?: Json | null;
+  boilers_service?: Json | null;
+  boilers_repair?: Json | null;
+  water_heaters_install?: Json | null;
+  water_heaters_service?: Json | null;
+  water_heaters_repair?: Json | null;
+  coils_install?: Json | null;
+  coils_service?: Json | null;
+  coils_repair?: Json | null;
+  gas_pipe_install?: Json | null;
+  gas_pipe_service?: Json | null;
+  gas_pipe_repair?: Json | null;
   inventory_parts?: string | null;
   inventory_equipment?: string | null;
   inventory_locations?: string | null;
@@ -308,6 +323,49 @@ const CompanyView = () => {
           </Card>
         )}
       </div>
+
+      {/* Equipment by category */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {([
+          { key: "boilers", title: "Boilers" },
+          { key: "water_heaters", title: "Water Heaters" },
+          { key: "coils", title: "Coils" },
+          { key: "gas_pipe", title: "Gas Pipe" },
+          { key: "plumbing_equipment", title: "Plumbing" },
+        ] as const).flatMap(({ key, title }) =>
+          ([
+            { suffix: "install", label: `${title} We Install` },
+            { suffix: "service", label: `${title} We Service` },
+            { suffix: "repair", label: `${title} We Repair` },
+          ] as const).map(({ suffix, label }) => {
+            const field = `${key}_${suffix}` as keyof Company;
+            const value = company[field];
+            const items = Array.isArray(value) ? (value as string[]) : [];
+            return (
+              <Card key={field as string}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{label}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {items.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {items.map((item, index) => (
+                        <Badge key={index} variant="outline">
+                          {String(item)}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Not set</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </div>
+
+
 
       {/* Inventory */}
       {(company.inventory_parts || company.inventory_equipment || company.inventory_locations) && (

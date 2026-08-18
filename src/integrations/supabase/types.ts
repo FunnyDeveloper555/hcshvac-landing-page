@@ -1071,8 +1071,14 @@ export type Database = {
         Row: {
           affiliations: Json | null
           banner_image_ids: string[]
+          boilers_install: Json
+          boilers_repair: Json
+          boilers_service: Json
           brands_installed: Json | null
           brands_serviced: Json | null
+          coils_install: Json
+          coils_repair: Json
+          coils_service: Json
           company_address: string | null
           company_city: string | null
           company_email_primary: string | null
@@ -1095,6 +1101,9 @@ export type Database = {
           financing_enabled: boolean | null
           financing_provider: string | null
           financing_url: string | null
+          gas_pipe_install: Json
+          gas_pipe_repair: Json
+          gas_pipe_service: Json
           header_pages: Json | null
           hero_image_url: string | null
           hvac_brands_install: Json | null
@@ -1129,6 +1138,9 @@ export type Database = {
           services_provided: Json | null
           slug: string | null
           theme_style: string | null
+          water_heaters_install: Json
+          water_heaters_repair: Json
+          water_heaters_service: Json
           website_description: string | null
           website_tagline: string | null
           website_title: string | null
@@ -1136,8 +1148,14 @@ export type Database = {
         Insert: {
           affiliations?: Json | null
           banner_image_ids?: string[]
+          boilers_install?: Json
+          boilers_repair?: Json
+          boilers_service?: Json
           brands_installed?: Json | null
           brands_serviced?: Json | null
+          coils_install?: Json
+          coils_repair?: Json
+          coils_service?: Json
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
@@ -1160,6 +1178,9 @@ export type Database = {
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
+          gas_pipe_install?: Json
+          gas_pipe_repair?: Json
+          gas_pipe_service?: Json
           header_pages?: Json | null
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
@@ -1194,6 +1215,9 @@ export type Database = {
           services_provided?: Json | null
           slug?: string | null
           theme_style?: string | null
+          water_heaters_install?: Json
+          water_heaters_repair?: Json
+          water_heaters_service?: Json
           website_description?: string | null
           website_tagline?: string | null
           website_title?: string | null
@@ -1201,8 +1225,14 @@ export type Database = {
         Update: {
           affiliations?: Json | null
           banner_image_ids?: string[]
+          boilers_install?: Json
+          boilers_repair?: Json
+          boilers_service?: Json
           brands_installed?: Json | null
           brands_serviced?: Json | null
+          coils_install?: Json
+          coils_repair?: Json
+          coils_service?: Json
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
@@ -1225,6 +1255,9 @@ export type Database = {
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
+          gas_pipe_install?: Json
+          gas_pipe_repair?: Json
+          gas_pipe_service?: Json
           header_pages?: Json | null
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
@@ -1259,6 +1292,9 @@ export type Database = {
           services_provided?: Json | null
           slug?: string | null
           theme_style?: string | null
+          water_heaters_install?: Json
+          water_heaters_repair?: Json
+          water_heaters_service?: Json
           website_description?: string | null
           website_tagline?: string | null
           website_title?: string | null
