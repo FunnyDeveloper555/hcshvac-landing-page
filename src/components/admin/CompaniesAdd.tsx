@@ -1919,6 +1919,40 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      {/* Boilers / Water Heaters / Coils / Gas Pipe */}
+      {([
+        { key: "boilers", title: "Boilers" },
+        { key: "water_heaters", title: "Water Heaters" },
+        { key: "coils", title: "Coils" },
+        { key: "gas_pipe", title: "Gas Pipe" },
+      ] as const).map(({ key, title }) => (
+        <Card key={key}>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>Add the {title.toLowerCase()} this company installs, services, and repairs</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {([
+              { suffix: "install", label: `${title} We Install` },
+              { suffix: "service", label: `${title} We Service` },
+              { suffix: "repair", label: `${title} We Repair` },
+            ] as const).map(({ suffix, label }) => {
+              const field = `${key}_${suffix}` as keyof typeof formData;
+              return (
+                <EquipmentListEditor
+                  key={field as string}
+                  label={label}
+                  items={formData[field] as string[]}
+                  onChange={(items) => setFormData((prev) => ({ ...prev, [field]: items }))}
+                />
+              );
+            })}
+          </CardContent>
+        </Card>
+      ))}
+
+
+
       {/* Home Page Coupons */}
       <Card>
         <CardHeader>
