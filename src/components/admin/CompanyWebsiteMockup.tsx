@@ -324,6 +324,14 @@ const CompanyWebsiteMockup = () => {
         )}
       </div>
 
+      {/* Site Template selector */}
+      <CompanySiteTemplateSelector
+        companyId={selectedCompany.id}
+        currentTemplate={(selectedCompany as any).site_template}
+      />
+
+
+
       {/* Website Frame */}
       <div className="border-4 border-muted rounded-xl overflow-hidden bg-background shadow-2xl">
         {/* Browser Bar Mockup */}
