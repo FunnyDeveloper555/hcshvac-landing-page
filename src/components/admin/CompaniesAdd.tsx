@@ -173,6 +173,18 @@ const CompaniesAdd = () => {
     plumbing_equipment_install: [] as string[],
     plumbing_equipment_service: [] as string[],
     plumbing_equipment_repair: [] as string[],
+    boilers_install: [] as string[],
+    boilers_service: [] as string[],
+    boilers_repair: [] as string[],
+    water_heaters_install: [] as string[],
+    water_heaters_service: [] as string[],
+    water_heaters_repair: [] as string[],
+    coils_install: [] as string[],
+    coils_service: [] as string[],
+    coils_repair: [] as string[],
+    gas_pipe_install: [] as string[],
+    gas_pipe_service: [] as string[],
+    gas_pipe_repair: [] as string[],
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -296,6 +308,18 @@ const CompaniesAdd = () => {
           plumbing_equipment_install: Array.isArray(companyData.plumbing_equipment_install) ? companyData.plumbing_equipment_install as string[] : [],
           plumbing_equipment_service: Array.isArray(companyData.plumbing_equipment_service) ? companyData.plumbing_equipment_service as string[] : [],
           plumbing_equipment_repair: Array.isArray(companyData.plumbing_equipment_repair) ? companyData.plumbing_equipment_repair as string[] : [],
+          boilers_install: Array.isArray(companyData.boilers_install) ? companyData.boilers_install as string[] : [],
+          boilers_service: Array.isArray(companyData.boilers_service) ? companyData.boilers_service as string[] : [],
+          boilers_repair: Array.isArray(companyData.boilers_repair) ? companyData.boilers_repair as string[] : [],
+          water_heaters_install: Array.isArray(companyData.water_heaters_install) ? companyData.water_heaters_install as string[] : [],
+          water_heaters_service: Array.isArray(companyData.water_heaters_service) ? companyData.water_heaters_service as string[] : [],
+          water_heaters_repair: Array.isArray(companyData.water_heaters_repair) ? companyData.water_heaters_repair as string[] : [],
+          coils_install: Array.isArray(companyData.coils_install) ? companyData.coils_install as string[] : [],
+          coils_service: Array.isArray(companyData.coils_service) ? companyData.coils_service as string[] : [],
+          coils_repair: Array.isArray(companyData.coils_repair) ? companyData.coils_repair as string[] : [],
+          gas_pipe_install: Array.isArray(companyData.gas_pipe_install) ? companyData.gas_pipe_install as string[] : [],
+          gas_pipe_service: Array.isArray(companyData.gas_pipe_service) ? companyData.gas_pipe_service as string[] : [],
+          gas_pipe_repair: Array.isArray(companyData.gas_pipe_repair) ? companyData.gas_pipe_repair as string[] : [],
         });
 
         // Restore the state / county / city selections from the saved service areas
