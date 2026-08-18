@@ -195,6 +195,9 @@ export default function CompanyDashboard() {
         </Card>
       </div>
 
+      {/* Site Template */}
+      <CompanySiteTemplateSelector companyId={companyId!} currentTemplate={(company as any).site_template} />
+
       {/* Quick Actions */}
       <Card>
         <CardHeader>
