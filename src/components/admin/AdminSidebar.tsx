@@ -355,12 +355,16 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pageBuilderMenu: MenuItem = useMemo(() => ({
     title: "Page Builder",
     icon: Layout,
-    children: companies.map(company => ({
-      title: company.name,
-      url: `/admin/page-builder/company/${company.id}`,
-      icon: Building2,
-      children: updateUrlsWithCompanyId(companySubmenus, company.id),
-    })),
+    children: [
+      ...companies.map(company => ({
+        title: company.name,
+        url: `/admin/page-builder/company/${company.id}`,
+        icon: Building2,
+        children: updateUrlsWithCompanyId(companySubmenus, company.id),
+      })),
+      { title: "Templates", url: "/admin/page-builder/templates", icon: PageStack },
+      { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
+    ],
   }), [companies]);
 
   const menuItems = useMemo(() => {
