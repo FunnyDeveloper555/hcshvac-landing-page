@@ -16,6 +16,8 @@ import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepa
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
 import { Accordion } from "@/components/ui/accordion";
+import CompanySiteTemplateSelector from "@/components/admin/pagebuilder/CompanySiteTemplateSelector";
+
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
