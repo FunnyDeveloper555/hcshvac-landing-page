@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, Building2, MapPin, Wrench, Package, Droplet, FileText, MousePointer, Layout, Image, Eye, Layers, Search, Map } from "lucide-react";
+import CompanySiteTemplateSelector from "./CompanySiteTemplateSelector";
 
 export default function CompanyDashboard() {
   const { companyId } = useParams<{ companyId: string }>();
