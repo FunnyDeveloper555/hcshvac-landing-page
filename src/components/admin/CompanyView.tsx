@@ -324,6 +324,49 @@ const CompanyView = () => {
         )}
       </div>
 
+      {/* Equipment by category */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {([
+          { key: "boilers", title: "Boilers" },
+          { key: "water_heaters", title: "Water Heaters" },
+          { key: "coils", title: "Coils" },
+          { key: "gas_pipe", title: "Gas Pipe" },
+          { key: "plumbing_equipment", title: "Plumbing" },
+        ] as const).flatMap(({ key, title }) =>
+          ([
+            { suffix: "install", label: `${title} We Install` },
+            { suffix: "service", label: `${title} We Service` },
+            { suffix: "repair", label: `${title} We Repair` },
+          ] as const).map(({ suffix, label }) => {
+            const field = `${key}_${suffix}` as keyof Company;
+            const value = company[field];
+            const items = Array.isArray(value) ? (value as string[]) : [];
+            return (
+              <Card key={field as string}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{label}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {items.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {items.map((item, index) => (
+                        <Badge key={index} variant="outline">
+                          {String(item)}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Not set</p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </div>
+
+
+
       {/* Inventory */}
       {(company.inventory_parts || company.inventory_equipment || company.inventory_locations) && (
         <Card>
