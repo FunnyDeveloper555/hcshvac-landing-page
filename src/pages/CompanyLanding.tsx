@@ -74,6 +74,18 @@ interface Company {
   plumbing_equipment_install: string[] | null;
   plumbing_equipment_service: string[] | null;
   plumbing_equipment_repair: string[] | null;
+  boilers_install?: string[] | null;
+  boilers_service?: string[] | null;
+  boilers_repair?: string[] | null;
+  water_heaters_install?: string[] | null;
+  water_heaters_service?: string[] | null;
+  water_heaters_repair?: string[] | null;
+  coils_install?: string[] | null;
+  coils_service?: string[] | null;
+  coils_repair?: string[] | null;
+  gas_pipe_install?: string[] | null;
+  gas_pipe_service?: string[] | null;
+  gas_pipe_repair?: string[] | null;
   website_title: string | null;
   website_tagline: string | null;
   website_description: string | null;
