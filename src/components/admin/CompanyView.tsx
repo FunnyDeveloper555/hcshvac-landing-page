@@ -36,6 +36,18 @@ interface Company {
   brands_installed?: Json | null;
   brands_serviced?: Json | null;
   affiliations?: Json | null;
+  boilers_install?: Json | null;
+  boilers_service?: Json | null;
+  boilers_repair?: Json | null;
+  water_heaters_install?: Json | null;
+  water_heaters_service?: Json | null;
+  water_heaters_repair?: Json | null;
+  coils_install?: Json | null;
+  coils_service?: Json | null;
+  coils_repair?: Json | null;
+  gas_pipe_install?: Json | null;
+  gas_pipe_service?: Json | null;
+  gas_pipe_repair?: Json | null;
   inventory_parts?: string | null;
   inventory_equipment?: string | null;
   inventory_locations?: string | null;
