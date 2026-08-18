@@ -39,15 +39,17 @@ export default function SiteTemplates() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {SITE_TEMPLATES.map((template) => (
           <Card key={template.id} className="overflow-hidden">
-            <div className="aspect-video border-b bg-muted">
+            <div className="relative aspect-video overflow-hidden border-b bg-muted">
               <iframe
                 src={template.path}
                 title={`${template.name} preview`}
-                className="pointer-events-none h-[800px] w-[1400px] origin-top-left border-0"
-                style={{ transform: "scale(0.28)" }}
+                className="pointer-events-none absolute left-0 top-0 h-[900px] w-[1400px] origin-top-left border-0"
+                style={{ transform: "scale(0.3)" }}
+                scrolling="no"
                 loading="lazy"
               />
             </div>
+
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">{template.name}</CardTitle>
               <CardDescription className="line-clamp-3">{template.description}</CardDescription>
