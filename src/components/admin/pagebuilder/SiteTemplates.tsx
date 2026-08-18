@@ -4,27 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExternalLink, Eye } from "lucide-react";
 import { useState } from "react";
-
-interface SiteTemplate {
-  id: string;
-  name: string;
-  description: string;
-  path: string;
-  tags: string[];
-  usedBy?: string;
-}
-
-const SITE_TEMPLATES: SiteTemplate[] = [
-  {
-    id: "home-construction",
-    name: "Home Construction",
-    description:
-      "Amerce construction layout: rotating announcement topbar, marquee strip, full-bleed rounded hero slideshow, editorial banner and top products grid.",
-    path: "/amerce-template/home-construction.html",
-    tags: ["Amerce", "Marquee hero", "Dark topbar", "Top products"],
-    usedBy: "bestcomforthvac.hcshvac.com",
-  },
-];
+import { SITE_TEMPLATES, type SiteTemplate } from "./siteTemplatesData";
 
 export default function SiteTemplates() {
   const [preview, setPreview] = useState<SiteTemplate | null>(null);
