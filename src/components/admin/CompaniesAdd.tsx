@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
 import { Textarea } from "@/components/ui/textarea";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
+import EquipmentListEditor from "@/components/admin/companies/EquipmentListEditor";
 
 interface City {
   id: string;
