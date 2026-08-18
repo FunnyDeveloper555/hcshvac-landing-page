@@ -11,6 +11,7 @@ import CompanyBrandsRepairAccordion from "@/components/company/CompanyBrandsRepa
 import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesInstallAccordion";
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
+import CompanyEquipmentListAccordion from "@/components/company/CompanyEquipmentListAccordion";
 import CompanyContact from "@/components/company/CompanyContact";
 import CompanyFooter from "@/components/company/CompanyFooter";
 import CompanyCTAIcons from "@/components/company/CompanyCTAIcons";
@@ -442,6 +443,29 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                             types={company.plumbing_equipment_repair}
                             primaryColor={theme.colors.primary}
                           />
+                          {([
+                            { key: "boilers", title: "Boilers" },
+                            { key: "water_heaters", title: "Water Heaters" },
+                            { key: "coils", title: "Coils" },
+                            { key: "gas_pipe", title: "Gas Pipe" },
+                          ] as const).flatMap(({ key, title }) =>
+                            ([
+                              { suffix: "install", label: `${title} We Install` },
+                              { suffix: "service", label: `${title} We Service` },
+                              { suffix: "repair", label: `${title} We Repair` },
+                            ] as const).map(({ suffix, label }) => {
+                              const field = `${key}_${suffix}` as keyof typeof company;
+                              return (
+                                <CompanyEquipmentListAccordion
+                                  key={field as string}
+                                  value={field as string}
+                                  title={label}
+                                  items={(company[field] as string[] | null) ?? null}
+                                  primaryColor={theme.colors.primary}
+                                />
+                              );
+                            })
+                          )}
                         </Accordion>
                       </div>
                     </div>
