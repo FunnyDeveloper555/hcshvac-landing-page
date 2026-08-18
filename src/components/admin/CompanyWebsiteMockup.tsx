@@ -16,6 +16,8 @@ import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepa
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
 import { Accordion } from "@/components/ui/accordion";
+import CompanySiteTemplateSelector from "@/components/admin/pagebuilder/CompanySiteTemplateSelector";
+
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -323,6 +325,14 @@ const CompanyWebsiteMockup = () => {
           </Button>
         )}
       </div>
+
+      {/* Site Template selector */}
+      <CompanySiteTemplateSelector
+        companyId={selectedCompany.id}
+        currentTemplate={(selectedCompany as any).site_template}
+      />
+
+
 
       {/* Website Frame */}
       <div className="border-4 border-muted rounded-xl overflow-hidden bg-background shadow-2xl">
