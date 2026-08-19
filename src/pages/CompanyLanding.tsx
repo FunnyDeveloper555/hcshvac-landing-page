@@ -573,7 +573,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           serviceAreas={company.service_areas}
           navItems={HEADER_PAGES}
           onPageChange={handlePageChange}
-          variant={isOrganicLayout ? "light" : "dark"}
+          variant={siteTemplate === "home-organic" ? "light" : "dark"}
         />
 
       </div>
