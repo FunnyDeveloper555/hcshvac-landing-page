@@ -16,6 +16,8 @@ import { THEME_OPTIONS, ThemeStyle } from "@/lib/companyThemes";
 import { Textarea } from "@/components/ui/textarea";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import EquipmentListEditor from "@/components/admin/companies/EquipmentListEditor";
+import { WATER_HEATER_BRANDS } from "@/lib/waterHeaterBrands";
+
 
 interface City {
   id: string;
@@ -1944,8 +1946,11 @@ const CompaniesAdd = () => {
                   key={field as string}
                   label={label}
                   items={formData[field] as string[]}
+                  suggestions={key === "water_heaters" ? WATER_HEATER_BRANDS : undefined}
+                  placeholder={key === "water_heaters" ? "Add a water heater brand" : undefined}
                   onChange={(items) => setFormData((prev) => ({ ...prev, [field]: items }))}
                 />
+
               );
             })}
           </CardContent>
