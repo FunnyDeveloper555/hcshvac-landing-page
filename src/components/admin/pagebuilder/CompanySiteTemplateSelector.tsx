@@ -17,12 +17,15 @@ interface Props {
 export default function CompanySiteTemplateSelector({ companyId, currentTemplate }: Props) {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState(currentTemplate || DEFAULT_SITE_TEMPLATE);
+  const [appliedTemplate, setAppliedTemplate] = useState(currentTemplate || DEFAULT_SITE_TEMPLATE);
 
   useEffect(() => {
-    setSelected(currentTemplate || DEFAULT_SITE_TEMPLATE);
+    const nextTemplate = currentTemplate || DEFAULT_SITE_TEMPLATE;
+    setSelected(nextTemplate);
+    setAppliedTemplate(nextTemplate);
   }, [currentTemplate]);
 
-  const saved = (currentTemplate || DEFAULT_SITE_TEMPLATE) === selected;
+  const saved = appliedTemplate === selected;
   const template = getSiteTemplate(selected);
 
   const { mutate: save, isPending } = useMutation({
@@ -34,8 +37,10 @@ export default function CompanySiteTemplateSelector({ companyId, currentTemplate
       if (error) throw error;
     },
     onSuccess: () => {
+      setAppliedTemplate(selected);
       toast.success("Site template updated");
       queryClient.invalidateQueries({ queryKey: ["company-dashboard", companyId] });
+      queryClient.invalidateQueries({ queryKey: ["company-mockup", companyId] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

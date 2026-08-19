@@ -27,6 +27,7 @@ import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 import AmerceShell from "@/components/amerce/AmerceShell";
 import AmerceTailwindScope from "@/components/amerce/AmerceTailwindScope";
 import AmerceHeader from "@/components/amerce/AmerceHeader";
+import AmerceHero from "@/components/amerce/AmerceHero";
 import AmerceConstructionHero from "@/components/amerce/AmerceConstructionHero";
 import AmerceServiceCategories from "@/components/amerce/AmerceServiceCategories";
 import AmerceFeatureBanner from "@/components/amerce/AmerceFeatureBanner";
@@ -94,6 +95,7 @@ interface Company {
   hero_image_url: string | null;
   affiliations: Record<string, string> | null;
   theme_style: ThemeStyle | null;
+  site_template: string | null;
   header_pages: Record<string, PageContent> | null;
   coupons: Coupon[] | null;
 }
@@ -187,9 +189,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
 
   const themeStyle = company.theme_style || 'modern';
   const theme = getThemeConfig(themeStyle);
-  // Companies mapped to the Amerce "home-organic" homepage layout.
-  const ORGANIC_LAYOUT_SLUGS = ["blueflameheatingcooling"];
-  const isOrganicLayout = ORGANIC_LAYOUT_SLUGS.includes(company.slug || "");
+  const siteTemplate = company.site_template || "home-construction";
 
   const handlePageChange = (pageKey: string) => {
     setActivePage(pageKey);
@@ -299,7 +299,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
             </AmerceTailwindScope>
           ) : (
             <>
-              {isOrganicLayout ? (
+              {siteTemplate === "home-organic" ? (
                 <>
                   <AmerceOrganicHero
                     companyName={company.name}
@@ -350,6 +350,80 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                     onCta={scrollToContact}
                   />
 
+                  <AmerceOrganicTestimonials companyName={company.name} />
+                </>
+              ) : siteTemplate === "home-office-equipment" ? (
+                <>
+                  <AmerceHero
+                    companyName={company.name}
+                    title={company.website_title}
+                    tagline={company.website_tagline}
+                    description={company.website_description}
+                    heroImageUrl={company.hero_image_url}
+                    phone={company.company_phone}
+                    city={company.company_city}
+                    state={company.company_state}
+                    onPrimaryCta={scrollToContact}
+                  />
+                  <AmerceServices services={services} companyName={company.name} onCta={scrollToContact} />
+                  <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
+                </>
+              ) : siteTemplate === "home-electronics" ? (
+                <>
+                  <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+                  <AmerceHero
+                    companyName={company.name}
+                    title={company.website_title}
+                    tagline={company.website_tagline}
+                    description={company.website_description}
+                    heroImageUrl={company.hero_image_url}
+                    phone={company.company_phone}
+                    city={company.company_city}
+                    state={company.company_state}
+                    onPrimaryCta={scrollToContact}
+                  />
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
+                  <AmerceServices services={services} companyName={company.name} onCta={scrollToContact} />
+                </>
+              ) : siteTemplate === "home-garden" ? (
+                <>
+                  <AmerceHero
+                    companyName={company.name}
+                    title={company.website_title}
+                    tagline={company.website_tagline}
+                    description={company.website_description}
+                    heroImageUrl={company.hero_image_url}
+                    phone={company.company_phone}
+                    city={company.company_city}
+                    state={company.company_state}
+                    onPrimaryCta={scrollToContact}
+                  />
+                  <AmerceFeatureBanner
+                    companyName={company.name}
+                    city={company.company_city}
+                    state={company.company_state}
+                    phone={company.company_phone}
+                    onCta={scrollToContact}
+                  />
+                  <AmerceServiceCategories services={services} onSelect={scrollToContact} />
+                  <AmerceServices services={services} companyName={company.name} onCta={scrollToContact} />
                   <AmerceOrganicTestimonials companyName={company.name} />
                 </>
               ) : (
@@ -499,7 +573,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           serviceAreas={company.service_areas}
           navItems={HEADER_PAGES}
           onPageChange={handlePageChange}
-          variant={isOrganicLayout ? "light" : "dark"}
+          variant={siteTemplate === "home-organic" ? "light" : "dark"}
         />
 
       </div>
