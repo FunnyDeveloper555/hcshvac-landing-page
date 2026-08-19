@@ -12,9 +12,9 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     id: "home-construction",
     name: "Home Construction",
     description:
-      "Amerce construction layout: rotating announcement topbar, marquee strip, full-bleed rounded hero slideshow, editorial banner and top products grid.",
+      "Construction layout: rotating announcement topbar, marquee strip, full-bleed rounded hero slideshow, editorial banner and top products grid.",
     path: "/amerce-template/home-construction.html",
-    tags: ["Amerce", "Marquee hero", "Dark topbar", "Top products"],
+    tags: ["Marquee hero", "Dark topbar", "Top products"],
     usedBy: "bestcomforthvac.hcshvac.com",
   },
   {
@@ -23,7 +23,7 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     description:
       "Light, airy layout with red accent palette, white footer, category chips and a popular products carousel. Friendly residential-service feel.",
     path: "/amerce-template/home-organic.html",
-    tags: ["Amerce", "Light theme", "Popular products", "White footer"],
+    tags: ["Light theme", "Popular products", "White footer"],
     usedBy: "blueflameheatingcooling.hcshvac.com",
   },
   {
@@ -32,7 +32,7 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     description:
       "Business-forward layout: utility topbar, mega-menu navigation, banner grid and equipment-style product listings. Good fit for commercial service pages.",
     path: "/amerce-template/home-office-equipment.html",
-    tags: ["Amerce", "Commercial", "Mega menu", "Banner grid"],
+    tags: ["Commercial", "Mega menu", "Banner grid"],
   },
   {
     id: "home-electronics",
@@ -40,7 +40,7 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     description:
       "Dense catalog layout with deal countdowns, category rail and multi-row product grids. Best when the company sells lots of equipment SKUs.",
     path: "/amerce-template/home-electronics.html",
-    tags: ["Amerce", "Catalog", "Deals countdown", "Category rail"],
+    tags: ["Catalog", "Deals countdown", "Category rail"],
   },
   {
     id: "home-garden",
@@ -48,7 +48,7 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     description:
       "Warm, image-led layout with large lifestyle hero, service highlight cards and testimonial band. Strong for residential seasonal maintenance offers.",
     path: "/amerce-template/home-garden.html",
-    tags: ["Amerce", "Lifestyle hero", "Highlight cards", "Testimonials"],
+    tags: ["Lifestyle hero", "Highlight cards", "Testimonials"],
   },
 ];
 
