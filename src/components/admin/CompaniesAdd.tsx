@@ -1946,8 +1946,11 @@ const CompaniesAdd = () => {
                   key={field as string}
                   label={label}
                   items={formData[field] as string[]}
+                  suggestions={key === "water_heaters" ? WATER_HEATER_BRANDS : undefined}
+                  placeholder={key === "water_heaters" ? "Add a water heater brand" : undefined}
                   onChange={(items) => setFormData((prev) => ({ ...prev, [field]: items }))}
                 />
+
               );
             })}
           </CardContent>
