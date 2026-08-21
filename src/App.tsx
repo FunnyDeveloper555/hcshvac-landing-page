@@ -71,6 +71,7 @@ const App = () => (
             <Route path="/book/:token" element={<BookingForm />} />
             <Route path="/apply/:token" element={<HireApplicationForm />} />
             <Route path="/company/:slug" element={<CompanyLanding />} />
+            <Route path="/company/:slug/:massSlug" element={<CompanyLanding />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/fileserver" element={<FileServer />} />
