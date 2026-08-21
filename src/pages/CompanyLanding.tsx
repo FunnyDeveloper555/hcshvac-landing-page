@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import CompanyHeader from "@/components/company/CompanyHeader";
 import CompanyHero from "@/components/company/CompanyHero";
@@ -21,6 +21,10 @@ import CompanyPopup from "@/components/company/CompanyPopup";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
 import CompanyProductsList from "@/components/company/CompanyProductsList";
 import CompanyProductDetail from "@/components/company/CompanyProductDetail";
+import MassPagesMenu from "@/components/company/MassPagesMenu";
+import MassServicePage from "@/components/company/MassServicePage";
+import { useMassPages } from "@/hooks/useMassPages";
+import { resolveMassPage } from "@/lib/massPages";
 import { Accordion } from "@/components/ui/accordion";
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
@@ -108,6 +112,7 @@ const HEADER_PAGES = [
   { key: "residential", label: "Residential" },
   { key: "commercial", label: "Commercial" },
   { key: "air-quality", label: "Air Quality" },
+  { key: "mass-pages", label: "Mass Pages" },
 ];
 
 interface CompanyLandingProps {
@@ -115,14 +120,32 @@ interface CompanyLandingProps {
 }
 
 const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
-  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const { slug: paramSlug, massSlug } = useParams<{ slug: string; massSlug: string }>();
   const slug = subdomainSlug || paramSlug;
+  const location = useLocation();
+  const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
   const [services, setServices] = useState<Array<{ id: string; title: string; description: string; icon: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [activePage, setActivePage] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  // Mass pages (service x county x city) derived from the company profile
+  const { groups: massGroups } = useMassPages(company?.service_areas);
+  const massPath = subdomainSlug
+    ? location.pathname.replace(/^\//, "").replace(/\/$/, "")
+    : massSlug || "";
+  const massPage =
+    company && massPath && massPath !== "mass-pages"
+      ? resolveMassPage(massPath, company as unknown as Record<string, unknown>, massGroups)
+      : null;
+  const showMassMenu = massPath === "mass-pages";
+  const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
+  const goToMassPath = (path: string) => {
+    navigate(`${baseUrl}${path}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   useEffect(() => {
     const fetchCompany = async () => {
       if (!slug) {
@@ -192,12 +215,18 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   const siteTemplate = company.site_template || "home-construction";
 
   const handlePageChange = (pageKey: string) => {
+    if (pageKey === "mass-pages") {
+      goToMassPath("/mass-pages");
+      return;
+    }
+    if (massPath) navigate(baseUrl || "/");
     setActivePage(pageKey);
     setSelectedProductId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToHome = () => {
+    if (massPath) navigate(baseUrl || "/");
     setActivePage(null);
     setSelectedProductId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -235,14 +264,46 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           city={company.company_city}
           state={company.company_state}
           navItems={HEADER_PAGES}
-          activePage={activePage || undefined}
+          activePage={massPath ? "mass-pages" : activePage || undefined}
           onPageChange={handlePageChange}
           onGoHome={handleBackToHome}
         />
 
 
         <main className="flex-1">
-          {activePage === "products" ? (
+          {massPage ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <MassServicePage
+                company={company as unknown as Record<string, unknown> & { name: string }}
+                page={massPage}
+                groups={massGroups}
+                onNavigate={goToMassPath}
+                basePath={baseUrl}
+                onHome={handleBackToHome}
+                onContact={scrollToContact}
+              />
+            </AmerceTailwindScope>
+          ) : showMassMenu ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <section className="pt-24 pb-16">
+                <div className="container mx-auto px-4">
+                  <button
+                    onClick={handleBackToHome}
+                    className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    ← Back to Home
+                  </button>
+                  <MassPagesMenu
+                    company={company as unknown as Record<string, unknown> & { name: string }}
+                    groups={massGroups}
+                    onNavigate={goToMassPath}
+                    basePath={baseUrl}
+
+                  />
+                </div>
+              </section>
+            </AmerceTailwindScope>
+          ) : activePage === "products" ? (
             <AmerceTailwindScope themeStyle={themeStyle}>
               <section className="pt-24 pb-16">
                 <div className="container mx-auto px-4">
