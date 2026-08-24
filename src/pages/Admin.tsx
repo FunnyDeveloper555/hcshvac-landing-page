@@ -249,6 +249,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/plumbing-brands" element={<PlumbingBrands />} />
               <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
               <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
+              <Route path="/page-builder/company/:companyId/mass-pages" element={<MassPagesBuilder />} />
               <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
               <Route path="/page-builder/company/:companyId/accordion-list/coupon" element={<CouponList />} />
               <Route path="/page-builder/company/:companyId/partner-listings" element={<PartnerListingsList />} />
