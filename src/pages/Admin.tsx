@@ -31,6 +31,7 @@ import PlumbingBrands from "@/components/admin/pagebuilder/PlumbingBrands";
 import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
+import MassPagesBuilder from "@/components/admin/pagebuilder/MassPagesBuilder";
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
 import CampaignForm from "@/components/admin/pagebuilder/CampaignForm";
