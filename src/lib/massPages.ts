@@ -242,23 +242,76 @@ export const buildCountyGroups = (
   return result.sort((a, b) => a.county.localeCompare(b.county));
 };
 
-/** Resolve a URL slug back to a service + location for this company. */
+/**
+ * Resolve a URL slug back to a service + optional visit/location type + location.
+ * Slug shape: Service[-VisitType][-LocationType]-County-CityStateZip
+ */
 export const resolveMassPage = (
   slug: string,
   company: Record<string, unknown>,
   groups: MassCountyGroup[],
 ): MassPageRef | null => {
-  const target = slug.replace(/^\//, "").toLowerCase();
-  if (!target || target.includes("/")) return null;
+  const raw = slug.replace(/^\//, "").replace(/\/$/, "");
+  if (!raw || raw.includes("/")) return null;
 
-  for (const service of enabledServices(company)) {
-    for (const group of groups) {
-      for (const location of group.locations) {
-        if (massPageSlug(service, location).toLowerCase() === target) {
-          return { slug: massPageSlug(service, location), service, location };
-        }
-      }
+  const parts = raw.split("-").filter(Boolean);
+  if (parts.length < 3) return null;
+
+  const cityPart = parts[parts.length - 1].toLowerCase();
+  const countyPart = parts[parts.length - 2].toLowerCase();
+  const servicePart = parts[0];
+  const middles = parts.slice(1, parts.length - 2);
+
+  let visitType: VisitType | null = null;
+  let locationType: LocationType | null = null;
+  for (const seg of middles) {
+    const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+    if (v) {
+      visitType = v;
+      continue;
+    }
+    const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+    if (l) {
+      locationType = l;
+      continue;
+    }
+    return null; // unknown middle segment
+  }
+
+  let location: MassLocation | null = null;
+  for (const group of groups) {
+    if (compact(group.county).toLowerCase() !== countyPart) continue;
+    const match = group.locations.find(
+      (loc) =>
+        `${compact(loc.city)}${compact(loc.state)}${compact(loc.zip)}`.toLowerCase() === cityPart,
+    );
+    if (match) {
+      location = match;
+      break;
     }
   }
-  return null;
+  if (!location) return null;
+
+  const service =
+    enabledServices(company).find(
+      (s) => serviceSlugPart(s).toLowerCase() === servicePart.toLowerCase(),
+    ) || customService(uncompact(servicePart));
+
+  return {
+    slug: massPageSlug(service, location, { visitType, locationType }),
+    service,
+    location,
+    visitType,
+    locationType,
+  };
+};
+
+/** Build a service-like object for a label that is not in MASS_SERVICES (e.g. a product). */
+export const customService = (label: string): MassService => {
+  const action: MassService["action"] = /install/i.test(label)
+    ? "Installation"
+    : /repair/i.test(label)
+      ? "Repair"
+      : "Service";
+  return { label, group: "Air Conditioning", action, brandFields: [] };
 };
