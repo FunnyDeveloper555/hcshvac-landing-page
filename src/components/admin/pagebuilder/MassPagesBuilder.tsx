@@ -50,16 +50,16 @@ export default function MassPagesBuilder() {
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["mass-pages-products"],
+    queryKey: ["mass-pages-products", companyId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name")
+        .select("id, product_name")
         .in("status", ["active_showing", "active_not_showing"])
-        .order("name")
+        .order("product_name")
         .limit(500);
       if (error) throw error;
-      return (data || []) as { id: string; name: string }[];
+      return (data || []).map((p) => ({ id: p.id, name: p.product_name }));
     },
   });
 
