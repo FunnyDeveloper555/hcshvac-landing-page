@@ -1021,8 +1021,24 @@ const CompaniesAdd = () => {
   return (
     <>
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">{isEditing ? "Edit Company" : "Add New Company"}</h2>
-      
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-3xl font-bold">{isEditing ? "Edit Company" : "Add New Company"}</h2>
+        <Button onClick={handleSave}>{isEditing ? "Update Company" : "Create Company"}</Button>
+      </div>
+
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="general" className="flex-1 min-w-[110px]">General</TabsTrigger>
+          <TabsTrigger value="contacts" className="flex-1 min-w-[110px]">Contacts</TabsTrigger>
+          <TabsTrigger value="services" className="flex-1 min-w-[110px]">Services &amp; Areas</TabsTrigger>
+          <TabsTrigger value="brands" className="flex-1 min-w-[110px]">Brands</TabsTrigger>
+          <TabsTrigger value="equipment" className="flex-1 min-w-[110px]">Equipment</TabsTrigger>
+          <TabsTrigger value="marketing" className="flex-1 min-w-[110px]">Marketing</TabsTrigger>
+          <TabsTrigger value="other" className="flex-1 min-w-[110px]">Affiliations &amp; Inventory</TabsTrigger>
+          <TabsTrigger value="settings" className="flex-1 min-w-[110px]">Settings</TabsTrigger>
+        </TabsList>
+
+      <TabsContent value="general" className="space-y-6 mt-4">
       {/* Company Information */}
       <Card>
         <CardHeader>
