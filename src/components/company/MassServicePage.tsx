@@ -85,6 +85,7 @@ const MassServicePage = ({
             {location.county}, {location.state}
           </p>
           <h1 className="text-3xl md:text-4xl font-bold">{heading}</h1>
+          <p className="text-sm text-muted-foreground">{summary}</p>
           <p className="text-muted-foreground max-w-3xl">
             {company.name} delivers professional {service.label.toLowerCase()} for homes and
             businesses in {place}. Our technicians know the equipment, the codes and the weather in{" "}
