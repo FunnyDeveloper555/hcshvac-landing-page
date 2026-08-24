@@ -4,6 +4,7 @@ import {
   MassCountyGroup,
   MassPageRef,
   locationLabel,
+  massPageSummary,
   massPagePath,
   serviceBrands,
 } from "@/lib/massPages";
@@ -31,9 +32,11 @@ const MassServicePage = ({
   onHome,
   onContact,
 }: MassServicePageProps) => {
-  const { service, location } = page;
+  const { service, location, visitType, locationType } = page;
   const place = locationLabel(location);
-  const heading = `${service.label} in ${place}`;
+  const serviceTitle = visitType ? `${visitType} ${service.label}` : service.label;
+  const heading = `${serviceTitle} in ${place}`;
+  const summary = massPageSummary(service.label, location, { visitType, locationType });
   const brands = serviceBrands(service, company);
   const phone = company.company_phone || null;
 
@@ -42,7 +45,8 @@ const MassServicePage = ({
 
   useEffect(() => {
     document.title = `${heading} | ${company.name}`.slice(0, 60);
-    const description = `${company.name} provides expert ${service.label.toLowerCase()} in ${place} and throughout ${location.county}. Fast scheduling, licensed technicians, upfront pricing.`;
+    const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
+    const description = `${company.name} provides expert ${serviceTitle.toLowerCase()} for ${audience} in ${place} and throughout ${location.county}.`;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement("meta");
@@ -50,11 +54,15 @@ const MassServicePage = ({
       document.head.appendChild(meta);
     }
     meta.setAttribute("content", description.slice(0, 158));
-  }, [heading, place, service.label, company.name, location.county]);
+  }, [heading, place, serviceTitle, locationType, company.name, location.county]);
 
   const bullets = [
-    `Same-day ${service.label.toLowerCase()} appointments in ${location.city}`,
-    "Licensed, bonded and insured technicians",
+    visitType === "Emergency"
+      ? `24/7 emergency ${service.label.toLowerCase()} in ${location.city}`
+      : `Same-day ${service.label.toLowerCase()} appointments in ${location.city}`,
+    locationType
+      ? `${locationType} specialists for ${location.city} properties`
+      : "Licensed, bonded and insured technicians",
     "Upfront pricing with no hidden fees",
     `Serving all of ${location.county}, ${location.state}`,
   ];
@@ -77,6 +85,7 @@ const MassServicePage = ({
             {location.county}, {location.state}
           </p>
           <h1 className="text-3xl md:text-4xl font-bold">{heading}</h1>
+          <p className="text-sm text-muted-foreground">{summary}</p>
           <p className="text-muted-foreground max-w-3xl">
             {company.name} delivers professional {service.label.toLowerCase()} for homes and
             businesses in {place}. Our technicians know the equipment, the codes and the weather in{" "}
@@ -132,10 +141,10 @@ const MassServicePage = ({
                 .map((l) => (
                   <a
                     key={`${l.city}-${l.zip}`}
-                    href={`${basePath}${massPagePath(service, l)}`}
+                    href={`${basePath}${massPagePath(service, l, { visitType, locationType })}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      onNavigate(massPagePath(service, l));
+                      onNavigate(massPagePath(service, l, { visitType, locationType }));
                     }}
                     className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
                   >

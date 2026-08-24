@@ -83,14 +83,44 @@ export interface MassCountyGroup {
   locations: MassLocation[];
 }
 
+/** Step 2 of the mass page form: the kind of visit. */
+export const VISIT_TYPES = [
+  "Emergency",
+  "Installation",
+  "Estimate",
+  "Repair",
+  "Service",
+] as const;
+export type VisitType = (typeof VISIT_TYPES)[number];
+
+/** Step 3 of the mass page form: the kind of property. */
+export const LOCATION_TYPES = [
+  "Residential",
+  "Commercial",
+  "Industrial",
+  "Educational Facilities",
+] as const;
+export type LocationType = (typeof LOCATION_TYPES)[number];
+
+export interface MassPageOptions {
+  visitType?: VisitType | null;
+  locationType?: LocationType | null;
+}
+
 export interface MassPageRef {
   slug: string;
   service: MassService;
   location: MassLocation;
+  visitType?: VisitType | null;
+  locationType?: LocationType | null;
 }
 
 /** "Carol Stream" -> "CarolStream" */
 export const compact = (value: string): string => value.replace(/[^A-Za-z0-9]/g, "");
+
+/** "FurnaceRepair" -> "Furnace Repair" */
+export const uncompact = (value: string): string =>
+  value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim();
 
 export const serviceSlugPart = (service: MassService): string => compact(service.label);
 
@@ -99,11 +129,40 @@ export const locationSlugParts = (loc: MassLocation): string[] => [
   `${compact(loc.city)}${compact(loc.state)}${compact(loc.zip)}`,
 ];
 
-export const massPageSlug = (service: MassService, loc: MassLocation): string =>
-  [serviceSlugPart(service), ...locationSlugParts(loc)].filter(Boolean).join("-");
+export const massPageSlug = (
+  service: MassService,
+  loc: MassLocation,
+  opts: MassPageOptions = {},
+): string =>
+  [
+    serviceSlugPart(service),
+    opts.visitType ? compact(opts.visitType) : "",
+    opts.locationType ? compact(opts.locationType) : "",
+    ...locationSlugParts(loc),
+  ]
+    .filter(Boolean)
+    .join("-");
 
-export const massPagePath = (service: MassService, loc: MassLocation): string =>
-  `/${massPageSlug(service, loc)}`;
+export const massPagePath = (
+  service: MassService,
+  loc: MassLocation,
+  opts: MassPageOptions = {},
+): string => `/${massPageSlug(service, loc, opts)}`;
+
+/** "Furnace Repair, Emergency, Residential, Joliet, IL 60431" */
+export const massPageSummary = (
+  serviceLabel: string,
+  loc: MassLocation,
+  opts: MassPageOptions = {},
+): string =>
+  [
+    serviceLabel,
+    opts.visitType || "",
+    opts.locationType || "",
+    `${loc.city}, ${loc.state}${loc.zip ? ` ${loc.zip}` : ""}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
 export const locationLabel = (loc: MassLocation): string =>
   `${loc.city}, ${loc.state}${loc.zip ? ` ${loc.zip}` : ""}`;
@@ -183,23 +242,76 @@ export const buildCountyGroups = (
   return result.sort((a, b) => a.county.localeCompare(b.county));
 };
 
-/** Resolve a URL slug back to a service + location for this company. */
+/**
+ * Resolve a URL slug back to a service + optional visit/location type + location.
+ * Slug shape: Service[-VisitType][-LocationType]-County-CityStateZip
+ */
 export const resolveMassPage = (
   slug: string,
   company: Record<string, unknown>,
   groups: MassCountyGroup[],
 ): MassPageRef | null => {
-  const target = slug.replace(/^\//, "").toLowerCase();
-  if (!target || target.includes("/")) return null;
+  const raw = slug.replace(/^\//, "").replace(/\/$/, "");
+  if (!raw || raw.includes("/")) return null;
 
-  for (const service of enabledServices(company)) {
-    for (const group of groups) {
-      for (const location of group.locations) {
-        if (massPageSlug(service, location).toLowerCase() === target) {
-          return { slug: massPageSlug(service, location), service, location };
-        }
-      }
+  const parts = raw.split("-").filter(Boolean);
+  if (parts.length < 3) return null;
+
+  const cityPart = parts[parts.length - 1].toLowerCase();
+  const countyPart = parts[parts.length - 2].toLowerCase();
+  const servicePart = parts[0];
+  const middles = parts.slice(1, parts.length - 2);
+
+  let visitType: VisitType | null = null;
+  let locationType: LocationType | null = null;
+  for (const seg of middles) {
+    const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+    if (v) {
+      visitType = v;
+      continue;
+    }
+    const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+    if (l) {
+      locationType = l;
+      continue;
+    }
+    return null; // unknown middle segment
+  }
+
+  let location: MassLocation | null = null;
+  for (const group of groups) {
+    if (compact(group.county).toLowerCase() !== countyPart) continue;
+    const match = group.locations.find(
+      (loc) =>
+        `${compact(loc.city)}${compact(loc.state)}${compact(loc.zip)}`.toLowerCase() === cityPart,
+    );
+    if (match) {
+      location = match;
+      break;
     }
   }
-  return null;
+  if (!location) return null;
+
+  const service =
+    enabledServices(company).find(
+      (s) => serviceSlugPart(s).toLowerCase() === servicePart.toLowerCase(),
+    ) || customService(uncompact(servicePart));
+
+  return {
+    slug: massPageSlug(service, location, { visitType, locationType }),
+    service,
+    location,
+    visitType,
+    locationType,
+  };
+};
+
+/** Build a service-like object for a label that is not in MASS_SERVICES (e.g. a product). */
+export const customService = (label: string): MassService => {
+  const action: MassService["action"] = /install/i.test(label)
+    ? "Installation"
+    : /repair/i.test(label)
+      ? "Repair"
+      : "Service";
+  return { label, group: "Air Conditioning", action, brandFields: [] };
 };
