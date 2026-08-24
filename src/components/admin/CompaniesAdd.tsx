@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -1272,6 +1273,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="contacts" className="space-y-6 mt-4">
       {/* Points of Contact */}
       <Card>
         <CardHeader>
@@ -1385,6 +1389,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="services" className="space-y-6 mt-4">
       {/* Services Provided */}
       <Card>
         <CardHeader>
@@ -1617,7 +1624,10 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
-      {/* HVAC Brands - Install (with checkboxes from brands table) */}
+      </TabsContent>
+
+      <TabsContent value="brands" className="space-y-6 mt-4">
+      {/* HVAC Brands - Install */}
       <Card>
         <CardHeader>
           <CardTitle>Brands We Install (Heating and Cooling)</CardTitle>
@@ -1812,6 +1822,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="equipment" className="space-y-6 mt-4">
       {/* HVAC Equipment Types */}
       <Card>
         <CardHeader>
@@ -1975,6 +1988,9 @@ const CompaniesAdd = () => {
 
 
 
+      </TabsContent>
+
+      <TabsContent value="marketing" className="space-y-6 mt-4">
       {/* Home Page Coupons */}
       <Card>
         <CardHeader>
@@ -2096,7 +2112,10 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
-      {/* Legacy Brands (keeping for backwards compatibility) */}
+      </TabsContent>
+
+      <TabsContent value="other" className="space-y-6 mt-4">
+      {/* Legacy Brands */}
       <Card>
         <CardHeader>
           <CardTitle>Brands You Install (Legacy)</CardTitle>
@@ -2337,6 +2356,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="settings" className="space-y-6 mt-4">
       {/* Status and Actions */}
       <Card>
         <CardContent className="pt-6 space-y-4">
@@ -2363,6 +2385,8 @@ const CompaniesAdd = () => {
           <Button onClick={handleSave} className="w-full">{isEditing ? "Update Company" : "Create Company"}</Button>
         </CardContent>
       </Card>
+      </TabsContent>
+      </Tabs>
     </div>
 
       <FileManagerPicker
