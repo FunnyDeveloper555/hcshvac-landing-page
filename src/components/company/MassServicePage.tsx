@@ -141,10 +141,10 @@ const MassServicePage = ({
                 .map((l) => (
                   <a
                     key={`${l.city}-${l.zip}`}
-                    href={`${basePath}${massPagePath(service, l)}`}
+                    href={`${basePath}${massPagePath(service, l, { visitType, locationType })}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      onNavigate(massPagePath(service, l));
+                      onNavigate(massPagePath(service, l, { visitType, locationType }));
                     }}
                     className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
                   >
