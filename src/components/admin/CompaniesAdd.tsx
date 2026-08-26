@@ -1899,6 +1899,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="equip-plumbing" className="space-y-6 mt-4">
       {/* Plumbing Equipment Types */}
       <Card>
         <CardHeader>
