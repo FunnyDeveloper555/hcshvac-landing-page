@@ -1825,6 +1825,17 @@ const CompaniesAdd = () => {
       </TabsContent>
 
       <TabsContent value="equipment" className="space-y-6 mt-4">
+      <Tabs defaultValue="equip-hvac" className="w-full">
+        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="equip-hvac" className="flex-1 min-w-[100px]">HVAC</TabsTrigger>
+          <TabsTrigger value="equip-plumbing" className="flex-1 min-w-[100px]">Plumbing</TabsTrigger>
+          <TabsTrigger value="equip-boilers" className="flex-1 min-w-[100px]">Boilers</TabsTrigger>
+          <TabsTrigger value="equip-water-heaters" className="flex-1 min-w-[100px]">Water Heaters</TabsTrigger>
+          <TabsTrigger value="equip-coils" className="flex-1 min-w-[100px]">Coils</TabsTrigger>
+          <TabsTrigger value="equip-gas-pipe" className="flex-1 min-w-[100px]">Gas Pipe</TabsTrigger>
+        </TabsList>
+
+      <TabsContent value="equip-hvac" className="space-y-6 mt-4">
       {/* HVAC Equipment Types */}
       <Card>
         <CardHeader>
