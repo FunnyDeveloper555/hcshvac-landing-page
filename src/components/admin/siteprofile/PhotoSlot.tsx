@@ -33,6 +33,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   const [rows, setRows] = useState<PhotoRow[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  const [poolPickerOpen, setPoolPickerOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -152,8 +153,32 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
           >
             <ImageIcon className="h-3 w-3" />
           </Button>
+          {systemId && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2"
+              onClick={() => setPoolPickerOpen(true)}
+              title="Pick from photo container"
+            >
+              <Images className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </div>
+
+      {systemId && (
+        <PhotoPoolPicker
+          open={poolPickerOpen}
+          onOpenChange={setPoolPickerOpen}
+          profileId={profileId}
+          systemId={systemId}
+          targetSlotKey={slotKey}
+          targetLabel={label}
+          onAssigned={load}
+        />
+      )}
 
       <PhotoSlider
         rows={rows}
