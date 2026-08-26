@@ -1965,6 +1965,8 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
       {/* Boilers / Water Heaters / Coils / Gas Pipe */}
       {([
         { key: "boilers", title: "Boilers" },
@@ -1972,7 +1974,8 @@ const CompaniesAdd = () => {
         { key: "coils", title: "Coils" },
         { key: "gas_pipe", title: "Gas Pipe" },
       ] as const).map(({ key, title }) => (
-        <Card key={key}>
+        <TabsContent key={key} value={`equip-${key.replace(/_/g, "-")}`} className="space-y-6 mt-4">
+        <Card>
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>Add the {title.toLowerCase()} this company installs, services, and repairs</CardDescription>
@@ -1998,7 +2001,9 @@ const CompaniesAdd = () => {
             })}
           </CardContent>
         </Card>
+        </TabsContent>
       ))}
+      </Tabs>
 
 
 
