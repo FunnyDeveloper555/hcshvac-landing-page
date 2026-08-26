@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 import PhotoSlot from "./PhotoSlot";
+import SystemPhotoPool from "./SystemPhotoPool";
 import {
   HEATING_TYPES, POISE_OPTIONS, WIDTH_OPTIONS, AFUE_OPTIONS, STAGE_OPTIONS,
   ENERGY_SUPPLY, VOLTAGE_OPTIONS, BTU_KW, AGE_OPTIONS, THERMOSTAT_OPTIONS,
@@ -240,6 +241,10 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
 
       <div>
         <Label className="text-xs font-semibold">Photos</Label>
+
+        <div className="mt-1 mb-2">
+          <SystemPhotoPool profileId={profileId} systemId={system.id} />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
