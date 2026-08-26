@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PhotoPoolPicker from "./PhotoPoolPicker";
 
 
 
@@ -32,6 +33,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   const [rows, setRows] = useState<PhotoRow[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  const [poolPickerOpen, setPoolPickerOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [about, setAbout] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -151,8 +153,32 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
           >
             <ImageIcon className="h-3 w-3" />
           </Button>
+          {systemId && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2"
+              onClick={() => setPoolPickerOpen(true)}
+              title="Pick from photo container"
+            >
+              <Images className="h-3 w-3" />
+            </Button>
+          )}
         </div>
       </div>
+
+      {systemId && (
+        <PhotoPoolPicker
+          open={poolPickerOpen}
+          onOpenChange={setPoolPickerOpen}
+          profileId={profileId}
+          systemId={systemId}
+          targetSlotKey={slotKey}
+          targetLabel={label}
+          onAssigned={load}
+        />
+      )}
 
       <PhotoSlider
         rows={rows}
