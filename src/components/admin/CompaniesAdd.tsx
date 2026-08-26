@@ -1825,6 +1825,17 @@ const CompaniesAdd = () => {
       </TabsContent>
 
       <TabsContent value="equipment" className="space-y-6 mt-4">
+      <Tabs defaultValue="equip-hvac" className="w-full">
+        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="equip-hvac" className="flex-1 min-w-[100px]">HVAC</TabsTrigger>
+          <TabsTrigger value="equip-plumbing" className="flex-1 min-w-[100px]">Plumbing</TabsTrigger>
+          <TabsTrigger value="equip-boilers" className="flex-1 min-w-[100px]">Boilers</TabsTrigger>
+          <TabsTrigger value="equip-water-heaters" className="flex-1 min-w-[100px]">Water Heaters</TabsTrigger>
+          <TabsTrigger value="equip-coils" className="flex-1 min-w-[100px]">Coils</TabsTrigger>
+          <TabsTrigger value="equip-gas-pipe" className="flex-1 min-w-[100px]">Gas Pipe</TabsTrigger>
+        </TabsList>
+
+      <TabsContent value="equip-hvac" className="space-y-6 mt-4">
       {/* HVAC Equipment Types */}
       <Card>
         <CardHeader>
@@ -1888,6 +1899,9 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
+      <TabsContent value="equip-plumbing" className="space-y-6 mt-4">
       {/* Plumbing Equipment Types */}
       <Card>
         <CardHeader>
@@ -1951,6 +1965,8 @@ const CompaniesAdd = () => {
         </CardContent>
       </Card>
 
+      </TabsContent>
+
       {/* Boilers / Water Heaters / Coils / Gas Pipe */}
       {([
         { key: "boilers", title: "Boilers" },
@@ -1958,7 +1974,8 @@ const CompaniesAdd = () => {
         { key: "coils", title: "Coils" },
         { key: "gas_pipe", title: "Gas Pipe" },
       ] as const).map(({ key, title }) => (
-        <Card key={key}>
+        <TabsContent key={key} value={`equip-${key.replace(/_/g, "-")}`} className="space-y-6 mt-4">
+        <Card>
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>Add the {title.toLowerCase()} this company installs, services, and repairs</CardDescription>
@@ -1984,7 +2001,9 @@ const CompaniesAdd = () => {
             })}
           </CardContent>
         </Card>
+        </TabsContent>
       ))}
+      </Tabs>
 
 
 
