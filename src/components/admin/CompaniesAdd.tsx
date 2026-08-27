@@ -1833,6 +1833,8 @@ const CompaniesAdd = () => {
           )}
         </CardContent>
       </Card>
+      </TabsContent>
+      </Tabs>
 
       </TabsContent>
 
