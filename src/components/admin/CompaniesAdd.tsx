@@ -1766,7 +1766,9 @@ const CompaniesAdd = () => {
           )}
         </CardContent>
       </Card>
+      </TabsContent>
 
+      <TabsContent value="brands-repair" className="mt-4">
       {/* HVAC Brands - Repair (with checkboxes from brands table) */}
       <Card>
         <CardHeader>
