@@ -1627,6 +1627,14 @@ const CompaniesAdd = () => {
       </TabsContent>
 
       <TabsContent value="brands" className="space-y-6 mt-4">
+      <Tabs defaultValue="brands-install" className="w-full">
+        <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="brands-install" className="flex-1 min-w-[100px]">Install</TabsTrigger>
+          <TabsTrigger value="brands-service" className="flex-1 min-w-[100px]">Service</TabsTrigger>
+          <TabsTrigger value="brands-repair" className="flex-1 min-w-[100px]">Repair</TabsTrigger>
+        </TabsList>
+
+      <TabsContent value="brands-install" className="mt-4">
       {/* HVAC Brands - Install */}
       <Card>
         <CardHeader>
