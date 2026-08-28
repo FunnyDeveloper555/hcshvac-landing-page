@@ -100,7 +100,7 @@ const MassServicePage = ({
       caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
     },
     {
-      src: (company.logo_url as string | null) || "/amerce/images/section/text-image.jpg",
+      src: "/amerce-template/assets/images/section/banner-2.jpg",
       alt: `${company.name} serving ${location.county}, ${location.state}`,
       caption: `Licensed and insured across ${location.county}`,
     },
