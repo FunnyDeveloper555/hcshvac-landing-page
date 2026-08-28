@@ -49,9 +49,11 @@ const MassServicePage = ({
   const heading = `${serviceTitle} in ${place}`;
   const summary = massPageSummary(service.label, location, { visitType, locationType });
   const brands = serviceBrands(service, company);
-  const [showAllBrands, setShowAllBrands] = useState(false);
-  const featuredBrands = brands.slice(0, 10);
-  const otherBrands = brands.slice(10);
+  const rowCount = brands.length > 18 ? 3 : brands.length > 8 ? 2 : 1;
+  const perRow = Math.ceil(brands.length / rowCount);
+  const marqueeRows = Array.from({ length: rowCount }, (_, i) =>
+    brands.slice(i * perRow, (i + 1) * perRow),
+  ).filter((r) => r.length > 0);
 
   const phone = company.company_phone || null;
 
