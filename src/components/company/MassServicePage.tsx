@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
 import {
   MassCountyGroup,
@@ -49,9 +49,11 @@ const MassServicePage = ({
   const heading = `${serviceTitle} in ${place}`;
   const summary = massPageSummary(service.label, location, { visitType, locationType });
   const brands = serviceBrands(service, company);
-  const [showAllBrands, setShowAllBrands] = useState(false);
-  const featuredBrands = brands.slice(0, 10);
-  const otherBrands = brands.slice(10);
+  const rowCount = brands.length > 18 ? 3 : brands.length > 8 ? 2 : 1;
+  const perRow = Math.ceil(brands.length / rowCount);
+  const marqueeRows = Array.from({ length: rowCount }, (_, i) =>
+    brands.slice(i * perRow, (i + 1) * perRow),
+  ).filter((r) => r.length > 0);
 
   const phone = company.company_phone || null;
 
@@ -183,56 +185,36 @@ const MassServicePage = ({
 
         {brands.length > 0 && (
           <section className="rounded-xl border bg-background overflow-hidden">
-            <div className="border-b px-6 py-4">
+            <div className="border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-semibold">
                 Brands we {service.action === "Installation" ? "install" : service.action.toLowerCase()} in{" "}
                 {location.city}
               </h2>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 {brands.length} manufacturers supported by our {location.county} technicians
               </p>
             </div>
 
-            <div className="px-6 py-5 space-y-5">
-              <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-                {featuredBrands.map((brand) => (
+            <div className="py-5 space-y-3 marquee-mask">
+              {marqueeRows.map((row, rowIndex) => (
+                <div key={rowIndex} className="relative overflow-hidden">
                   <div
-                    key={brand}
-                    className="flex items-center justify-center rounded-lg border bg-muted/40 px-3 py-3 text-center text-sm font-semibold leading-tight"
+                    className={`flex w-max ${
+                      rowIndex % 2 === 0 ? "animate-marquee" : "animate-marquee-reverse"
+                    } hover:[animation-play-state:paused]`}
                   >
-                    {brand}
-                  </div>
-                ))}
-              </div>
-
-              {otherBrands.length > 0 && (
-                <div className="space-y-3 border-t pt-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Also serviced
-                  </p>
-                  <ul className="columns-2 sm:columns-3 lg:columns-4 gap-x-8">
-                    {(showAllBrands ? otherBrands : otherBrands.slice(0, 24)).map((brand) => (
-                      <li
-                        key={brand}
-                        className="break-inside-avoid border-b border-border/50 py-1.5 text-sm text-muted-foreground"
+                    {[...row, ...row].map((brand, i) => (
+                      <span
+                        key={`${brand}-${i}`}
+                        className="mx-2 flex shrink-0 items-center gap-2 rounded-full border bg-muted/40 px-4 py-2 text-sm font-semibold whitespace-nowrap"
                       >
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                         {brand}
-                      </li>
+                      </span>
                     ))}
-                  </ul>
-                  {otherBrands.length > 24 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllBrands((v) => !v)}
-                      className="text-sm font-semibold text-primary hover:underline"
-                    >
-                      {showAllBrands
-                        ? "Show fewer brands"
-                        : `Show all ${brands.length} brands`}
-                    </button>
-                  )}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </section>
         )}
