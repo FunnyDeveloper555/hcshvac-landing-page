@@ -184,8 +184,9 @@ const MassServicePage = ({
         </section>
 
         {brands.length > 0 && (
-          <section className="rounded-xl border bg-background overflow-hidden">
-            <div className="border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
+          <section className="relative rounded-xl border bg-gradient-to-br from-muted/60 via-background to-muted/40 overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--foreground)_1px,transparent_0)] bg-[length:24px_24px]" />
+            <div className="relative border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-semibold">
                 Brands we {service.action === "Installation" ? "install" : service.action.toLowerCase()} in{" "}
                 {location.city}
@@ -195,7 +196,7 @@ const MassServicePage = ({
               </p>
             </div>
 
-            <div className="py-5 space-y-3 marquee-mask">
+            <div className="relative py-6 space-y-4 marquee-mask">
               {marqueeRows.map((row, rowIndex) => (
                 <div key={rowIndex} className="relative overflow-hidden">
                   <div
@@ -206,9 +207,9 @@ const MassServicePage = ({
                     {[...row, ...row].map((brand, i) => (
                       <span
                         key={`${brand}-${i}`}
-                        className="mx-2 flex shrink-0 items-center gap-2 rounded-full border bg-muted/40 px-4 py-2 text-sm font-semibold whitespace-nowrap"
+                        className="mx-3 flex shrink-0 items-center gap-2 rounded-full border bg-background/80 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold whitespace-nowrap shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300"
                       >
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <span className="h-2 w-2 rounded-full bg-primary" />
                         {brand}
                       </span>
                     ))}

@@ -99,7 +99,7 @@
 }
 
 .animate-marquee {
-  animation: marquee 30s linear infinite;
+  animation: marquee 70s linear infinite;
 }
 
 @keyframes marquee-reverse {
@@ -112,7 +112,7 @@
 }
 
 .animate-marquee-reverse {
-  animation: marquee-reverse 34s linear infinite;
+  animation: marquee-reverse 80s linear infinite;
 }
 
 .marquee-mask {
