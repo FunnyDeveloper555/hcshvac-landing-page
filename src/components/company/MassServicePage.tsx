@@ -224,10 +224,8 @@ const MassServicePage = ({
           </section>
         )}
 
-        {/* Partner companies */}
-        {company.id && (
-          <CompanyPartnerAccordion companyId={company.id as string} />
-        )}
+
+
 
 
         <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
