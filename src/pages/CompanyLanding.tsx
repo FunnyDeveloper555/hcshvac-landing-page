@@ -19,6 +19,8 @@ import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyPopup from "@/components/company/CompanyPopup";
 import CompanyPageContent from "@/components/company/CompanyPageContent";
+import CompanyHomeBody from "@/components/company/CompanyHomeBody";
+
 import CompanyProductsList from "@/components/company/CompanyProductsList";
 import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
