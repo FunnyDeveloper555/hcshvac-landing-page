@@ -49,6 +49,10 @@ const MassServicePage = ({
   const heading = `${serviceTitle} in ${place}`;
   const summary = massPageSummary(service.label, location, { visitType, locationType });
   const brands = serviceBrands(service, company);
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const featuredBrands = brands.slice(0, 10);
+  const otherBrands = brands.slice(10);
+
   const phone = company.company_phone || null;
 
   const siblings =
