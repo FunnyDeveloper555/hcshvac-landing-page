@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
 import {
   MassCountyGroup,
@@ -49,6 +49,10 @@ const MassServicePage = ({
   const heading = `${serviceTitle} in ${place}`;
   const summary = massPageSummary(service.label, location, { visitType, locationType });
   const brands = serviceBrands(service, company);
+  const [showAllBrands, setShowAllBrands] = useState(false);
+  const featuredBrands = brands.slice(0, 10);
+  const otherBrands = brands.slice(10);
+
   const phone = company.company_phone || null;
 
   const siblings =
@@ -178,23 +182,61 @@ const MassServicePage = ({
         </section>
 
         {brands.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">
-              Brands we {service.action === "Installation" ? "install" : service.action.toLowerCase()} in{" "}
-              {location.city}
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {brands.slice(0, 60).map((brand) => (
-                <span
-                  key={brand}
-                  className="rounded-full border px-3 py-1 text-xs text-foreground/80"
-                >
-                  {brand}
-                </span>
-              ))}
+          <section className="rounded-xl border bg-background overflow-hidden">
+            <div className="border-b px-6 py-4">
+              <h2 className="text-xl font-semibold">
+                Brands we {service.action === "Installation" ? "install" : service.action.toLowerCase()} in{" "}
+                {location.city}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                {brands.length} manufacturers supported by our {location.county} technicians
+              </p>
+            </div>
+
+            <div className="px-6 py-5 space-y-5">
+              <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                {featuredBrands.map((brand) => (
+                  <div
+                    key={brand}
+                    className="flex items-center justify-center rounded-lg border bg-muted/40 px-3 py-3 text-center text-sm font-semibold leading-tight"
+                  >
+                    {brand}
+                  </div>
+                ))}
+              </div>
+
+              {otherBrands.length > 0 && (
+                <div className="space-y-3 border-t pt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Also serviced
+                  </p>
+                  <ul className="columns-2 sm:columns-3 lg:columns-4 gap-x-8">
+                    {(showAllBrands ? otherBrands : otherBrands.slice(0, 24)).map((brand) => (
+                      <li
+                        key={brand}
+                        className="break-inside-avoid border-b border-border/50 py-1.5 text-sm text-muted-foreground"
+                      >
+                        {brand}
+                      </li>
+                    ))}
+                  </ul>
+                  {otherBrands.length > 24 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllBrands((v) => !v)}
+                      className="text-sm font-semibold text-primary hover:underline"
+                    >
+                      {showAllBrands
+                        ? "Show fewer brands"
+                        : `Show all ${brands.length} brands`}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </section>
         )}
+
 
         {/* Three editorial text blocks (SEO body copy) */}
         <section className="grid gap-6 lg:grid-cols-3">
