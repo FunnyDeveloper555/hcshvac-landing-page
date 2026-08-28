@@ -167,14 +167,15 @@ export default function SystemPhotoPool({ profileId, systemId }: Props) {
           Drag &amp; drop photos here, or use the buttons. Then assign them to photo boxes below.
         </p>
       ) : (
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {photos.map((p) => (
-            <div key={p.id} className="relative group border rounded overflow-hidden bg-background">
+            <div key={p.id} className="relative group border rounded-md overflow-hidden bg-background">
               {p.signedUrl ? (
-                <img src={p.signedUrl} alt="Pool photo" className="w-full h-16 object-cover" />
+                <img src={p.signedUrl} alt="Pool photo" className="w-full h-28 object-contain bg-background" />
               ) : (
-                <div className="w-full h-16 bg-muted animate-pulse" />
+                <div className="w-full h-28 bg-muted animate-pulse" />
               )}
+
               <button
                 type="button"
                 onClick={() => remove(p)}
