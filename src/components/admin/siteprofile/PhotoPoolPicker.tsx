@@ -155,8 +155,8 @@ export default function PhotoPoolPicker({
           </div>
         )}
 
+        <DialogFooter className="shrink-0 border-t pt-3 flex flex-row items-center justify-between gap-2 sm:justify-between">
 
-        <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <div className="flex gap-1">
             <Button
               type="button"
