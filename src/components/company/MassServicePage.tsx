@@ -130,6 +130,31 @@ const MassServicePage = ({
           </section>
         )}
 
+        {/* Three editorial text blocks (SEO body copy) */}
+        <section className="grid gap-6 lg:grid-cols-3">
+          {textBlocks.map((block) => (
+            <div key={block.heading} className="rounded-lg border bg-background p-6 space-y-2">
+              <h2 className="text-lg font-semibold">{block.heading}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{block.body}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Three image boxes with descriptive alt text */}
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {imageBoxes.map((img) => (
+            <figure key={img.alt} className="overflow-hidden rounded-lg border bg-background">
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                className="h-48 w-full object-cover"
+              />
+              <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
+            </figure>
+          ))}
+        </section>
+
         {siblings.length > 1 && (
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">
@@ -157,6 +182,12 @@ const MassServicePage = ({
             </div>
           </section>
         )}
+
+        {/* Partner companies */}
+        {company.id && (
+          <CompanyPartnerAccordion companyId={company.id as string} />
+        )}
+
 
         <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
           <h2 className="text-xl font-semibold">Book {service.label} in {location.city}</h2>
