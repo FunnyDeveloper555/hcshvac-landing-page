@@ -272,18 +272,50 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
 
         <main className="flex-1">
           {massPage ? (
-            <AmerceTailwindScope themeStyle={themeStyle}>
-              <MassServicePage
-                company={company as unknown as Record<string, unknown> & { name: string }}
-                page={massPage}
-                groups={massGroups}
-                onNavigate={goToMassPath}
-                basePath={baseUrl}
-                onHome={handleBackToHome}
-                onContact={scrollToContact}
+            <>
+              <AmerceTailwindScope themeStyle={themeStyle}>
+                <MassServicePage
+                  company={company as unknown as Record<string, unknown> & { name: string }}
+                  page={massPage}
+                  groups={massGroups}
+                  onNavigate={goToMassPath}
+                  basePath={baseUrl}
+                  onHome={handleBackToHome}
+                  onContact={scrollToContact}
+                />
+              </AmerceTailwindScope>
+
+              <AmerceTopProducts
+                companyId={company.id}
+                onProductClick={(id) => {
+                  navigate(baseUrl || "/");
+                  setActivePage("products");
+                  setSelectedProductId(id);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                onViewAll={() => handlePageChange("products")}
               />
-            </AmerceTailwindScope>
+
+              <AmerceFeatureBanner
+                companyName={company.name}
+                city={company.company_city}
+                state={company.company_state}
+                phone={company.company_phone}
+                onCta={scrollToContact}
+              />
+
+              <AmerceServices
+                services={services}
+                companyName={company.name}
+                onCta={scrollToContact}
+              />
+
+              <AmerceTailwindScope themeStyle={themeStyle}>
+                <CompanyHomeBody company={company} theme={theme} />
+              </AmerceTailwindScope>
+            </>
           ) : showMassMenu ? (
+
             <AmerceTailwindScope themeStyle={themeStyle}>
               <section className="pt-24 pb-16">
                 <div className="container mx-auto px-4">
