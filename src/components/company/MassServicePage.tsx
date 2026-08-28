@@ -9,6 +9,14 @@ import {
   serviceBrands,
 } from "@/lib/massPages";
 import MassHeroCarousel from "@/components/company/MassHeroCarousel";
+import hvac1 from "@/assets/hvac-slide-1.jpg";
+import hvac2 from "@/assets/hvac-slide-2.jpg";
+import hvac3 from "@/assets/hvac-slide-3.jpg";
+import hvac4 from "@/assets/hvac-slide-4.jpg";
+import hvac5 from "@/assets/hvac-slide-5.jpg";
+import hvac6 from "@/assets/hvac-slide-6.jpg";
+
+const HVAC_PHOTOS = [hvac1, hvac2, hvac3, hvac4, hvac5, hvac6];
 
 
 
