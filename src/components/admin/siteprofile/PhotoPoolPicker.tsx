@@ -103,8 +103,8 @@ export default function PhotoPoolPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-5xl">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl flex flex-col max-h-[90vh] p-4 sm:p-6">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-base">Pick from Photo Container → {targetLabel}</DialogTitle>
           <DialogDescription className="text-xs">
             Select one or more photos from this system's container. They will be moved into the "{targetLabel}" box.
@@ -120,7 +120,8 @@ export default function PhotoPoolPicker({
             The photo container is empty. Upload photos to the container first.
           </p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[65vh] overflow-y-auto p-1">
+          <div className="flex-1 min-h-0 overflow-y-auto p-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 auto-rows-min">
+
             {photos.map((p) => {
               const isSel = selected.has(p.id);
               return (
@@ -154,8 +155,8 @@ export default function PhotoPoolPicker({
           </div>
         )}
 
+        <DialogFooter className="shrink-0 border-t pt-3 flex flex-row items-center justify-between gap-2 sm:justify-between">
 
-        <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <div className="flex gap-1">
             <Button
               type="button"
