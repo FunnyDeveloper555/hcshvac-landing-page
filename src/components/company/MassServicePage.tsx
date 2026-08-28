@@ -8,6 +8,8 @@ import {
   massPagePath,
   serviceBrands,
 } from "@/lib/massPages";
+import MassHeroCarousel from "@/components/company/MassHeroCarousel";
+
 
 
 interface MassServicePageProps {
@@ -119,6 +121,16 @@ const MassServicePage = ({
           <span>/</span>
           <span className="text-foreground">{heading}</span>
         </nav>
+
+        <MassHeroCarousel
+          seed={massPagePath(service, location, { visitType, locationType })}
+          kicker={`${location.county}, ${location.state}`}
+          title={heading}
+          subtitle={summary}
+          phone={phone}
+          onContact={onContact}
+        />
+
 
         <header className="space-y-3">
           <p className="text-sm font-semibold text-primary uppercase tracking-wide">
