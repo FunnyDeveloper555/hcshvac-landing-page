@@ -69,6 +69,45 @@ const MassServicePage = ({
     `Serving all of ${location.county}, ${location.state}`,
   ];
 
+  const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
+  const brandLine = brands.length ? brands.slice(0, 6).join(", ") : "all major brands";
+
+  const textBlocks = [
+    {
+      heading: `Why ${location.city} chooses ${company.name}`,
+      body: `${company.name} has built its reputation on honest ${service.label.toLowerCase()} for ${audience} across ${place}. Every visit starts with a full diagnostic, a clear explanation of what we found, and pricing you approve before any work begins — no surprises after the job is done.`,
+    },
+    {
+      heading: `What our ${service.label.toLowerCase()} includes`,
+      body: `Our ${location.county} technicians arrive stocked for ${service.action.toLowerCase()} work on ${brandLine}. We check airflow, electrical connections, refrigerant or gas pressures, safety controls and thermostat operation, then document the results so you know exactly what condition your system is in.`,
+    },
+    {
+      heading: `Fast scheduling across ${location.county}`,
+      body: `${visitType === "Emergency" ? "Emergency calls are dispatched around the clock" : "Same-day and next-day appointments are usually available"} for ${location.city} and neighboring communities in ${location.county}, ${location.state}. Call ${phone || "our office"} or request service online and we will confirm an arrival window that fits your schedule.`,
+    },
+  ];
+
+  const heroImage = (company.hero_image_url as string | null) || "/amerce/images/section/text-image.jpg";
+  const imageBoxes = [
+    {
+      src: heroImage,
+      alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
+      caption: `${serviceTitle} in ${location.city}, ${location.state}`,
+    },
+    {
+      src: "/amerce-template/assets/images/section/text-image.jpg",
+      alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
+      caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
+    },
+    {
+      src: (company.logo_url as string | null) || "/amerce/images/section/text-image.jpg",
+      alt: `${company.name} serving ${location.county}, ${location.state}`,
+      caption: `Licensed and insured across ${location.county}`,
+    },
+  ];
+
+
+
   return (
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4 space-y-10">
