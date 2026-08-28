@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
+import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import {
   MassCountyGroup,
   MassPageRef,
@@ -8,6 +9,7 @@ import {
   massPagePath,
   serviceBrands,
 } from "@/lib/massPages";
+
 
 interface MassServicePageProps {
   company: Record<string, unknown> & {
