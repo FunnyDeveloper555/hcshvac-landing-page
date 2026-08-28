@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
 import {
   MassCountyGroup,
