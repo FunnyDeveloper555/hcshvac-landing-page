@@ -103,9 +103,9 @@ export default function PhotoPoolPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-5xl">
         <DialogHeader>
-          <DialogTitle className="text-sm">Pick from Photo Container → {targetLabel}</DialogTitle>
+          <DialogTitle className="text-base">Pick from Photo Container → {targetLabel}</DialogTitle>
           <DialogDescription className="text-xs">
             Select one or more photos from this system's container. They will be moved into the "{targetLabel}" box.
           </DialogDescription>
@@ -120,7 +120,7 @@ export default function PhotoPoolPicker({
             The photo container is empty. Upload photos to the container first.
           </p>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[50vh] overflow-y-auto p-0.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[65vh] overflow-y-auto p-1">
             {photos.map((p) => {
               const isSel = selected.has(p.id);
               return (
@@ -128,25 +128,32 @@ export default function PhotoPoolPicker({
                   key={p.id}
                   type="button"
                   onClick={() => toggle(p.id)}
-                  className={`relative border rounded overflow-hidden focus:outline-none ${
-                    isSel ? "ring-2 ring-primary" : "hover:opacity-80"
+                  className={`relative border rounded-md overflow-hidden bg-muted transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    isSel
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                      : "hover:ring-2 hover:ring-primary/40"
                   }`}
                 >
                   {p.signedUrl ? (
-                    <img src={p.signedUrl} alt="Pool photo" className="w-full h-20 object-cover" />
+                    <img src={p.signedUrl} alt="Pool photo" className="w-full h-40 object-contain bg-background" />
                   ) : (
-                    <div className="w-full h-20 bg-muted animate-pulse" />
+                    <div className="w-full h-40 bg-muted animate-pulse" />
                   )}
-                  {isSel && (
-                    <span className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5">
-                      <Check className="h-3 w-3" />
-                    </span>
-                  )}
+                  <span
+                    className={`absolute top-2 right-2 rounded-full p-1 border ${
+                      isSel
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background/80 text-muted-foreground border-border"
+                    }`}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
                 </button>
               );
             })}
           </div>
         )}
+
 
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <div className="flex gap-1">
