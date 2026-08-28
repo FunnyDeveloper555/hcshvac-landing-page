@@ -9,6 +9,14 @@ import {
   serviceBrands,
 } from "@/lib/massPages";
 import MassHeroCarousel from "@/components/company/MassHeroCarousel";
+import hvac1 from "@/assets/hvac-slide-1.jpg";
+import hvac2 from "@/assets/hvac-slide-2.jpg";
+import hvac3 from "@/assets/hvac-slide-3.jpg";
+import hvac4 from "@/assets/hvac-slide-4.jpg";
+import hvac5 from "@/assets/hvac-slide-5.jpg";
+import hvac6 from "@/assets/hvac-slide-6.jpg";
+
+const HVAC_PHOTOS = [hvac1, hvac2, hvac3, hvac4, hvac5, hvac6];
 
 
 
@@ -88,20 +96,26 @@ const MassServicePage = ({
     },
   ];
 
-  const heroImage = (company.hero_image_url as string | null) || "/amerce/images/section/text-image.jpg";
+  const heroImage = company.hero_image_url as string | null;
+  // Pick 3 HVAC photos offset by a hash of the page path so each page varies.
+  let photoHash = 0;
+  const photoSeed = massPagePath(service, location, { visitType, locationType });
+  for (let i = 0; i < photoSeed.length; i++) photoHash = (photoHash * 31 + photoSeed.charCodeAt(i)) | 0;
+  const photoOffset = Math.abs(photoHash) % HVAC_PHOTOS.length;
+  const photo = (n: number) => HVAC_PHOTOS[(photoOffset + n) % HVAC_PHOTOS.length];
   const imageBoxes = [
     {
-      src: heroImage,
+      src: heroImage || photo(0),
       alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
       caption: `${serviceTitle} in ${location.city}, ${location.state}`,
     },
     {
-      src: "/amerce-template/assets/images/section/text-image.jpg",
+      src: photo(2),
       alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
       caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
     },
     {
-      src: "/amerce-template/assets/images/section/banner-2.jpg",
+      src: photo(4),
       alt: `${company.name} serving ${location.county}, ${location.state}`,
       caption: `Licensed and insured across ${location.county}`,
     },
