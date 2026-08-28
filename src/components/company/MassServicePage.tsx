@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
+import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import {
   MassCountyGroup,
   MassPageRef,
@@ -8,6 +9,7 @@ import {
   massPagePath,
   serviceBrands,
 } from "@/lib/massPages";
+
 
 interface MassServicePageProps {
   company: Record<string, unknown> & {
@@ -66,6 +68,45 @@ const MassServicePage = ({
     "Upfront pricing with no hidden fees",
     `Serving all of ${location.county}, ${location.state}`,
   ];
+
+  const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
+  const brandLine = brands.length ? brands.slice(0, 6).join(", ") : "all major brands";
+
+  const textBlocks = [
+    {
+      heading: `Why ${location.city} chooses ${company.name}`,
+      body: `${company.name} has built its reputation on honest ${service.label.toLowerCase()} for ${audience} across ${place}. Every visit starts with a full diagnostic, a clear explanation of what we found, and pricing you approve before any work begins — no surprises after the job is done.`,
+    },
+    {
+      heading: `What our ${service.label.toLowerCase()} includes`,
+      body: `Our ${location.county} technicians arrive stocked for ${service.action.toLowerCase()} work on ${brandLine}. We check airflow, electrical connections, refrigerant or gas pressures, safety controls and thermostat operation, then document the results so you know exactly what condition your system is in.`,
+    },
+    {
+      heading: `Fast scheduling across ${location.county}`,
+      body: `${visitType === "Emergency" ? "Emergency calls are dispatched around the clock" : "Same-day and next-day appointments are usually available"} for ${location.city} and neighboring communities in ${location.county}, ${location.state}. Call ${phone || "our office"} or request service online and we will confirm an arrival window that fits your schedule.`,
+    },
+  ];
+
+  const heroImage = (company.hero_image_url as string | null) || "/amerce/images/section/text-image.jpg";
+  const imageBoxes = [
+    {
+      src: heroImage,
+      alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
+      caption: `${serviceTitle} in ${location.city}, ${location.state}`,
+    },
+    {
+      src: "/amerce-template/assets/images/section/text-image.jpg",
+      alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
+      caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
+    },
+    {
+      src: "/amerce-template/assets/images/section/banner-2.jpg",
+      alt: `${company.name} serving ${location.county}, ${location.state}`,
+      caption: `Licensed and insured across ${location.county}`,
+    },
+  ];
+
+
 
   return (
     <div className="pt-24 pb-16">
@@ -130,6 +171,31 @@ const MassServicePage = ({
           </section>
         )}
 
+        {/* Three editorial text blocks (SEO body copy) */}
+        <section className="grid gap-6 lg:grid-cols-3">
+          {textBlocks.map((block) => (
+            <div key={block.heading} className="rounded-lg border bg-background p-6 space-y-2">
+              <h2 className="text-lg font-semibold">{block.heading}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{block.body}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Three image boxes with descriptive alt text */}
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {imageBoxes.map((img) => (
+            <figure key={img.alt} className="overflow-hidden rounded-lg border bg-background">
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                className="h-48 w-full object-cover"
+              />
+              <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
+            </figure>
+          ))}
+        </section>
+
         {siblings.length > 1 && (
           <section className="space-y-3">
             <h2 className="text-xl font-semibold">
@@ -157,6 +223,12 @@ const MassServicePage = ({
             </div>
           </section>
         )}
+
+        {/* Partner companies */}
+        {company.id && (
+          <CompanyPartnerAccordion companyId={company.id as string} />
+        )}
+
 
         <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
           <h2 className="text-xl font-semibold">Book {service.label} in {location.city}</h2>
