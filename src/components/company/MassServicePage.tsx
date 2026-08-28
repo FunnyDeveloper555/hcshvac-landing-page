@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
-import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import {
   MassCountyGroup,
   MassPageRef,
@@ -224,10 +223,8 @@ const MassServicePage = ({
           </section>
         )}
 
-        {/* Partner companies */}
-        {company.id && (
-          <CompanyPartnerAccordion companyId={company.id as string} />
-        )}
+
+
 
 
         <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
