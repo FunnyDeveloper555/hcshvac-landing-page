@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, ImagePlus, Loader2, Trash2, Images } from "lucide-react";
 import { compressImage } from "@/lib/imageCompress";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 export const POOL_SLOT = "pool";
 export const POOL_CHANGED_EVENT = "sp-pool-changed";
@@ -62,8 +64,10 @@ export default function SystemPhotoPool({ profileId, systemId }: Props) {
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
     setUploading((n) => n + files.length);
+    beginUpload(files.length);
     for (const original of files) {
       try {
+
         const file = await compressImage(original);
         const path = `${profileId}/${systemId}/${POOL_SLOT}/${Date.now()}-${Math.random()
           .toString(36)
@@ -88,8 +92,10 @@ export default function SystemPhotoPool({ profileId, systemId }: Props) {
           variant: "destructive",
         });
       } finally {
+        endUpload();
         setUploading((n) => n - 1);
       }
+
     }
     await load();
   };

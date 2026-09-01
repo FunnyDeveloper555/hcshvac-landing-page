@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoPoolPicker from "./PhotoPoolPicker";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 
 
@@ -71,6 +73,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   const upload = async (file: File) => {
     if (!file) return;
     setUploading(true);
+    beginUpload();
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${profileId}/${systemId || "profile"}/${slotKey}/${Date.now()}-${Math.random()
@@ -98,11 +101,13 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
+      endUpload();
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
       if (cameraRef.current) cameraRef.current.value = "";
     }
   };
+
 
   const remove = async (row: PhotoRow) => {
     if (!confirm("Remove this photo?")) return;

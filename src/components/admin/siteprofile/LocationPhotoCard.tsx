@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Camera, ImageIcon, Loader2, Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 interface Row {
   id: string;
@@ -51,7 +53,9 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
   const upload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
+    beginUpload(files.length);
     try {
+
       const filesArray = Array.from(files);
       await Promise.all(
         filesArray.map(async (file) => {
@@ -79,7 +83,9 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
+      endUpload(files.length);
       setUploading(false);
+
       if (fileRef.current) fileRef.current.value = "";
       if (cameraRef.current) cameraRef.current.value = "";
     }
