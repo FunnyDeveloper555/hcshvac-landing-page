@@ -105,7 +105,7 @@ const MassServicePage = ({
         .eq("page_path", pagePath)
         .maybeSingle();
       if (!active) return;
-      const blocks = (data?.blocks as MassTextBlock[] | null) || null;
+      const blocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
       setSavedBlocks(Array.isArray(blocks) ? blocks : null);
     })();
     return () => {
