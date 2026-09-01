@@ -269,6 +269,34 @@ export default function SiteProfileForm() {
     if (!profileId) return;
     setSaving(true);
     try {
+      // Don't save/submit while photos are still uploading — otherwise the
+      // technician navigates away and in-flight photos are lost.
+      if (pendingUploads() > 0) {
+        toast({
+          title: "Finishing photo uploads…",
+          description: `${pendingUploads()} photo(s) still uploading. Please wait.`,
+        });
+        await waitForUploads();
+      }
+
+      if (newStatus === "submitted") {
+        const { count } = await supabase
+          .from("site_profile_photos")
+          .select("id", { count: "exact", head: true })
+          .eq("profile_id", profileId)
+          .eq("component_slot", "pool");
+        if (
+          (count || 0) > 0 &&
+          !confirm(
+            `${count} photo(s) are still in the Photo Container and not assigned to a photo box. ` +
+              `They are saved, but will appear as unlabeled photos on the report. Submit anyway?`,
+          )
+        ) {
+          setSaving(false);
+          return;
+        }
+      }
+
       // Session ID changes with every update (per spec)
       const nextSession = `SP-${Date.now().toString(36).toUpperCase()}`;
       const payload: any = {
