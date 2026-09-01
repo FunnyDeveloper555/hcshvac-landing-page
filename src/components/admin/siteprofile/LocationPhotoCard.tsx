@@ -83,7 +83,9 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
+      endUpload(files.length);
       setUploading(false);
+
       if (fileRef.current) fileRef.current.value = "";
       if (cameraRef.current) cameraRef.current.value = "";
     }
