@@ -357,6 +357,83 @@ export default function MassPagesBuilder() {
           )}
         </CardContent>
       </Card>
+
+      {/* Editable page content */}
+      {path && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Page content</CardTitle>
+            <CardDescription>
+              Edit the text blocks shown on this mass page. Leave the list empty to hide the section
+              entirely.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingContent ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                {blocks.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No content blocks — this section will not appear on the page.
+                  </p>
+                )}
+                {blocks.map((block, i) => (
+                  <div key={i} className="rounded-md border p-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="text-xs">Block {i + 1}</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBlocks((prev) => prev.filter((_, idx) => idx !== i))}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <Input
+                      value={block.heading}
+                      placeholder="Heading"
+                      onChange={(e) => updateBlock(i, "heading", e.target.value)}
+                    />
+                    <Textarea
+                      value={block.body}
+                      placeholder="Body text"
+                      rows={4}
+                      onChange={(e) => updateBlock(i, "body", e.target.value)}
+                    />
+                  </div>
+                ))}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBlocks((prev) => [...prev, { heading: "", body: "" }])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add block
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setBlocks(defaults)}>
+                    <RotateCcw className="w-4 h-4 mr-2" /> Reset to suggested copy
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setBlocks([])}>
+                    <Trash2 className="w-4 h-4 mr-2" /> Remove all
+                  </Button>
+                  <Button size="sm" onClick={saveContent} disabled={saving}>
+                    {saving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    Save content
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
+
