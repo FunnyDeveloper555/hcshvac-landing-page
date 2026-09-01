@@ -13,7 +13,7 @@ import {
   HP_OPTIONS, PIPE_OPTIONS,
   WATER_HEATER_TYPES, WATER_HEATER_CAPACITY, WATER_HEATER_VENT, WATER_HEATER_LOCATION,
   HEATING_PHOTO_SLOTS, COOLING_PHOTO_SLOTS, SUMP_PHOTO_SLOTS, EJECTOR_PHOTO_SLOTS,
-  WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS,
+  WATER_HEATER_PHOTO_SLOTS, FILTER_SIZE_PHOTO_SLOTS, FILTER_QUANTITY_OPTIONS, VIEW_PHOTO_SLOTS,
   BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS,
   BOILER_TYPES, BOILER_PHOTO_SLOTS, RTU_TYPES, RTU_TONNAGE, PHASE_OPTIONS, RTU_PHOTO_SLOTS,
   BOILER_HEATING_TYPES, BOILER_SIZE_CATEGORY, BOILER_ENERGY_SUPPLY,
@@ -247,6 +247,16 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-1">
+          {VIEW_PHOTO_SLOTS.map((s) => (
+            <PhotoSlot
+              key={s.key}
+              profileId={profileId}
+              systemId={system.id}
+              slotKey={s.key}
+              label={s.label}
+            />
+          ))}
+
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
 
             <PhotoSlot
@@ -349,7 +359,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "boiler" ? BOILER_PHOTO_SLOTS
             : system.kind === "rtu" ? RTU_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
-          ).map((s) => (
+          ).filter((s) => !VIEW_PHOTO_SLOTS.some((v) => v.key === s.key)).map((s) => (
 
 
             <PhotoSlot
