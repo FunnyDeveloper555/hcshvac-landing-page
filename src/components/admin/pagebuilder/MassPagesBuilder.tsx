@@ -61,6 +61,9 @@ const BLANK_OVERRIDES: MergedOverrides = {
 
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
+  const [searchParams] = useSearchParams();
+  const prefillPath = searchParams.get("path");
+  const prefilled = useRef(false);
 
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
@@ -70,9 +73,11 @@ export default function MassPagesBuilder() {
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
   const [ov, setOvState] = useState<MergedOverrides>(BLANK_OVERRIDES);
+  const [isActive, setIsActive] = useState(true);
 
   const [loadingContent, setLoadingContent] = useState(false);
   const [saving, setSaving] = useState(false);
+
 
 
   const { data: company, isLoading } = useQuery({
