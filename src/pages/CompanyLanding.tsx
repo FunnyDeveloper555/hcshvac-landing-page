@@ -15,7 +15,9 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage } from "@/lib/massPages";
+import { resolveMassPage, massPagePath } from "@/lib/massPages";
+import { useMassPageContent } from "@/hooks/useMassPageContent";
+
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 import AmerceShell from "@/components/amerce/AmerceShell";
