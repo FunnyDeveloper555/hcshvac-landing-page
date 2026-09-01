@@ -97,6 +97,65 @@ export default function MassPagesBuilder() {
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
+  const defaults = useMemo<MassTextBlock[]>(
+    () =>
+      company && service && location
+        ? defaultMassTextBlocks(
+            company as Record<string, unknown> & { name: string; company_phone?: string | null },
+            service,
+            location,
+            { visitType: visitType || null, locationType: locationType || null },
+          )
+        : [],
+    [company, service, location, visitType, locationType],
+  );
+
+  useEffect(() => {
+    if (!companyId || !path) {
+      setBlocks([]);
+      return;
+    }
+    let active = true;
+    setLoadingContent(true);
+    (async () => {
+      const { data } = await supabase
+        .from("mass_page_content")
+        .select("blocks")
+        .eq("company_id", companyId)
+        .eq("page_path", path)
+        .maybeSingle();
+      if (!active) return;
+      const saved = (data?.blocks as unknown as MassTextBlock[] | null) || null;
+      setBlocks(Array.isArray(saved) ? saved : defaults);
+      setLoadingContent(false);
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, path]);
+
+  const updateBlock = (index: number, key: keyof MassTextBlock, value: string) =>
+    setBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [key]: value } : b)));
+
+  const saveContent = async () => {
+    if (!companyId || !path) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("mass_page_content")
+      .upsert(
+        { company_id: companyId, page_path: path, blocks: blocks as unknown as never },
+        { onConflict: "company_id,page_path" },
+      );
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Page content saved");
+  };
+
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
