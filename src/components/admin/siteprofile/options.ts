@@ -65,6 +65,13 @@ export const LOCATION_PHOTO_SLOTS = [
   { key: "location", label: "Location" },
 ];
 
+// Left/Center/Right photos (shared across all system kinds)
+export const VIEW_PHOTO_SLOTS = [
+  { key: "photo_left", label: "Photo Left" },
+  { key: "photo_center", label: "Photo Center" },
+  { key: "photo_right", label: "Photo Right" },
+];
+
 // Filter size photo (shared across all system kinds)
 export const FILTER_SIZE_PHOTO_SLOTS = [
   { key: "filter_size", label: "Filter Size" },
