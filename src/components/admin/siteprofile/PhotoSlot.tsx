@@ -119,10 +119,21 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
   };
 
   return (
-    <div className="border rounded-md p-2 bg-card space-y-2">
+    <div className={`border rounded-md p-2 bg-card space-y-2 ${na ? "opacity-70" : ""}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="text-xs font-medium truncate">{label}</div>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
+          {onNaChange && (
+            <label className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-pointer mr-1 select-none">
+              <input
+                type="checkbox"
+                className="h-3 w-3 accent-primary"
+                checked={!!na}
+                onChange={(e) => onNaChange(e.target.checked)}
+              />
+              N/A
+            </label>
+          )}
           <input
             ref={cameraRef}
             type="file"
@@ -143,7 +154,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
             size="sm"
             variant="outline"
             className="h-7 px-2"
-            disabled={uploading}
+            disabled={uploading || !!na}
             onClick={() => cameraRef.current?.click()}
             title="Take photo"
           >
@@ -154,7 +165,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
             size="sm"
             variant="outline"
             className="h-7 px-2"
-            disabled={uploading}
+            disabled={uploading || !!na}
             onClick={() => fileRef.current?.click()}
             title="Choose from gallery"
           >
@@ -166,6 +177,7 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
               size="sm"
               variant="outline"
               className="h-7 px-2"
+              disabled={!!na}
               onClick={() => setPoolPickerOpen(true)}
               title="Pick from photo container"
             >
@@ -187,16 +199,23 @@ export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCu
         />
       )}
 
-      <PhotoSlider
-        rows={rows}
-        signed={signed}
-        label={label}
-        onRemove={remove}
-        onReload={load}
-        allowCustomTitle={allowCustomTitle}
-      />
+      {na && rows.length === 0 ? (
+        <div className="text-[10px] text-muted-foreground text-center py-3 border-dashed border rounded">
+          Marked N/A
+        </div>
+      ) : (
+        <PhotoSlider
+          rows={rows}
+          signed={signed}
+          label={label}
+          onRemove={remove}
+          onReload={load}
+          allowCustomTitle={allowCustomTitle}
+        />
+      )}
 
       {footer && <div className="space-y-2">{footer}</div>}
+
 
     </div>
   );
