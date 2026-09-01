@@ -37,6 +37,27 @@ import {
 
 type SourceKind = "services" | "products";
 
+type MergedOverrides = ReturnType<typeof mergeMassOverrides>;
+
+const BLANK_OVERRIDES: MergedOverrides = {
+  metaTitle: "",
+  metaDescription: "",
+  heroKicker: "",
+  heroTitle: "",
+  heroSubtitle: "",
+  heading: "",
+  intro: "",
+  bullets: [],
+  brandsHeading: "",
+  brandsNote: "",
+  images: [],
+  nearbyHeading: "",
+  ctaHeading: "",
+  ctaBody: "",
+  ctaButton: "",
+  sections: {},
+};
+
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
 
@@ -47,6 +68,8 @@ export default function MassPagesBuilder() {
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
+  const [ov, setOvState] = useState<MergedOverrides>(BLANK_OVERRIDES);
+
   const [loadingContent, setLoadingContent] = useState(false);
   const [saving, setSaving] = useState(false);
 
