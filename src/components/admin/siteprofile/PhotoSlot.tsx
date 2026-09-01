@@ -18,6 +18,8 @@ interface PhotoSlotProps {
   label: string;
   allowCustomTitle?: boolean;
   footer?: React.ReactNode;
+  na?: boolean;
+  onNaChange?: (v: boolean) => void;
 }
 
 
@@ -30,7 +32,7 @@ interface PhotoRow {
 }
 
 
-export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle, footer }: PhotoSlotProps) {
+export default function PhotoSlot({ profileId, systemId, slotKey, label, allowCustomTitle, footer, na, onNaChange }: PhotoSlotProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<PhotoRow[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
