@@ -14,6 +14,8 @@ import SystemCard, { SystemKind, SystemRow } from "./SystemCard";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { buildSiteProfilePdf } from "@/lib/siteProfilePdf";
 import LocationPhotoCard from "./LocationPhotoCard";
+import { pendingUploads, waitForUploads } from "@/lib/photoUploadTracker";
+
 
 
 
