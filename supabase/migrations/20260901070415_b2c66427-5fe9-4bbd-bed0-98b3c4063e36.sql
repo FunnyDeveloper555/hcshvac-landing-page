@@ -1,0 +1,1 @@
+ALTER TABLE public.mass_page_content ADD COLUMN IF NOT EXISTS overrides JSONB NOT NULL DEFAULT '{}'::jsonb;

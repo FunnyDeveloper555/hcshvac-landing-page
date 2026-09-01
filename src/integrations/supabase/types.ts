@@ -3895,6 +3895,7 @@ export type Database = {
           company_id: string
           created_at: string
           id: string
+          overrides: Json
           page_path: string
           updated_at: string
         }
@@ -3903,6 +3904,7 @@ export type Database = {
           company_id: string
           created_at?: string
           id?: string
+          overrides?: Json
           page_path: string
           updated_at?: string
         }
@@ -3911,6 +3913,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           id?: string
+          overrides?: Json
           page_path?: string
           updated_at?: string
         }
