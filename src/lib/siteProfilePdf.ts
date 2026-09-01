@@ -246,11 +246,19 @@ export async function buildSiteProfilePdf({
     }
   }
 
+  // ---- Location / profile-level photos
+  const profilePhotos = photosBySystem["profile"] || [];
+  if (profilePhotos.length) {
+    sectionTitle("Location Photos");
+    drawPhotoGrid(pdf, profilePhotos, { M, contentW, pageH, get: () => y, set: (v) => (y = v) });
+  }
+
   // ---- Systems
   sectionTitle("Systems on Site");
   if (systems.length === 0) {
     paragraph("No systems recorded.");
   }
+
   for (const s of systems) {
     ensure(30);
     pdf.setFont("helvetica", "bold");
