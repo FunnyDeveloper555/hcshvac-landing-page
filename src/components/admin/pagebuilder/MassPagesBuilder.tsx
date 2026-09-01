@@ -185,13 +185,14 @@ export default function MassPagesBuilder() {
     (async () => {
       const { data } = await supabase
         .from("mass_page_content")
-        .select("blocks, overrides")
+        .select("blocks, overrides, status")
         .eq("company_id", companyId)
         .eq("page_path", path)
         .maybeSingle();
       if (!active) return;
       const savedBlocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
       setBlocks(Array.isArray(savedBlocks) ? savedBlocks : defaults);
+      setIsActive(data ? (data as { status?: string }).status === "active" : true);
       if (ovDefaults) {
         setOvState(
           mergeMassOverrides(
