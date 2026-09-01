@@ -1,14 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Copy, ExternalLink, MapPin } from "lucide-react";
+import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
 import {
@@ -16,7 +18,9 @@ import {
   LocationType,
   VISIT_TYPES,
   VisitType,
+  MassTextBlock,
   customService,
+  defaultMassTextBlocks,
   enabledServices,
   massPagePath,
   massPageSummary,
@@ -34,6 +38,10 @@ export default function MassPagesBuilder() {
   const [locationType, setLocationType] = useState<LocationType | "">("");
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
+  const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [saving, setSaving] = useState(false);
+
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
