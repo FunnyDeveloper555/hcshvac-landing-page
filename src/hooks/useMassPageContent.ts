@@ -25,6 +25,7 @@ export function useMassPageContent(companyId?: string | null, pagePath?: string 
         .select("blocks, overrides")
         .eq("company_id", companyId)
         .eq("page_path", pagePath)
+        .eq("status", "active")
         .maybeSingle();
       if (!active) return;
       const blocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
