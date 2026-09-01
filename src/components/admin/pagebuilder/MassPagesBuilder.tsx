@@ -238,6 +238,7 @@ export default function MassPagesBuilder() {
           page_path: path,
           blocks: blocks as unknown as never,
           overrides: ov as unknown as never,
+          status: isActive ? "active" : "new",
         },
         { onConflict: "company_id,page_path" },
       );
@@ -246,8 +247,11 @@ export default function MassPagesBuilder() {
       toast.error(error.message);
       return;
     }
-    toast.success("Page content saved");
+    toast.success(
+      isActive ? "Campaign saved and moved to Active Campaigns" : "Campaign saved as a draft",
+    );
   };
+
 
 
 
