@@ -10,22 +10,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
 import {
+  ALL_MASS_SECTIONS,
   LOCATION_TYPES,
   LocationType,
   VISIT_TYPES,
   VisitType,
+  MassImageBox,
+  MassPageSections,
   MassTextBlock,
   customService,
+  defaultMassOverrides,
   defaultMassTextBlocks,
   enabledServices,
   massPagePath,
   massPageSummary,
+  mergeMassOverrides,
   MassLocation,
 } from "@/lib/massPages";
+
 
 type SourceKind = "services" | "products";
 
