@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, ImagePlus, Loader2, Trash2, Images } from "lucide-react";
 import { compressImage } from "@/lib/imageCompress";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 export const POOL_SLOT = "pool";
 export const POOL_CHANGED_EVENT = "sp-pool-changed";
