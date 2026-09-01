@@ -288,34 +288,39 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 />
               </AmerceTailwindScope>
 
-              <AmerceTopProducts
-                companyId={company.id}
-                onProductClick={(id) => {
-                  navigate(baseUrl || "/");
-                  setActivePage("products");
-                  setSelectedProductId(id);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                onViewAll={() => handlePageChange("products")}
-              />
+              {showMassHomeBody && (
+                <>
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      navigate(baseUrl || "/");
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
 
-              <AmerceFeatureBanner
-                companyName={company.name}
-                city={company.company_city}
-                state={company.company_state}
-                phone={company.company_phone}
-                onCta={scrollToContact}
-              />
+                  <AmerceFeatureBanner
+                    companyName={company.name}
+                    city={company.company_city}
+                    state={company.company_state}
+                    phone={company.company_phone}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceServices
-                services={services}
-                companyName={company.name}
-                onCta={scrollToContact}
-              />
+                  <AmerceServices
+                    services={services}
+                    companyName={company.name}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceTailwindScope themeStyle={themeStyle}>
-                <CompanyHomeBody company={company} theme={theme} />
-              </AmerceTailwindScope>
+                  <AmerceTailwindScope themeStyle={themeStyle}>
+                    <CompanyHomeBody company={company} theme={theme} />
+                  </AmerceTailwindScope>
+                </>
+              )}
+
             </>
           ) : showMassMenu ? (
 
