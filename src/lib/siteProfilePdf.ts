@@ -12,6 +12,7 @@ const KIND_LABEL: Record<string, string> = {
   water_heater: "Water Heater",
   boiler: "Boiler",
   rtu: "RTU (Roof Top Unit)",
+  coil: "Coil",
 };
 
 const SYSTEM_FIELDS: Record<string, [string, string][]> = {
@@ -53,6 +54,13 @@ const SYSTEM_FIELDS: Record<string, [string, string][]> = {
     ["type", "Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
     ["tonnage", "Tonnage"], ["voltage", "Voltage"], ["phase", "Phase"], ["energy_supply", "Energy Supply"],
     ["age", "Age"], ["economizer", "Economizer"], ["filter_size", "Filter Size"], ["thermostat", "Thermostat"],
+  ],
+
+  coil: [
+    ["type", "Coil Type"], ["brand", "Brand"], ["model_number", "Model #"], ["serial_number", "Serial #"],
+    ["tonnage", "Tonnage"], ["orientation", "Orientation"], ["refrigerant", "Refrigerant"],
+    ["material", "Coil Material"], ["metering_device", "Metering Device"], ["age", "Age"],
+    ["drip_pan", "Drain Pan"], ["condensate_pump", "Condensate Pump"],
   ],
 };
 
