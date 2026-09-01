@@ -359,7 +359,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "boiler" ? BOILER_PHOTO_SLOTS
             : system.kind === "rtu" ? RTU_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
-          ).map((s) => (
+          ).filter((s) => !VIEW_PHOTO_SLOTS.some((v) => v.key === s.key)).map((s) => (
 
 
             <PhotoSlot
