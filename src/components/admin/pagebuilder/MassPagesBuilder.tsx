@@ -654,18 +654,30 @@ export default function MassPagesBuilder() {
               </Tabs>
             )}
 
-            <div className="flex flex-wrap gap-2 border-t pt-4">
-              <Button size="sm" onClick={saveContent} disabled={saving}>
-                {saving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                Save page content
-              </Button>
-              <Button variant="outline" size="sm" onClick={resetAll}>
-                <RotateCcw className="w-4 h-4 mr-2" /> Reset everything
-              </Button>
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Label className="text-sm">Active campaign</Label>
+                  <p className="text-xs text-muted-foreground">
+                    When active, this campaign goes live and appears under Active Campaign.
+                    Otherwise it is kept as a draft.
+                  </p>
+                </div>
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={saveContent} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Save campaign
+                </Button>
+                <Button variant="outline" size="sm" onClick={resetAll}>
+                  <RotateCcw className="w-4 h-4 mr-2" /> Reset everything
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
