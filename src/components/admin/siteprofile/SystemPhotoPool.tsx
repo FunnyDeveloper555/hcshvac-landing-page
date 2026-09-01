@@ -64,8 +64,10 @@ export default function SystemPhotoPool({ profileId, systemId }: Props) {
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
     setUploading((n) => n + files.length);
+    beginUpload(files.length);
     for (const original of files) {
       try {
+
         const file = await compressImage(original);
         const path = `${profileId}/${systemId}/${POOL_SLOT}/${Date.now()}-${Math.random()
           .toString(36)
