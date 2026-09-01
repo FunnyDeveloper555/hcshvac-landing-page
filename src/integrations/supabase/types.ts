@@ -3889,6 +3889,41 @@ export type Database = {
           },
         ]
       }
+      mass_page_content: {
+        Row: {
+          blocks: Json
+          company_id: string
+          created_at: string
+          id: string
+          page_path: string
+          updated_at: string
+        }
+        Insert: {
+          blocks?: Json
+          company_id: string
+          created_at?: string
+          id?: string
+          page_path: string
+          updated_at?: string
+        }
+        Update: {
+          blocks?: Json
+          company_id?: string
+          created_at?: string
+          id?: string
+          page_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mass_page_content_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
