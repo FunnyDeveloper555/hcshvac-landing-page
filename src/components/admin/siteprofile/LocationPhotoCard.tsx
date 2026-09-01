@@ -51,7 +51,9 @@ export default function LocationPhotoCard({ profileId }: { profileId: string }) 
   const upload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
+    beginUpload(files.length);
     try {
+
       const filesArray = Array.from(files);
       await Promise.all(
         filesArray.map(async (file) => {
