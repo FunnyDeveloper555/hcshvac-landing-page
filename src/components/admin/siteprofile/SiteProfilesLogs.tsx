@@ -27,7 +27,7 @@ export default function SiteProfilesLogs() {
       const { data, error } = await supabase
         .from("site_profiles")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("updated_at", { ascending: false })
         .limit(2000);
       if (error) throw error;
       return data;
