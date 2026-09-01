@@ -17,10 +17,11 @@ import {
   BELT_SIZE_PHOTO_SLOTS, FIELD_DOCUMENTS_PHOTO_SLOTS,
   BOILER_TYPES, BOILER_PHOTO_SLOTS, RTU_TYPES, RTU_TONNAGE, PHASE_OPTIONS, RTU_PHOTO_SLOTS,
   BOILER_HEATING_TYPES, BOILER_SIZE_CATEGORY, BOILER_ENERGY_SUPPLY,
+  COIL_TYPES, COIL_ORIENTATION, COIL_REFRIGERANT, COIL_MATERIAL, COIL_TONNAGE, COIL_PHOTO_SLOTS,
 } from "./options";
 
 
-export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater" | "boiler" | "rtu";
+export type SystemKind = "heating" | "cooling" | "sump_pump" | "ejector_pump" | "water_heater" | "boiler" | "rtu" | "coil";
 
 
 export interface SystemRow {
