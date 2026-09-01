@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import {
   MassCountyGroup,
   MassPageRef,
   MassTextBlock,
+  defaultMassOverrides,
   defaultMassTextBlocks,
   locationLabel,
-  massPageSummary,
   massPagePath,
+  mergeMassOverrides,
   serviceBrands,
 } from "@/lib/massPages";
+import { useMassPageContent } from "@/hooks/useMassPageContent";
 import MassHeroCarousel from "@/components/company/MassHeroCarousel";
 import hvac1 from "@/assets/hvac-slide-1.jpg";
 import hvac2 from "@/assets/hvac-slide-2.jpg";
@@ -20,8 +21,6 @@ import hvac5 from "@/assets/hvac-slide-5.jpg";
 import hvac6 from "@/assets/hvac-slide-6.jpg";
 
 const HVAC_PHOTOS = [hvac1, hvac2, hvac3, hvac4, hvac5, hvac6];
-
-
 
 interface MassServicePageProps {
   company: Record<string, unknown> & {
@@ -48,9 +47,9 @@ const MassServicePage = ({
 }: MassServicePageProps) => {
   const { service, location, visitType, locationType } = page;
   const place = locationLabel(location);
-  const serviceTitle = visitType ? `${visitType} ${service.label}` : service.label;
-  const heading = `${serviceTitle} in ${place}`;
-  const summary = massPageSummary(service.label, location, { visitType, locationType });
+  const opts = { visitType, locationType };
+  const pagePath = massPagePath(service, location, opts);
+
   const brands = serviceBrands(service, company);
   const rowCount = brands.length > 18 ? 3 : brands.length > 8 ? 2 : 1;
   const perRow = Math.ceil(brands.length / rowCount);
@@ -63,85 +62,36 @@ const MassServicePage = ({
   const siblings =
     groups.find((g) => g.county === location.county && g.state === location.state)?.locations || [];
 
+  const { blocks: savedBlocks, overrides: savedOverrides } = useMassPageContent(
+    company.id as string | undefined,
+    pagePath,
+  );
+
+  const defaults = defaultMassOverrides(company, service, location, opts);
+  const content = mergeMassOverrides(defaults, savedOverrides);
+  const sections = content.sections;
+
+  const defaultBlocks = defaultMassTextBlocks(company, service, location, opts);
+  const textBlocks: MassTextBlock[] = savedBlocks ?? defaultBlocks;
+
   useEffect(() => {
-    document.title = `${heading} | ${company.name}`.slice(0, 60);
-    const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
-    const description = `${company.name} provides expert ${serviceTitle.toLowerCase()} for ${audience} in ${place} and throughout ${location.county}.`;
+    document.title = content.metaTitle;
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {
       meta = document.createElement("meta");
       meta.setAttribute("name", "description");
       document.head.appendChild(meta);
     }
-    meta.setAttribute("content", description.slice(0, 158));
-  }, [heading, place, serviceTitle, locationType, company.name, location.county]);
+    meta.setAttribute("content", content.metaDescription);
+  }, [content.metaTitle, content.metaDescription]);
 
-  const bullets = [
-    visitType === "Emergency"
-      ? `24/7 emergency ${service.label.toLowerCase()} in ${location.city}`
-      : `Same-day ${service.label.toLowerCase()} appointments in ${location.city}`,
-    locationType
-      ? `${locationType} specialists for ${location.city} properties`
-      : "Licensed, bonded and insured technicians",
-    "Upfront pricing with no hidden fees",
-    `Serving all of ${location.county}, ${location.state}`,
-  ];
-
-  const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
-
-  const pagePath = massPagePath(service, location, { visitType, locationType });
-  const defaultBlocks = defaultMassTextBlocks(company, service, location, { visitType, locationType });
-  const [savedBlocks, setSavedBlocks] = useState<MassTextBlock[] | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    const companyId = company.id as string | undefined;
-    if (!companyId) return;
-    (async () => {
-      const { data } = await supabase
-        .from("mass_page_content")
-        .select("blocks")
-        .eq("company_id", companyId)
-        .eq("page_path", pagePath)
-        .maybeSingle();
-      if (!active) return;
-      const blocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
-      setSavedBlocks(Array.isArray(blocks) ? blocks : null);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [company.id, pagePath]);
-
-  const textBlocks = savedBlocks ?? defaultBlocks;
-
-
-  const heroImage = company.hero_image_url as string | null;
-  // Pick 3 HVAC photos offset by a hash of the page path so each page varies.
+  // Pick HVAC photos offset by a hash of the page path so each page varies.
   let photoHash = 0;
-  const photoSeed = massPagePath(service, location, { visitType, locationType });
-  for (let i = 0; i < photoSeed.length; i++) photoHash = (photoHash * 31 + photoSeed.charCodeAt(i)) | 0;
+  for (let i = 0; i < pagePath.length; i++) photoHash = (photoHash * 31 + pagePath.charCodeAt(i)) | 0;
   const photoOffset = Math.abs(photoHash) % HVAC_PHOTOS.length;
   const photo = (n: number) => HVAC_PHOTOS[(photoOffset + n) % HVAC_PHOTOS.length];
-  const imageBoxes = [
-    {
-      src: heroImage || photo(0),
-      alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
-      caption: `${serviceTitle} in ${location.city}, ${location.state}`,
-    },
-    {
-      src: photo(2),
-      alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
-      caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
-    },
-    {
-      src: photo(4),
-      alt: `${company.name} serving ${location.county}, ${location.state}`,
-      caption: `Licensed and insured across ${location.county}`,
-    },
-  ];
-
-
+  const heroImage = company.hero_image_url as string | null;
+  const fallbackSrc = [heroImage || photo(0), photo(2), photo(4)];
 
   return (
     <div className="pt-24 pb-16">
@@ -153,60 +103,58 @@ const MassServicePage = ({
             Service Areas
           </button>
           <span>/</span>
-          <span className="text-foreground">{heading}</span>
+          <span className="text-foreground">{content.heading}</span>
         </nav>
 
-        <MassHeroCarousel
-          seed={massPagePath(service, location, { visitType, locationType })}
-          kicker={`${location.county}, ${location.state}`}
-          title={heading}
-          subtitle={summary}
-          phone={phone}
-          onContact={onContact}
-        />
+        {sections.hero !== false && (
+          <MassHeroCarousel
+            seed={pagePath}
+            kicker={content.heroKicker}
+            title={content.heroTitle}
+            subtitle={content.heroSubtitle}
+            phone={phone}
+            onContact={onContact}
+          />
+        )}
 
+        {sections.intro !== false && (
+          <header className="space-y-3">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wide">
+              {content.heroKicker}
+            </p>
+            <h1 className="text-3xl md:text-4xl font-bold">{content.heading}</h1>
+            <p className="text-sm text-muted-foreground">{content.heroSubtitle}</p>
+            <p className="text-muted-foreground max-w-3xl whitespace-pre-wrap">{content.intro}</p>
+            {phone && (
+              <a
+                href={`tel:${String(phone).replace(/[^0-9+]/g, "")}`}
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+              >
+                <Phone className="w-4 h-4" />
+                Call {phone}
+              </a>
+            )}
+          </header>
+        )}
 
-        <header className="space-y-3">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wide">
-            {location.county}, {location.state}
-          </p>
-          <h1 className="text-3xl md:text-4xl font-bold">{heading}</h1>
-          <p className="text-sm text-muted-foreground">{summary}</p>
-          <p className="text-muted-foreground max-w-3xl">
-            {company.name} delivers professional {service.label.toLowerCase()} for homes and
-            businesses in {place}. Our technicians know the equipment, the codes and the weather in{" "}
-            {location.county} — so you get a lasting fix the first time.
-          </p>
-          {phone && (
-            <a
-              href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              <Phone className="w-4 h-4" />
-              Call {phone}
-            </a>
-          )}
-        </header>
+        {sections.bullets !== false && content.bullets.length > 0 && (
+          <section className="grid gap-4 sm:grid-cols-2">
+            {content.bullets.map((b) => (
+              <div key={b} className="flex items-start gap-2 rounded-lg border p-4 bg-background">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-sm">{b}</span>
+              </div>
+            ))}
+          </section>
+        )}
 
-        <section className="grid gap-4 sm:grid-cols-2">
-          {bullets.map((b) => (
-            <div key={b} className="flex items-start gap-2 rounded-lg border p-4 bg-background">
-              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-              <span className="text-sm">{b}</span>
-            </div>
-          ))}
-        </section>
-
-        {brands.length > 0 && (
+        {sections.brands !== false && brands.length > 0 && (
           <section className="relative rounded-xl border bg-gradient-to-br from-muted/60 via-background to-muted/40 overflow-hidden">
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--foreground)_1px,transparent_0)] bg-[length:24px_24px]" />
             <div className="relative border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-xl font-semibold">
-                Brands we {service.action === "Installation" ? "install" : service.action.toLowerCase()} in{" "}
-                {location.city}
-              </h2>
+              <h2 className="text-xl font-semibold">{content.brandsHeading}</h2>
               <p className="text-xs text-muted-foreground">
-                {brands.length} manufacturers supported by our {location.county} technicians
+                {brands.length} {content.brandsNote}
               </p>
             </div>
 
@@ -234,9 +182,8 @@ const MassServicePage = ({
           </section>
         )}
 
-
         {/* Editable editorial text blocks (managed in Page Builder → Mass Pages) */}
-        {textBlocks.length > 0 && (
+        {sections.blocks !== false && textBlocks.length > 0 && (
           <section className="grid gap-6 lg:grid-cols-3">
             {textBlocks.map((block, i) => (
               <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
@@ -249,37 +196,38 @@ const MassServicePage = ({
           </section>
         )}
 
+        {/* Image boxes with editable alt text and captions */}
+        {sections.images !== false && content.images.length > 0 && (
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {content.images.map((img, i) => (
+              <figure key={`${img.alt}-${i}`} className="overflow-hidden rounded-lg border bg-background">
+                <img
+                  src={img.url || fallbackSrc[i % fallbackSrc.length]}
+                  alt={img.alt}
+                  loading="lazy"
+                  className="h-48 w-full object-cover"
+                />
+                {img.caption && (
+                  <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
+                )}
+              </figure>
+            ))}
+          </section>
+        )}
 
-        {/* Three image boxes with descriptive alt text */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {imageBoxes.map((img) => (
-            <figure key={img.alt} className="overflow-hidden rounded-lg border bg-background">
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="h-48 w-full object-cover"
-              />
-              <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
-            </figure>
-          ))}
-        </section>
-
-        {siblings.length > 1 && (
+        {sections.nearby !== false && siblings.length > 1 && (
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">
-              {service.label} nearby in {location.county}
-            </h2>
+            <h2 className="text-xl font-semibold">{content.nearbyHeading}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
               {siblings
                 .filter((l) => l.city !== location.city)
                 .map((l) => (
                   <a
                     key={`${l.city}-${l.zip}`}
-                    href={`${basePath}${massPagePath(service, l, { visitType, locationType })}`}
+                    href={`${basePath}${massPagePath(service, l, opts)}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      onNavigate(massPagePath(service, l, { visitType, locationType }));
+                      onNavigate(massPagePath(service, l, opts));
                     }}
                     className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
                   >
@@ -293,22 +241,18 @@ const MassServicePage = ({
           </section>
         )}
 
-
-
-
-
-        <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
-          <h2 className="text-xl font-semibold">Book {service.label} in {location.city}</h2>
-          <p className="text-sm text-muted-foreground">
-            Tell us what's going on and we'll get a technician scheduled in {place}.
-          </p>
-          <button
-            onClick={onContact}
-            className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            Request Service
-          </button>
-        </section>
+        {sections.cta !== false && (
+          <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
+            <h2 className="text-xl font-semibold">{content.ctaHeading}</h2>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+            <button
+              onClick={onContact}
+              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {content.ctaButton}
+            </button>
+          </section>
+        )}
       </div>
     </div>
   );

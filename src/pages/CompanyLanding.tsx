@@ -15,7 +15,9 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage } from "@/lib/massPages";
+import { resolveMassPage, massPagePath } from "@/lib/massPages";
+import { useMassPageContent } from "@/hooks/useMassPageContent";
+
 import { Loader2 } from "lucide-react";
 import { getThemeConfig, ThemeStyle } from "@/lib/companyThemes";
 import AmerceShell from "@/components/amerce/AmerceShell";
@@ -130,7 +132,18 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     company && massPath && massPath !== "mass-pages"
       ? resolveMassPage(massPath, company as unknown as Record<string, unknown>, massGroups)
       : null;
+  const massPageOverrides = useMassPageContent(
+    company?.id,
+    massPage
+      ? massPagePath(massPage.service, massPage.location, {
+          visitType: massPage.visitType,
+          locationType: massPage.locationType,
+        })
+      : null,
+  ).overrides;
+  const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
   const showMassMenu = massPath === "mass-pages";
+
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
   const goToMassPath = (path: string) => {
     navigate(`${baseUrl}${path}`);
@@ -275,34 +288,39 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 />
               </AmerceTailwindScope>
 
-              <AmerceTopProducts
-                companyId={company.id}
-                onProductClick={(id) => {
-                  navigate(baseUrl || "/");
-                  setActivePage("products");
-                  setSelectedProductId(id);
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                onViewAll={() => handlePageChange("products")}
-              />
+              {showMassHomeBody && (
+                <>
+                  <AmerceTopProducts
+                    companyId={company.id}
+                    onProductClick={(id) => {
+                      navigate(baseUrl || "/");
+                      setActivePage("products");
+                      setSelectedProductId(id);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    onViewAll={() => handlePageChange("products")}
+                  />
 
-              <AmerceFeatureBanner
-                companyName={company.name}
-                city={company.company_city}
-                state={company.company_state}
-                phone={company.company_phone}
-                onCta={scrollToContact}
-              />
+                  <AmerceFeatureBanner
+                    companyName={company.name}
+                    city={company.company_city}
+                    state={company.company_state}
+                    phone={company.company_phone}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceServices
-                services={services}
-                companyName={company.name}
-                onCta={scrollToContact}
-              />
+                  <AmerceServices
+                    services={services}
+                    companyName={company.name}
+                    onCta={scrollToContact}
+                  />
 
-              <AmerceTailwindScope themeStyle={themeStyle}>
-                <CompanyHomeBody company={company} theme={theme} />
-              </AmerceTailwindScope>
+                  <AmerceTailwindScope themeStyle={themeStyle}>
+                    <CompanyHomeBody company={company} theme={theme} />
+                  </AmerceTailwindScope>
+                </>
+              )}
+
             </>
           ) : showMassMenu ? (
 

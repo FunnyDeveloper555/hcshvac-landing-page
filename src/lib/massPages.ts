@@ -352,3 +352,151 @@ export const customService = (label: string): MassService => {
       : "Service";
   return { label, group: "Air Conditioning", action, brandFields: [] };
 };
+
+/* ------------------------------------------------------------------ *
+ * Full mass page content overrides (edited in Page Builder → Mass Pages)
+ * ------------------------------------------------------------------ */
+
+export interface MassImageBox {
+  url?: string;
+  alt: string;
+  caption: string;
+}
+
+export interface MassPageSections {
+  hero?: boolean;
+  intro?: boolean;
+  bullets?: boolean;
+  brands?: boolean;
+  blocks?: boolean;
+  images?: boolean;
+  nearby?: boolean;
+  cta?: boolean;
+  homeBody?: boolean;
+}
+
+export interface MassPageOverrides {
+  metaTitle?: string;
+  metaDescription?: string;
+  heroKicker?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heading?: string;
+  intro?: string;
+  bullets?: string[];
+  brandsHeading?: string;
+  brandsNote?: string;
+  images?: MassImageBox[];
+  nearbyHeading?: string;
+  ctaHeading?: string;
+  ctaBody?: string;
+  ctaButton?: string;
+  sections?: MassPageSections;
+}
+
+export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: string }> = [
+  { key: "hero", label: "Hero carousel" },
+  { key: "intro", label: "Heading & intro text" },
+  { key: "bullets", label: "Highlight bullets" },
+  { key: "brands", label: "Brands marquee" },
+  { key: "blocks", label: "Editorial text blocks" },
+  { key: "images", label: "Image boxes" },
+  { key: "nearby", label: "Nearby cities links" },
+  { key: "cta", label: "Booking call to action" },
+  { key: "homeBody", label: "Home page body content" },
+];
+
+/** Suggested values for every editable field on a mass page. */
+export const defaultMassOverrides = (
+  company: Record<string, unknown> & { name: string; company_phone?: string | null },
+  service: MassService,
+  location: MassLocation,
+  options: MassPageOptions = {},
+): Required<Omit<MassPageOverrides, "sections">> & { sections: MassPageSections } => {
+  const { visitType, locationType } = options;
+  const place = locationLabel(location);
+  const serviceTitle = visitType ? `${visitType} ${service.label}` : service.label;
+  const heading = `${serviceTitle} in ${place}`;
+  const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
+
+  return {
+    metaTitle: `${heading} | ${company.name}`.slice(0, 60),
+    metaDescription: `${company.name} provides expert ${serviceTitle.toLowerCase()} for ${audience} in ${place} and throughout ${location.county}.`.slice(0, 158),
+    heroKicker: `${location.county}, ${location.state}`,
+    heroTitle: heading,
+    heroSubtitle: massPageSummary(service.label, location, options),
+    heading,
+    intro: `${company.name} delivers professional ${service.label.toLowerCase()} for homes and businesses in ${place}. Our technicians know the equipment, the codes and the weather in ${location.county} — so you get a lasting fix the first time.`,
+    bullets: [
+      visitType === "Emergency"
+        ? `24/7 emergency ${service.label.toLowerCase()} in ${location.city}`
+        : `Same-day ${service.label.toLowerCase()} appointments in ${location.city}`,
+      locationType
+        ? `${locationType} specialists for ${location.city} properties`
+        : "Licensed, bonded and insured technicians",
+      "Upfront pricing with no hidden fees",
+      `Serving all of ${location.county}, ${location.state}`,
+    ],
+    brandsHeading: `Brands we ${
+      service.action === "Installation" ? "install" : service.action.toLowerCase()
+    } in ${location.city}`,
+    brandsNote: `manufacturers supported by our ${location.county} technicians`,
+    images: [
+      {
+        alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
+        caption: `${serviceTitle} in ${location.city}, ${location.state}`,
+      },
+      {
+        alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
+        caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
+      },
+      {
+        alt: `${company.name} serving ${location.county}, ${location.state}`,
+        caption: `Licensed and insured across ${location.county}`,
+      },
+    ],
+    nearbyHeading: `${service.label} nearby in ${location.county}`,
+    ctaHeading: `Book ${service.label} in ${location.city}`,
+    ctaBody: `Tell us what's going on and we'll get a technician scheduled in ${place}.`,
+    ctaButton: "Request Service",
+    sections: {
+      hero: true,
+      intro: true,
+      bullets: true,
+      brands: true,
+      blocks: true,
+      images: true,
+      nearby: true,
+      cta: true,
+      homeBody: true,
+    },
+  };
+};
+
+/** Merge saved overrides over the suggested defaults. */
+export const mergeMassOverrides = (
+  defaults: ReturnType<typeof defaultMassOverrides>,
+  saved: MassPageOverrides | null | undefined,
+) => {
+  const s = saved || {};
+  const text = <K extends keyof MassPageOverrides>(k: K) =>
+    (typeof s[k] === "string" && (s[k] as string).length > 0 ? (s[k] as string) : (defaults[k as never] as unknown as string));
+  return {
+    metaTitle: text("metaTitle"),
+    metaDescription: text("metaDescription"),
+    heroKicker: text("heroKicker"),
+    heroTitle: text("heroTitle"),
+    heroSubtitle: text("heroSubtitle"),
+    heading: text("heading"),
+    intro: text("intro"),
+    bullets: Array.isArray(s.bullets) ? s.bullets.filter(Boolean) : defaults.bullets,
+    brandsHeading: text("brandsHeading"),
+    brandsNote: text("brandsNote"),
+    images: Array.isArray(s.images) && s.images.length > 0 ? s.images : defaults.images,
+    nearbyHeading: text("nearbyHeading"),
+    ctaHeading: text("ctaHeading"),
+    ctaBody: text("ctaBody"),
+    ctaButton: text("ctaButton"),
+    sections: { ...defaults.sections, ...(s.sections || {}) },
+  };
+};
