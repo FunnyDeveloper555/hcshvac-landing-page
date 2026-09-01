@@ -130,7 +130,18 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     company && massPath && massPath !== "mass-pages"
       ? resolveMassPage(massPath, company as unknown as Record<string, unknown>, massGroups)
       : null;
+  const massPageOverrides = useMassPageContent(
+    company?.id,
+    massPage
+      ? massPagePath(massPage.service, massPage.location, {
+          visitType: massPage.visitType,
+          locationType: massPage.locationType,
+        })
+      : null,
+  ).overrides;
+  const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
   const showMassMenu = massPath === "mass-pages";
+
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
   const goToMassPath = (path: string) => {
     navigate(`${baseUrl}${path}`);
