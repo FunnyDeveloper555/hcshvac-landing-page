@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Camera, Trash2, Upload, Loader2, Save, ImageIcon, X, Maximize2, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PhotoPoolPicker from "./PhotoPoolPicker";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 
 
