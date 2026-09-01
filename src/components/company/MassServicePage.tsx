@@ -235,15 +235,20 @@ const MassServicePage = ({
         )}
 
 
-        {/* Three editorial text blocks (SEO body copy) */}
-        <section className="grid gap-6 lg:grid-cols-3">
-          {textBlocks.map((block) => (
-            <div key={block.heading} className="rounded-lg border bg-background p-6 space-y-2">
-              <h2 className="text-lg font-semibold">{block.heading}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">{block.body}</p>
-            </div>
-          ))}
-        </section>
+        {/* Editable editorial text blocks (managed in Page Builder → Mass Pages) */}
+        {textBlocks.length > 0 && (
+          <section className="grid gap-6 lg:grid-cols-3">
+            {textBlocks.map((block, i) => (
+              <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
+                {block.heading && <h2 className="text-lg font-semibold">{block.heading}</h2>}
+                {block.body && (
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{block.body}</p>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
 
         {/* Three image boxes with descriptive alt text */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
