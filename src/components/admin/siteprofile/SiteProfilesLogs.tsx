@@ -27,7 +27,7 @@ export default function SiteProfilesLogs() {
       const { data, error } = await supabase
         .from("site_profiles")
         .select("*")
-        .order("created_at", { ascending: false })
+        .order("updated_at", { ascending: false })
         .limit(2000);
       if (error) throw error;
       return data;
@@ -47,7 +47,11 @@ export default function SiteProfilesLogs() {
     const out: any[] = [];
     for (const rows of groups.values()) {
       if (rows.length < 2) continue;
-      rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      rows.sort(
+        (a, b) =>
+          new Date(b.updated_at || b.created_at).getTime() -
+          new Date(a.updated_at || a.created_at).getTime()
+      );
       // skip the first (latest = shown in List)
       for (let i = 1; i < rows.length; i++) out.push(rows[i]);
     }
@@ -104,7 +108,7 @@ export default function SiteProfilesLogs() {
                 <TableHead>Report #</TableHead>
                 <TableHead>Unit</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Last Updated</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -131,7 +135,9 @@ export default function SiteProfilesLogs() {
                         ) : ""}
                       </TableCell>
                       <TableCell>{p.ship_to?.name || p.bill_to?.name || "—"}</TableCell>
-                      <TableCell className="text-xs">{format(new Date(p.created_at), "MMM d, yyyy h:mm a")}</TableCell>
+                      <TableCell className="text-xs">
+                        {format(new Date(p.updated_at || p.created_at), "MMM d, yyyy h:mm a")}
+                      </TableCell>
                       <TableCell className="capitalize text-xs">{p.location_type}</TableCell>
                       <TableCell><Badge variant="outline">{p.status}</Badge></TableCell>
                       <TableCell className="text-right">
