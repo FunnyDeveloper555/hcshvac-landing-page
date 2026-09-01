@@ -4,7 +4,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ExternalLink, Pause, Play, Trash2, RotateCcw, Pencil } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Loader2,
+  ExternalLink,
+  Pause,
+  Play,
+  Trash2,
+  RotateCcw,
+  Pencil,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export type CampaignStatus = "active" | "suspended" | "deleted";
@@ -98,6 +115,15 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
   const urlFor = (path: string) =>
     company?.slug ? `https://${company.slug}.hcshvac.com${path}` : `/company/${company?.slug ?? ""}${path}`;
 
+  const formattedDate = (iso: string) =>
+    new Date(iso).toLocaleString(undefined, {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -112,7 +138,7 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
           size="sm"
           onClick={() => navigate(`/admin/page-builder/company/${companyId}/mass-pages`)}
         >
-          New Campaign
+          <Plus className="w-4 h-4 mr-2" /> New Campaign
         </Button>
       </div>
 
@@ -127,76 +153,121 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
-          {rows.map((row) => {
-            const title =
-              (row.overrides?.heroTitle as string) ||
-              (row.overrides?.heading as string) ||
-              row.page_path.replace(/^\//, "");
-            return (
-              <Card key={row.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div className="min-w-0">
-                      <CardTitle className="text-base truncate">{title}</CardTitle>
-                      <CardDescription className="font-mono text-xs break-all">
-                        {row.page_path}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={status === "active" ? "default" : "secondary"}>{row.status}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2 pt-0">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
-                          row.page_path,
-                        )}`,
-                      )
-                    }
-                  >
-                    <Pencil className="w-4 h-4 mr-2" /> Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" /> Open page
-                  </Button>
+        <Card>
+          <CardHeader className="pb-0">
+            <CardTitle className="text-base">{meta.title}</CardTitle>
+            <CardDescription>{rows.length} campaign{rows.length === 1 ? "" : "s"}</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[280px]">Campaign / Path</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Updated</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((row) => {
+                  const title =
+                    (row.overrides?.heroTitle as string) ||
+                    (row.overrides?.heading as string) ||
+                    row.page_path.replace(/^\//, "");
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-medium truncate max-w-[260px]" title={title}>
+                          {title}
+                        </div>
+                        <div className="font-mono text-xs text-muted-foreground break-all">
+                          {row.page_path}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={status === "active" ? "default" : "secondary"}>
+                          {row.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {formattedDate(row.updated_at)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              navigate(
+                                `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
+                                  row.page_path,
+                                )}`,
+                              )
+                            }
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
 
-                  {status === "active" && (
-                    <Button variant="outline" size="sm" onClick={() => setStatus(row.id, "suspended")}>
-                      <Pause className="w-4 h-4 mr-2" /> Suspend
-                    </Button>
-                  )}
-                  {status === "suspended" && (
-                    <Button variant="outline" size="sm" onClick={() => setStatus(row.id, "active")}>
-                      <Play className="w-4 h-4 mr-2" /> Activate
-                    </Button>
-                  )}
-                  {status !== "deleted" ? (
-                    <Button variant="destructive" size="sm" onClick={() => setStatus(row.id, "deleted")}>
-                      <Trash2 className="w-4 h-4 mr-2" /> Delete
-                    </Button>
-                  ) : (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => setStatus(row.id, "active")}>
-                        <RotateCcw className="w-4 h-4 mr-2" /> Restore
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => hardDelete(row.id)}>
-                        <Trash2 className="w-4 h-4 mr-2" /> Delete forever
-                      </Button>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                          {status === "active" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setStatus(row.id, "suspended")}
+                            >
+                              <Pause className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {status === "suspended" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setStatus(row.id, "active")}
+                            >
+                              <Play className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {status !== "deleted" ? (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setStatus(row.id, "deleted")}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setStatus(row.id, "active")}
+                              >
+                                <RotateCcw className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => hardDelete(row.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
