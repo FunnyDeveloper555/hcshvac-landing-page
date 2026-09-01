@@ -47,7 +47,11 @@ export default function SiteProfilesLogs() {
     const out: any[] = [];
     for (const rows of groups.values()) {
       if (rows.length < 2) continue;
-      rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      rows.sort(
+        (a, b) =>
+          new Date(b.updated_at || b.created_at).getTime() -
+          new Date(a.updated_at || a.created_at).getTime()
+      );
       // skip the first (latest = shown in List)
       for (let i = 1; i < rows.length; i++) out.push(rows[i]);
     }
