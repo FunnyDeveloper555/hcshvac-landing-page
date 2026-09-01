@@ -61,6 +61,37 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
   const d = system.data || {};
   const set = (k: string, v: any) => onChange({ ...d, [k]: v });
 
+  const naMap: Record<string, boolean> = d.na || {};
+  // Fields/slots that start as N/A unless the tech says otherwise
+  const NA_DEFAULT_KEYS = [
+    "belt_size",
+    "belt_quantity",
+    "filter_equipment_id",
+    "belt_equipment_id",
+    "field_documents_equipment_id",
+  ];
+  const isNA = (key: string) => naMap[key] ?? NA_DEFAULT_KEYS.includes(key);
+  const setNA = (key: string, v: boolean) => onChange({ ...d, na: { ...naMap, [key]: v } });
+  const naProps = (key: string) => ({ na: isNA(key), onNaChange: (v: boolean) => setNA(key, v) });
+
+  const NAField = ({ label, naKey, children }: { label: string; naKey: string; children: React.ReactNode }) => (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2">
+        <Label className="text-xs">{label}</Label>
+        <label className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            className="h-3 w-3 accent-primary"
+            checked={isNA(naKey)}
+            onChange={(e) => setNA(naKey, e.target.checked)}
+          />
+          N/A
+        </label>
+      </div>
+      {isNA(naKey) ? <Input className="h-8 text-xs" value="N/A" disabled /> : children}
+    </div>
+  );
+
   const kindLabel: Record<SystemKind, string> = {
     heating: "Heating System",
     cooling: "Cooling System",
