@@ -221,3 +221,30 @@ export const WATER_HEATER_PHOTO_SLOTS = [
   { key: "pan_drain", label: "Drip Pan / Drain" },
 ];
 
+
+// Coil
+export const COIL_TYPES = [
+  "Evaporator Coil (Cased)", "Evaporator Coil (Uncased)", "A-Coil", "N-Coil", "Slab Coil",
+  "Condenser Coil", "Chilled Water Coil", "Hot Water Coil", "Steam Coil", "DX Coil", "Other",
+];
+
+export const COIL_ORIENTATION = ["Upflow", "Downflow", "Horizontal Left", "Horizontal Right", "Other", "UNKNOWN"];
+
+export const COIL_REFRIGERANT = ["R-410A", "R-454B", "R-32", "R-22", "R-134a", "Other", "UNKNOWN"];
+
+export const COIL_MATERIAL = ["Copper / Aluminum", "All Aluminum", "Copper / Copper", "Microchannel", "Other", "UNKNOWN"];
+
+export const COIL_TONNAGE = [
+  "1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "6 Ton", "7.5 Ton", "10 Ton", "Other",
+];
+
+export const COIL_PHOTO_SLOTS = [
+  { key: "label_plate", label: "Label Plate" },
+  { key: "full_view", label: "Full View" },
+  { key: "coil_face", label: "Coil Face" },
+  { key: "line_set", label: "Line Set / Connections" },
+  { key: "metering_device", label: "Metering Device / TXV" },
+  { key: "drain_pan", label: "Drain Pan" },
+  { key: "condensate_drain", label: "Condensate Drain" },
+  { key: "plenum_transition", label: "Plenum / Transition" },
+];
