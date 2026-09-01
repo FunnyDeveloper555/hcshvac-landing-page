@@ -1,8 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   MassCountyGroup,
   MassPageRef,
+  MassTextBlock,
+  defaultMassTextBlocks,
   locationLabel,
   massPageSummary,
   massPagePath,
@@ -85,22 +88,33 @@ const MassServicePage = ({
   ];
 
   const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
-  const brandLine = brands.length ? brands.slice(0, 6).join(", ") : "all major brands";
 
-  const textBlocks = [
-    {
-      heading: `Why ${location.city} chooses ${company.name}`,
-      body: `${company.name} has built its reputation on honest ${service.label.toLowerCase()} for ${audience} across ${place}. Every visit starts with a full diagnostic, a clear explanation of what we found, and pricing you approve before any work begins — no surprises after the job is done.`,
-    },
-    {
-      heading: `What our ${service.label.toLowerCase()} includes`,
-      body: `Our ${location.county} technicians arrive stocked for ${service.action.toLowerCase()} work on ${brandLine}. We check airflow, electrical connections, refrigerant or gas pressures, safety controls and thermostat operation, then document the results so you know exactly what condition your system is in.`,
-    },
-    {
-      heading: `Fast scheduling across ${location.county}`,
-      body: `${visitType === "Emergency" ? "Emergency calls are dispatched around the clock" : "Same-day and next-day appointments are usually available"} for ${location.city} and neighboring communities in ${location.county}, ${location.state}. Call ${phone || "our office"} or request service online and we will confirm an arrival window that fits your schedule.`,
-    },
-  ];
+  const pagePath = massPagePath(service, location, { visitType, locationType });
+  const defaultBlocks = defaultMassTextBlocks(company, service, location, { visitType, locationType });
+  const [savedBlocks, setSavedBlocks] = useState<MassTextBlock[] | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const companyId = company.id as string | undefined;
+    if (!companyId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("mass_page_content")
+        .select("blocks")
+        .eq("company_id", companyId)
+        .eq("page_path", pagePath)
+        .maybeSingle();
+      if (!active) return;
+      const blocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
+      setSavedBlocks(Array.isArray(blocks) ? blocks : null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [company.id, pagePath]);
+
+  const textBlocks = savedBlocks ?? defaultBlocks;
+
 
   const heroImage = company.hero_image_url as string | null;
   // Pick 3 HVAC photos offset by a hash of the page path so each page varies.
@@ -221,15 +235,20 @@ const MassServicePage = ({
         )}
 
 
-        {/* Three editorial text blocks (SEO body copy) */}
-        <section className="grid gap-6 lg:grid-cols-3">
-          {textBlocks.map((block) => (
-            <div key={block.heading} className="rounded-lg border bg-background p-6 space-y-2">
-              <h2 className="text-lg font-semibold">{block.heading}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">{block.body}</p>
-            </div>
-          ))}
-        </section>
+        {/* Editable editorial text blocks (managed in Page Builder → Mass Pages) */}
+        {textBlocks.length > 0 && (
+          <section className="grid gap-6 lg:grid-cols-3">
+            {textBlocks.map((block, i) => (
+              <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
+                {block.heading && <h2 className="text-lg font-semibold">{block.heading}</h2>}
+                {block.body && (
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{block.body}</p>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
 
         {/* Three image boxes with descriptive alt text */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

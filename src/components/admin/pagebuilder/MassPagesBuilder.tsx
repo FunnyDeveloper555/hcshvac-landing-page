@@ -1,14 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Copy, ExternalLink, MapPin } from "lucide-react";
+import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
 import {
@@ -16,7 +18,9 @@ import {
   LocationType,
   VISIT_TYPES,
   VisitType,
+  MassTextBlock,
   customService,
+  defaultMassTextBlocks,
   enabledServices,
   massPagePath,
   massPageSummary,
@@ -34,6 +38,10 @@ export default function MassPagesBuilder() {
   const [locationType, setLocationType] = useState<LocationType | "">("");
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
+  const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [saving, setSaving] = useState(false);
+
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
@@ -88,6 +96,65 @@ export default function MassPagesBuilder() {
 
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
+
+  const defaults = useMemo<MassTextBlock[]>(
+    () =>
+      company && service && location
+        ? defaultMassTextBlocks(
+            company as Record<string, unknown> & { name: string; company_phone?: string | null },
+            service,
+            location,
+            { visitType: visitType || null, locationType: locationType || null },
+          )
+        : [],
+    [company, service, location, visitType, locationType],
+  );
+
+  useEffect(() => {
+    if (!companyId || !path) {
+      setBlocks([]);
+      return;
+    }
+    let active = true;
+    setLoadingContent(true);
+    (async () => {
+      const { data } = await supabase
+        .from("mass_page_content")
+        .select("blocks")
+        .eq("company_id", companyId)
+        .eq("page_path", path)
+        .maybeSingle();
+      if (!active) return;
+      const saved = (data?.blocks as unknown as MassTextBlock[] | null) || null;
+      setBlocks(Array.isArray(saved) ? saved : defaults);
+      setLoadingContent(false);
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, path]);
+
+  const updateBlock = (index: number, key: keyof MassTextBlock, value: string) =>
+    setBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [key]: value } : b)));
+
+  const saveContent = async () => {
+    if (!companyId || !path) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("mass_page_content")
+      .upsert(
+        { company_id: companyId, page_path: path, blocks: blocks as unknown as never },
+        { onConflict: "company_id,page_path" },
+      );
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Page content saved");
+  };
+
 
   if (isLoading) {
     return (
@@ -290,6 +357,83 @@ export default function MassPagesBuilder() {
           )}
         </CardContent>
       </Card>
+
+      {/* Editable page content */}
+      {path && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Page content</CardTitle>
+            <CardDescription>
+              Edit the text blocks shown on this mass page. Leave the list empty to hide the section
+              entirely.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingContent ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                {blocks.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No content blocks — this section will not appear on the page.
+                  </p>
+                )}
+                {blocks.map((block, i) => (
+                  <div key={i} className="rounded-md border p-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="text-xs">Block {i + 1}</Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBlocks((prev) => prev.filter((_, idx) => idx !== i))}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <Input
+                      value={block.heading}
+                      placeholder="Heading"
+                      onChange={(e) => updateBlock(i, "heading", e.target.value)}
+                    />
+                    <Textarea
+                      value={block.body}
+                      placeholder="Body text"
+                      rows={4}
+                      onChange={(e) => updateBlock(i, "body", e.target.value)}
+                    />
+                  </div>
+                ))}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBlocks((prev) => [...prev, { heading: "", body: "" }])}
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add block
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setBlocks(defaults)}>
+                    <RotateCcw className="w-4 h-4 mr-2" /> Reset to suggested copy
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setBlocks([])}>
+                    <Trash2 className="w-4 h-4 mr-2" /> Remove all
+                  </Button>
+                  <Button size="sm" onClick={saveContent} disabled={saving}>
+                    {saving ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    Save content
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
+
