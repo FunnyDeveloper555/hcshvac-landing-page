@@ -92,8 +92,10 @@ export default function SystemPhotoPool({ profileId, systemId }: Props) {
           variant: "destructive",
         });
       } finally {
+        endUpload();
         setUploading((n) => n - 1);
       }
+
     }
     await load();
   };
