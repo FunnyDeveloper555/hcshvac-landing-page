@@ -108,7 +108,7 @@ export default function SiteProfilesLogs() {
                 <TableHead>Report #</TableHead>
                 <TableHead>Unit</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Last Updated</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -135,7 +135,9 @@ export default function SiteProfilesLogs() {
                         ) : ""}
                       </TableCell>
                       <TableCell>{p.ship_to?.name || p.bill_to?.name || "—"}</TableCell>
-                      <TableCell className="text-xs">{format(new Date(p.created_at), "MMM d, yyyy h:mm a")}</TableCell>
+                      <TableCell className="text-xs">
+                        {format(new Date(p.updated_at || p.created_at), "MMM d, yyyy h:mm a")}
+                      </TableCell>
                       <TableCell className="capitalize text-xs">{p.location_type}</TableCell>
                       <TableCell><Badge variant="outline">{p.status}</Badge></TableCell>
                       <TableCell className="text-right">
