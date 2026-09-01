@@ -97,8 +97,11 @@ export type VisitType = (typeof VISIT_TYPES)[number];
 export const LOCATION_TYPES = [
   "Residential",
   "Commercial",
+  "Light Industrial",
   "Industrial",
   "Educational Facilities",
+  "Churches",
+  "Medical Offices",
 ] as const;
 export type LocationType = (typeof LOCATION_TYPES)[number];
 
