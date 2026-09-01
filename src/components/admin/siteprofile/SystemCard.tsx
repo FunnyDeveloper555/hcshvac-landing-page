@@ -101,6 +101,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
     water_heater: "Water Heater",
     boiler: "Boiler",
     rtu: "RTU (Roof Top Unit)",
+    coil: "Coil",
   };
 
   const boilerLabel = (label: string) => {
@@ -248,6 +249,28 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
         </>
       )}
 
+
+      {system.kind === "coil" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <Field label="Coil Type"><SelectField value={d.type} onChange={(v) => set("type", v)} options={COIL_TYPES} /></Field>
+            <Field label="Brand"><Input className="h-8 text-xs" value={d.brand || ""} onChange={(e) => set("brand", e.target.value)} /></Field>
+            <Field label="Model #"><Input className="h-8 text-xs" value={d.model_number || ""} onChange={(e) => set("model_number", e.target.value)} /></Field>
+            <Field label="Serial #"><Input className="h-8 text-xs" value={d.serial_number || ""} onChange={(e) => set("serial_number", e.target.value)} /></Field>
+            <Field label="Tonnage"><SelectField value={d.tonnage} onChange={(v) => set("tonnage", v)} options={COIL_TONNAGE} /></Field>
+            <Field label="Orientation"><SelectField value={d.orientation} onChange={(v) => set("orientation", v)} options={COIL_ORIENTATION} /></Field>
+            <Field label="Refrigerant"><SelectField value={d.refrigerant} onChange={(v) => set("refrigerant", v)} options={COIL_REFRIGERANT} /></Field>
+            <Field label="Coil Material"><SelectField value={d.material} onChange={(v) => set("material", v)} options={COIL_MATERIAL} /></Field>
+            <Field label="Metering Device"><SelectField value={d.metering_device} onChange={(v) => set("metering_device", v)} options={["TXV", "Piston / Fixed Orifice", "EEV", "Other", "UNKNOWN"]} /></Field>
+            <Field label="Age"><SelectField value={d.age} onChange={(v) => set("age", v)} options={AGE_OPTIONS} /></Field>
+            <Field label="Drain Pan"><SelectField value={d.drip_pan} onChange={(v) => set("drip_pan", v)} options={["Yes", "No", "UNKNOWN"]} /></Field>
+            <Field label="Condensate Pump"><SelectField value={d.condensate_pump} onChange={(v) => set("condensate_pump", v)} options={["Yes", "No", "UNKNOWN"]} /></Field>
+          </div>
+          <Field label="Notes / Observations">
+            <Textarea className="text-xs min-h-[60px]" value={d.notes || ""} onChange={(e) => set("notes", e.target.value)} />
+          </Field>
+        </>
+      )}
 
       {system.kind === "rtu" && (
         <>
@@ -397,6 +420,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "water_heater" ? WATER_HEATER_PHOTO_SLOTS
             : system.kind === "boiler" ? BOILER_PHOTO_SLOTS
             : system.kind === "rtu" ? RTU_PHOTO_SLOTS
+            : system.kind === "coil" ? COIL_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
           ).filter((s) => !VIEW_PHOTO_SLOTS.some((v) => v.key === s.key)).map((s) => (
             <PhotoSlot
