@@ -115,6 +115,20 @@ export default function MassPagesBuilder() {
 
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
+  // Prefill the form when editing an existing campaign (?path=/Service-...)
+  useEffect(() => {
+    if (prefilled.current || !prefillPath || !company || groups.length === 0) return;
+    const ref = resolveMassPage(prefillPath, company, groups);
+    if (!ref) return;
+    prefilled.current = true;
+    setSource(services.some((s) => s.label === ref.service.label) ? "services" : "products");
+    setItem(ref.service.label);
+    setVisitType(ref.visitType || "");
+    setLocationType(ref.locationType || "");
+    setCountyKey(`${ref.location.county}|${ref.location.state}`);
+    setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
+  }, [prefillPath, company, groups, services]);
+
   const county = groups.find((g) => `${g.county}|${g.state}` === countyKey) || null;
   const location: MassLocation | null =
     county?.locations.find((l) => `${l.city}|${l.zip}` === cityKeyValue) || null;
