@@ -305,7 +305,17 @@ const companySubmenus: MenuItem[] = [
   { title: "Images", url: "/admin/page-builder/images-logos", icon: ImageIcon },
   { title: "Site Templates", url: "/admin/page-builder/site-templates", icon: Layout },
   { title: "Local Business", url: "/admin/page-builder/local-business", icon: MapPinned },
-  { title: "Mass Pages", url: "/admin/page-builder/mass-pages", icon: MapPinned },
+  {
+    title: "Mass Pages",
+    url: "/admin/page-builder/mass-pages",
+    icon: MapPinned,
+    children: [
+      { title: "New Campaign", url: "/admin/page-builder/mass-pages", icon: MapPinned },
+      { title: "Active Campaign", url: "/admin/page-builder/mass-pages/active", icon: MapPinned },
+      { title: "Suspended Campaign", url: "/admin/page-builder/mass-pages/suspended", icon: MapPinned },
+      { title: "Deleted Campaign", url: "/admin/page-builder/mass-pages/deleted", icon: MapPinned },
+    ],
+  },
   { title: "Domain Settings", url: "/admin/page-builder/domain-settings", icon: Globe },
 ];
 

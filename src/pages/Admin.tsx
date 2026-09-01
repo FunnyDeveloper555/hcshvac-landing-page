@@ -32,6 +32,7 @@ import ImagesLogos from "@/components/admin/pagebuilder/ImagesLogos";
 import CompanyImages from "@/components/admin/pagebuilder/CompanyImages";
 import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
 import MassPagesBuilder from "@/components/admin/pagebuilder/MassPagesBuilder";
+import MassCampaignsList from "@/components/admin/pagebuilder/MassCampaignsList";
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
 import CampaignForm from "@/components/admin/pagebuilder/CampaignForm";
@@ -251,6 +252,9 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/images-logos" element={<CompanyImages />} />
               <Route path="/page-builder/company/:companyId/site-templates" element={<SiteTemplates />} />
               <Route path="/page-builder/company/:companyId/mass-pages" element={<MassPagesBuilder />} />
+              <Route path="/page-builder/company/:companyId/mass-pages/active" element={<MassCampaignsList status="active" />} />
+              <Route path="/page-builder/company/:companyId/mass-pages/suspended" element={<MassCampaignsList status="suspended" />} />
+              <Route path="/page-builder/company/:companyId/mass-pages/deleted" element={<MassCampaignsList status="deleted" />} />
               <Route path="/page-builder/company/:companyId/local-business" element={<LocalBusiness />} />
               <Route path="/page-builder/company/:companyId/accordion-list/coupon" element={<CouponList />} />
               <Route path="/page-builder/company/:companyId/partner-listings" element={<PartnerListingsList />} />

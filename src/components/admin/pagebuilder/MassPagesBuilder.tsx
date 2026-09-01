@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import {
   massPagePath,
   massPageSummary,
   mergeMassOverrides,
+  resolveMassPage,
   MassLocation,
 } from "@/lib/massPages";
 
@@ -60,6 +61,9 @@ const BLANK_OVERRIDES: MergedOverrides = {
 
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
+  const [searchParams] = useSearchParams();
+  const prefillPath = searchParams.get("path");
+  const prefilled = useRef(false);
 
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
@@ -69,9 +73,11 @@ export default function MassPagesBuilder() {
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
   const [ov, setOvState] = useState<MergedOverrides>(BLANK_OVERRIDES);
+  const [isActive, setIsActive] = useState(true);
 
   const [loadingContent, setLoadingContent] = useState(false);
   const [saving, setSaving] = useState(false);
+
 
 
   const { data: company, isLoading } = useQuery({
@@ -108,6 +114,20 @@ export default function MassPagesBuilder() {
   const services = useMemo(() => (company ? enabledServices(company) : []), [company]);
 
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
+
+  // Prefill the form when editing an existing campaign (?path=/Service-...)
+  useEffect(() => {
+    if (prefilled.current || !prefillPath || !company || groups.length === 0) return;
+    const ref = resolveMassPage(prefillPath, company, groups);
+    if (!ref) return;
+    prefilled.current = true;
+    setSource(services.some((s) => s.label === ref.service.label) ? "services" : "products");
+    setItem(ref.service.label);
+    setVisitType(ref.visitType || "");
+    setLocationType(ref.locationType || "");
+    setCountyKey(`${ref.location.county}|${ref.location.state}`);
+    setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
+  }, [prefillPath, company, groups, services]);
 
   const county = groups.find((g) => `${g.county}|${g.state}` === countyKey) || null;
   const location: MassLocation | null =
@@ -165,13 +185,14 @@ export default function MassPagesBuilder() {
     (async () => {
       const { data } = await supabase
         .from("mass_page_content")
-        .select("blocks, overrides")
+        .select("blocks, overrides, status")
         .eq("company_id", companyId)
         .eq("page_path", path)
         .maybeSingle();
       if (!active) return;
       const savedBlocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
       setBlocks(Array.isArray(savedBlocks) ? savedBlocks : defaults);
+      setIsActive(data ? (data as { status?: string }).status === "active" : true);
       if (ovDefaults) {
         setOvState(
           mergeMassOverrides(
@@ -217,6 +238,7 @@ export default function MassPagesBuilder() {
           page_path: path,
           blocks: blocks as unknown as never,
           overrides: ov as unknown as never,
+          status: isActive ? "active" : "new",
         },
         { onConflict: "company_id,page_path" },
       );
@@ -225,8 +247,11 @@ export default function MassPagesBuilder() {
       toast.error(error.message);
       return;
     }
-    toast.success("Page content saved");
+    toast.success(
+      isActive ? "Campaign saved and moved to Active Campaigns" : "Campaign saved as a draft",
+    );
   };
+
 
 
 
@@ -629,18 +654,30 @@ export default function MassPagesBuilder() {
               </Tabs>
             )}
 
-            <div className="flex flex-wrap gap-2 border-t pt-4">
-              <Button size="sm" onClick={saveContent} disabled={saving}>
-                {saving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 mr-2" />
-                )}
-                Save page content
-              </Button>
-              <Button variant="outline" size="sm" onClick={resetAll}>
-                <RotateCcw className="w-4 h-4 mr-2" /> Reset everything
-              </Button>
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Label className="text-sm">Active campaign</Label>
+                  <p className="text-xs text-muted-foreground">
+                    When active, this campaign goes live and appears under Active Campaign.
+                    Otherwise it is kept as a draft.
+                  </p>
+                </div>
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={saveContent} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 mr-2" />
+                  )}
+                  Save campaign
+                </Button>
+                <Button variant="outline" size="sm" onClick={resetAll}>
+                  <RotateCcw className="w-4 h-4 mr-2" /> Reset everything
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
