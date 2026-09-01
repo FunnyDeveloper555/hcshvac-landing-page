@@ -141,9 +141,23 @@ export default function MassPagesBuilder() {
     [company, service, location, visitType, locationType],
   );
 
+  const ovDefaults = useMemo(
+    () =>
+      company && service && location
+        ? defaultMassOverrides(
+            company as Record<string, unknown> & { name: string; company_phone?: string | null },
+            service,
+            location,
+            { visitType: visitType || null, locationType: locationType || null },
+          )
+        : null,
+    [company, service, location, visitType, locationType],
+  );
+
   useEffect(() => {
     if (!companyId || !path) {
       setBlocks([]);
+      setOvState(BLANK_OVERRIDES);
       return;
     }
     let active = true;
@@ -151,13 +165,21 @@ export default function MassPagesBuilder() {
     (async () => {
       const { data } = await supabase
         .from("mass_page_content")
-        .select("blocks")
+        .select("blocks, overrides")
         .eq("company_id", companyId)
         .eq("page_path", path)
         .maybeSingle();
       if (!active) return;
-      const saved = (data?.blocks as unknown as MassTextBlock[] | null) || null;
-      setBlocks(Array.isArray(saved) ? saved : defaults);
+      const savedBlocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
+      setBlocks(Array.isArray(savedBlocks) ? savedBlocks : defaults);
+      if (ovDefaults) {
+        setOvState(
+          mergeMassOverrides(
+            ovDefaults,
+            (data?.overrides as unknown as Record<string, unknown> | null) || null,
+          ),
+        );
+      }
       setLoadingContent(false);
     })();
     return () => {
@@ -169,13 +191,33 @@ export default function MassPagesBuilder() {
   const updateBlock = (index: number, key: keyof MassTextBlock, value: string) =>
     setBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [key]: value } : b)));
 
+  function setOv<K extends keyof MergedOverrides>(key: K, value: MergedOverrides[K]) {
+    setOvState((prev) => ({ ...prev, [key]: value }));
+  }
+
+  const updateImage = (index: number, key: keyof MassImageBox, value: string) =>
+    setOvState((prev) => ({
+      ...prev,
+      images: prev.images.map((img, i) => (i === index ? { ...img, [key]: value } : img)),
+    }));
+
+  const resetAll = () => {
+    setBlocks(defaults);
+    if (ovDefaults) setOvState(mergeMassOverrides(ovDefaults, null));
+  };
+
   const saveContent = async () => {
     if (!companyId || !path) return;
     setSaving(true);
     const { error } = await supabase
       .from("mass_page_content")
       .upsert(
-        { company_id: companyId, page_path: path, blocks: blocks as unknown as never },
+        {
+          company_id: companyId,
+          page_path: path,
+          blocks: blocks as unknown as never,
+          overrides: ov as unknown as never,
+        },
         { onConflict: "company_id,page_path" },
       );
     setSaving(false);
@@ -185,6 +227,7 @@ export default function MassPagesBuilder() {
     }
     toast.success("Page content saved");
   };
+
 
 
   if (isLoading) {
