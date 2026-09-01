@@ -285,41 +285,41 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               systemId={system.id}
               slotKey={s.key}
               label={s.label}
+              {...naProps(s.key)}
             />
           ))}
 
           {FILTER_SIZE_PHOTO_SLOTS.map((s) => (
-
             <PhotoSlot
               key={s.key}
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
               label={boilerLabel(s.label)}
-
+              {...naProps(s.key)}
               footer={
                 <div className="space-y-2">
-                  <Field label="Quantity">
+                  <NAField label="Quantity" naKey="filter_quantity">
                     <SelectField
                       value={d.filter_quantity}
                       onChange={(v) => set("filter_quantity", v)}
                       options={FILTER_QUANTITY_OPTIONS}
                     />
-                  </Field>
-                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                  </NAField>
+                  <NAField label="Unit/Equipment ID TAG/NUMBER" naKey="filter_equipment_id">
                     <Input
                       className="h-8 text-xs"
                       value={d.filter_equipment_id || ""}
                       onChange={(e) => set("filter_equipment_id", e.target.value)}
                     />
-                  </Field>
-                  <Field label="Notes/Comments">
+                  </NAField>
+                  <NAField label="Notes/Comments" naKey="filter_notes">
                     <Input
                       className="h-8 text-xs"
                       value={d.filter_notes || ""}
                       onChange={(e) => set("filter_notes", e.target.value)}
                     />
-                  </Field>
+                  </NAField>
                 </div>
               }
             />
@@ -332,23 +332,30 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               systemId={system.id}
               slotKey={s.key}
               label={boilerLabel(s.label)}
-
+              {...naProps(s.key)}
               footer={
                 <div className="space-y-2">
-                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                  <NAField label="Quantity" naKey="belt_quantity">
+                    <SelectField
+                      value={d.belt_quantity}
+                      onChange={(v) => set("belt_quantity", v)}
+                      options={FILTER_QUANTITY_OPTIONS}
+                    />
+                  </NAField>
+                  <NAField label="Unit/Equipment ID TAG/NUMBER" naKey="belt_equipment_id">
                     <Input
                       className="h-8 text-xs"
                       value={d.belt_equipment_id || ""}
                       onChange={(e) => set("belt_equipment_id", e.target.value)}
                     />
-                  </Field>
-                  <Field label="Notes/Comments">
+                  </NAField>
+                  <NAField label="Notes/Comments" naKey="belt_notes">
                     <Input
                       className="h-8 text-xs"
                       value={d.belt_notes || ""}
                       onChange={(e) => set("belt_notes", e.target.value)}
                     />
-                  </Field>
+                  </NAField>
                 </div>
               }
             />
@@ -361,23 +368,23 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               systemId={system.id}
               slotKey={s.key}
               label={boilerLabel(s.label)}
-
+              {...naProps(s.key)}
               footer={
                 <div className="space-y-2">
-                  <Field label="Unit/Equipment ID TAG/NUMBER">
+                  <NAField label="Unit/Equipment ID TAG/NUMBER" naKey="field_documents_equipment_id">
                     <Input
                       className="h-8 text-xs"
                       value={d.field_documents_equipment_id || ""}
                       onChange={(e) => set("field_documents_equipment_id", e.target.value)}
                     />
-                  </Field>
-                  <Field label="Notes/Comments">
+                  </NAField>
+                  <NAField label="Notes/Comments" naKey="field_documents_notes">
                     <Input
                       className="h-8 text-xs"
                       value={d.field_documents_notes || ""}
                       onChange={(e) => set("field_documents_notes", e.target.value)}
                     />
-                  </Field>
+                  </NAField>
                 </div>
               }
             />
@@ -391,14 +398,13 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             : system.kind === "rtu" ? RTU_PHOTO_SLOTS
             : EJECTOR_PHOTO_SLOTS
           ).filter((s) => !VIEW_PHOTO_SLOTS.some((v) => v.key === s.key)).map((s) => (
-
-
             <PhotoSlot
               key={s.key}
               profileId={profileId}
               systemId={system.id}
               slotKey={s.key}
               label={s.label}
+              {...naProps(s.key)}
             />
           ))}
           {(system.kind === "boiler" && (d.circ_pump_supply === "Yes" || d.circ_pump_return === "Yes")) && (
@@ -407,6 +413,7 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
               systemId={system.id}
               slotKey="circ_pump_photo"
               label="Circ Pump Photo"
+              {...naProps("circ_pump_photo")}
             />
           )}
           <PhotoSlot
@@ -415,8 +422,10 @@ export default function SystemCard({ profileId, system, onChange, onDelete }: Pr
             slotKey="item_of_concern"
             label="Item of Concern"
             allowCustomTitle
+            {...naProps("item_of_concern")}
           />
         </div>
+
       </div>
 
     </div>
