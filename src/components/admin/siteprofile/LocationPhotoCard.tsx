@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Camera, ImageIcon, Loader2, Trash2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { beginUpload, endUpload } from "@/lib/photoUploadTracker";
+
 
 interface Row {
   id: string;
