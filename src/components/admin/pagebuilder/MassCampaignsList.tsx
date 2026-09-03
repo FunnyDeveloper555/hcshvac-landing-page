@@ -90,6 +90,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
   const [sortAsc, setSortAsc] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
 
   const { data: company } = useQuery({
     queryKey: ["mass-campaigns-company", companyId],
