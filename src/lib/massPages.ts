@@ -175,6 +175,19 @@ export const massTemplatePath = (
 export const isMassTemplatePath = (path: string): boolean =>
   path.startsWith(MASS_TEMPLATE_PREFIX);
 
+/**
+ * Derive the master template path a specific mass page belongs to.
+ * Page slug: LocationType-VisitType-Service-County-CityStateZip
+ * Template slug: LocationType-VisitType-Service
+ */
+export const massTemplatePathForPage = (pagePath: string): string | null => {
+  if (isMassTemplatePath(pagePath)) return pagePath;
+  const parts = pagePath.replace(/^\//, "").split("-").filter(Boolean);
+  if (parts.length < 3) return null;
+  return MASS_TEMPLATE_PREFIX + parts.slice(0, parts.length - 2).join("-");
+};
+
+
 /** Human label for a master template path, e.g. "Residential · Emergency · Furnace Repair" */
 export const massTemplateLabel = (path: string): string =>
   path
