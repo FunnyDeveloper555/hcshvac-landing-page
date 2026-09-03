@@ -14,6 +14,8 @@ interface AmerceFooterProps {
   onPageChange: (key: string) => void;
   /** "dark" matches footer-s5 (construction), "light" matches footer-s6 (organic). */
   variant?: "dark" | "light";
+  /** Override background (e.g. active campaign theme primary color). */
+  bgColor?: string | null;
 }
 
 const TRUST_ITEMS = [
@@ -36,8 +38,10 @@ const AmerceFooter = ({
   navItems,
   onPageChange,
   variant = "dark",
+  bgColor,
 }: AmerceFooterProps) => {
-  const isLight = variant === "light";
+  // A themed campaign background is always dark/saturated, so use light text.
+  const isLight = variant === "light" && !bgColor;
   const headingClass = isLight ? "footer-heading" : "footer-heading text-white";
   const textClass = isLight ? "cl-text-2" : "cl-text-3";
   const titleClass = isLight ? "h6 title mb-1" : "h6 title text-white mb-1";
@@ -50,7 +54,10 @@ const AmerceFooter = ({
   const colB = navItems.slice(midpoint);
 
   return (
-    <footer className={isLight ? "tf-footer footer-s5 bg-white" : "tf-footer footer-s5 bg-dark"}>
+    <footer
+      className={isLight ? "tf-footer footer-s5 bg-white" : "tf-footer footer-s5 bg-dark"}
+      style={bgColor ? { backgroundColor: bgColor } : undefined}
+    >
       {/* Trust strip */}
       <div className="flat-spacing-4">
         <div className="container">

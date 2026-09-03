@@ -150,7 +150,10 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   // Suspended / deleted campaigns must not be reachable on the live site.
   const massPage = massPageBlocked ? null : resolvedMassPage;
   const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
-  const massBodyVariant = massCampaignTemplate(massPageOverrides?.template).theme.bodyVariant;
+  const massTheme = massCampaignTemplate(massPageOverrides?.template).theme;
+  const massBodyVariant = massTheme.bodyVariant;
+  // On a live campaign page, the top bar + footer adopt the template primary color.
+  const massBarColor = massPage ? `hsl(${massTheme.primary})` : null;
   const showMassMenu = massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked);
 
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
@@ -287,6 +290,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           activePage={massPath ? "mass-pages" : activePage || undefined}
           onPageChange={handlePageChange}
           onGoHome={handleBackToHome}
+          barColor={massBarColor}
         />
 
 
@@ -609,6 +613,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           navItems={HEADER_PAGES}
           onPageChange={handlePageChange}
           variant={siteTemplate === "home-organic" ? "light" : "dark"}
+          bgColor={massBarColor}
         />
 
       </div>
