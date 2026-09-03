@@ -203,29 +203,30 @@ export default function MassPagesBuilder() {
 
   const defaults = useMemo<MassTextBlock[]>(
     () =>
-      company && service && location
+      company && service && seedLocation
         ? defaultMassTextBlocks(
             company as Record<string, unknown> & { name: string; company_phone?: string | null },
             service,
-            location,
+            seedLocation,
             { visitType: visitType || null, locationType: locationType || null },
           )
         : [],
-    [company, service, location, visitType, locationType],
+    [company, service, seedLocation, visitType, locationType],
   );
 
   const ovDefaults = useMemo(
     () =>
-      company && service && location
+      company && service && seedLocation
         ? defaultMassOverrides(
             company as Record<string, unknown> & { name: string; company_phone?: string | null },
             service,
-            location,
+            seedLocation,
             { visitType: visitType || null, locationType: locationType || null },
           )
         : null,
-    [company, service, location, visitType, locationType],
+    [company, service, seedLocation, visitType, locationType],
   );
+
 
   useEffect(() => {
     if (!companyId || !path) {
