@@ -221,6 +221,27 @@ export const massTemplatePathOrdered = (path: string): string | null => {
   return MASS_TEMPLATE_PREFIX + [loc, visit, ...rest].filter(Boolean).join("-");
 };
 
+/**
+ * Normalise any mass page path to the canonical
+ * LocationType-VisitType-Service-County-CityStateZip order.
+ * Legacy paths were saved Service-VisitType-LocationType first.
+ */
+export const massCanonicalPagePath = (path: string): string => {
+  if (isMassTemplatePath(path)) return massTemplatePathOrdered(path) || path;
+  const parts = path.replace(/^\//, "").replace(/\/$/, "").split("-").filter(Boolean);
+  if (parts.length < 3) return path;
+  const tail = parts.slice(parts.length - 2);
+  const middles = parts.slice(0, parts.length - 2);
+  const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
+  const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
+  const loc = middles.find((p) => locSet.has(p.toLowerCase()));
+  const visit = middles.find((p) => visitSet.has(p.toLowerCase()));
+  const rest = middles.filter((p) => p !== loc && p !== visit);
+  return `/${[loc, visit, ...rest, ...tail].filter(Boolean).join("-")}`;
+};
+
+
+
 
 
 
