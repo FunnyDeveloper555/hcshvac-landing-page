@@ -14,6 +14,8 @@ interface AmerceFooterProps {
   onPageChange: (key: string) => void;
   /** "dark" matches footer-s5 (construction), "light" matches footer-s6 (organic). */
   variant?: "dark" | "light";
+  /** Override background (e.g. active campaign theme primary color). */
+  bgColor?: string | null;
 }
 
 const TRUST_ITEMS = [
@@ -36,6 +38,7 @@ const AmerceFooter = ({
   navItems,
   onPageChange,
   variant = "dark",
+  bgColor,
 }: AmerceFooterProps) => {
   const isLight = variant === "light";
   const headingClass = isLight ? "footer-heading" : "footer-heading text-white";

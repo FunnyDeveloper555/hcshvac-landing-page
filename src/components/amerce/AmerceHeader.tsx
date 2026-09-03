@@ -17,6 +17,8 @@ interface AmerceHeaderProps {
   activePage?: string;
   onPageChange: (key: string) => void;
   onGoHome: () => void;
+  /** Override top bar background (e.g. active campaign theme primary color). */
+  barColor?: string | null;
 }
 
 const AmerceHeader = ({
@@ -30,6 +32,7 @@ const AmerceHeader = ({
   activePage,
   onPageChange,
   onGoHome,
+  barColor,
 }: AmerceHeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = [city, state].filter(Boolean).join(", ");
@@ -53,7 +56,7 @@ const AmerceHeader = ({
   return (
     <>
       {/* Top bar — single row */}
-      <div className="tf-topbar bg-dark">
+      <div className="tf-topbar bg-dark" style={barColor ? { backgroundColor: barColor } : undefined}>
         <div className="container">
           <div className="topbar-inner d-flex align-items-center justify-content-between py-2 gap-16 flex-nowrap">
             <span
