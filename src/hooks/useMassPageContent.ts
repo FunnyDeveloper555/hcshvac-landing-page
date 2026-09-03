@@ -9,7 +9,9 @@ export interface MassPageContentRow {
   blocked: boolean;
 }
 
-const parseRow = (data: { blocks?: unknown; overrides?: unknown } | null): MassPageContentRow => {
+const parseRow = (
+  data: { blocks?: unknown; overrides?: unknown } | null,
+): Omit<MassPageContentRow, "blocked"> => {
   const blocks = (data?.blocks as MassTextBlock[] | null) || null;
   const overrides = (data?.overrides as MassPageOverrides | null) || null;
   return {
