@@ -96,20 +96,10 @@ const MassServicePage = ({
   const heroImage = company.hero_image_url as string | null;
   const fallbackSrc = [heroImage || photo(0), photo(2), photo(4)];
 
-  return (
-    <div className="pt-24 pb-16">
-      <div className="container mx-auto px-4 space-y-10">
-        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-          <button onClick={onHome} className="hover:text-primary">Home</button>
-          <span>/</span>
-          <button onClick={() => onNavigate("/mass-pages")} className="hover:text-primary">
-            Service Areas
-          </button>
-          <span>/</span>
-          <span className="text-foreground">{content.heading}</span>
-        </nav>
+  const layout = massCampaignTemplate(content.template);
 
-        {sections.hero !== false && (
+  const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
+    hero: sections.hero !== false ? (
           <MassHeroCarousel
             seed={pagePath}
             kicker={content.heroKicker}
