@@ -122,19 +122,49 @@ export default function MassPagesBuilder() {
 
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
-  // Prefill the form when editing an existing campaign (?path=/Service-...)
+  // Prefill the form when editing an existing campaign (?path=...)
   useEffect(() => {
-    if (prefilled.current || !prefillPath || !company || groups.length === 0) return;
+    if (prefilled.current || !prefillPath || !company) return;
+
+    // Master template path: /__template/LocationType-VisitType-Service
+    if (isMassTemplatePath(prefillPath)) {
+      prefilled.current = true;
+      setMode("template");
+      const parts = prefillPath.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
+      let svc = "";
+      parts.forEach((seg) => {
+        const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+        if (l) return setLocationType(l);
+        const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+        if (v) return setVisitType(v);
+        svc = seg;
+      });
+      const match = services.find((s) => compact(s.label).toLowerCase() === svc.toLowerCase());
+      if (match) {
+        setSource("services");
+        setItem(match.label);
+      } else {
+        const prod = products.find((p) => compact(p.name).toLowerCase() === svc.toLowerCase());
+        if (prod) {
+          setSource("products");
+          setItem(prod.name);
+        }
+      }
+      return;
+    }
+
+    if (groups.length === 0) return;
     const ref = resolveMassPage(prefillPath, company, groups);
     if (!ref) return;
     prefilled.current = true;
+    setMode("page");
     setSource(services.some((s) => s.label === ref.service.label) ? "services" : "products");
     setItem(ref.service.label);
     setVisitType(ref.visitType || "");
     setLocationType(ref.locationType || "");
     setCountyKey(`${ref.location.county}|${ref.location.state}`);
     setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
-  }, [prefillPath, company, groups, services]);
+  }, [prefillPath, company, groups, services, products]);
 
   const county = groups.find((g) => `${g.county}|${g.state}` === countyKey) || null;
   const location: MassLocation | null =
@@ -142,18 +172,34 @@ export default function MassPagesBuilder() {
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
 
-  const path = service && location ? massPagePath(service, location, {
-    visitType: visitType || null,
-    locationType: locationType || null,
-  }) : "";
+  const opts = { visitType: visitType || null, locationType: locationType || null };
 
-  const summary = service && location ? massPageSummary(service.label, location, {
-    visitType: visitType || null,
-    locationType: locationType || null,
-  }) : "";
+  /** Representative location used only to seed suggested copy in template mode. */
+  const seedLocation: MassLocation | null =
+    mode === "template" ? groups[0]?.locations[0] || null : location;
 
-  const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
-  const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
+  const path =
+    mode === "template"
+      ? service
+        ? massTemplatePath(service, opts)
+        : ""
+      : service && location
+        ? massPagePath(service, location, opts)
+        : "";
+
+  const summary =
+    mode === "template"
+      ? service
+        ? `${massTemplateLabel(massTemplatePath(service, opts))} — all counties & cities`
+        : ""
+      : service && location
+        ? massPageSummary(service.label, location, opts)
+        : "";
+
+  const liveUrl =
+    mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
+  const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
+
 
   const defaults = useMemo<MassTextBlock[]>(
     () =>
