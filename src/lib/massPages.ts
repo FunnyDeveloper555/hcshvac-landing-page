@@ -138,9 +138,9 @@ export const massPageSlug = (
   opts: MassPageOptions = {},
 ): string =>
   [
-    serviceSlugPart(service),
-    opts.visitType ? compact(opts.visitType) : "",
     opts.locationType ? compact(opts.locationType) : "",
+    opts.visitType ? compact(opts.visitType) : "",
+    serviceSlugPart(service),
     ...locationSlugParts(loc),
   ]
     .filter(Boolean)
@@ -299,24 +299,26 @@ export const resolveMassPage = (
 
   const cityPart = parts[parts.length - 1].toLowerCase();
   const countyPart = parts[parts.length - 2].toLowerCase();
-  const servicePart = parts[0];
-  const middles = parts.slice(1, parts.length - 2);
+  const middles = parts.slice(0, parts.length - 2);
 
   let visitType: VisitType | null = null;
   let locationType: LocationType | null = null;
+  let servicePart = "";
   for (const seg of middles) {
-    const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (v) {
-      visitType = v;
-      continue;
-    }
     const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (l) {
+    if (l && !locationType) {
       locationType = l;
       continue;
     }
-    return null; // unknown middle segment
+    const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+    if (v && !visitType) {
+      visitType = v;
+      continue;
+    }
+    if (servicePart) return null; // more than one service segment
+    servicePart = seg;
   }
+  if (!servicePart) return null;
 
   let location: MassLocation | null = null;
   for (const group of groups) {
