@@ -296,7 +296,15 @@ export default function MassPagesBuilder() {
           company_id: companyId,
           page_path: path,
           blocks: blocks as unknown as never,
-          overrides: ov as unknown as never,
+          // The theme template lives on the master campaign only, so a
+          // specific page never overrides it.
+          overrides: (mode === "template"
+            ? ov
+            : (() => {
+                const { template: _t, ...rest } = ov;
+                return rest;
+              })()) as unknown as never,
+
           status: isActive ? "active" : "new",
         },
         { onConflict: "company_id,page_path" },
