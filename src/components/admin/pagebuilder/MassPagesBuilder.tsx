@@ -213,10 +213,24 @@ export default function MassPagesBuilder() {
     mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
   /** Sample page path used to preview a master campaign layout. */
+  const previewLocation: MassLocation | null =
+    seedLocation ||
+    location ||
+    (company
+      ? {
+          city: String((company as Record<string, unknown>).city || "Carol Stream"),
+          county: String((company as Record<string, unknown>).county || "DuPage County"),
+          state: String((company as Record<string, unknown>).state || "IL"),
+          zip: String((company as Record<string, unknown>).zip_code || "60188"),
+        }
+      : null);
   const seedPreviewUrl =
-    mode === "template" && company?.slug && service && seedLocation
-      ? `/company/${company.slug}${massPagePath(service, seedLocation, opts)}`
+    mode === "template"
+      ? company?.slug && service && previewLocation
+        ? `/company/${company.slug}${massPagePath(service, previewLocation, opts)}`
+        : ""
       : previewUrl;
+
 
 
   const defaults = useMemo<MassTextBlock[]>(
