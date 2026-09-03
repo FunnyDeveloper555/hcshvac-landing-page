@@ -523,6 +523,23 @@ export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: stri
 
 export type MassSectionKey = keyof MassPageSections;
 
+/** Visual identity of a campaign template (colors + section styling). */
+export interface MassTemplateTheme {
+  /** HSL triplets (no hsl() wrapper) injected as scoped CSS variables. */
+  primary: string;
+  primaryForeground: string;
+  accent: string;
+  surface: string;
+  radius: string;
+  heroVariant: "carousel" | "split" | "banner" | "editorial" | "compact";
+  headerVariant: "solid" | "glass" | "alert" | "minimal" | "centered";
+  footerVariant: "dark" | "gradient" | "compact" | "columns" | "minimal";
+  cardClass: string;
+  headingClass: string;
+  sectionGap: string;
+  label: string;
+}
+
 export interface MassCampaignTemplate {
   id: string;
   name: string;
@@ -531,7 +548,9 @@ export interface MassCampaignTemplate {
   order: MassSectionKey[];
   /** Sections hidden by this template unless re-enabled per campaign. */
   sections: MassPageSections;
+  theme: MassTemplateTheme;
 }
+
 
 export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
   {
