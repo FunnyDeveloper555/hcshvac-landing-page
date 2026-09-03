@@ -593,7 +593,16 @@ export default function MassPagesBuilder() {
                   <label htmlFor={`tpl-${t.id}`} className="flex items-start gap-2 cursor-pointer">
                     <RadioGroupItem value={t.id} id={`tpl-${t.id}`} className="mt-1" />
                     <span>
-                      <span className="block text-sm font-medium">{t.name}</span>
+                      <span className="flex items-center gap-2 text-sm font-medium">
+                        {t.name}
+                        <span
+                          className="inline-block h-3 w-3 rounded-full border"
+                          style={{ background: `hsl(${t.theme.primary})` }}
+                        />
+                        <span className="text-[11px] font-normal text-muted-foreground">
+                          {t.theme.label}
+                        </span>
+                      </span>
                       <span className="block text-xs text-muted-foreground">{t.description}</span>
                       <span className="mt-1 block text-[11px] font-mono text-muted-foreground">
                         {t.order.join(" › ")}
