@@ -125,11 +125,12 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     queryClient.invalidateQueries({ queryKey: ["mass-campaigns", companyId] });
   };
 
-  const setStatus = async (id: string, next: string) => {
+  const setStatus = async (ids: string[], next: string) => {
+    if (!ids.length) return;
     const { error } = await supabase
       .from("mass_page_content")
       .update({ status: next })
-      .eq("id", id);
+      .in("id", ids);
     if (error) {
       toast.error(error.message);
       return;
@@ -138,8 +139,9 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     refresh();
   };
 
-  const hardDelete = async (id: string) => {
-    const { error } = await supabase.from("mass_page_content").delete().eq("id", id);
+  const hardDelete = async (ids: string[]) => {
+    if (!ids.length) return;
+    const { error } = await supabase.from("mass_page_content").delete().in("id", ids);
     if (error) {
       toast.error(error.message);
       return;
@@ -147,6 +149,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     toast.success("Permanently deleted");
     refresh();
   };
+
 
   const meta = META[kind];
 
