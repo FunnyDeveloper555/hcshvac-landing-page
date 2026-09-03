@@ -48,7 +48,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isMassTemplatePath, massTemplateLabel, massTemplatePathForPage } from "@/lib/massPages";
+import { isMassTemplatePath, massTemplateLabel, massTemplateKey } from "@/lib/massPages";
 import { ChevronDown } from "lucide-react";
 
 
