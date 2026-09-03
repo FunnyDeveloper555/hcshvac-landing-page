@@ -213,6 +213,11 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return [...masters, ...synthetic, ...ungrouped];
   }, [allRows, childrenByMaster]);
 
+  const idsFor = (row: CampaignRow) =>
+    row.id.startsWith("virtual:")
+      ? childrenOf({ ...row } as CampaignRow).map((k) => k.id)
+      : [row.id];
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = topLevel;
@@ -239,7 +244,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       return sortAsc ? cmp : -cmp;
     });
     return sorted;
-  }, [allRows, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
+  }, [topLevel, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
 
 
 
@@ -401,7 +406,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                 title="Suspend"
-                onClick={() => setStatus(row.id, "suspended")}
+                onClick={() => setStatus(idsFor(row), "suspended")}
               >
                 <Pause className="w-4 h-4" />
               </Button>
@@ -411,7 +416,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                 title={row.status === "deleted" ? "Restore" : "Activate"}
-                onClick={() => setStatus(row.id, "active")}
+                onClick={() => setStatus(idsFor(row), "active")}
               >
                 {row.status === "deleted" ? (
                   <RotateCcw className="w-4 h-4" />
@@ -426,7 +431,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 title="Delete"
-                onClick={() => setStatus(row.id, "deleted")}
+                onClick={() => setStatus(idsFor(row), "deleted")}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -436,7 +441,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 title="Delete permanently"
-                onClick={() => hardDelete(row.id)}
+                onClick={() => hardDelete(idsFor(row))}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
