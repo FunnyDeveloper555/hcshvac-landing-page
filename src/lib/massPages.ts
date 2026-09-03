@@ -500,6 +500,9 @@ export interface MassPageOverrides {
   ctaBody?: string;
   ctaButton?: string;
   sections?: MassPageSections;
+  /** Pre-designed campaign template (layout) id. */
+  template?: string;
+
 }
 
 export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: string }> = [
@@ -513,6 +516,72 @@ export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: stri
   { key: "cta", label: "Booking call to action" },
   { key: "homeBody", label: "Home page body content" },
 ];
+
+/* ------------------------------------------------------------------ *
+ * Pre-designed campaign templates (layouts for mass pages)
+ * ------------------------------------------------------------------ */
+
+export type MassSectionKey = keyof MassPageSections;
+
+export interface MassCampaignTemplate {
+  id: string;
+  name: string;
+  description: string;
+  /** Section render order, top to bottom. */
+  order: MassSectionKey[];
+  /** Sections hidden by this template unless re-enabled per campaign. */
+  sections: MassPageSections;
+}
+
+export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
+  {
+    id: "standard",
+    name: "Standard Service Page",
+    description:
+      "Hero carousel, intro, highlight bullets, brands marquee, editorial blocks, images, nearby cities and booking CTA. Balanced layout that works for every service.",
+    order: ["hero", "intro", "bullets", "brands", "blocks", "images", "nearby", "cta", "homeBody"],
+    sections: {},
+  },
+  {
+    id: "spotlight",
+    name: "Image Spotlight",
+    description:
+      "Leads with the hero and photo gallery for visual services. Brands and editorial copy sit lower on the page.",
+    order: ["hero", "images", "intro", "bullets", "blocks", "brands", "nearby", "cta", "homeBody"],
+    sections: {},
+  },
+  {
+    id: "conversion",
+    name: "Conversion Focused",
+    description:
+      "Booking CTA right below the hero, short proof bullets, then supporting content. Best for emergency and same-day campaigns.",
+    order: ["hero", "intro", "cta", "bullets", "brands", "blocks", "images", "nearby", "homeBody"],
+    sections: { homeBody: false },
+  },
+  {
+    id: "local-seo",
+    name: "Local SEO Long-Form",
+    description:
+      "Text-heavy layout: intro, editorial blocks and nearby-city links prioritised for search ranking. Home page body content is included.",
+    order: ["hero", "intro", "blocks", "bullets", "nearby", "brands", "images", "cta", "homeBody"],
+    sections: {},
+  },
+  {
+    id: "compact",
+    name: "Compact Landing",
+    description:
+      "Short landing page: hero, intro, bullets and CTA only. Fast to load and easy to scan on mobile.",
+    order: ["hero", "intro", "bullets", "cta", "nearby"],
+    sections: { brands: false, blocks: false, images: false, homeBody: false },
+  },
+];
+
+export const DEFAULT_MASS_CAMPAIGN_TEMPLATE = "standard";
+
+export const massCampaignTemplate = (id?: string | null): MassCampaignTemplate =>
+  MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === id) || MASS_CAMPAIGN_TEMPLATES[0];
+
+
 
 /** Suggested values for every editable field on a mass page. */
 export const defaultMassOverrides = (
@@ -567,7 +636,9 @@ export const defaultMassOverrides = (
     ctaHeading: `Book ${service.label} in ${location.city}`,
     ctaBody: `Tell us what's going on and we'll get a technician scheduled in ${place}.`,
     ctaButton: "Request Service",
+    template: DEFAULT_MASS_CAMPAIGN_TEMPLATE,
     sections: {
+
       hero: true,
       intro: true,
       bullets: true,
@@ -605,6 +676,12 @@ export const mergeMassOverrides = (
     ctaHeading: text("ctaHeading"),
     ctaBody: text("ctaBody"),
     ctaButton: text("ctaButton"),
-    sections: { ...defaults.sections, ...(s.sections || {}) },
+    template: text("template") || DEFAULT_MASS_CAMPAIGN_TEMPLATE,
+    sections: {
+      ...defaults.sections,
+      ...massCampaignTemplate(s.template).sections,
+      ...(s.sections || {}),
+    },
   };
+
 };

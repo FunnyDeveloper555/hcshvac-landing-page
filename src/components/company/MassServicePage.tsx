@@ -11,6 +11,8 @@ import {
   massTemplatePath,
   mergeMassOverrides,
   serviceBrands,
+  massCampaignTemplate,
+  MassSectionKey,
 } from "@/lib/massPages";
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 import MassHeroCarousel from "@/components/company/MassHeroCarousel";
@@ -96,6 +98,160 @@ const MassServicePage = ({
   const heroImage = company.hero_image_url as string | null;
   const fallbackSrc = [heroImage || photo(0), photo(2), photo(4)];
 
+  const layout = massCampaignTemplate(content.template);
+
+  const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
+    hero: (
+      <MassHeroCarousel
+        key="hero"
+        seed={pagePath}
+        kicker={content.heroKicker}
+        title={content.heroTitle}
+        subtitle={content.heroSubtitle}
+        phone={phone}
+        onContact={onContact}
+      />
+    ),
+    intro: (
+      <header key="intro" className="space-y-3">
+        <p className="text-sm font-semibold text-primary uppercase tracking-wide">
+          {content.heroKicker}
+        </p>
+        <h1 className="text-3xl md:text-4xl font-bold">{content.heading}</h1>
+        <p className="text-sm text-muted-foreground">{content.heroSubtitle}</p>
+        <p className="text-muted-foreground max-w-3xl whitespace-pre-wrap">{content.intro}</p>
+        {phone && (
+          <a
+            href={`tel:${String(phone).replace(/[^0-9+]/g, "")}`}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <Phone className="w-4 h-4" />
+            Call {phone}
+          </a>
+        )}
+      </header>
+    ),
+    bullets:
+      content.bullets.length > 0 ? (
+        <section key="bullets" className="grid gap-4 sm:grid-cols-2">
+          {content.bullets.map((b) => (
+            <div key={b} className="flex items-start gap-2 rounded-lg border p-4 bg-background">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <span className="text-sm">{b}</span>
+            </div>
+          ))}
+        </section>
+      ) : null,
+    brands:
+      brands.length > 0 ? (
+        <section
+          key="brands"
+          className="relative rounded-xl border bg-gradient-to-br from-muted/60 via-background to-muted/40 overflow-hidden"
+        >
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--foreground)_1px,transparent_0)] bg-[length:24px_24px]" />
+          <div className="relative border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl font-semibold">{content.brandsHeading}</h2>
+            <p className="text-xs text-muted-foreground">
+              {brands.length} {content.brandsNote}
+            </p>
+          </div>
+
+          <div className="relative py-6 space-y-4 marquee-mask">
+            {marqueeRows.map((row, rowIndex) => (
+              <div key={rowIndex} className="relative overflow-hidden">
+                <div
+                  className={`flex w-max ${
+                    rowIndex % 2 === 0 ? "animate-marquee" : "animate-marquee-reverse"
+                  } hover:[animation-play-state:paused]`}
+                >
+                  {[...row, ...row].map((brand, i) => (
+                    <span
+                      key={`${brand}-${i}`}
+                      className="mx-3 flex shrink-0 items-center gap-2 rounded-full border bg-background/80 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold whitespace-nowrap shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300"
+                    >
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                      {brand}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null,
+    blocks:
+      textBlocks.length > 0 ? (
+        <section key="blocks" className="grid gap-6 lg:grid-cols-3">
+          {textBlocks.map((block, i) => (
+            <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
+              {block.heading && <h2 className="text-lg font-semibold">{block.heading}</h2>}
+              {block.body && (
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {block.body}
+                </p>
+              )}
+            </div>
+          ))}
+        </section>
+      ) : null,
+    images:
+      content.images.length > 0 ? (
+        <section key="images" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {content.images.map((img, i) => (
+            <figure key={`${img.alt}-${i}`} className="overflow-hidden rounded-lg border bg-background">
+              <img
+                src={img.url || fallbackSrc[i % fallbackSrc.length]}
+                alt={img.alt}
+                loading="lazy"
+                className="h-48 w-full object-cover"
+              />
+              {img.caption && (
+                <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
+              )}
+            </figure>
+          ))}
+        </section>
+      ) : null,
+    nearby:
+      siblings.length > 1 ? (
+        <section key="nearby" className="space-y-3">
+          <h2 className="text-xl font-semibold">{content.nearbyHeading}</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
+            {siblings
+              .filter((l) => l.city !== location.city)
+              .map((l) => (
+                <a
+                  key={`${l.city}-${l.zip}`}
+                  href={`${basePath}${massPagePath(service, l, opts)}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate(massPagePath(service, l, opts));
+                  }}
+                  className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
+                >
+                  <MapPin className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  <span className="truncate">
+                    {service.label} in {l.city}, {l.state}
+                  </span>
+                </a>
+              ))}
+          </div>
+        </section>
+      ) : null,
+    cta: (
+      <section key="cta" className="rounded-lg border p-6 bg-muted/40 space-y-3">
+        <h2 className="text-xl font-semibold">{content.ctaHeading}</h2>
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+        <button
+          onClick={onContact}
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          {content.ctaButton}
+        </button>
+      </section>
+    ),
+  };
+
   return (
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4 space-y-10">
@@ -109,153 +265,7 @@ const MassServicePage = ({
           <span className="text-foreground">{content.heading}</span>
         </nav>
 
-        {sections.hero !== false && (
-          <MassHeroCarousel
-            seed={pagePath}
-            kicker={content.heroKicker}
-            title={content.heroTitle}
-            subtitle={content.heroSubtitle}
-            phone={phone}
-            onContact={onContact}
-          />
-        )}
-
-        {sections.intro !== false && (
-          <header className="space-y-3">
-            <p className="text-sm font-semibold text-primary uppercase tracking-wide">
-              {content.heroKicker}
-            </p>
-            <h1 className="text-3xl md:text-4xl font-bold">{content.heading}</h1>
-            <p className="text-sm text-muted-foreground">{content.heroSubtitle}</p>
-            <p className="text-muted-foreground max-w-3xl whitespace-pre-wrap">{content.intro}</p>
-            {phone && (
-              <a
-                href={`tel:${String(phone).replace(/[^0-9+]/g, "")}`}
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                <Phone className="w-4 h-4" />
-                Call {phone}
-              </a>
-            )}
-          </header>
-        )}
-
-        {sections.bullets !== false && content.bullets.length > 0 && (
-          <section className="grid gap-4 sm:grid-cols-2">
-            {content.bullets.map((b) => (
-              <div key={b} className="flex items-start gap-2 rounded-lg border p-4 bg-background">
-                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm">{b}</span>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {sections.brands !== false && brands.length > 0 && (
-          <section className="relative rounded-xl border bg-gradient-to-br from-muted/60 via-background to-muted/40 overflow-hidden">
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--foreground)_1px,transparent_0)] bg-[length:24px_24px]" />
-            <div className="relative border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-xl font-semibold">{content.brandsHeading}</h2>
-              <p className="text-xs text-muted-foreground">
-                {brands.length} {content.brandsNote}
-              </p>
-            </div>
-
-            <div className="relative py-6 space-y-4 marquee-mask">
-              {marqueeRows.map((row, rowIndex) => (
-                <div key={rowIndex} className="relative overflow-hidden">
-                  <div
-                    className={`flex w-max ${
-                      rowIndex % 2 === 0 ? "animate-marquee" : "animate-marquee-reverse"
-                    } hover:[animation-play-state:paused]`}
-                  >
-                    {[...row, ...row].map((brand, i) => (
-                      <span
-                        key={`${brand}-${i}`}
-                        className="mx-3 flex shrink-0 items-center gap-2 rounded-full border bg-background/80 backdrop-blur-sm px-5 py-2.5 text-sm font-semibold whitespace-nowrap shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300"
-                      >
-                        <span className="h-2 w-2 rounded-full bg-primary" />
-                        {brand}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Editable editorial text blocks (managed in Page Builder → Mass Pages) */}
-        {sections.blocks !== false && textBlocks.length > 0 && (
-          <section className="grid gap-6 lg:grid-cols-3">
-            {textBlocks.map((block, i) => (
-              <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
-                {block.heading && <h2 className="text-lg font-semibold">{block.heading}</h2>}
-                {block.body && (
-                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{block.body}</p>
-                )}
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* Image boxes with editable alt text and captions */}
-        {sections.images !== false && content.images.length > 0 && (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {content.images.map((img, i) => (
-              <figure key={`${img.alt}-${i}`} className="overflow-hidden rounded-lg border bg-background">
-                <img
-                  src={img.url || fallbackSrc[i % fallbackSrc.length]}
-                  alt={img.alt}
-                  loading="lazy"
-                  className="h-48 w-full object-cover"
-                />
-                {img.caption && (
-                  <figcaption className="p-3 text-xs text-muted-foreground">{img.caption}</figcaption>
-                )}
-              </figure>
-            ))}
-          </section>
-        )}
-
-        {sections.nearby !== false && siblings.length > 1 && (
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">{content.nearbyHeading}</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
-              {siblings
-                .filter((l) => l.city !== location.city)
-                .map((l) => (
-                  <a
-                    key={`${l.city}-${l.zip}`}
-                    href={`${basePath}${massPagePath(service, l, opts)}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onNavigate(massPagePath(service, l, opts));
-                    }}
-                    className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
-                  >
-                    <MapPin className="w-3 h-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate">
-                      {service.label} in {l.city}, {l.state}
-                    </span>
-                  </a>
-                ))}
-            </div>
-          </section>
-        )}
-
-        {sections.cta !== false && (
-          <section className="rounded-lg border p-6 bg-muted/40 space-y-3">
-            <h2 className="text-xl font-semibold">{content.ctaHeading}</h2>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
-            <button
-              onClick={onContact}
-              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              {content.ctaButton}
-            </button>
-          </section>
-        )}
+        {layout.order.map((key) => (sections[key] === false ? null : nodes[key] || null))}
       </div>
     </div>
   );
