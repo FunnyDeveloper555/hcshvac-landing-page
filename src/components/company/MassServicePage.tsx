@@ -345,18 +345,28 @@ const MassServicePage = ({
 
   /* ---- Request Service (CTA) — one distinct layout per theme ---- */
   const ctaVariants: Record<string, JSX.Element> = {
+    // Split panel with a ticked checklist rail
     standard: (
       <section
-        className="overflow-hidden border border-primary/20 bg-background shadow-sm"
+        className="overflow-hidden border border-primary/20 bg-background shadow-sm transition-shadow hover:shadow-md"
         style={{ borderRadius: theme.radius }}
       >
+        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/40 to-primary" />
         <div className="grid md:grid-cols-[1.4fr_1fr]">
           <div className="space-y-3 p-6">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+            <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
               Request Service
             </p>
             <h2 className={theme.headingClass}>{content.ctaHeading}</h2>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+            <ul className="grid gap-1.5 pt-1 sm:grid-cols-2">
+              {["Licensed & insured techs", "Upfront pricing", "Same-day dispatch", "Workmanship guarantee"].map((t) => (
+                <li key={t} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {t}
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="flex flex-col justify-center gap-3 bg-primary p-6 text-primary-foreground">
             {telHref && (
@@ -366,7 +376,7 @@ const MassServicePage = ({
             )}
             <button
               onClick={onContact}
-              className="bg-background px-5 py-2.5 text-sm font-bold text-primary"
+              className="bg-background px-5 py-2.5 text-sm font-bold text-primary transition-transform hover:-translate-y-0.5"
               style={{ borderRadius: theme.radius }}
             >
               {content.ctaButton}
@@ -376,25 +386,27 @@ const MassServicePage = ({
         </div>
       </section>
     ),
+    // Immersive gradient stage with glowing orbs
     spotlight: (
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-primary/60 p-10 text-center text-primary-foreground shadow-2xl">
-        <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary-foreground/10" />
-        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-primary-foreground/10" />
-        <div className="relative mx-auto max-w-2xl space-y-4">
-          <p className="text-xs uppercase tracking-[0.35em] opacity-80">Request Service</p>
-          <h2 className="text-3xl font-semibold">{content.ctaHeading}</h2>
-          <p className="text-sm opacity-90 whitespace-pre-wrap">{content.ctaBody}</p>
+      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-primary/90 to-primary/50 p-10 text-center text-primary-foreground shadow-2xl">
+        <div className="absolute -right-20 -top-24 h-64 w-64 animate-pulse rounded-full bg-primary-foreground/10 blur-2xl" />
+        <div className="absolute -bottom-24 -left-16 h-72 w-72 animate-pulse rounded-full bg-primary-foreground/10 blur-3xl [animation-delay:1.5s]" />
+        <div className="relative mx-auto max-w-2xl space-y-5">
+          <p className="text-[10px] uppercase tracking-[0.5em] opacity-80">Request Service</p>
+          <h2 className="text-4xl font-semibold leading-tight">{content.ctaHeading}</h2>
+          <div className="mx-auto h-px w-24 bg-primary-foreground/40" />
+          <p className="text-sm leading-relaxed opacity-90 whitespace-pre-wrap">{content.ctaBody}</p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <button
               onClick={onContact}
-              className="rounded-full bg-background px-8 py-3 text-sm font-semibold text-primary shadow-lg"
+              className="rounded-full bg-background px-9 py-3.5 text-sm font-semibold text-primary shadow-xl transition-transform duration-300 hover:scale-105"
             >
               {content.ctaButton}
             </button>
             {telHref && (
               <a
                 href={telHref}
-                className="rounded-full border border-primary-foreground/50 px-8 py-3 text-sm font-semibold"
+                className="rounded-full border border-primary-foreground/50 px-9 py-3.5 text-sm font-semibold backdrop-blur-sm transition-colors hover:bg-primary-foreground/10"
               >
                 {phone}
               </a>
@@ -403,28 +415,42 @@ const MassServicePage = ({
         </div>
       </section>
     ),
+    // Hard-sell ticket block with striped urgency bar
     conversion: (
       <section className="border-4 border-primary bg-primary/5">
-        <div className="bg-primary px-4 py-2 text-center text-xs font-black uppercase tracking-[0.3em] text-primary-foreground">
-          Request Service Now
+        <div
+          className="px-4 py-2 text-center text-xs font-black uppercase tracking-[0.3em] text-primary-foreground"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, hsl(var(--primary)) 0 12px, hsl(var(--primary) / 0.75) 12px 24px)",
+          }}
+        >
+          ⚡ Request Service Now — Fast Response in {place}
         </div>
         <div className="grid gap-4 p-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
-            <h2 className="text-2xl font-extrabold uppercase">{content.ctaHeading}</h2>
+            <h2 className="text-2xl font-black uppercase leading-tight">{content.ctaHeading}</h2>
             <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["No overtime fees", "Upfront quotes", "Open 24/7"].map((t) => (
+                <span key={t} className="border-2 border-primary px-2 py-0.5 text-[10px] font-black uppercase text-primary">
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             {telHref && (
               <a
                 href={telHref}
-                className="rounded-sm bg-primary px-6 py-3 text-center text-base font-extrabold text-primary-foreground"
+                className="rounded-sm bg-primary px-6 py-4 text-center text-lg font-black text-primary-foreground shadow-[4px_4px_0_hsl(var(--foreground))] transition-transform active:translate-y-0.5"
               >
                 CALL {phone}
               </a>
             )}
             <button
               onClick={onContact}
-              className="rounded-sm border-2 border-primary px-6 py-2.5 text-sm font-extrabold uppercase text-primary"
+              className="rounded-sm border-2 border-primary px-6 py-2.5 text-sm font-extrabold uppercase text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               {content.ctaButton}
             </button>
@@ -432,45 +458,70 @@ const MassServicePage = ({
         </div>
       </section>
     ),
+    // Magazine column with numbered steps
     editorial: (
-      <section className="border-y-2 border-primary/30 py-8">
-        <p className="font-serif text-xs uppercase tracking-[0.25em] text-primary">Request Service</p>
-        <h2 className="mt-2 max-w-3xl font-serif text-3xl font-semibold">{content.ctaHeading}</h2>
-        <p className="mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
-          {content.ctaBody}
-        </p>
-        <div className="mt-5 flex flex-wrap items-center gap-6">
-          <button
-            onClick={onContact}
-            className="border-b-2 border-primary pb-1 text-sm font-semibold uppercase tracking-wide text-primary"
-          >
-            {content.ctaButton}
-          </button>
-          {telHref && (
-            <a href={telHref} className="inline-flex items-center gap-2 text-sm font-semibold">
-              <Phone className="w-4 h-4 text-primary" /> {phone}
-            </a>
-          )}
+      <section className="border-y-2 border-primary/30 py-10">
+        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr]">
+          <div>
+            <p className="font-serif text-xs uppercase tracking-[0.35em] text-primary">Request Service</p>
+            <h2 className="mt-3 font-serif text-4xl font-normal leading-tight">{content.ctaHeading}</h2>
+            <p className="mt-4 border-l-2 border-primary/40 pl-4 font-serif text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+              {content.ctaBody}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-8">
+              <button
+                onClick={onContact}
+                className="border-b-2 border-primary pb-1 font-serif text-sm uppercase tracking-[0.2em] text-primary transition-opacity hover:opacity-70"
+              >
+                {content.ctaButton}
+              </button>
+              {telHref && (
+                <a href={telHref} className="inline-flex items-center gap-2 font-serif text-base">
+                  <Phone className="w-4 h-4 text-primary" /> {phone}
+                </a>
+              )}
+            </div>
+          </div>
+          <ol className="space-y-4 md:border-l md:pl-8">
+            {[
+              ["Tell us what's wrong", "A quick call or form is all it takes."],
+              ["We schedule your visit", `A technician is routed to ${place}.`],
+              ["Repair, done right", "Upfront pricing, guaranteed workmanship."],
+            ].map(([title, body], i) => (
+              <li key={title} className="flex gap-4">
+                <span className="font-serif text-2xl text-primary/50">{`0${i + 1}`}</span>
+                <div>
+                  <div className="font-serif text-base font-medium">{title}</div>
+                  <p className="text-sm text-muted-foreground">{body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     ),
+    // Mobile-first action card
     compact: (
-      <section className="rounded-2xl bg-primary p-5 text-center text-primary-foreground">
-        <h2 className="text-lg font-semibold">{content.ctaHeading}</h2>
+      <section className="rounded-2xl bg-gradient-to-b from-primary to-primary/85 p-5 text-center text-primary-foreground shadow-lg">
+        <span className="inline-block rounded-full bg-primary-foreground/15 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest">
+          Request Service
+        </span>
+        <h2 className="mt-2 text-lg font-semibold">{content.ctaHeading}</h2>
         <p className="mt-1 text-xs opacity-90 whitespace-pre-wrap">{content.ctaBody}</p>
         <div className="mt-4 flex flex-col gap-2">
           {telHref && (
-            <a href={telHref} className="rounded-full bg-background px-5 py-2.5 text-sm font-bold text-primary">
+            <a href={telHref} className="rounded-full bg-background px-5 py-3 text-sm font-bold text-primary shadow-md">
               Call {phone}
             </a>
           )}
           <button
             onClick={onContact}
-            className="rounded-full border border-primary-foreground/60 px-5 py-2.5 text-sm font-semibold"
+            className="rounded-full border border-primary-foreground/60 px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-primary-foreground/10"
           >
             {content.ctaButton}
           </button>
         </div>
+        <p className="mt-3 text-[10px] uppercase tracking-widest opacity-70">Serving {place}</p>
       </section>
     ),
   };

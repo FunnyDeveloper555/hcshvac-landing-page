@@ -43,34 +43,91 @@ const EQUIPMENT_FIELDS = [
  * Each campaign theme frames Our Partners / Special Offers / Contact Us
  * differently so the five templates read as distinct designs.
  */
+/**
+ * Our Partners gets a structurally different treatment per theme:
+ * card grid, glass panel, ticket rows, editorial rules, or a dense list.
+ */
+const PARTNER_STYLES: Record<string, string> = {
+  standard: [
+    "bg-muted/30 border-y",
+    "[&_section]:!py-12",
+    "[&_.max-w-4xl]:!max-w-5xl",
+    // two-column card grid with lift on hover
+    "[&_.space-y-3]:!grid [&_.space-y-3]:!gap-4 [&_.space-y-3]:sm:!grid-cols-2 [&_.space-y-3]:!space-y-0",
+    "[&_.space-y-3>div]:!self-start [&_.space-y-3>div]:!transition-shadow [&_.space-y-3>div]:hover:!shadow-lg",
+    "[&_h2]:!text-3xl [&_h2]:!font-bold",
+  ].join(" "),
+  spotlight: [
+    "relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/60 text-primary-foreground",
+    "[&_section]:!bg-transparent [&_section]:!py-16",
+    "[&_h2]:!text-4xl [&_h2]:!font-semibold [&_h2]:!tracking-tight",
+    "[&_.text-muted-foreground]:!text-primary-foreground/80",
+    // floating glass cards, staggered scale on hover
+    "[&_.space-y-3]:!space-y-5",
+    "[&_.space-y-3>div]:!rounded-3xl [&_.space-y-3>div]:!border-0 [&_.space-y-3>div]:!bg-background/95 [&_.space-y-3>div]:!shadow-2xl",
+    "[&_.space-y-3>div]:!backdrop-blur-md [&_.space-y-3>div]:!transition-transform [&_.space-y-3>div]:!duration-500 [&_.space-y-3>div]:hover:!scale-[1.02]",
+    "[&_button]:!py-6",
+  ].join(" "),
+  conversion: [
+    "bg-background border-y-4 border-primary",
+    "[&_section]:!bg-background [&_section]:!py-10",
+    "[&_h2]:!uppercase [&_h2]:!tracking-tight [&_h2]:!text-3xl [&_h2]:!font-black",
+    // square high-contrast rows with a thick action bar on the left
+    "[&_.space-y-3]:!space-y-0 [&_.space-y-3]:!divide-y [&_.space-y-3]:!divide-primary/30 [&_.space-y-3]:!border-2 [&_.space-y-3]:!border-primary",
+    "[&_.space-y-3>div]:!rounded-none [&_.space-y-3>div]:!border-0 [&_.space-y-3>div]:!border-l-8 [&_.space-y-3>div]:!border-l-primary [&_.space-y-3>div]:!shadow-none",
+    "[&_.space-y-3>div]:!transition-transform [&_.space-y-3>div]:hover:!translate-x-1",
+    "[&_button]:!uppercase [&_button]:!tracking-wide [&_h3]:!uppercase [&_h3]:!font-extrabold [&_h3]:!text-base",
+  ].join(" "),
+  editorial: [
+    "bg-background border-t",
+    "[&_section]:!bg-background [&_section]:!py-16",
+    "[&_h2]:!font-serif [&_h2]:!text-4xl [&_h2]:!font-normal",
+    "[&_h3]:!font-serif [&_h3]:!font-medium",
+    // hairline rules instead of cards, generous rhythm
+    "[&_.max-w-4xl]:!max-w-3xl",
+    "[&_.space-y-3]:!space-y-0 [&_.space-y-3]:!divide-y [&_.space-y-3]:!divide-border",
+    "[&_.space-y-3>div]:!rounded-none [&_.space-y-3>div]:!border-0 [&_.space-y-3>div]:!bg-transparent [&_.space-y-3>div]:!shadow-none",
+    "[&_button]:!px-0 [&_button]:!py-6 [&_button]:hover:!bg-transparent",
+  ].join(" "),
+  compact: [
+    "bg-background",
+    "[&_section]:!py-6",
+    "[&_h2]:!text-lg [&_h2]:!font-semibold [&_.mb-8]:!mb-4",
+    // dense pill list, three across on wide screens
+    "[&_.space-y-3]:!grid [&_.space-y-3]:!gap-2 [&_.space-y-3]:lg:!grid-cols-3 [&_.space-y-3]:!space-y-0",
+    "[&_.space-y-3>div]:!self-start [&_.space-y-3>div]:!rounded-2xl [&_.space-y-3>div]:!bg-primary/5 [&_.space-y-3>div]:!shadow-none",
+    "[&_button]:!px-4 [&_button]:!py-2.5 [&_h3]:!text-sm [&_img]:!h-8 [&_img]:!w-8",
+  ].join(" "),
+};
+
 const BODY_VARIANT_STYLES: Record<
   string,
   { partners: string; coupons: string; contact: string }
 > = {
   standard: {
-    partners: "bg-muted/30 border-y",
+    partners: PARTNER_STYLES.standard,
     coupons: "bg-background border-t-4 border-primary",
     contact: "bg-primary/5 border-t",
   },
   spotlight: {
-    partners: "bg-gradient-to-b from-background to-primary/5 [&_h2]:!text-3xl",
+    partners: PARTNER_STYLES.spotlight,
     coupons:
       "bg-primary/5 py-2 [&_.container]:max-w-4xl [&_[class*=rounded]]:!rounded-3xl [&_[class*=shadow]]:!shadow-xl",
     contact: "bg-gradient-to-br from-primary/10 via-background to-primary/5",
   },
   conversion: {
-    partners: "bg-background border-y-4 border-primary [&_h2]:!uppercase [&_h2]:!tracking-tight",
+    partners: PARTNER_STYLES.conversion,
     coupons:
       "bg-primary/10 border-y-2 border-dashed border-primary [&_h2]:!uppercase [&_[class*=rounded]]:!rounded-none",
     contact: "bg-primary/5 border-t-4 border-primary [&_h2]:!uppercase",
   },
   editorial: {
-    partners: "bg-background border-t [&_h2]:!font-serif",
+    partners: PARTNER_STYLES.editorial,
     coupons: "bg-muted/40 border-y [&_h2]:!font-serif [&_[class*=rounded]]:!rounded-none",
     contact: "bg-background border-t-2 border-primary/30 [&_h2]:!font-serif",
   },
   compact: {
-    partners: "bg-background [&_section]:!py-5 [&_h2]:!text-lg",
+    partners: PARTNER_STYLES.compact,
     coupons: "bg-primary/5 [&_section]:!py-5 [&_h2]:!text-lg [&_[class*=rounded]]:!rounded-2xl",
     contact: "bg-background [&_section]:!py-6 [&_h2]:!text-lg",
   },
