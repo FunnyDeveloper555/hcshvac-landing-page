@@ -177,21 +177,44 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return (key && childrenByMaster.get(key)) || [];
   };
 
+  /** top-level rows: real master rows + synthetic masters for orphan pages */
+  const topLevel = useMemo(() => {
+    const masters = allRows.filter((r) => isMassTemplatePath(r.page_path));
+    const masterKeys = new Set(
+      masters.map((r) => massTemplateKey(r.page_path)).filter(Boolean) as string[],
+    );
+    const synthetic: CampaignRow[] = [];
+    const seen = new Set<string>();
+    for (const [key, kids] of childrenByMaster.entries()) {
+      if (masterKeys.has(key) || seen.has(key)) continue;
+      const templatePath = massTemplatePathOrdered(kids[0].page_path);
+      if (!templatePath) continue;
+      seen.add(key);
+      synthetic.push({
+        id: `virtual:${key}`,
+        page_path: templatePath,
+        status: kids.some((k) => k.status === "active")
+          ? "active"
+          : kids[0].status,
+        updated_at: kids
+          .map((k) => k.updated_at)
+          .sort()
+          .slice(-1)[0],
+        overrides: null,
+      });
+    }
+    // orphan pages that could not be grouped at all
+    const ungrouped = allRows.filter(
+      (r) => !isMassTemplatePath(r.page_path) && !massTemplateKey(r.page_path),
+    );
+    return [...masters, ...synthetic, ...ungrouped];
+  }, [allRows, childrenByMaster]);
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const masterKeys = new Set(
-      allRows
-        .filter((r) => isMassTemplatePath(r.page_path))
-        .map((r) => massTemplateKey(r.page_path))
-        .filter(Boolean) as string[],
-    );
-    // top-level = master campaigns + orphan pages that have no master row
-    let list = allRows.filter((r) => {
-      if (isMassTemplatePath(r.page_path)) return true;
-      const key = massTemplateKey(r.page_path);
-      return !key || !masterKeys.has(key);
-    });
+    let list = topLevel;
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
+
     if (q) {
       list = list.filter((r) => {
         const kids = childrenOf(r);
