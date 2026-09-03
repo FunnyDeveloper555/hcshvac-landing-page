@@ -32,43 +32,53 @@ export interface MassService {
 
 const svc = (
   group: MassServiceGroup,
-  action: MassService["action"],
   brandFields: string[],
   requiresProfileData = false,
 ): MassService => ({
-  label: `${group} ${action}`,
+  label: group,
   group,
-  action,
+  action: "Service",
   brandFields,
   requiresProfileData,
 });
 
+/**
+ * One entry per equipment category. Service / Repair / Installation are no
+ * longer separate options — the visit type covers that distinction.
+ */
 export const MASS_SERVICES: MassService[] = [
-  svc("Air Conditioning", "Service", ["hvac_brands_service", "brands_serviced"]),
-  svc("Air Conditioning", "Repair", ["hvac_brands_repair", "brands_serviced"]),
-  svc("Air Conditioning", "Installation", ["hvac_brands_install", "brands_installed"]),
-  svc("Furnace", "Service", ["hvac_brands_service", "brands_serviced"]),
-  svc("Furnace", "Repair", ["hvac_brands_repair", "brands_serviced"]),
-  svc("Furnace", "Installation", ["hvac_brands_install", "brands_installed"]),
-  svc("Water Heater", "Service", ["water_heaters_service"]),
-  svc("Water Heater", "Repair", ["water_heaters_repair"]),
-  svc("Water Heater", "Installation", ["water_heaters_install"]),
-  svc("Boiler", "Service", ["boilers_service"]),
-  svc("Boiler", "Repair", ["boilers_repair"]),
-  svc("Boiler", "Installation", ["boilers_install"]),
-  svc("Mini Split", "Service", ["hvac_brands_service", "brands_serviced"]),
-  svc("Mini Split", "Repair", ["hvac_brands_repair", "brands_serviced"]),
-  svc("Mini Split", "Installation", ["hvac_brands_install", "brands_installed"]),
-  svc("Coils", "Service", ["coils_service"], true),
-  svc("Coils", "Repair", ["coils_repair"], true),
-  svc("Coils", "Installation", ["coils_install"], true),
-  svc("Gas Pipe", "Service", ["gas_pipe_service"], true),
-  svc("Gas Pipe", "Repair", ["gas_pipe_repair"], true),
-  svc("Gas Pipe", "Installation", ["gas_pipe_install"], true),
-  svc("Plumbing", "Service", ["plumbing_equipment_service"], true),
-  svc("Plumbing", "Repair", ["plumbing_equipment_repair"], true),
-  svc("Plumbing", "Installation", ["plumbing_equipment_install"], true),
+  svc("Air Conditioning", [
+    "hvac_brands_service",
+    "hvac_brands_repair",
+    "hvac_brands_install",
+    "brands_serviced",
+    "brands_installed",
+  ]),
+  svc("Furnace", [
+    "hvac_brands_service",
+    "hvac_brands_repair",
+    "hvac_brands_install",
+    "brands_serviced",
+    "brands_installed",
+  ]),
+  svc("Water Heater", ["water_heaters_service", "water_heaters_repair", "water_heaters_install"]),
+  svc("Boiler", ["boilers_service", "boilers_repair", "boilers_install"]),
+  svc("Mini Split", [
+    "hvac_brands_service",
+    "hvac_brands_repair",
+    "hvac_brands_install",
+    "brands_serviced",
+    "brands_installed",
+  ]),
+  svc("Coils", ["coils_service", "coils_repair", "coils_install"], true),
+  svc("Gas Pipe", ["gas_pipe_service", "gas_pipe_repair", "gas_pipe_install"], true),
+  svc("Plumbing", [
+    "plumbing_equipment_service",
+    "plumbing_equipment_repair",
+    "plumbing_equipment_install",
+  ], true),
 ];
+
 
 export interface MassLocation {
   city: string;
