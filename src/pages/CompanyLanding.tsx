@@ -15,7 +15,7 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage, massPagePath, massTemplatePath } from "@/lib/massPages";
+import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate } from "@/lib/massPages";
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 
 import { Loader2 } from "lucide-react";
@@ -150,6 +150,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   // Suspended / deleted campaigns must not be reachable on the live site.
   const massPage = massPageBlocked ? null : resolvedMassPage;
   const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
+  const massBodyVariant = massCampaignTemplate(massPageOverrides?.template).theme.bodyVariant;
   const showMassMenu = massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked);
 
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
@@ -332,7 +333,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                   />
 
                   <AmerceTailwindScope themeStyle={themeStyle}>
-                    <CompanyHomeBody company={company} theme={theme} variant="standard" />
+                    <CompanyHomeBody company={company} theme={theme} variant={massBodyVariant} />
                   </AmerceTailwindScope>
                 </>
               )}

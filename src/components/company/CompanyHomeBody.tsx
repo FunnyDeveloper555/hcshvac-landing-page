@@ -39,6 +39,10 @@ const EQUIPMENT_FIELDS = [
   "gas_pipe_install", "gas_pipe_service", "gas_pipe_repair",
 ] as const;
 
+/**
+ * Each campaign theme frames Our Partners / Special Offers / Contact Us
+ * differently so the five templates read as distinct designs.
+ */
 const BODY_VARIANT_STYLES: Record<
   string,
   { partners: string; coupons: string; contact: string }
@@ -47,6 +51,28 @@ const BODY_VARIANT_STYLES: Record<
     partners: "bg-muted/30 border-y",
     coupons: "bg-background border-t-4 border-primary",
     contact: "bg-primary/5 border-t",
+  },
+  spotlight: {
+    partners: "bg-gradient-to-b from-background to-primary/5 [&_h2]:!text-3xl",
+    coupons:
+      "bg-primary/5 py-2 [&_.container]:max-w-4xl [&_[class*=rounded]]:!rounded-3xl [&_[class*=shadow]]:!shadow-xl",
+    contact: "bg-gradient-to-br from-primary/10 via-background to-primary/5",
+  },
+  conversion: {
+    partners: "bg-background border-y-4 border-primary [&_h2]:!uppercase [&_h2]:!tracking-tight",
+    coupons:
+      "bg-primary/10 border-y-2 border-dashed border-primary [&_h2]:!uppercase [&_[class*=rounded]]:!rounded-none",
+    contact: "bg-primary/5 border-t-4 border-primary [&_h2]:!uppercase",
+  },
+  editorial: {
+    partners: "bg-background border-t [&_h2]:!font-serif",
+    coupons: "bg-muted/40 border-y [&_h2]:!font-serif [&_[class*=rounded]]:!rounded-none",
+    contact: "bg-background border-t-2 border-primary/30 [&_h2]:!font-serif",
+  },
+  compact: {
+    partners: "bg-background [&_section]:!py-5 [&_h2]:!text-lg",
+    coupons: "bg-primary/5 [&_section]:!py-5 [&_h2]:!text-lg [&_[class*=rounded]]:!rounded-2xl",
+    contact: "bg-background [&_section]:!py-6 [&_h2]:!text-lg",
   },
 };
 
