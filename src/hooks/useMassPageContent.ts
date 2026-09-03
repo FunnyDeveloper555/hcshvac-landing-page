@@ -7,39 +7,69 @@ export interface MassPageContentRow {
   overrides: MassPageOverrides | null;
 }
 
-/** Loads the admin-edited content for a single mass page (null while loading). */
-export function useMassPageContent(companyId?: string | null, pagePath?: string | null) {
+const parseRow = (data: { blocks?: unknown; overrides?: unknown } | null): MassPageContentRow => {
+  const blocks = (data?.blocks as MassTextBlock[] | null) || null;
+  const overrides = (data?.overrides as MassPageOverrides | null) || null;
+  return {
+    blocks: Array.isArray(blocks) ? blocks : null,
+    overrides: overrides && typeof overrides === "object" ? overrides : null,
+  };
+};
+
+/**
+ * Loads the admin-edited content for a single mass page.
+ * The master template (campaign) content is used as the base and the
+ * page-specific content is layered on top of it.
+ */
+export function useMassPageContent(
+  companyId?: string | null,
+  pagePath?: string | null,
+  templatePath?: string | null,
+) {
   const [row, setRow] = useState<MassPageContentRow>({ blocks: null, overrides: null });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!companyId || !pagePath) {
+    if (!companyId || (!pagePath && !templatePath)) {
       setRow({ blocks: null, overrides: null });
       return;
     }
     let active = true;
     setLoading(true);
     (async () => {
+      const paths = [templatePath, pagePath].filter(Boolean) as string[];
       const { data } = await supabase
         .from("mass_page_content")
-        .select("blocks, overrides")
+        .select("page_path, blocks, overrides")
         .eq("company_id", companyId)
-        .eq("page_path", pagePath)
         .eq("status", "active")
-        .maybeSingle();
+        .in("page_path", paths);
       if (!active) return;
-      const blocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
-      const overrides = (data?.overrides as unknown as MassPageOverrides | null) || null;
+
+      const rows = data || [];
+      const template = parseRow(rows.find((r) => r.page_path === templatePath) || null);
+      const specific = parseRow(rows.find((r) => r.page_path === pagePath) || null);
+
       setRow({
-        blocks: Array.isArray(blocks) ? blocks : null,
-        overrides: overrides && typeof overrides === "object" ? overrides : null,
+        blocks: specific.blocks ?? template.blocks,
+        overrides:
+          specific.overrides || template.overrides
+            ? {
+                ...(template.overrides || {}),
+                ...(specific.overrides || {}),
+                sections: {
+                  ...(template.overrides?.sections || {}),
+                  ...(specific.overrides?.sections || {}),
+                },
+              }
+            : null,
       });
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [companyId, pagePath]);
+  }, [companyId, pagePath, templatePath]);
 
   return { ...row, loading };
 }
