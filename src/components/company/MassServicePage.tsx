@@ -472,38 +472,7 @@ const MassServicePage = ({
           </div>
         </section>
       ) : null,
-    cta: (
-      <section
-        key="cta"
-        className="overflow-hidden border border-primary/20 bg-background shadow-sm"
-        style={{ borderRadius: theme.radius === "9999px" ? "1.5rem" : theme.radius }}
-      >
-        <div className="grid md:grid-cols-[1.4fr_1fr]">
-          <div className="space-y-3 p-6">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
-              Request Service
-            </p>
-            <h2 className={theme.headingClass}>{content.ctaHeading}</h2>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
-          </div>
-          <div className="flex flex-col justify-center gap-3 bg-primary p-6 text-primary-foreground">
-            {telHref && (
-              <a href={telHref} className="flex items-center gap-2 text-lg font-bold">
-                <Phone className="w-5 h-5" /> {phone}
-              </a>
-            )}
-            <button
-              onClick={onContact}
-              className="bg-background px-5 py-2.5 text-sm font-bold text-primary hover:opacity-90 transition-opacity"
-              style={{ borderRadius: theme.radius }}
-            >
-              {content.ctaButton}
-            </button>
-            <p className="text-xs opacity-80">Same-day scheduling in {place}</p>
-          </div>
-        </div>
-      </section>
-    ),
+    cta: <div key="cta">{ctaVariants[theme.bodyVariant] || ctaVariants.standard}</div>,
   };
 
   return (
