@@ -5,6 +5,8 @@ import { MassPageOverrides, MassTextBlock } from "@/lib/massPages";
 export interface MassPageContentRow {
   blocks: MassTextBlock[] | null;
   overrides: MassPageOverrides | null;
+  /** True when the campaign (master or specific) is suspended or deleted. */
+  blocked: boolean;
 }
 
 const parseRow = (data: { blocks?: unknown; overrides?: unknown } | null): MassPageContentRow => {
@@ -26,12 +28,16 @@ export function useMassPageContent(
   pagePath?: string | null,
   templatePath?: string | null,
 ) {
-  const [row, setRow] = useState<MassPageContentRow>({ blocks: null, overrides: null });
+  const [row, setRow] = useState<MassPageContentRow>({
+    blocks: null,
+    overrides: null,
+    blocked: false,
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!companyId || (!pagePath && !templatePath)) {
-      setRow({ blocks: null, overrides: null });
+      setRow({ blocks: null, overrides: null, blocked: false });
       return;
     }
     let active = true;
@@ -40,17 +46,27 @@ export function useMassPageContent(
       const paths = [templatePath, pagePath].filter(Boolean) as string[];
       const { data } = await supabase
         .from("mass_page_content")
-        .select("page_path, blocks, overrides")
+        .select("page_path, blocks, overrides, status")
         .eq("company_id", companyId)
-        .eq("status", "active")
         .in("page_path", paths);
       if (!active) return;
 
-      const rows = data || [];
+      const allRows = data || [];
+      const isBlocked = (p?: string | null) => {
+        if (!p) return false;
+        const r = allRows.find((row) => row.page_path === p);
+        return !!r && r.status !== "active";
+      };
+      // A suspended/deleted master campaign hides every page under it;
+      // a suspended/deleted specific campaign hides just that page.
+      const blocked = isBlocked(templatePath) || isBlocked(pagePath);
+
+      const rows = allRows.filter((r) => r.status === "active");
       const template = parseRow(rows.find((r) => r.page_path === templatePath) || null);
       const specific = parseRow(rows.find((r) => r.page_path === pagePath) || null);
 
       setRow({
+        blocked,
         blocks: specific.blocks ?? template.blocks,
         overrides:
           specific.overrides || template.overrides
