@@ -306,12 +306,12 @@ export const resolveMassPage = (
   let servicePart = "";
   for (const seg of middles) {
     const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (l && !locationType && !servicePart) {
+    if (l && !locationType) {
       locationType = l;
       continue;
     }
     const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (v && !visitType && !servicePart) {
+    if (v && !visitType) {
       visitType = v;
       continue;
     }
