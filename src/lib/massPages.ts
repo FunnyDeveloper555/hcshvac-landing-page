@@ -534,6 +534,8 @@ export interface MassTemplateTheme {
   heroVariant: "carousel" | "split" | "banner" | "editorial" | "compact";
   headerVariant: "solid" | "glass" | "alert" | "minimal" | "centered";
   footerVariant: "dark" | "gradient" | "compact" | "columns" | "minimal";
+  /** Styling family for Contact Us / Special Offers / Request Service / Our Partners. */
+  bodyVariant: "standard" | "spotlight" | "conversion" | "editorial" | "compact";
   cardClass: string;
   headingClass: string;
   sectionGap: string;
