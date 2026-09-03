@@ -282,7 +282,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
   const renderRow = (row: CampaignRow, isChild: boolean): JSX.Element[] => {
     const isTemplate = isMassTemplatePath(row.page_path);
     const title = titleFor(row);
-    const kids = isTemplate ? childrenByMaster.get(row.page_path) || [] : [];
+    const kids = childrenOf(row);
     const isOpen = !!expanded[row.id];
 
     const out: JSX.Element[] = [
