@@ -530,7 +530,9 @@ export default function MassPagesBuilder() {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Page summary</CardTitle>
+          <CardTitle className="text-base">
+            {mode === "template" ? "Campaign summary" : "Page summary"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {summary ? (
@@ -539,40 +541,51 @@ export default function MassPagesBuilder() {
                 <MapPin className="w-4 h-4 text-primary" />
                 <span className="font-semibold">{summary}</span>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="font-mono text-xs break-all">
-                  {liveUrl || previewUrl}
-                </Badge>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(liveUrl || previewUrl);
-                    toast.success("URL copied");
-                  }}
-                >
-                  <Copy className="w-4 h-4 mr-2" /> Copy URL
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")
-                  }
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" /> Open page
-                </Button>
-              </div>
+              {mode === "page" && (
+                <>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="font-mono text-xs break-all">
+                      {liveUrl || previewUrl}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(liveUrl || previewUrl);
+                        toast.success("URL copied");
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-2" /> Copy URL
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")
+                      }
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" /> Open page
+                    </Button>
+                  </div>
+                </>
+              )}
+              {mode === "template" && (
+                <p className="text-sm text-muted-foreground">
+                  This content is used by every matching mass page across all counties and cities.
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Complete the steps above to see the generated page (example: Furnace Repair, Emergency,
-              Residential, Joliet, IL 60431).
+              {mode === "template"
+                ? "Pick a location type, visit type and service to build the master template."
+                : "Complete the steps above to see the generated page (example: Residential, Emergency, Furnace Repair, Joliet, IL 60431)."}
             </p>
           )}
         </CardContent>
       </Card>
+
 
       {/* Full page content editor */}
       {path && (
