@@ -636,7 +636,9 @@ export const defaultMassOverrides = (
     ctaHeading: `Book ${service.label} in ${location.city}`,
     ctaBody: `Tell us what's going on and we'll get a technician scheduled in ${place}.`,
     ctaButton: "Request Service",
+    template: DEFAULT_MASS_CAMPAIGN_TEMPLATE,
     sections: {
+
       hero: true,
       intro: true,
       bullets: true,
