@@ -332,7 +332,7 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                   />
 
                   <AmerceTailwindScope themeStyle={themeStyle}>
-                    <CompanyHomeBody company={company} theme={theme} />
+                    <CompanyHomeBody company={company} theme={theme} variant="standard" />
                   </AmerceTailwindScope>
                 </>
               )}
