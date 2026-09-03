@@ -327,16 +327,101 @@ export default function MassPagesBuilder() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Mass Pages</h2>
         <p className="text-sm text-muted-foreground">
-          Build a service &amp; location landing page for {company.name} — pick a service or product,
-          the visit type, the property type and the area you serve.
+          Build mass page content for {company.name}. Edit the master template for a whole
+          campaign, or override a single city page inside that campaign.
         </p>
       </div>
 
+      {/* What are we editing? */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">What do you want to edit?</CardTitle>
+          <CardDescription>
+            The master template applies to every county / city page that matches the criteria below.
+            A specific page overrides the template for one city only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup
+            value={mode}
+            onValueChange={(v) => setMode(v as EditMode)}
+            className="grid gap-2 sm:grid-cols-2"
+          >
+            <label
+              htmlFor="mode-template"
+              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
+            >
+              <RadioGroupItem value="template" id="mode-template" className="mt-1" />
+              <span>
+                <span className="block text-sm font-medium">Master template (campaign)</span>
+                <span className="block text-xs text-muted-foreground">
+                  No county or city — all matching pages share this content.
+                </span>
+              </span>
+            </label>
+            <label
+              htmlFor="mode-page"
+              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
+            >
+              <RadioGroupItem value="page" id="mode-page" className="mt-1" />
+              <span>
+                <span className="block text-sm font-medium">Specific page in the campaign</span>
+                <span className="block text-xs text-muted-foreground">
+                  Pick the county and city / ZIP to override one page.
+                </span>
+              </span>
+            </label>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Step 1 */}
+        {/* Step 1 — Location type */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">1. What is the page about?</CardTitle>
+            <CardTitle className="text-base">1. Location type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={locationType}
+              onValueChange={(v) => setLocationType(v as LocationType)}
+              className="grid grid-cols-2 gap-2"
+            >
+              {LOCATION_TYPES.map((t) => (
+                <div key={t} className="flex items-center gap-2">
+                  <RadioGroupItem value={t} id={`loc-${t}`} />
+                  <Label htmlFor={`loc-${t}`}>{t}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        {/* Step 2 — Visit type */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">2. Visit type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={visitType}
+              onValueChange={(v) => setVisitType(v as VisitType)}
+              className="grid grid-cols-2 gap-2"
+            >
+              {VISIT_TYPES.map((t) => (
+                <div key={t} className="flex items-center gap-2">
+                  <RadioGroupItem value={t} id={`visit-${t}`} />
+                  <Label htmlFor={`visit-${t}`}>{t}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        {/* Step 3 — Subject */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">3. What is the page about?</CardTitle>
             <CardDescription>Choose from your services or your product catalog.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -371,98 +456,76 @@ export default function MassPagesBuilder() {
           </CardContent>
         </Card>
 
-        {/* Step 2 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">2. Visit type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={visitType}
-              onValueChange={(v) => setVisitType(v as VisitType)}
-              className="grid grid-cols-2 gap-2"
-            >
-              {VISIT_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`visit-${t}`} />
-                  <Label htmlFor={`visit-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Step 3 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">3. Location type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={locationType}
-              onValueChange={(v) => setLocationType(v as LocationType)}
-              className="grid grid-cols-2 gap-2"
-            >
-              {LOCATION_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`loc-${t}`} />
-                  <Label htmlFor={`loc-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Step 4 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">4. Area we service</CardTitle>
-            <CardDescription>
-              {areasLoading
-                ? "Loading service areas…"
-                : `${groups.length} counties · ${totalCities} cities`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-xs">County</Label>
-              <Select
-                value={countyKey}
-                onValueChange={(v) => {
-                  setCountyKey(v);
-                  setCityKeyValue("");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a county" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {groups.map((g) => (
-                    <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
-                      {g.county}, {g.state} ({g.locations.length})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">City / ZIP</Label>
-              <Select value={cityKeyValue} onValueChange={setCityKeyValue} disabled={!county}>
-                <SelectTrigger>
-                  <SelectValue placeholder={county ? "Select a city" : "Pick a county first"} />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {(county?.locations || []).map((l) => (
-                    <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
-                      {l.city}, {l.state}{l.zip ? ` ${l.zip}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Step 4 — Area (specific page only) */}
+        {mode === "page" ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">4. Area we service</CardTitle>
+              <CardDescription>
+                {areasLoading
+                  ? "Loading service areas…"
+                  : `${groups.length} counties · ${totalCities} cities`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs">County</Label>
+                <Select
+                  value={countyKey}
+                  onValueChange={(v) => {
+                    setCountyKey(v);
+                    setCityKeyValue("");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a county" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {groups.map((g) => (
+                      <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
+                        {g.county}, {g.state} ({g.locations.length})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">City / ZIP</Label>
+                <Select value={cityKeyValue} onValueChange={setCityKeyValue} disabled={!county}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={county ? "Select a city" : "Pick a county first"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {(county?.locations || []).map((l) => (
+                      <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
+                        {l.city}, {l.state}{l.zip ? ` ${l.zip}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">4. Area we service</CardTitle>
+              <CardDescription>
+                {areasLoading
+                  ? "Loading service areas…"
+                  : `Applies to all ${groups.length} counties · ${totalCities} cities`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                County and city are not selected for a master template — every matching page uses
+                this content unless it has its own page-specific override.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
 
       {/* Summary */}
       <Card>
