@@ -48,7 +48,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isMassTemplatePath, massTemplateLabel, massTemplatePathForPage } from "@/lib/massPages";
+import { isMassTemplatePath, massTemplateLabel, massTemplateKey } from "@/lib/massPages";
 import { ChevronDown } from "lucide-react";
 
 
@@ -157,12 +157,12 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
         (row.overrides?.heading as string) ||
         row.page_path.replace(/^\//, "");
 
-  /** specific pages grouped under the master template they belong to */
+  /** specific pages grouped under the master campaign they belong to (by key) */
   const childrenByMaster = useMemo(() => {
     const map = new Map<string, CampaignRow[]>();
     for (const r of allRows) {
       if (isMassTemplatePath(r.page_path)) continue;
-      const key = massTemplatePathForPage(r.page_path);
+      const key = massTemplateKey(r.page_path);
       if (!key) continue;
       map.set(key, [...(map.get(key) || []), r]);
     }
@@ -171,21 +171,30 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return map;
   }, [allRows]);
 
+  const childrenOf = (row: CampaignRow) => {
+    if (!isMassTemplatePath(row.page_path)) return [];
+    const key = massTemplateKey(row.page_path);
+    return (key && childrenByMaster.get(key)) || [];
+  };
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const masterPaths = new Set(
-      allRows.filter((r) => isMassTemplatePath(r.page_path)).map((r) => r.page_path),
+    const masterKeys = new Set(
+      allRows
+        .filter((r) => isMassTemplatePath(r.page_path))
+        .map((r) => massTemplateKey(r.page_path))
+        .filter(Boolean) as string[],
     );
-    // top-level = master templates + orphan pages that have no master row
+    // top-level = master campaigns + orphan pages that have no master row
     let list = allRows.filter((r) => {
       if (isMassTemplatePath(r.page_path)) return true;
-      const key = massTemplatePathForPage(r.page_path);
-      return !key || !masterPaths.has(key);
+      const key = massTemplateKey(r.page_path);
+      return !key || !masterKeys.has(key);
     });
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
     if (q) {
       list = list.filter((r) => {
-        const kids = childrenByMaster.get(r.page_path) || [];
+        const kids = childrenOf(r);
         return (
           r.page_path.toLowerCase().includes(q) ||
           titleFor(r).toLowerCase().includes(q) ||
@@ -205,6 +214,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     });
     return sorted;
   }, [allRows, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
+
 
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -269,10 +279,22 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     }
   };
 
+  /** "DuPage County · Carol Stream, IL 60108" from a specific page path */
+  const locationLabel = (path: string) => {
+    const parts = path.replace(/^\//, "").split("-").filter(Boolean);
+    if (parts.length < 2) return path;
+    const county = parts[parts.length - 2].replace(/([a-z])([A-Z])/g, "$1 $2");
+    const raw = parts[parts.length - 1];
+    const m = raw.match(/^(.*?)([A-Z]{2})(\d{5})?$/);
+    const city = (m ? m[1] : raw).replace(/([a-z])([A-Z])/g, "$1 $2");
+    const tail = m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
+    return `${county} · ${tail}`;
+  };
+
   const renderRow = (row: CampaignRow, isChild: boolean): JSX.Element[] => {
     const isTemplate = isMassTemplatePath(row.page_path);
-    const title = titleFor(row);
-    const kids = isTemplate ? childrenByMaster.get(row.page_path) || [] : [];
+    const title = isChild ? locationLabel(row.page_path) : titleFor(row);
+    const kids = childrenOf(row);
     const isOpen = !!expanded[row.id];
 
     const out: JSX.Element[] = [
