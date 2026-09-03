@@ -187,6 +187,25 @@ export const massTemplatePathForPage = (pagePath: string): string | null => {
   return MASS_TEMPLATE_PREFIX + parts.slice(0, parts.length - 2).join("-");
 };
 
+/**
+ * Order-insensitive grouping key so pages saved with the legacy
+ * Service-VisitType-LocationType order still match their master campaign.
+ */
+export const massTemplateKey = (path: string): string | null => {
+  const raw = isMassTemplatePath(path)
+    ? path.replace(MASS_TEMPLATE_PREFIX, "")
+    : path.replace(/^\//, "");
+  let parts = raw.split("-").filter(Boolean);
+  if (!isMassTemplatePath(path)) {
+    if (parts.length < 3) return null;
+    parts = parts.slice(0, parts.length - 2);
+  }
+  if (!parts.length) return null;
+  return parts.map((p) => p.toLowerCase()).sort().join("|");
+};
+
+
+
 
 /** Human label for a master template path, e.g. "Residential · Emergency · Furnace Repair" */
 export const massTemplateLabel = (path: string): string =>
