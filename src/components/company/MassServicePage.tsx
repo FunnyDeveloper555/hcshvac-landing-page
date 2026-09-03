@@ -49,6 +49,7 @@ const MassServicePage = ({
   const place = locationLabel(location);
   const opts = { visitType, locationType };
   const pagePath = massPagePath(service, location, opts);
+  const templatePath = massTemplatePath(service, opts);
 
   const brands = serviceBrands(service, company);
   const rowCount = brands.length > 18 ? 3 : brands.length > 8 ? 2 : 1;
