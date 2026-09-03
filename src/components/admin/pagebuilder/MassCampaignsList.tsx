@@ -23,6 +23,7 @@ import {
   Plus,
 } from "lucide-react";
 import { toast } from "sonner";
+import { isMassTemplatePath, massTemplateLabel } from "@/lib/massPages";
 
 export type CampaignStatus = "active" | "suspended" | "deleted";
 
