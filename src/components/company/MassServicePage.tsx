@@ -8,6 +8,7 @@ import {
   defaultMassTextBlocks,
   locationLabel,
   massPagePath,
+  massTemplatePath,
   mergeMassOverrides,
   serviceBrands,
 } from "@/lib/massPages";
