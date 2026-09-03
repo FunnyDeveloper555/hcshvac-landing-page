@@ -104,12 +104,22 @@ const MassServicePage = ({
       ? new URLSearchParams(window.location.search).get("tpl")
       : null;
   const layout = massCampaignTemplate(tplPreview || content.template);
+  const theme = layout.theme;
+  const telHref = phone ? `tel:${String(phone).replace(/[^0-9+]/g, "")}` : null;
 
+  const themeVars = {
+    "--primary": theme.primary,
+    "--primary-foreground": theme.primaryForeground,
+    "--accent": theme.accent,
+    "--accent-foreground": theme.primary,
+    "--ring": theme.primary,
+    "--radius": theme.radius,
+    "--muted": theme.surface,
+  } as React.CSSProperties;
 
-  const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
-    hero: (
+  const heroVariants: Record<string, JSX.Element> = {
+    carousel: (
       <MassHeroCarousel
-        key="hero"
         seed={pagePath}
         kicker={content.heroKicker}
         title={content.heroTitle}
@@ -118,18 +128,236 @@ const MassServicePage = ({
         onContact={onContact}
       />
     ),
+    split: (
+      <div className="grid gap-8 lg:grid-cols-2 items-center rounded-3xl bg-gradient-to-br from-primary/10 via-background to-accent p-8">
+        <div className="space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            {content.heroKicker}
+          </p>
+          <h1 className="text-4xl md:text-5xl font-semibold leading-tight">{content.heroTitle}</h1>
+          <p className="text-muted-foreground">{content.heroSubtitle}</p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <button
+              onClick={onContact}
+              className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg hover:opacity-90"
+            >
+              {content.ctaButton}
+            </button>
+            {telHref && (
+              <a
+                href={telHref}
+                className="rounded-full border border-primary/30 px-6 py-3 text-sm font-semibold text-primary"
+              >
+                {phone}
+              </a>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <img src={photo(0)} alt={content.heroTitle} loading="lazy" className="col-span-2 h-56 w-full rounded-3xl object-cover shadow-xl" />
+          <img src={photo(1)} alt={content.heading} loading="lazy" className="h-32 w-full rounded-2xl object-cover" />
+          <img src={photo(3)} alt={content.heading} loading="lazy" className="h-32 w-full rounded-2xl object-cover" />
+        </div>
+      </div>
+    ),
+    banner: (
+      <div className="relative overflow-hidden rounded-sm border-y-4 border-primary bg-primary text-primary-foreground p-8 text-center">
+        <p className="text-xs font-black uppercase tracking-[0.3em] opacity-80">{content.heroKicker}</p>
+        <h1 className="mt-2 text-3xl md:text-5xl font-extrabold uppercase leading-tight">
+          {content.heroTitle}
+        </h1>
+        <p className="mx-auto mt-3 max-w-2xl text-sm opacity-90">{content.heroSubtitle}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {telHref && (
+            <a href={telHref} className="rounded-sm bg-background px-8 py-3 text-base font-extrabold text-primary">
+              CALL {phone}
+            </a>
+          )}
+          <button
+            onClick={onContact}
+            className="rounded-sm border-2 border-primary-foreground px-8 py-3 text-base font-extrabold uppercase"
+          >
+            {content.ctaButton}
+          </button>
+        </div>
+      </div>
+    ),
+    editorial: (
+      <div className="border-b pb-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+          {content.heroKicker}
+        </p>
+        <h1 className="mt-3 max-w-4xl font-serif text-4xl md:text-5xl font-semibold leading-tight">
+          {content.heroTitle}
+        </h1>
+        <p className="mt-4 max-w-3xl text-lg text-muted-foreground">{content.heroSubtitle}</p>
+        {telHref && (
+          <a href={telHref} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary underline underline-offset-4">
+            <Phone className="w-4 h-4" /> {phone}
+          </a>
+        )}
+      </div>
+    ),
+    compact: (
+      <div className="rounded-3xl bg-primary/5 p-6 text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
+          {content.heroKicker}
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold">{content.heroTitle}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{content.heroSubtitle}</p>
+        <div className="mt-4 flex flex-col gap-2">
+          {telHref && (
+            <a href={telHref} className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+              Call {phone}
+            </a>
+          )}
+          <button onClick={onContact} className="rounded-full border px-5 py-2.5 text-sm font-semibold">
+            {content.ctaButton}
+          </button>
+        </div>
+      </div>
+    ),
+  };
+
+  const templateHeader = (() => {
+    const inner = (
+      <>
+        <span className="font-bold">{company.name}</span>
+        <span className="flex items-center gap-3 text-sm">
+          {telHref && (
+            <a href={telHref} className="inline-flex items-center gap-1.5 font-semibold">
+              <Phone className="w-3.5 h-3.5" /> {phone}
+            </a>
+          )}
+          <button onClick={onContact} className="hidden sm:inline">
+            {content.ctaButton}
+          </button>
+        </span>
+      </>
+    );
+    switch (theme.headerVariant) {
+      case "solid":
+        return (
+          <div className="bg-primary text-primary-foreground">
+            <div className="container mx-auto flex items-center justify-between px-4 py-2.5">{inner}</div>
+          </div>
+        );
+      case "glass":
+        return (
+          <div className="border-b bg-background/70 backdrop-blur-md">
+            <div className="container mx-auto flex items-center justify-between px-4 py-3 text-primary">{inner}</div>
+          </div>
+        );
+      case "alert":
+        return (
+          <div className="bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider">
+            <div className="container mx-auto flex items-center justify-between px-4 py-2">
+              <span>⚠ 24/7 Emergency Dispatch — {company.name}</span>
+              {telHref && <a href={telHref}>Call {phone}</a>}
+            </div>
+          </div>
+        );
+      case "minimal":
+        return (
+          <div className="border-b">
+            <div className="container mx-auto flex items-center justify-between px-4 py-3 font-serif">{inner}</div>
+          </div>
+        );
+      default:
+        return (
+          <div className="border-b bg-primary/5">
+            <div className="container mx-auto px-4 py-2.5 text-center text-sm font-semibold text-primary">
+              {company.name}
+              {phone ? ` · ${phone}` : ""}
+            </div>
+          </div>
+        );
+    }
+  })();
+
+  const templateFooter = (() => {
+    const links = (
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+        <button onClick={onHome} className="hover:underline">Home</button>
+        <button onClick={() => onNavigate("/mass-pages")} className="hover:underline">Service Areas</button>
+        <button onClick={onContact} className="hover:underline">Contact</button>
+      </div>
+    );
+    switch (theme.footerVariant) {
+      case "dark":
+        return (
+          <footer className="mt-12 bg-foreground text-background">
+            <div className="container mx-auto flex flex-col gap-3 px-4 py-8 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="text-lg font-bold">{company.name}</div>
+                <p className="text-xs opacity-70">{content.heroKicker} · {phone}</p>
+              </div>
+              {links}
+            </div>
+          </footer>
+        );
+      case "gradient":
+        return (
+          <footer className="mt-16 bg-gradient-to-r from-primary to-primary/70 text-primary-foreground">
+            <div className="container mx-auto space-y-3 px-4 py-10 text-center">
+              <div className="text-2xl font-semibold">{company.name}</div>
+              <p className="text-sm opacity-90">{content.ctaBody}</p>
+              <div className="flex justify-center">{links}</div>
+            </div>
+          </footer>
+        );
+      case "compact":
+        return (
+          <footer className="mt-10 border-t-4 border-primary bg-muted">
+            <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs font-bold uppercase">
+              <span>{company.name}</span>
+              {telHref && <a href={telHref} className="text-primary">Call {phone}</a>}
+            </div>
+          </footer>
+        );
+      case "columns":
+        return (
+          <footer className="mt-14 border-t bg-muted/50">
+            <div className="container mx-auto grid gap-6 px-4 py-10 sm:grid-cols-3">
+              <div>
+                <div className="font-serif text-lg font-semibold">{company.name}</div>
+                <p className="mt-1 text-xs text-muted-foreground">{phone}</p>
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="font-semibold">Navigate</div>
+                {links}
+              </div>
+              <div className="text-sm">
+                <div className="font-semibold">Service area</div>
+                <p className="text-muted-foreground">{place}</p>
+              </div>
+            </div>
+          </footer>
+        );
+      default:
+        return (
+          <footer className="mt-8 border-t py-6 text-center text-xs text-muted-foreground">
+            {company.name} · {phone}
+          </footer>
+        );
+    }
+  })();
+
+  const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
+    hero: <div key="hero">{heroVariants[theme.heroVariant] || heroVariants.carousel}</div>,
     intro: (
       <header key="intro" className="space-y-3">
         <p className="text-sm font-semibold text-primary uppercase tracking-wide">
           {content.heroKicker}
         </p>
-        <h1 className="text-3xl md:text-4xl font-bold">{content.heading}</h1>
+        <h2 className={theme.headingClass}>{content.heading}</h2>
         <p className="text-sm text-muted-foreground">{content.heroSubtitle}</p>
         <p className="text-muted-foreground max-w-3xl whitespace-pre-wrap">{content.intro}</p>
-        {phone && (
+        {telHref && (
           <a
-            href={`tel:${String(phone).replace(/[^0-9+]/g, "")}`}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+            href={telHref}
+            className="inline-flex items-center gap-2 bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+            style={{ borderRadius: theme.radius }}
           >
             <Phone className="w-4 h-4" />
             Call {phone}
@@ -141,7 +369,7 @@ const MassServicePage = ({
       content.bullets.length > 0 ? (
         <section key="bullets" className="grid gap-4 sm:grid-cols-2">
           {content.bullets.map((b) => (
-            <div key={b} className="flex items-start gap-2 rounded-lg border p-4 bg-background">
+            <div key={b} className={`flex items-start gap-2 p-4 ${theme.cardClass}`}>
               <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <span className="text-sm">{b}</span>
             </div>
@@ -152,11 +380,11 @@ const MassServicePage = ({
       brands.length > 0 ? (
         <section
           key="brands"
-          className="relative rounded-xl border bg-gradient-to-br from-muted/60 via-background to-muted/40 overflow-hidden"
+          className={`relative overflow-hidden bg-gradient-to-br from-muted/60 via-background to-accent ${theme.cardClass}`}
         >
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle_at_1px_1px,var(--foreground)_1px,transparent_0)] bg-[length:24px_24px]" />
           <div className="relative border-b px-6 py-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold">{content.brandsHeading}</h2>
+            <h2 className={theme.headingClass}>{content.brandsHeading}</h2>
             <p className="text-xs text-muted-foreground">
               {brands.length} {content.brandsNote}
             </p>
@@ -189,7 +417,7 @@ const MassServicePage = ({
       textBlocks.length > 0 ? (
         <section key="blocks" className="grid gap-6 lg:grid-cols-3">
           {textBlocks.map((block, i) => (
-            <div key={`${block.heading}-${i}`} className="rounded-lg border bg-background p-6 space-y-2">
+            <div key={`${block.heading}-${i}`} className={`p-6 space-y-2 ${theme.cardClass}`}>
               {block.heading && <h2 className="text-lg font-semibold">{block.heading}</h2>}
               {block.body && (
                 <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
@@ -204,7 +432,7 @@ const MassServicePage = ({
       content.images.length > 0 ? (
         <section key="images" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {content.images.map((img, i) => (
-            <figure key={`${img.alt}-${i}`} className="overflow-hidden rounded-lg border bg-background">
+            <figure key={`${img.alt}-${i}`} className={`overflow-hidden ${theme.cardClass}`}>
               <img
                 src={img.url || fallbackSrc[i % fallbackSrc.length]}
                 alt={img.alt}
@@ -221,7 +449,7 @@ const MassServicePage = ({
     nearby:
       siblings.length > 1 ? (
         <section key="nearby" className="space-y-3">
-          <h2 className="text-xl font-semibold">{content.nearbyHeading}</h2>
+          <h2 className={theme.headingClass}>{content.nearbyHeading}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
             {siblings
               .filter((l) => l.city !== location.city)
@@ -245,12 +473,17 @@ const MassServicePage = ({
         </section>
       ) : null,
     cta: (
-      <section key="cta" className="rounded-lg border p-6 bg-muted/40 space-y-3">
-        <h2 className="text-xl font-semibold">{content.ctaHeading}</h2>
+      <section
+        key="cta"
+        className="p-6 space-y-3 bg-primary/10 border border-primary/20"
+        style={{ borderRadius: theme.radius === "9999px" ? "1.5rem" : theme.radius }}
+      >
+        <h2 className={theme.headingClass}>{content.ctaHeading}</h2>
         <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
         <button
           onClick={onContact}
-          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+          className="bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+          style={{ borderRadius: theme.radius }}
         >
           {content.ctaButton}
         </button>
@@ -259,8 +492,9 @@ const MassServicePage = ({
   };
 
   return (
-    <div className="pt-24 pb-16">
-      <div className="container mx-auto px-4 space-y-10">
+    <div style={themeVars} className="pb-0">
+      <div className="pt-24">{templateHeader}</div>
+      <div className={`container mx-auto px-4 py-8 ${theme.sectionGap}`}>
         <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
           <button onClick={onHome} className="hover:text-primary">Home</button>
           <span>/</span>
@@ -273,8 +507,10 @@ const MassServicePage = ({
 
         {layout.order.map((key) => (sections[key] === false ? null : nodes[key] || null))}
       </div>
+      {templateFooter}
     </div>
   );
 };
+
 
 export default MassServicePage;
