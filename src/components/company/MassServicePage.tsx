@@ -67,6 +67,7 @@ const MassServicePage = ({
   const { blocks: savedBlocks, overrides: savedOverrides } = useMassPageContent(
     company.id as string | undefined,
     pagePath,
+    templatePath,
   );
 
   const defaults = defaultMassOverrides(company, service, location, opts);
