@@ -140,6 +140,12 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
           locationType: massPage.locationType,
         })
       : null,
+    massPage
+      ? massTemplatePath(massPage.service, {
+          visitType: massPage.visitType,
+          locationType: massPage.locationType,
+        })
+      : null,
   ).overrides;
   const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
   const showMassMenu = massPath === "mass-pages";
