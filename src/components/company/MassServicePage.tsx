@@ -244,8 +244,8 @@ const MassServicePage = ({
         );
       case "glass":
         return (
-          <div className="border-b bg-background/70 backdrop-blur-md">
-            <div className="container mx-auto flex items-center justify-between px-4 py-3 text-primary">{inner}</div>
+          <div className="bg-primary/95 text-primary-foreground backdrop-blur-md">
+            <div className="container mx-auto flex items-center justify-between px-4 py-3">{inner}</div>
           </div>
         );
       case "alert":
@@ -259,14 +259,14 @@ const MassServicePage = ({
         );
       case "minimal":
         return (
-          <div className="border-b">
+          <div className="bg-primary text-primary-foreground">
             <div className="container mx-auto flex items-center justify-between px-4 py-3 font-serif">{inner}</div>
           </div>
         );
       default:
         return (
-          <div className="border-b bg-primary/5">
-            <div className="container mx-auto px-4 py-2.5 text-center text-sm font-semibold text-primary">
+          <div className="bg-primary text-primary-foreground">
+            <div className="container mx-auto px-4 py-2.5 text-center text-sm font-semibold">
               {company.name}
               {phone ? ` · ${phone}` : ""}
             </div>
@@ -286,11 +286,11 @@ const MassServicePage = ({
     switch (theme.footerVariant) {
       case "dark":
         return (
-          <footer className="mt-12 bg-foreground text-background">
+          <footer className="mt-12 bg-primary text-primary-foreground">
             <div className="container mx-auto flex flex-col gap-3 px-4 py-8 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="text-lg font-bold">{company.name}</div>
-                <p className="text-xs opacity-70">{content.heroKicker} · {phone}</p>
+                <p className="text-xs opacity-80">{content.heroKicker} · {phone}</p>
               </div>
               {links}
             </div>
@@ -298,7 +298,7 @@ const MassServicePage = ({
         );
       case "gradient":
         return (
-          <footer className="mt-16 bg-gradient-to-r from-primary to-primary/70 text-primary-foreground">
+          <footer className="mt-16 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
             <div className="container mx-auto space-y-3 px-4 py-10 text-center">
               <div className="text-2xl font-semibold">{company.name}</div>
               <p className="text-sm opacity-90">{content.ctaBody}</p>
@@ -308,20 +308,20 @@ const MassServicePage = ({
         );
       case "compact":
         return (
-          <footer className="mt-10 border-t-4 border-primary bg-muted">
+          <footer className="mt-10 bg-primary text-primary-foreground">
             <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-4 text-xs font-bold uppercase">
               <span>{company.name}</span>
-              {telHref && <a href={telHref} className="text-primary">Call {phone}</a>}
+              {telHref && <a href={telHref} className="underline">Call {phone}</a>}
             </div>
           </footer>
         );
       case "columns":
         return (
-          <footer className="mt-14 border-t bg-muted/50">
+          <footer className="mt-14 bg-primary text-primary-foreground">
             <div className="container mx-auto grid gap-6 px-4 py-10 sm:grid-cols-3">
               <div>
                 <div className="font-serif text-lg font-semibold">{company.name}</div>
-                <p className="mt-1 text-xs text-muted-foreground">{phone}</p>
+                <p className="mt-1 text-xs opacity-80">{phone}</p>
               </div>
               <div className="space-y-1 text-sm">
                 <div className="font-semibold">Navigate</div>
@@ -329,14 +329,14 @@ const MassServicePage = ({
               </div>
               <div className="text-sm">
                 <div className="font-semibold">Service area</div>
-                <p className="text-muted-foreground">{place}</p>
+                <p className="opacity-80">{place}</p>
               </div>
             </div>
           </footer>
         );
       default:
         return (
-          <footer className="mt-8 border-t py-6 text-center text-xs text-muted-foreground">
+          <footer className="mt-8 bg-primary py-6 text-center text-xs text-primary-foreground">
             {company.name} · {phone}
           </footer>
         );
