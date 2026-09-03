@@ -12,7 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save } from "lucide-react";
+import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
 import {
@@ -77,6 +84,7 @@ export default function MassPagesBuilder() {
   const prefilled = useRef(false);
 
   const [mode, setMode] = useState<EditMode>("template");
+  const [previewTpl, setPreviewTpl] = useState<string | null>(null);
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
@@ -204,6 +212,11 @@ export default function MassPagesBuilder() {
   const liveUrl =
     mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
+  /** Sample page path used to preview a master campaign layout. */
+  const seedPreviewUrl =
+    mode === "template" && company?.slug && service && seedLocation
+      ? `/company/${company.slug}${massPagePath(service, seedLocation, opts)}`
+      : previewUrl;
 
 
   const defaults = useMemo<MassTextBlock[]>(
@@ -555,29 +568,94 @@ export default function MassPagesBuilder() {
               className="grid gap-2 md:grid-cols-2"
             >
               {MASS_CAMPAIGN_TEMPLATES.map((t) => (
-                <label
+                <div
                   key={t.id}
-                  htmlFor={`tpl-${t.id}`}
-                  className={`flex items-start gap-2 rounded-md border p-3 cursor-pointer transition-colors ${
+                  className={`rounded-md border p-3 transition-colors ${
                     (ov.template || DEFAULT_MASS_CAMPAIGN_TEMPLATE) === t.id
                       ? "border-primary bg-primary/5"
                       : "hover:bg-muted/50"
                   }`}
                 >
-                  <RadioGroupItem value={t.id} id={`tpl-${t.id}`} className="mt-1" />
-                  <span>
-                    <span className="block text-sm font-medium">{t.name}</span>
-                    <span className="block text-xs text-muted-foreground">{t.description}</span>
-                    <span className="mt-1 block text-[11px] font-mono text-muted-foreground">
-                      {t.order.join(" › ")}
+                  <label htmlFor={`tpl-${t.id}`} className="flex items-start gap-2 cursor-pointer">
+                    <RadioGroupItem value={t.id} id={`tpl-${t.id}`} className="mt-1" />
+                    <span>
+                      <span className="block text-sm font-medium">{t.name}</span>
+                      <span className="block text-xs text-muted-foreground">{t.description}</span>
+                      <span className="mt-1 block text-[11px] font-mono text-muted-foreground">
+                        {t.order.join(" › ")}
+                      </span>
                     </span>
-                  </span>
-                </label>
+                  </label>
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={!seedPreviewUrl}
+                      onClick={() => setPreviewTpl(t.id)}
+                    >
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      Preview
+                    </Button>
+                  </div>
+                </div>
               ))}
             </RadioGroup>
+            {!seedPreviewUrl && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Pick a location type, visit type and service above to enable preview.
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
+
+      {/* Theme template live preview */}
+      <Dialog open={!!previewTpl} onOpenChange={(o) => !o && setPreviewTpl(null)}>
+        <DialogContent className="max-w-6xl">
+          <DialogHeader>
+            <DialogTitle>
+              Preview — {MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === previewTpl)?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Live mass page rendered with this layout using a sample city in this campaign.
+            </DialogDescription>
+          </DialogHeader>
+          {previewTpl && seedPreviewUrl && (
+            <>
+              <iframe
+                src={`${seedPreviewUrl}?tpl=${previewTpl}`}
+                title="Mass page template preview"
+                className="h-[70vh] w-full rounded-md border bg-background"
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    window.open(
+                      `${seedPreviewUrl}?tpl=${previewTpl}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                >
+                  <ExternalLink className="mr-1 h-4 w-4" />
+                  Open in new tab
+                </Button>
+                <Button
+                  onClick={() => {
+                    setOv("template", previewTpl);
+                    setPreviewTpl(null);
+                  }}
+                >
+                  Use this template
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
 
 

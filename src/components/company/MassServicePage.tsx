@@ -98,7 +98,13 @@ const MassServicePage = ({
   const heroImage = company.hero_image_url as string | null;
   const fallbackSrc = [heroImage || photo(0), photo(2), photo(4)];
 
-  const layout = massCampaignTemplate(content.template);
+  // `?tpl=` lets the admin preview a different theme template without saving.
+  const tplPreview =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("tpl")
+      : null;
+  const layout = massCampaignTemplate(tplPreview || content.template);
+
 
   const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
     hero: (
