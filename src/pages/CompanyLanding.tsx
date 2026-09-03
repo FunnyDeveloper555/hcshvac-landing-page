@@ -128,27 +128,29 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   const massPath = subdomainSlug
     ? location.pathname.replace(/^\//, "").replace(/\/$/, "")
     : massSlug || "";
-  const massPage =
+  const resolvedMassPage =
     company && massPath && massPath !== "mass-pages"
       ? resolveMassPage(massPath, company as unknown as Record<string, unknown>, massGroups)
       : null;
-  const massPageOverrides = useMassPageContent(
+  const { overrides: massPageOverrides, blocked: massPageBlocked } = useMassPageContent(
     company?.id,
-    massPage
-      ? massPagePath(massPage.service, massPage.location, {
-          visitType: massPage.visitType,
-          locationType: massPage.locationType,
+    resolvedMassPage
+      ? massPagePath(resolvedMassPage.service, resolvedMassPage.location, {
+          visitType: resolvedMassPage.visitType,
+          locationType: resolvedMassPage.locationType,
         })
       : null,
-    massPage
-      ? massTemplatePath(massPage.service, {
-          visitType: massPage.visitType,
-          locationType: massPage.locationType,
+    resolvedMassPage
+      ? massTemplatePath(resolvedMassPage.service, {
+          visitType: resolvedMassPage.visitType,
+          locationType: resolvedMassPage.locationType,
         })
       : null,
-  ).overrides;
+  );
+  // Suspended / deleted campaigns must not be reachable on the live site.
+  const massPage = massPageBlocked ? null : resolvedMassPage;
   const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
-  const showMassMenu = massPath === "mass-pages";
+  const showMassMenu = massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked);
 
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
   const goToMassPath = (path: string) => {
