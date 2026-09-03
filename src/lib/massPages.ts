@@ -204,6 +204,25 @@ export const massTemplateKey = (path: string): string | null => {
   return parts.map((p) => p.toLowerCase()).sort().join("|");
 };
 
+/**
+ * Master template path for a page, with segments normalised to the
+ * canonical LocationType-VisitType-Service order (legacy pages were
+ * saved Service-VisitType-LocationType).
+ */
+export const massTemplatePathOrdered = (path: string): string | null => {
+  const derived = massTemplatePathForPage(path);
+  if (!derived) return null;
+  const parts = derived.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
+  const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
+  const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
+  const loc = parts.find((p) => locSet.has(p.toLowerCase()));
+  const visit = parts.find((p) => visitSet.has(p.toLowerCase()));
+  const rest = parts.filter((p) => p !== loc && p !== visit);
+  return MASS_TEMPLATE_PREFIX + [loc, visit, ...rest].filter(Boolean).join("-");
+};
+
+
+
 
 
 

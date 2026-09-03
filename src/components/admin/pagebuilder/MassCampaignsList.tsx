@@ -48,7 +48,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { isMassTemplatePath, massTemplateLabel, massTemplateKey } from "@/lib/massPages";
+import { isMassTemplatePath, massTemplateLabel, massTemplateKey, massTemplatePathOrdered } from "@/lib/massPages";
 import { ChevronDown } from "lucide-react";
 
 
@@ -125,11 +125,12 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     queryClient.invalidateQueries({ queryKey: ["mass-campaigns", companyId] });
   };
 
-  const setStatus = async (id: string, next: string) => {
+  const setStatus = async (ids: string[], next: string) => {
+    if (!ids.length) return;
     const { error } = await supabase
       .from("mass_page_content")
       .update({ status: next })
-      .eq("id", id);
+      .in("id", ids);
     if (error) {
       toast.error(error.message);
       return;
@@ -138,8 +139,9 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     refresh();
   };
 
-  const hardDelete = async (id: string) => {
-    const { error } = await supabase.from("mass_page_content").delete().eq("id", id);
+  const hardDelete = async (ids: string[]) => {
+    if (!ids.length) return;
+    const { error } = await supabase.from("mass_page_content").delete().in("id", ids);
     if (error) {
       toast.error(error.message);
       return;
@@ -147,6 +149,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     toast.success("Permanently deleted");
     refresh();
   };
+
 
   const meta = META[kind];
 
@@ -177,21 +180,49 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return (key && childrenByMaster.get(key)) || [];
   };
 
+  /** top-level rows: real master rows + synthetic masters for orphan pages */
+  const topLevel = useMemo(() => {
+    const masters = allRows.filter((r) => isMassTemplatePath(r.page_path));
+    const masterKeys = new Set(
+      masters.map((r) => massTemplateKey(r.page_path)).filter(Boolean) as string[],
+    );
+    const synthetic: CampaignRow[] = [];
+    const seen = new Set<string>();
+    for (const [key, kids] of childrenByMaster.entries()) {
+      if (masterKeys.has(key) || seen.has(key)) continue;
+      const templatePath = massTemplatePathOrdered(kids[0].page_path);
+      if (!templatePath) continue;
+      seen.add(key);
+      synthetic.push({
+        id: `virtual:${key}`,
+        page_path: templatePath,
+        status: kids.some((k) => k.status === "active")
+          ? "active"
+          : kids[0].status,
+        updated_at: kids
+          .map((k) => k.updated_at)
+          .sort()
+          .slice(-1)[0],
+        overrides: null,
+      });
+    }
+    // orphan pages that could not be grouped at all
+    const ungrouped = allRows.filter(
+      (r) => !isMassTemplatePath(r.page_path) && !massTemplateKey(r.page_path),
+    );
+    return [...masters, ...synthetic, ...ungrouped];
+  }, [allRows, childrenByMaster]);
+
+  const idsFor = (row: CampaignRow) =>
+    row.id.startsWith("virtual:")
+      ? childrenOf({ ...row } as CampaignRow).map((k) => k.id)
+      : [row.id];
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const masterKeys = new Set(
-      allRows
-        .filter((r) => isMassTemplatePath(r.page_path))
-        .map((r) => massTemplateKey(r.page_path))
-        .filter(Boolean) as string[],
-    );
-    // top-level = master campaigns + orphan pages that have no master row
-    let list = allRows.filter((r) => {
-      if (isMassTemplatePath(r.page_path)) return true;
-      const key = massTemplateKey(r.page_path);
-      return !key || !masterKeys.has(key);
-    });
+    let list = topLevel;
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
+
     if (q) {
       list = list.filter((r) => {
         const kids = childrenOf(r);
@@ -213,7 +244,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       return sortAsc ? cmp : -cmp;
     });
     return sorted;
-  }, [allRows, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
+  }, [topLevel, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
 
 
 
@@ -375,7 +406,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                 title="Suspend"
-                onClick={() => setStatus(row.id, "suspended")}
+                onClick={() => setStatus(idsFor(row), "suspended")}
               >
                 <Pause className="w-4 h-4" />
               </Button>
@@ -385,7 +416,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                 title={row.status === "deleted" ? "Restore" : "Activate"}
-                onClick={() => setStatus(row.id, "active")}
+                onClick={() => setStatus(idsFor(row), "active")}
               >
                 {row.status === "deleted" ? (
                   <RotateCcw className="w-4 h-4" />
@@ -400,7 +431,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 title="Delete"
-                onClick={() => setStatus(row.id, "deleted")}
+                onClick={() => setStatus(idsFor(row), "deleted")}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -410,7 +441,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                 title="Delete permanently"
-                onClick={() => hardDelete(row.id)}
+                onClick={() => hardDelete(idsFor(row))}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
