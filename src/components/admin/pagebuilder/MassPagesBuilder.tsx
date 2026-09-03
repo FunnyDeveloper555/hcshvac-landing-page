@@ -62,7 +62,9 @@ const BLANK_OVERRIDES: MergedOverrides = {
   ctaHeading: "",
   ctaBody: "",
   ctaButton: "",
+  template: "standard",
   sections: {},
+
 };
 
 export default function MassPagesBuilder() {
