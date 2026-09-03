@@ -15,7 +15,7 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage, massPagePath } from "@/lib/massPages";
+import { resolveMassPage, massPagePath, massTemplatePath } from "@/lib/massPages";
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 
 import { Loader2 } from "lucide-react";
@@ -136,6 +136,12 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     company?.id,
     massPage
       ? massPagePath(massPage.service, massPage.location, {
+          visitType: massPage.visitType,
+          locationType: massPage.locationType,
+        })
+      : null,
+    massPage
+      ? massTemplatePath(massPage.service, {
           visitType: massPage.visitType,
           locationType: massPage.locationType,
         })

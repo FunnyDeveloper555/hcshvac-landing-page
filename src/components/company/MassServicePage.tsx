@@ -8,6 +8,7 @@ import {
   defaultMassTextBlocks,
   locationLabel,
   massPagePath,
+  massTemplatePath,
   mergeMassOverrides,
   serviceBrands,
 } from "@/lib/massPages";
@@ -49,6 +50,7 @@ const MassServicePage = ({
   const place = locationLabel(location);
   const opts = { visitType, locationType };
   const pagePath = massPagePath(service, location, opts);
+  const templatePath = massTemplatePath(service, opts);
 
   const brands = serviceBrands(service, company);
   const rowCount = brands.length > 18 ? 3 : brands.length > 8 ? 2 : 1;
@@ -65,6 +67,7 @@ const MassServicePage = ({
   const { blocks: savedBlocks, overrides: savedOverrides } = useMassPageContent(
     company.id as string | undefined,
     pagePath,
+    templatePath,
   );
 
   const defaults = defaultMassOverrides(company, service, location, opts);

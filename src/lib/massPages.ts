@@ -152,6 +152,37 @@ export const massPagePath = (
   opts: MassPageOptions = {},
 ): string => `/${massPageSlug(service, loc, opts)}`;
 
+/* ------------------------------------------------------------------ *
+ * Master template ("campaign") paths — no county / city component.
+ * Content saved here applies to every page matching the criteria.
+ * ------------------------------------------------------------------ */
+
+export const MASS_TEMPLATE_PREFIX = "/__template/";
+
+export const massTemplatePath = (
+  service: MassService,
+  opts: MassPageOptions = {},
+): string =>
+  MASS_TEMPLATE_PREFIX +
+  [
+    opts.locationType ? compact(opts.locationType) : "",
+    opts.visitType ? compact(opts.visitType) : "",
+    serviceSlugPart(service),
+  ]
+    .filter(Boolean)
+    .join("-");
+
+export const isMassTemplatePath = (path: string): boolean =>
+  path.startsWith(MASS_TEMPLATE_PREFIX);
+
+/** Human label for a master template path, e.g. "Residential · Emergency · Furnace Repair" */
+export const massTemplateLabel = (path: string): string =>
+  path
+    .replace(MASS_TEMPLATE_PREFIX, "")
+    .split("-")
+    .map((p) => uncompact(p))
+    .join(" · ");
+
 /** "Furnace Repair, Emergency, Residential, Joliet, IL 60431" */
 export const massPageSummary = (
   serviceLabel: string,

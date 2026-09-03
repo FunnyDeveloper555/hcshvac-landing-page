@@ -30,6 +30,11 @@ import {
   enabledServices,
   massPagePath,
   massPageSummary,
+  massTemplatePath,
+  massTemplateLabel,
+  isMassTemplatePath,
+  MASS_TEMPLATE_PREFIX,
+  compact,
   mergeMassOverrides,
   resolveMassPage,
   MassLocation,
@@ -37,6 +42,7 @@ import {
 
 
 type SourceKind = "services" | "products";
+type EditMode = "template" | "page";
 
 type MergedOverrides = ReturnType<typeof mergeMassOverrides>;
 
@@ -65,6 +71,7 @@ export default function MassPagesBuilder() {
   const prefillPath = searchParams.get("path");
   const prefilled = useRef(false);
 
+  const [mode, setMode] = useState<EditMode>("template");
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
@@ -115,19 +122,49 @@ export default function MassPagesBuilder() {
 
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
-  // Prefill the form when editing an existing campaign (?path=/Service-...)
+  // Prefill the form when editing an existing campaign (?path=...)
   useEffect(() => {
-    if (prefilled.current || !prefillPath || !company || groups.length === 0) return;
+    if (prefilled.current || !prefillPath || !company) return;
+
+    // Master template path: /__template/LocationType-VisitType-Service
+    if (isMassTemplatePath(prefillPath)) {
+      prefilled.current = true;
+      setMode("template");
+      const parts = prefillPath.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
+      let svc = "";
+      parts.forEach((seg) => {
+        const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+        if (l) return setLocationType(l);
+        const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+        if (v) return setVisitType(v);
+        svc = seg;
+      });
+      const match = services.find((s) => compact(s.label).toLowerCase() === svc.toLowerCase());
+      if (match) {
+        setSource("services");
+        setItem(match.label);
+      } else {
+        const prod = products.find((p) => compact(p.name).toLowerCase() === svc.toLowerCase());
+        if (prod) {
+          setSource("products");
+          setItem(prod.name);
+        }
+      }
+      return;
+    }
+
+    if (groups.length === 0) return;
     const ref = resolveMassPage(prefillPath, company, groups);
     if (!ref) return;
     prefilled.current = true;
+    setMode("page");
     setSource(services.some((s) => s.label === ref.service.label) ? "services" : "products");
     setItem(ref.service.label);
     setVisitType(ref.visitType || "");
     setLocationType(ref.locationType || "");
     setCountyKey(`${ref.location.county}|${ref.location.state}`);
     setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
-  }, [prefillPath, company, groups, services]);
+  }, [prefillPath, company, groups, services, products]);
 
   const county = groups.find((g) => `${g.county}|${g.state}` === countyKey) || null;
   const location: MassLocation | null =
@@ -135,44 +172,61 @@ export default function MassPagesBuilder() {
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
 
-  const path = service && location ? massPagePath(service, location, {
-    visitType: visitType || null,
-    locationType: locationType || null,
-  }) : "";
+  const opts = { visitType: visitType || null, locationType: locationType || null };
 
-  const summary = service && location ? massPageSummary(service.label, location, {
-    visitType: visitType || null,
-    locationType: locationType || null,
-  }) : "";
+  /** Representative location used only to seed suggested copy in template mode. */
+  const seedLocation: MassLocation | null =
+    mode === "template" ? groups[0]?.locations[0] || null : location;
 
-  const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
-  const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
+  const path =
+    mode === "template"
+      ? service
+        ? massTemplatePath(service, opts)
+        : ""
+      : service && location
+        ? massPagePath(service, location, opts)
+        : "";
+
+  const summary =
+    mode === "template"
+      ? service
+        ? `${massTemplateLabel(massTemplatePath(service, opts))} — all counties & cities`
+        : ""
+      : service && location
+        ? massPageSummary(service.label, location, opts)
+        : "";
+
+  const liveUrl =
+    mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
+  const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
+
 
   const defaults = useMemo<MassTextBlock[]>(
     () =>
-      company && service && location
+      company && service && seedLocation
         ? defaultMassTextBlocks(
             company as Record<string, unknown> & { name: string; company_phone?: string | null },
             service,
-            location,
+            seedLocation,
             { visitType: visitType || null, locationType: locationType || null },
           )
         : [],
-    [company, service, location, visitType, locationType],
+    [company, service, seedLocation, visitType, locationType],
   );
 
   const ovDefaults = useMemo(
     () =>
-      company && service && location
+      company && service && seedLocation
         ? defaultMassOverrides(
             company as Record<string, unknown> & { name: string; company_phone?: string | null },
             service,
-            location,
+            seedLocation,
             { visitType: visitType || null, locationType: locationType || null },
           )
         : null,
-    [company, service, location, visitType, locationType],
+    [company, service, seedLocation, visitType, locationType],
   );
+
 
   useEffect(() => {
     if (!companyId || !path) {
@@ -273,16 +327,101 @@ export default function MassPagesBuilder() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Mass Pages</h2>
         <p className="text-sm text-muted-foreground">
-          Build a service &amp; location landing page for {company.name} — pick a service or product,
-          the visit type, the property type and the area you serve.
+          Build mass page content for {company.name}. Edit the master template for a whole
+          campaign, or override a single city page inside that campaign.
         </p>
       </div>
 
+      {/* What are we editing? */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">What do you want to edit?</CardTitle>
+          <CardDescription>
+            The master template applies to every county / city page that matches the criteria below.
+            A specific page overrides the template for one city only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup
+            value={mode}
+            onValueChange={(v) => setMode(v as EditMode)}
+            className="grid gap-2 sm:grid-cols-2"
+          >
+            <label
+              htmlFor="mode-template"
+              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
+            >
+              <RadioGroupItem value="template" id="mode-template" className="mt-1" />
+              <span>
+                <span className="block text-sm font-medium">Master template (campaign)</span>
+                <span className="block text-xs text-muted-foreground">
+                  No county or city — all matching pages share this content.
+                </span>
+              </span>
+            </label>
+            <label
+              htmlFor="mode-page"
+              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
+            >
+              <RadioGroupItem value="page" id="mode-page" className="mt-1" />
+              <span>
+                <span className="block text-sm font-medium">Specific page in the campaign</span>
+                <span className="block text-xs text-muted-foreground">
+                  Pick the county and city / ZIP to override one page.
+                </span>
+              </span>
+            </label>
+          </RadioGroup>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Step 1 */}
+        {/* Step 1 — Location type */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">1. What is the page about?</CardTitle>
+            <CardTitle className="text-base">1. Location type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={locationType}
+              onValueChange={(v) => setLocationType(v as LocationType)}
+              className="grid grid-cols-2 gap-2"
+            >
+              {LOCATION_TYPES.map((t) => (
+                <div key={t} className="flex items-center gap-2">
+                  <RadioGroupItem value={t} id={`loc-${t}`} />
+                  <Label htmlFor={`loc-${t}`}>{t}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        {/* Step 2 — Visit type */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">2. Visit type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={visitType}
+              onValueChange={(v) => setVisitType(v as VisitType)}
+              className="grid grid-cols-2 gap-2"
+            >
+              {VISIT_TYPES.map((t) => (
+                <div key={t} className="flex items-center gap-2">
+                  <RadioGroupItem value={t} id={`visit-${t}`} />
+                  <Label htmlFor={`visit-${t}`}>{t}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        {/* Step 3 — Subject */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">3. What is the page about?</CardTitle>
             <CardDescription>Choose from your services or your product catalog.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -317,103 +456,83 @@ export default function MassPagesBuilder() {
           </CardContent>
         </Card>
 
-        {/* Step 2 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">2. Visit type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={visitType}
-              onValueChange={(v) => setVisitType(v as VisitType)}
-              className="grid grid-cols-2 gap-2"
-            >
-              {VISIT_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`visit-${t}`} />
-                  <Label htmlFor={`visit-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Step 3 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">3. Location type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={locationType}
-              onValueChange={(v) => setLocationType(v as LocationType)}
-              className="grid grid-cols-2 gap-2"
-            >
-              {LOCATION_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`loc-${t}`} />
-                  <Label htmlFor={`loc-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Step 4 */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">4. Area we service</CardTitle>
-            <CardDescription>
-              {areasLoading
-                ? "Loading service areas…"
-                : `${groups.length} counties · ${totalCities} cities`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-1">
-              <Label className="text-xs">County</Label>
-              <Select
-                value={countyKey}
-                onValueChange={(v) => {
-                  setCountyKey(v);
-                  setCityKeyValue("");
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a county" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {groups.map((g) => (
-                    <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
-                      {g.county}, {g.state} ({g.locations.length})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">City / ZIP</Label>
-              <Select value={cityKeyValue} onValueChange={setCityKeyValue} disabled={!county}>
-                <SelectTrigger>
-                  <SelectValue placeholder={county ? "Select a city" : "Pick a county first"} />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {(county?.locations || []).map((l) => (
-                    <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
-                      {l.city}, {l.state}{l.zip ? ` ${l.zip}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Step 4 — Area (specific page only) */}
+        {mode === "page" ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">4. Area we service</CardTitle>
+              <CardDescription>
+                {areasLoading
+                  ? "Loading service areas…"
+                  : `${groups.length} counties · ${totalCities} cities`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs">County</Label>
+                <Select
+                  value={countyKey}
+                  onValueChange={(v) => {
+                    setCountyKey(v);
+                    setCityKeyValue("");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a county" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {groups.map((g) => (
+                      <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
+                        {g.county}, {g.state} ({g.locations.length})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">City / ZIP</Label>
+                <Select value={cityKeyValue} onValueChange={setCityKeyValue} disabled={!county}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={county ? "Select a city" : "Pick a county first"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {(county?.locations || []).map((l) => (
+                      <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
+                        {l.city}, {l.state}{l.zip ? ` ${l.zip}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">4. Area we service</CardTitle>
+              <CardDescription>
+                {areasLoading
+                  ? "Loading service areas…"
+                  : `Applies to all ${groups.length} counties · ${totalCities} cities`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                County and city are not selected for a master template — every matching page uses
+                this content unless it has its own page-specific override.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
 
       {/* Summary */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Page summary</CardTitle>
+          <CardTitle className="text-base">
+            {mode === "template" ? "Campaign summary" : "Page summary"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {summary ? (
@@ -422,40 +541,51 @@ export default function MassPagesBuilder() {
                 <MapPin className="w-4 h-4 text-primary" />
                 <span className="font-semibold">{summary}</span>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="font-mono text-xs break-all">
-                  {liveUrl || previewUrl}
-                </Badge>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(liveUrl || previewUrl);
-                    toast.success("URL copied");
-                  }}
-                >
-                  <Copy className="w-4 h-4 mr-2" /> Copy URL
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")
-                  }
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" /> Open page
-                </Button>
-              </div>
+              {mode === "page" && (
+                <>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="font-mono text-xs break-all">
+                      {liveUrl || previewUrl}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(liveUrl || previewUrl);
+                        toast.success("URL copied");
+                      }}
+                    >
+                      <Copy className="w-4 h-4 mr-2" /> Copy URL
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")
+                      }
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" /> Open page
+                    </Button>
+                  </div>
+                </>
+              )}
+              {mode === "template" && (
+                <p className="text-sm text-muted-foreground">
+                  This content is used by every matching mass page across all counties and cities.
+                </p>
+              )}
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Complete the steps above to see the generated page (example: Furnace Repair, Emergency,
-              Residential, Joliet, IL 60431).
+              {mode === "template"
+                ? "Pick a location type, visit type and service to build the master template."
+                : "Complete the steps above to see the generated page (example: Residential, Emergency, Furnace Repair, Joliet, IL 60431)."}
             </p>
           )}
         </CardContent>
       </Card>
+
 
       {/* Full page content editor */}
       {path && (
