@@ -279,10 +279,10 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       <TableRow key={row.id} className="group transition-colors hover:bg-muted/40">
         <TableCell className="align-top">
           <div className={isChild ? "pl-7 border-l-2 border-muted ml-1" : ""}>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-start gap-1.5">
               {kids.length > 0 ? (
                 <button
-                  className="p-0.5 rounded hover:bg-muted text-muted-foreground"
+                  className="p-0.5 mt-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
                   title={isOpen ? "Collapse campaigns" : "Expand campaigns"}
                   onClick={() => setExpanded((e) => ({ ...e, [row.id]: !e[row.id] }))}
                 >
@@ -293,23 +293,25 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                   )}
                 </button>
               ) : null}
-              <span
-                className={`font-medium truncate max-w-[300px] ${
-                  isChild ? "text-foreground/90 text-sm" : "text-foreground"
-                }`}
-                title={title}
-              >
-                {title}
-              </span>
-              {kids.length > 0 && (
-                <Badge variant="secondary" className="ml-1 text-[11px]">
-                  {kids.length} page{kids.length === 1 ? "" : "s"}
-                </Badge>
-              )}
+              <div className="min-w-0">
+                <span
+                  className={`font-medium break-words whitespace-normal ${
+                    isChild ? "text-foreground/90 text-sm" : "text-foreground"
+                  }`}
+                >
+                  {title}
+                </span>
+                {kids.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 align-middle text-[11px]">
+                    {kids.length} page{kids.length === 1 ? "" : "s"}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="font-mono text-xs text-muted-foreground mt-1 break-all max-w-[320px]">
+            <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
               {isTemplate ? "All counties & cities" : row.page_path}
             </div>
+
           </div>
         </TableCell>
         <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
