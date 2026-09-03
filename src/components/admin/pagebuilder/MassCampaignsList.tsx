@@ -322,11 +322,13 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return `${county} · ${tail}`;
   };
 
-  const renderRow = (row: CampaignRow, isChild: boolean): JSX.Element[] => {
+  const renderRow = (row: CampaignRow, isChild: boolean, parentStatus?: string): JSX.Element[] => {
     const isTemplate = isMassTemplatePath(row.page_path);
     const title = isChild ? locationLabel(row.page_path) : titleFor(row);
     const kids = childrenOf(row);
     const isOpen = !!expanded[row.id];
+    const isParentLocked = parentStatus === "suspended" || parentStatus === "deleted";
+    const lockTitle = isParentLocked ? `Disabled because parent campaign is ${parentStatus}` : undefined;
 
     const out: JSX.Element[] = [
       <TableRow key={row.id} className="group transition-colors hover:bg-muted/40">
@@ -377,7 +379,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title="Edit"
+              title={lockTitle ?? "Edit"}
+              disabled={isParentLocked}
               onClick={() =>
                 navigate(
                   `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
@@ -393,7 +396,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                title="Open page"
+                title={lockTitle ?? "Open page"}
+                disabled={isParentLocked}
                 onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
               >
                 <ExternalLink className="w-4 h-4" />
@@ -405,7 +409,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                title="Suspend"
+                title={lockTitle ?? "Suspend"}
+                disabled={isParentLocked}
                 onClick={() => setStatus(idsFor(row), "suspended")}
               >
                 <Pause className="w-4 h-4" />
@@ -415,7 +420,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                title={row.status === "deleted" ? "Restore" : "Activate"}
+                title={lockTitle ?? (row.status === "deleted" ? "Restore" : "Activate")}
+                disabled={isParentLocked}
                 onClick={() => setStatus(idsFor(row), "active")}
               >
                 {row.status === "deleted" ? (
@@ -430,7 +436,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                title="Delete"
+                title={lockTitle ?? "Delete"}
+                disabled={isParentLocked}
                 onClick={() => setStatus(idsFor(row), "deleted")}
               >
                 <Trash2 className="w-4 h-4" />
@@ -440,7 +447,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                title="Delete permanently"
+                title={lockTitle ?? "Delete permanently"}
+                disabled={isParentLocked}
                 onClick={() => hardDelete(idsFor(row))}
               >
                 <Trash2 className="w-4 h-4" />
@@ -451,7 +459,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       </TableRow>,
     ];
 
-    if (isOpen) for (const kid of kids) out.push(...renderRow(kid, true));
+    if (isOpen) for (const kid of kids) out.push(...renderRow(kid, true, row.status));
     return out;
   };
 
