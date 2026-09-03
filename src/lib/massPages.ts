@@ -500,6 +500,9 @@ export interface MassPageOverrides {
   ctaBody?: string;
   ctaButton?: string;
   sections?: MassPageSections;
+  /** Pre-designed campaign template (layout) id. */
+  template?: string;
+
 }
 
 export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: string }> = [
