@@ -32,6 +32,9 @@ import {
   massPageSummary,
   massTemplatePath,
   massTemplateLabel,
+  MASS_CAMPAIGN_TEMPLATES,
+  DEFAULT_MASS_CAMPAIGN_TEMPLATE,
+
   isMassTemplatePath,
   MASS_TEMPLATE_PREFIX,
   compact,
