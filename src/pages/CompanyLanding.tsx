@@ -157,6 +157,14 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     navigate(`${baseUrl}${path}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Redirect legacy mass page URLs (Service-VisitType-LocationType first) to the
+  // canonical LocationType-VisitType-Service-County-CityStateZip order.
+  useEffect(() => {
+    if (!resolvedMassPage || !massPath) return;
+    if (massPath === resolvedMassPage.slug) return;
+    navigate(`${baseUrl}/${resolvedMassPage.slug}`, { replace: true });
+  }, [resolvedMassPage, massPath, baseUrl, navigate]);
   useEffect(() => {
     const fetchCompany = async () => {
       if (!slug) {
