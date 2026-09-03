@@ -12,7 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save } from "lucide-react";
+import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
 import {
@@ -77,6 +84,7 @@ export default function MassPagesBuilder() {
   const prefilled = useRef(false);
 
   const [mode, setMode] = useState<EditMode>("template");
+  const [previewTpl, setPreviewTpl] = useState<string | null>(null);
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
@@ -204,6 +212,11 @@ export default function MassPagesBuilder() {
   const liveUrl =
     mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
+  /** Sample page path used to preview a master campaign layout. */
+  const seedPreviewUrl =
+    mode === "template" && company?.slug && service && seedLocation
+      ? `/company/${company.slug}${massPagePath(service, seedLocation, opts)}`
+      : previewUrl;
 
 
   const defaults = useMemo<MassTextBlock[]>(
