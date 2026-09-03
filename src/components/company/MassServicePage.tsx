@@ -343,6 +343,138 @@ const MassServicePage = ({
     }
   })();
 
+  /* ---- Request Service (CTA) — one distinct layout per theme ---- */
+  const ctaVariants: Record<string, JSX.Element> = {
+    standard: (
+      <section
+        className="overflow-hidden border border-primary/20 bg-background shadow-sm"
+        style={{ borderRadius: theme.radius }}
+      >
+        <div className="grid md:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-3 p-6">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+              Request Service
+            </p>
+            <h2 className={theme.headingClass}>{content.ctaHeading}</h2>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+          </div>
+          <div className="flex flex-col justify-center gap-3 bg-primary p-6 text-primary-foreground">
+            {telHref && (
+              <a href={telHref} className="flex items-center gap-2 text-lg font-bold">
+                <Phone className="w-5 h-5" /> {phone}
+              </a>
+            )}
+            <button
+              onClick={onContact}
+              className="bg-background px-5 py-2.5 text-sm font-bold text-primary"
+              style={{ borderRadius: theme.radius }}
+            >
+              {content.ctaButton}
+            </button>
+            <p className="text-xs opacity-80">Same-day scheduling in {place}</p>
+          </div>
+        </div>
+      </section>
+    ),
+    spotlight: (
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-primary/60 p-10 text-center text-primary-foreground shadow-2xl">
+        <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary-foreground/10" />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-primary-foreground/10" />
+        <div className="relative mx-auto max-w-2xl space-y-4">
+          <p className="text-xs uppercase tracking-[0.35em] opacity-80">Request Service</p>
+          <h2 className="text-3xl font-semibold">{content.ctaHeading}</h2>
+          <p className="text-sm opacity-90 whitespace-pre-wrap">{content.ctaBody}</p>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <button
+              onClick={onContact}
+              className="rounded-full bg-background px-8 py-3 text-sm font-semibold text-primary shadow-lg"
+            >
+              {content.ctaButton}
+            </button>
+            {telHref && (
+              <a
+                href={telHref}
+                className="rounded-full border border-primary-foreground/50 px-8 py-3 text-sm font-semibold"
+              >
+                {phone}
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    ),
+    conversion: (
+      <section className="border-4 border-primary bg-primary/5">
+        <div className="bg-primary px-4 py-2 text-center text-xs font-black uppercase tracking-[0.3em] text-primary-foreground">
+          Request Service Now
+        </div>
+        <div className="grid gap-4 p-6 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div>
+            <h2 className="text-2xl font-extrabold uppercase">{content.ctaHeading}</h2>
+            <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{content.ctaBody}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {telHref && (
+              <a
+                href={telHref}
+                className="rounded-sm bg-primary px-6 py-3 text-center text-base font-extrabold text-primary-foreground"
+              >
+                CALL {phone}
+              </a>
+            )}
+            <button
+              onClick={onContact}
+              className="rounded-sm border-2 border-primary px-6 py-2.5 text-sm font-extrabold uppercase text-primary"
+            >
+              {content.ctaButton}
+            </button>
+          </div>
+        </div>
+      </section>
+    ),
+    editorial: (
+      <section className="border-y-2 border-primary/30 py-8">
+        <p className="font-serif text-xs uppercase tracking-[0.25em] text-primary">Request Service</p>
+        <h2 className="mt-2 max-w-3xl font-serif text-3xl font-semibold">{content.ctaHeading}</h2>
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+          {content.ctaBody}
+        </p>
+        <div className="mt-5 flex flex-wrap items-center gap-6">
+          <button
+            onClick={onContact}
+            className="border-b-2 border-primary pb-1 text-sm font-semibold uppercase tracking-wide text-primary"
+          >
+            {content.ctaButton}
+          </button>
+          {telHref && (
+            <a href={telHref} className="inline-flex items-center gap-2 text-sm font-semibold">
+              <Phone className="w-4 h-4 text-primary" /> {phone}
+            </a>
+          )}
+        </div>
+      </section>
+    ),
+    compact: (
+      <section className="rounded-2xl bg-primary p-5 text-center text-primary-foreground">
+        <h2 className="text-lg font-semibold">{content.ctaHeading}</h2>
+        <p className="mt-1 text-xs opacity-90 whitespace-pre-wrap">{content.ctaBody}</p>
+        <div className="mt-4 flex flex-col gap-2">
+          {telHref && (
+            <a href={telHref} className="rounded-full bg-background px-5 py-2.5 text-sm font-bold text-primary">
+              Call {phone}
+            </a>
+          )}
+          <button
+            onClick={onContact}
+            className="rounded-full border border-primary-foreground/60 px-5 py-2.5 text-sm font-semibold"
+          >
+            {content.ctaButton}
+          </button>
+        </div>
+      </section>
+    ),
+  };
+
   const nodes: Partial<Record<MassSectionKey, JSX.Element | null>> = {
     hero: <div key="hero">{heroVariants[theme.heroVariant] || heroVariants.carousel}</div>,
     intro: (
