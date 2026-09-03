@@ -40,7 +40,8 @@ const AmerceFooter = ({
   variant = "dark",
   bgColor,
 }: AmerceFooterProps) => {
-  const isLight = variant === "light";
+  // A themed campaign background is always dark/saturated, so use light text.
+  const isLight = variant === "light" && !bgColor;
   const headingClass = isLight ? "footer-heading" : "footer-heading text-white";
   const textClass = isLight ? "cl-text-2" : "cl-text-3";
   const titleClass = isLight ? "h6 title mb-1" : "h6 title text-white mb-1";
