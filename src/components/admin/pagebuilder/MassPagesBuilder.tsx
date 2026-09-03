@@ -528,6 +528,48 @@ export default function MassPagesBuilder() {
         )}
       </div>
 
+      {/* Theme template (master campaign only) */}
+      {mode === "template" && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">5. Theme template</CardTitle>
+            <CardDescription>
+              Pre-designed mass page layout. Every page in this master campaign uses it.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={ov.template || DEFAULT_MASS_CAMPAIGN_TEMPLATE}
+              onValueChange={(v) => setOv("template", v)}
+              className="grid gap-2 md:grid-cols-2"
+            >
+              {MASS_CAMPAIGN_TEMPLATES.map((t) => (
+                <label
+                  key={t.id}
+                  htmlFor={`tpl-${t.id}`}
+                  className={`flex items-start gap-2 rounded-md border p-3 cursor-pointer transition-colors ${
+                    (ov.template || DEFAULT_MASS_CAMPAIGN_TEMPLATE) === t.id
+                      ? "border-primary bg-primary/5"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <RadioGroupItem value={t.id} id={`tpl-${t.id}`} className="mt-1" />
+                  <span>
+                    <span className="block text-sm font-medium">{t.name}</span>
+                    <span className="block text-xs text-muted-foreground">{t.description}</span>
+                    <span className="mt-1 block text-[11px] font-mono text-muted-foreground">
+                      {t.order.join(" › ")}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+      )}
+
+
+
 
       {/* Summary */}
       <Card>
