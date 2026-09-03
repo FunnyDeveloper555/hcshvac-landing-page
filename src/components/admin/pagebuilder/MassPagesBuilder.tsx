@@ -353,7 +353,7 @@ export default function MassPagesBuilder() {
             >
               <RadioGroupItem value="template" id="mode-template" className="mt-1" />
               <span>
-                <span className="block text-sm font-medium">Master template (campaign)</span>
+                <span className="block text-sm font-medium">Master Campaign</span>
                 <span className="block text-xs text-muted-foreground">
                   No county or city — all matching pages share this content.
                 </span>
@@ -365,7 +365,7 @@ export default function MassPagesBuilder() {
             >
               <RadioGroupItem value="page" id="mode-page" className="mt-1" />
               <span>
-                <span className="block text-sm font-medium">Specific page in the campaign</span>
+                <span className="block text-sm font-medium">Campaign (specific page)</span>
                 <span className="block text-xs text-muted-foreground">
                   Pick the county and city / ZIP to override one page.
                 </span>

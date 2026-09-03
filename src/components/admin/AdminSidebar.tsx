@@ -311,9 +311,9 @@ const companySubmenus: MenuItem[] = [
     icon: MapPinned,
     children: [
       { title: "New Campaign", url: "/admin/page-builder/mass-pages", icon: MapPinned },
-      { title: "Active Campaign", url: "/admin/page-builder/mass-pages/active", icon: MapPinned },
-      { title: "Suspended Campaign", url: "/admin/page-builder/mass-pages/suspended", icon: MapPinned },
-      { title: "Deleted Campaign", url: "/admin/page-builder/mass-pages/deleted", icon: MapPinned },
+      { title: "Master Campaigns", url: "/admin/page-builder/mass-pages/master", icon: Layers },
+      { title: "Campaigns", url: "/admin/page-builder/mass-pages/campaigns", icon: List },
+
     ],
   },
   { title: "Domain Settings", url: "/admin/page-builder/domain-settings", icon: Globe },
