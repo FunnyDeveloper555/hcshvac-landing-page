@@ -674,6 +674,12 @@ export const mergeMassOverrides = (
     ctaHeading: text("ctaHeading"),
     ctaBody: text("ctaBody"),
     ctaButton: text("ctaButton"),
-    sections: { ...defaults.sections, ...(s.sections || {}) },
+    template: text("template") || DEFAULT_MASS_CAMPAIGN_TEMPLATE,
+    sections: {
+      ...defaults.sections,
+      ...massCampaignTemplate(s.template).sections,
+      ...(s.sections || {}),
+    },
   };
+
 };
