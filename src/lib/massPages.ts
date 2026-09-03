@@ -554,7 +554,7 @@ export interface MassCampaignTemplate {
 }
 
 
-export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
+const ALL_MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
   {
     id: "standard",
     name: "Standard Service Page",
@@ -673,10 +673,14 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
 ];
 
 
+/** Only the Standard Service Page theme is offered for now. */
+export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] =
+  ALL_MASS_CAMPAIGN_TEMPLATES.filter((t) => t.id === "standard");
+
 export const DEFAULT_MASS_CAMPAIGN_TEMPLATE = "standard";
 
 export const massCampaignTemplate = (id?: string | null): MassCampaignTemplate =>
-  MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === id) || MASS_CAMPAIGN_TEMPLATES[0];
+  ALL_MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === id) || ALL_MASS_CAMPAIGN_TEMPLATES[0];
 
 
 
