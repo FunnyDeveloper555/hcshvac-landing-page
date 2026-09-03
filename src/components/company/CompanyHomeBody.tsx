@@ -28,6 +28,8 @@ interface CompanyHomeBodyProps {
   theme: any;
   /** Hide the contact block when the host page renders its own. */
   showContact?: boolean;
+  /** Campaign theme family used to style Partners / Offers / Contact blocks. */
+  variant?: "standard" | "spotlight" | "conversion" | "editorial" | "compact";
 }
 
 const EQUIPMENT_FIELDS = [
@@ -37,7 +39,24 @@ const EQUIPMENT_FIELDS = [
   "gas_pipe_install", "gas_pipe_service", "gas_pipe_repair",
 ] as const;
 
-const CompanyHomeBody = ({ company, theme, showContact = true }: CompanyHomeBodyProps) => {
+const BODY_VARIANT_STYLES: Record<
+  string,
+  { partners: string; coupons: string; contact: string }
+> = {
+  standard: {
+    partners: "bg-muted/30 border-y",
+    coupons: "bg-background border-t-4 border-primary",
+    contact: "bg-primary/5 border-t",
+  },
+};
+
+const CompanyHomeBody = ({
+  company,
+  theme,
+  showContact = true,
+  variant = "standard",
+}: CompanyHomeBodyProps) => {
+  const vs = BODY_VARIANT_STYLES[variant] || BODY_VARIANT_STYLES.standard;
   const hasLists =
     (company.service_areas?.length ?? 0) > 0 ||
     (company.hvac_brands_install?.length ?? 0) > 0 ||
@@ -121,10 +140,14 @@ const CompanyHomeBody = ({ company, theme, showContact = true }: CompanyHomeBody
         </section>
       )}
 
-      <CompanyPartnerAccordion companyId={company.id} primaryColor={theme.colors.primary} />
-      <CompanyCoupons coupons={coupons} primaryColor={theme.colors.primary} />
+      <div className={vs.partners}>
+        <CompanyPartnerAccordion companyId={company.id} primaryColor={theme.colors.primary} />
+      </div>
+      <div className={vs.coupons}>
+        <CompanyCoupons coupons={coupons} primaryColor={theme.colors.primary} />
+      </div>
       {showContact && (
-        <div id="company-contact">
+        <div id="company-contact" className={vs.contact}>
           <CompanyContact company={company} theme={theme} />
         </div>
       )}

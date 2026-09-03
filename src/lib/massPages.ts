@@ -534,6 +534,8 @@ export interface MassTemplateTheme {
   heroVariant: "carousel" | "split" | "banner" | "editorial" | "compact";
   headerVariant: "solid" | "glass" | "alert" | "minimal" | "centered";
   footerVariant: "dark" | "gradient" | "compact" | "columns" | "minimal";
+  /** Styling family for Contact Us / Special Offers / Request Service / Our Partners. */
+  bodyVariant: "standard" | "spotlight" | "conversion" | "editorial" | "compact";
   cardClass: string;
   headingClass: string;
   sectionGap: string;
@@ -552,7 +554,7 @@ export interface MassCampaignTemplate {
 }
 
 
-export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
+const ALL_MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
   {
     id: "standard",
     name: "Standard Service Page",
@@ -569,6 +571,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
       radius: "0.5rem",
       heroVariant: "carousel",
       headerVariant: "solid",
+      bodyVariant: "standard",
       footerVariant: "dark",
       cardClass: "rounded-lg border bg-background shadow-sm",
       headingClass: "text-2xl font-bold tracking-tight",
@@ -591,6 +594,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
       radius: "1.25rem",
       heroVariant: "split",
       headerVariant: "glass",
+      bodyVariant: "spotlight",
       footerVariant: "gradient",
       cardClass: "rounded-3xl border-0 bg-background shadow-xl ring-1 ring-primary/10",
       headingClass: "text-3xl font-semibold tracking-tight",
@@ -613,6 +617,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
       radius: "0.25rem",
       heroVariant: "banner",
       headerVariant: "alert",
+      bodyVariant: "conversion",
       footerVariant: "compact",
       cardClass: "rounded-sm border-2 border-primary/25 bg-background",
       headingClass: "text-2xl font-extrabold uppercase tracking-tight",
@@ -635,6 +640,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
       radius: "0.125rem",
       heroVariant: "editorial",
       headerVariant: "minimal",
+      bodyVariant: "editorial",
       footerVariant: "columns",
       cardClass: "rounded-none border-l-4 border-primary/40 bg-background pl-5",
       headingClass: "text-3xl font-serif font-semibold",
@@ -657,6 +663,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
       radius: "9999px",
       heroVariant: "compact",
       headerVariant: "centered",
+      bodyVariant: "compact",
       footerVariant: "minimal",
       cardClass: "rounded-2xl border bg-background/70 backdrop-blur",
       headingClass: "text-xl font-semibold",
@@ -666,10 +673,14 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
 ];
 
 
+/** Only the Standard Service Page theme is offered for now. */
+export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] =
+  ALL_MASS_CAMPAIGN_TEMPLATES.filter((t) => t.id === "standard");
+
 export const DEFAULT_MASS_CAMPAIGN_TEMPLATE = "standard";
 
 export const massCampaignTemplate = (id?: string | null): MassCampaignTemplate =>
-  MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === id) || MASS_CAMPAIGN_TEMPLATES[0];
+  ALL_MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === id) || ALL_MASS_CAMPAIGN_TEMPLATES[0];
 
 
 
