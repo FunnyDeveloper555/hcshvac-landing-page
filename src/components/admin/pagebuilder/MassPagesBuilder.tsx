@@ -37,6 +37,7 @@ import {
 
 
 type SourceKind = "services" | "products";
+type EditMode = "template" | "page";
 
 type MergedOverrides = ReturnType<typeof mergeMassOverrides>;
 
