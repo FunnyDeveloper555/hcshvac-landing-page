@@ -163,6 +163,7 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[280px]">Campaign / Path</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Last Updated</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -170,10 +171,12 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
               </TableHeader>
               <TableBody>
                 {rows.map((row) => {
-                  const title =
-                    (row.overrides?.heroTitle as string) ||
-                    (row.overrides?.heading as string) ||
-                    row.page_path.replace(/^\//, "");
+                  const isTemplate = isMassTemplatePath(row.page_path);
+                  const title = isTemplate
+                    ? massTemplateLabel(row.page_path)
+                    : (row.overrides?.heroTitle as string) ||
+                      (row.overrides?.heading as string) ||
+                      row.page_path.replace(/^\//, "");
                   return (
                     <TableRow key={row.id}>
                       <TableCell>
@@ -181,8 +184,13 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
                           {title}
                         </div>
                         <div className="font-mono text-xs text-muted-foreground break-all">
-                          {row.page_path}
+                          {isTemplate ? "All counties & cities" : row.page_path}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={isTemplate ? "default" : "outline"}>
+                          {isTemplate ? "Master template" : "Specific page"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant={status === "active" ? "default" : "secondary"}>
@@ -207,13 +215,16 @@ export default function MassCampaignsList({ status }: { status: CampaignStatus }
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
+                          {!isTemplate && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                          )}
+
 
                           {status === "active" && (
                             <Button
