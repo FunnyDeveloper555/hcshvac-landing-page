@@ -279,6 +279,18 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     }
   };
 
+  /** "DuPage County · Carol Stream, IL 60108" from a specific page path */
+  const locationLabel = (path: string) => {
+    const parts = path.replace(/^\//, "").split("-").filter(Boolean);
+    if (parts.length < 2) return path;
+    const county = parts[parts.length - 2].replace(/([a-z])([A-Z])/g, "$1 $2");
+    const raw = parts[parts.length - 1];
+    const m = raw.match(/^(.*?)([A-Z]{2})(\d{5})?$/);
+    const city = (m ? m[1] : raw).replace(/([a-z])([A-Z])/g, "$1 $2");
+    const tail = m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
+    return `${county} · ${tail}`;
+  };
+
   const renderRow = (row: CampaignRow, isChild: boolean): JSX.Element[] => {
     const isTemplate = isMassTemplatePath(row.page_path);
     const title = isChild ? locationLabel(row.page_path) : titleFor(row);
