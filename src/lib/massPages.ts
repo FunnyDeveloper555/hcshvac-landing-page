@@ -138,9 +138,9 @@ export const massPageSlug = (
   opts: MassPageOptions = {},
 ): string =>
   [
-    serviceSlugPart(service),
-    opts.visitType ? compact(opts.visitType) : "",
     opts.locationType ? compact(opts.locationType) : "",
+    opts.visitType ? compact(opts.visitType) : "",
+    serviceSlugPart(service),
     ...locationSlugParts(loc),
   ]
     .filter(Boolean)
