@@ -269,6 +269,138 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     }
   };
 
+  const renderRow = (row: CampaignRow, isChild: boolean): JSX.Element[] => {
+    const isTemplate = isMassTemplatePath(row.page_path);
+    const title = titleFor(row);
+    const kids = isTemplate ? childrenByMaster.get(row.page_path) || [] : [];
+    const isOpen = !!expanded[row.id];
+
+    const out: JSX.Element[] = [
+      <TableRow key={row.id} className="group transition-colors hover:bg-muted/40">
+        <TableCell className="align-top">
+          <div className={isChild ? "pl-7 border-l-2 border-muted ml-1" : ""}>
+            <div className="flex items-center gap-1.5">
+              {kids.length > 0 ? (
+                <button
+                  className="p-0.5 rounded hover:bg-muted text-muted-foreground"
+                  title={isOpen ? "Collapse campaigns" : "Expand campaigns"}
+                  onClick={() => setExpanded((e) => ({ ...e, [row.id]: !e[row.id] }))}
+                >
+                  {isOpen ? (
+                    <ChevronDown className="w-4 h-4" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4" />
+                  )}
+                </button>
+              ) : null}
+              <span
+                className={`font-medium truncate max-w-[300px] ${
+                  isChild ? "text-foreground/90 text-sm" : "text-foreground"
+                }`}
+                title={title}
+              >
+                {title}
+              </span>
+              {kids.length > 0 && (
+                <Badge variant="secondary" className="ml-1 text-[11px]">
+                  {kids.length} page{kids.length === 1 ? "" : "s"}
+                </Badge>
+              )}
+            </div>
+            <div className="font-mono text-xs text-muted-foreground mt-1 break-all max-w-[320px]">
+              {isTemplate ? "All counties & cities" : row.page_path}
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
+        <TableCell className="text-muted-foreground whitespace-nowrap align-top text-sm">
+          {formattedDate(row.updated_at)}
+        </TableCell>
+        <TableCell className="text-right align-top">
+          <div className="flex items-center justify-end gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              title="Edit"
+              onClick={() =>
+                navigate(
+                  `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
+                    row.page_path,
+                  )}`,
+                )
+              }
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+            {!isTemplate && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                title="Open page"
+                onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            )}
+            <Separator orientation="vertical" className="h-5 mx-0.5" />
+            {row.status === "active" ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                title="Suspend"
+                onClick={() => setStatus(row.id, "suspended")}
+              >
+                <Pause className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                title={row.status === "deleted" ? "Restore" : "Activate"}
+                onClick={() => setStatus(row.id, "active")}
+              >
+                {row.status === "deleted" ? (
+                  <RotateCcw className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+              </Button>
+            )}
+            {row.status !== "deleted" ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                title="Delete"
+                onClick={() => setStatus(row.id, "deleted")}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                title="Delete permanently"
+                onClick={() => hardDelete(row.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </TableCell>
+      </TableRow>,
+    ];
+
+    if (isOpen) for (const kid of kids) out.push(...renderRow(kid, true));
+    return out;
+  };
+
+
   const startIdx = rows.length ? (currentPage - 1) * pageSize + 1 : 0;
   const endIdx = Math.min(currentPage * pageSize, rows.length);
 
