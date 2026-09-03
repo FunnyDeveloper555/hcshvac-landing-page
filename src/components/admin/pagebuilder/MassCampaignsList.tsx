@@ -155,17 +155,44 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
         (row.overrides?.heading as string) ||
         row.page_path.replace(/^\//, "");
 
+  /** specific pages grouped under the master template they belong to */
+  const childrenByMaster = useMemo(() => {
+    const map = new Map<string, CampaignRow[]>();
+    for (const r of allRows) {
+      if (isMassTemplatePath(r.page_path)) continue;
+      const key = massTemplatePathForPage(r.page_path);
+      if (!key) continue;
+      map.set(key, [...(map.get(key) || []), r]);
+    }
+    for (const list of map.values())
+      list.sort((a, b) => a.page_path.localeCompare(b.page_path));
+    return map;
+  }, [allRows]);
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    let list = allRows.filter((r) =>
-      kind === "master" ? isMassTemplatePath(r.page_path) : !isMassTemplatePath(r.page_path),
+    const masterPaths = new Set(
+      allRows.filter((r) => isMassTemplatePath(r.page_path)).map((r) => r.page_path),
     );
+    // top-level = master templates + orphan pages that have no master row
+    let list = allRows.filter((r) => {
+      if (isMassTemplatePath(r.page_path)) return true;
+      const key = massTemplatePathForPage(r.page_path);
+      return !key || !masterPaths.has(key);
+    });
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
     if (q) {
-      list = list.filter(
-        (r) =>
-          r.page_path.toLowerCase().includes(q) || titleFor(r).toLowerCase().includes(q),
-      );
+      list = list.filter((r) => {
+        const kids = childrenByMaster.get(r.page_path) || [];
+        return (
+          r.page_path.toLowerCase().includes(q) ||
+          titleFor(r).toLowerCase().includes(q) ||
+          kids.some(
+            (k) =>
+              k.page_path.toLowerCase().includes(q) || titleFor(k).toLowerCase().includes(q),
+          )
+        );
+      });
     }
     const sorted = [...list].sort((a, b) => {
       let cmp = 0;
@@ -175,7 +202,8 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       return sortAsc ? cmp : -cmp;
     });
     return sorted;
-  }, [allRows, kind, search, statusFilter, sortKey, sortAsc]);
+  }, [allRows, childrenByMaster, search, statusFilter, sortKey, sortAsc]);
+
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const currentPage = Math.min(page, totalPages);
