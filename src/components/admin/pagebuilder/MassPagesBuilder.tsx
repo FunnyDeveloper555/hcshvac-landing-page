@@ -65,6 +65,7 @@ export default function MassPagesBuilder() {
   const prefillPath = searchParams.get("path");
   const prefilled = useRef(false);
 
+  const [mode, setMode] = useState<EditMode>("template");
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
