@@ -163,25 +163,6 @@ export default function MassPagesBuilder() {
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
-  /** Filtered table rows — only shown once a county is selected. */
-  const filtered = useMemo(() => {
-    if (!county) return [];
-    const tokens = [
-      locationType ? compact(locationType) : "",
-      visitType ? compact(visitType) : "",
-      service ? compact(service.label) : "",
-      compact(county.county),
-      location ? compact(location.city) : "",
-    ].filter(Boolean);
-    const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
-      const p = r.page_path.toLowerCase();
-      if (!tokens.every((t) => p.includes(t.toLowerCase()))) return false;
-      if (q && !p.includes(q)) return false;
-      return true;
-    });
-  }, [rows, locationType, visitType, service, county, location, search]);
-
   /** "Carol Stream, IL 60108" from a page path's trailing segment */
   const cityLabel = (p: string) => {
     const parts = p.replace(/^\//, "").split("-").filter(Boolean);
@@ -191,20 +172,60 @@ export default function MassPagesBuilder() {
     return m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
   };
 
-  /** Rows grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
+  /**
+   * Table entries — empty until a county is picked. Once a county (and optionally a
+   * city / ZIP) is chosen we list every campaign page for the selected criteria,
+   * whether it has saved content yet or not.
+   */
+  const entries = useMemo(() => {
+    if (!county) return [] as { path: string; label: string; row: PageRow | null }[];
+    const q = search.trim().toLowerCase();
+    const byPath = new Map(rows.map((r) => [r.page_path, r]));
+
+    let list: { path: string; label: string; row: PageRow | null }[] = [];
+
+    if (service) {
+      const locs = location ? [location] : county.locations;
+      list = locs.map((l) => {
+        const p = massPagePath(service, l, opts);
+        return {
+          path: p,
+          label: `${l.city}, ${l.state}${l.zip ? ` ${l.zip}` : ""}`,
+          row: byPath.get(p) || null,
+        };
+      });
+    } else {
+      const tokens = [
+        locationType ? compact(locationType) : "",
+        visitType ? compact(visitType) : "",
+        compact(county.county),
+        location ? compact(location.city) : "",
+      ].filter(Boolean);
+      list = rows
+        .filter((r) => tokens.every((t) => r.page_path.toLowerCase().includes(t.toLowerCase())))
+        .map((r) => ({ path: r.page_path, label: cityLabel(r.page_path), row: r }));
+    }
+
+    return q ? list.filter((e) => e.path.toLowerCase().includes(q) || e.label.toLowerCase().includes(q)) : list;
+  }, [rows, locationType, visitType, service, county, location, search, opts]);
+
+  const filtered = entries;
+
+  /** Entries grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
   const grouped = useMemo(() => {
-    const map = new Map<string, PageRow[]>();
-    for (const r of filtered) {
-      const letter = (cityLabel(r.page_path)[0] || "#").toUpperCase();
-      map.set(letter, [...(map.get(letter) || []), r]);
+    const map = new Map<string, typeof entries>();
+    for (const e of entries) {
+      const letter = (e.label[0] || "#").toUpperCase();
+      map.set(letter, [...(map.get(letter) || []), e]);
     }
     return [...map.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([letter, list]) => ({
         letter,
-        rows: [...list].sort((a, b) => cityLabel(a.page_path).localeCompare(cityLabel(b.page_path))),
+        rows: [...list].sort((a, b) => a.label.localeCompare(b.label)),
       }));
-  }, [filtered]);
+  }, [entries]);
+
 
   const tableTitle = useMemo(() => {
     const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
