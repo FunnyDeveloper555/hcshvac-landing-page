@@ -490,11 +490,14 @@ export default function MassPagesBuilder() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <LayoutList className="w-4 h-4 text-muted-foreground" />
-            Individual campaign pages
+            {tableTitle}
           </CardTitle>
           <CardDescription>
-            {filtered.length} record{filtered.length === 1 ? "" : "s"} matching the filters above.
+            {!county
+              ? "Select a county (and optionally a city / ZIP) to list campaign pages."
+              : `${filtered.length} record${filtered.length === 1 ? "" : "s"} in ${county.county}, ${county.state}.`}
           </CardDescription>
+
         </CardHeader>
         <Separator />
         <CardContent className="pt-4 space-y-4">
