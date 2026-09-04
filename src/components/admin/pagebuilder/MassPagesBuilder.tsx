@@ -249,21 +249,22 @@ export default function MassPagesBuilder() {
     refresh();
   };
 
-  const openEditorFor = (row: PageRow) => {
+  const openEditorForPath = (p: string) => {
     if (!company) return;
-    const ref = resolveMassPage(row.page_path, company, groups);
+    const ref = resolveMassPage(p, company, groups);
     if (!ref) {
       toast.error("This page path could not be resolved against the current service areas.");
       return;
     }
     setEditorTarget({
-      path: row.page_path,
+      path: p,
       service: ref.service,
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
     });
   };
+
 
   const statusBadge = (status: string) => {
     switch (status) {
