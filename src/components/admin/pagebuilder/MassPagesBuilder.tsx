@@ -212,6 +212,20 @@ export default function MassPagesBuilder() {
   const filtered = entries;
 
   /** Entries grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
+  const grouped = useMemo(() => {
+    const map = new Map<string, typeof entries>();
+    for (const e of entries) {
+      const letter = (e.label[0] || "#").toUpperCase();
+      map.set(letter, [...(map.get(letter) || []), e]);
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([letter, list]) => ({
+        letter,
+        rows: [...list].sort((a, b) => a.label.localeCompare(b.label)),
+      }));
+  }, [entries]);
+
   const stats = useMemo(() => {
     const total = filtered.length;
     const active = filtered.filter((e) => e.row?.status === "active").length;
@@ -220,6 +234,7 @@ export default function MassPagesBuilder() {
     const deleted = filtered.filter((e) => e.row?.status === "deleted").length;
     return { total, active, notCreated, suspended, deleted };
   }, [filtered]);
+
 
 
 
