@@ -582,95 +582,109 @@ export default function MassPagesBuilder() {
                         </span>
                       </TableCell>
                     </TableRow>,
-                    ...g.rows.map((row) => (
-                      <TableRow key={row.id} className="hover:bg-muted/40">
+                    ...g.rows.map((e) => (
+                      <TableRow key={e.path} className="hover:bg-muted/40">
                         <TableCell className="align-top">
-                          <div className="font-medium break-words">{cityLabel(row.page_path)}</div>
+                          <div className="font-medium break-words">{e.label}</div>
                           <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-                            {row.page_path}
+                            {e.path}
                           </div>
                         </TableCell>
-
-                      <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
-                      <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
-                        {new Date(row.updated_at).toLocaleString(undefined, {
-                          month: "short",
-                          day: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right align-top">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title="Edit content"
-                            onClick={() => openEditorFor(row)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title="Open page"
-                            onClick={() =>
-                              window.open(
-                                company.slug
-                                  ? `https://${company.slug}.hcshvac.com${row.page_path}`
-                                  : `/company/${company.slug ?? ""}${row.page_path}`,
-                                "_blank",
-                                "noopener,noreferrer",
-                              )
-                            }
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                          <Separator orientation="vertical" className="h-5 mx-0.5" />
-                          {row.status === "active" ? (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-amber-600 hover:bg-amber-50"
-                              title="Suspend"
-                              onClick={() => setStatus(row.id, "suspended")}
-                            >
-                              <Pause className="w-4 h-4" />
-                            </Button>
+                        <TableCell className="align-top">
+                          {e.row ? (
+                            statusBadge(e.row.status)
                           ) : (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Not created
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
+                          {e.row
+                            ? new Date(e.row.updated_at).toLocaleString(undefined, {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-right align-top">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
-                              title={row.status === "deleted" ? "Restore" : "Activate"}
-                              onClick={() => setStatus(row.id, "active")}
+                              className="h-8 w-8"
+                              title={e.row ? "Edit content" : "Create page content"}
+                              onClick={() => openEditorForPath(e.path)}
                             >
-                              {row.status === "deleted" ? (
-                                <RotateCcw className="w-4 h-4" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
+                              <Pencil className="w-4 h-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            title={row.status === "deleted" ? "Delete permanently" : "Delete"}
-                            onClick={() =>
-                              row.status === "deleted"
-                                ? hardDelete(row.id)
-                                : setStatus(row.id, "deleted")
-                            }
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title="Open page"
+                              onClick={() =>
+                                window.open(
+                                  company.slug
+                                    ? `https://${company.slug}.hcshvac.com${e.path}`
+                                    : `/company/${company.slug ?? ""}${e.path}`,
+                                  "_blank",
+                                  "noopener,noreferrer",
+                                )
+                              }
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                            {e.row && (
+                              <>
+                                <Separator orientation="vertical" className="h-5 mx-0.5" />
+                                {e.row.status === "active" ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600 hover:bg-amber-50"
+                                    title="Suspend"
+                                    onClick={() => setStatus(e.row!.id, "suspended")}
+                                  >
+                                    <Pause className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
+                                    title={e.row.status === "deleted" ? "Restore" : "Activate"}
+                                    onClick={() => setStatus(e.row!.id, "active")}
+                                  >
+                                    {e.row.status === "deleted" ? (
+                                      <RotateCcw className="w-4 h-4" />
+                                    ) : (
+                                      <Play className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                  title={e.row.status === "deleted" ? "Delete permanently" : "Delete"}
+                                  onClick={() =>
+                                    e.row!.status === "deleted"
+                                      ? hardDelete(e.row!.id)
+                                      : setStatus(e.row!.id, "deleted")
+                                  }
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+
                     )),
                   ])
 
