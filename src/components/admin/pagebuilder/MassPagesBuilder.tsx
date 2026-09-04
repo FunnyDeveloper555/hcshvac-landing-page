@@ -163,13 +163,14 @@ export default function MassPagesBuilder() {
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
-  /** Filtered table rows — the selectors above act as filters on this list. */
+  /** Filtered table rows — only shown once a county is selected. */
   const filtered = useMemo(() => {
+    if (!county) return [];
     const tokens = [
       locationType ? compact(locationType) : "",
       visitType ? compact(visitType) : "",
       service ? compact(service.label) : "",
-      county ? compact(county.county) : "",
+      compact(county.county),
       location ? compact(location.city) : "",
     ].filter(Boolean);
     const q = search.trim().toLowerCase();
@@ -181,7 +182,37 @@ export default function MassPagesBuilder() {
     });
   }, [rows, locationType, visitType, service, county, location, search]);
 
+  /** "Carol Stream, IL 60108" from a page path's trailing segment */
+  const cityLabel = (p: string) => {
+    const parts = p.replace(/^\//, "").split("-").filter(Boolean);
+    const raw = parts[parts.length - 1] || p;
+    const m = raw.match(/^(.*?)([A-Z]{2})(\d{5})?$/);
+    const city = (m ? m[1] : raw).replace(/([a-z])([A-Z])/g, "$1 $2");
+    return m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
+  };
+
+  /** Rows grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
+  const grouped = useMemo(() => {
+    const map = new Map<string, PageRow[]>();
+    for (const r of filtered) {
+      const letter = (cityLabel(r.page_path)[0] || "#").toUpperCase();
+      map.set(letter, [...(map.get(letter) || []), r]);
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([letter, list]) => ({
+        letter,
+        rows: [...list].sort((a, b) => cityLabel(a.page_path).localeCompare(cityLabel(b.page_path))),
+      }));
+  }, [filtered]);
+
+  const tableTitle = useMemo(() => {
+    const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
+    return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
+  }, [locationType, visitType, service, company]);
+
   const exists = !!filtered.find((r) => r.page_path === path) || !!rows.find((r) => r.page_path === path);
+
 
   const setStatus = async (id: string, next: string) => {
     const { error } = await supabase.from("mass_page_content").update({ status: next }).eq("id", id);
@@ -459,11 +490,14 @@ export default function MassPagesBuilder() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <LayoutList className="w-4 h-4 text-muted-foreground" />
-            Individual campaign pages
+            {tableTitle}
           </CardTitle>
           <CardDescription>
-            {filtered.length} record{filtered.length === 1 ? "" : "s"} matching the filters above.
+            {!county
+              ? "Select a county (and optionally a city / ZIP) to list campaign pages."
+              : `${filtered.length} record${filtered.length === 1 ? "" : "s"} in ${county.county}, ${county.state}.`}
           </CardDescription>
+
         </CardHeader>
         <Separator />
         <CardContent className="pt-4 space-y-4">
@@ -505,6 +539,12 @@ export default function MassPagesBuilder() {
                       </TableCell>
                     </TableRow>
                   ))
+                ) : !county ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
+                      Select a county to list its campaign pages.
+                    </TableCell>
+                  </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
@@ -512,18 +552,24 @@ export default function MassPagesBuilder() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((row) => (
-                    <TableRow key={row.id} className="hover:bg-muted/40">
-                      <TableCell className="align-top">
-                        <div className="font-medium break-words">
-                          {(row.overrides?.heroTitle as string) ||
-                            (row.overrides?.heading as string) ||
-                            row.page_path.replace(/^\//, "")}
-                        </div>
-                        <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-                          {row.page_path}
-                        </div>
+                  grouped.flatMap((g) => [
+                    <TableRow key={`grp-${g.letter}`} className="bg-muted/30 hover:bg-muted/30">
+                      <TableCell colSpan={4} className="py-1.5">
+                        <span className="text-xs font-semibold tracking-widest text-muted-foreground">
+                          {g.letter}
+                          {g.rows.length}
+                        </span>
                       </TableCell>
+                    </TableRow>,
+                    ...g.rows.map((row) => (
+                      <TableRow key={row.id} className="hover:bg-muted/40">
+                        <TableCell className="align-top">
+                          <div className="font-medium break-words">{cityLabel(row.page_path)}</div>
+                          <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
+                            {row.page_path}
+                          </div>
+                        </TableCell>
+
                       <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
                       <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(row.updated_at).toLocaleString(undefined, {
@@ -604,7 +650,9 @@ export default function MassPagesBuilder() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                    )),
+                  ])
+
                 )}
               </TableBody>
             </Table>
