@@ -635,7 +635,9 @@ export default function MassPagesBuilder() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                    )),
+                  ])
+
                 )}
               </TableBody>
             </Table>
