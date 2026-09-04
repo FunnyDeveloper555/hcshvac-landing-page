@@ -536,6 +536,12 @@ export default function MassPagesBuilder() {
                       </TableCell>
                     </TableRow>
                   ))
+                ) : !county ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
+                      Select a county to list its campaign pages.
+                    </TableCell>
+                  </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
@@ -543,18 +549,24 @@ export default function MassPagesBuilder() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((row) => (
-                    <TableRow key={row.id} className="hover:bg-muted/40">
-                      <TableCell className="align-top">
-                        <div className="font-medium break-words">
-                          {(row.overrides?.heroTitle as string) ||
-                            (row.overrides?.heading as string) ||
-                            row.page_path.replace(/^\//, "")}
-                        </div>
-                        <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-                          {row.page_path}
-                        </div>
+                  grouped.flatMap((g) => [
+                    <TableRow key={`grp-${g.letter}`} className="bg-muted/30 hover:bg-muted/30">
+                      <TableCell colSpan={4} className="py-1.5">
+                        <span className="text-xs font-semibold tracking-widest text-muted-foreground">
+                          {g.letter}
+                          {g.rows.length}
+                        </span>
                       </TableCell>
+                    </TableRow>,
+                    ...g.rows.map((row) => (
+                      <TableRow key={row.id} className="hover:bg-muted/40">
+                        <TableCell className="align-top">
+                          <div className="font-medium break-words">{cityLabel(row.page_path)}</div>
+                          <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
+                            {row.page_path}
+                          </div>
+                        </TableCell>
+
                       <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
                       <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(row.updated_at).toLocaleString(undefined, {
