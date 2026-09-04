@@ -163,25 +163,6 @@ export default function MassPagesBuilder() {
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
-  /** Filtered table rows — only shown once a county is selected. */
-  const filtered = useMemo(() => {
-    if (!county) return [];
-    const tokens = [
-      locationType ? compact(locationType) : "",
-      visitType ? compact(visitType) : "",
-      service ? compact(service.label) : "",
-      compact(county.county),
-      location ? compact(location.city) : "",
-    ].filter(Boolean);
-    const q = search.trim().toLowerCase();
-    return rows.filter((r) => {
-      const p = r.page_path.toLowerCase();
-      if (!tokens.every((t) => p.includes(t.toLowerCase()))) return false;
-      if (q && !p.includes(q)) return false;
-      return true;
-    });
-  }, [rows, locationType, visitType, service, county, location, search]);
-
   /** "Carol Stream, IL 60108" from a page path's trailing segment */
   const cityLabel = (p: string) => {
     const parts = p.replace(/^\//, "").split("-").filter(Boolean);
@@ -191,27 +172,67 @@ export default function MassPagesBuilder() {
     return m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
   };
 
-  /** Rows grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
+  /**
+   * Table entries — empty until a county is picked. Once a county (and optionally a
+   * city / ZIP) is chosen we list every campaign page for the selected criteria,
+   * whether it has saved content yet or not.
+   */
+  const entries = useMemo(() => {
+    if (!county) return [] as { path: string; label: string; row: PageRow | null }[];
+    const q = search.trim().toLowerCase();
+    const byPath = new Map(rows.map((r) => [r.page_path, r]));
+
+    let list: { path: string; label: string; row: PageRow | null }[] = [];
+
+    if (service) {
+      const locs = location ? [location] : county.locations;
+      list = locs.map((l) => {
+        const p = massPagePath(service, l, opts);
+        return {
+          path: p,
+          label: `${l.city}, ${l.state}${l.zip ? ` ${l.zip}` : ""}`,
+          row: byPath.get(p) || null,
+        };
+      });
+    } else {
+      const tokens = [
+        locationType ? compact(locationType) : "",
+        visitType ? compact(visitType) : "",
+        compact(county.county),
+        location ? compact(location.city) : "",
+      ].filter(Boolean);
+      list = rows
+        .filter((r) => tokens.every((t) => r.page_path.toLowerCase().includes(t.toLowerCase())))
+        .map((r) => ({ path: r.page_path, label: cityLabel(r.page_path), row: r }));
+    }
+
+    return q ? list.filter((e) => e.path.toLowerCase().includes(q) || e.label.toLowerCase().includes(q)) : list;
+  }, [rows, locationType, visitType, service, county, location, search, opts]);
+
+  const filtered = entries;
+
+  /** Entries grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
   const grouped = useMemo(() => {
-    const map = new Map<string, PageRow[]>();
-    for (const r of filtered) {
-      const letter = (cityLabel(r.page_path)[0] || "#").toUpperCase();
-      map.set(letter, [...(map.get(letter) || []), r]);
+    const map = new Map<string, typeof entries>();
+    for (const e of entries) {
+      const letter = (e.label[0] || "#").toUpperCase();
+      map.set(letter, [...(map.get(letter) || []), e]);
     }
     return [...map.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([letter, list]) => ({
         letter,
-        rows: [...list].sort((a, b) => cityLabel(a.page_path).localeCompare(cityLabel(b.page_path))),
+        rows: [...list].sort((a, b) => a.label.localeCompare(b.label)),
       }));
-  }, [filtered]);
+  }, [entries]);
+
 
   const tableTitle = useMemo(() => {
     const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
     return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
   }, [locationType, visitType, service, company]);
 
-  const exists = !!filtered.find((r) => r.page_path === path) || !!rows.find((r) => r.page_path === path);
+  const exists = !!rows.find((r) => r.page_path === path);
 
 
   const setStatus = async (id: string, next: string) => {
@@ -228,21 +249,22 @@ export default function MassPagesBuilder() {
     refresh();
   };
 
-  const openEditorFor = (row: PageRow) => {
+  const openEditorForPath = (p: string) => {
     if (!company) return;
-    const ref = resolveMassPage(row.page_path, company, groups);
+    const ref = resolveMassPage(p, company, groups);
     if (!ref) {
       toast.error("This page path could not be resolved against the current service areas.");
       return;
     }
     setEditorTarget({
-      path: row.page_path,
+      path: p,
       service: ref.service,
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
     });
   };
+
 
   const statusBadge = (status: string) => {
     switch (status) {
@@ -561,95 +583,109 @@ export default function MassPagesBuilder() {
                         </span>
                       </TableCell>
                     </TableRow>,
-                    ...g.rows.map((row) => (
-                      <TableRow key={row.id} className="hover:bg-muted/40">
+                    ...g.rows.map((e) => (
+                      <TableRow key={e.path} className="hover:bg-muted/40">
                         <TableCell className="align-top">
-                          <div className="font-medium break-words">{cityLabel(row.page_path)}</div>
+                          <div className="font-medium break-words">{e.label}</div>
                           <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-                            {row.page_path}
+                            {e.path}
                           </div>
                         </TableCell>
-
-                      <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
-                      <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
-                        {new Date(row.updated_at).toLocaleString(undefined, {
-                          month: "short",
-                          day: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right align-top">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title="Edit content"
-                            onClick={() => openEditorFor(row)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            title="Open page"
-                            onClick={() =>
-                              window.open(
-                                company.slug
-                                  ? `https://${company.slug}.hcshvac.com${row.page_path}`
-                                  : `/company/${company.slug ?? ""}${row.page_path}`,
-                                "_blank",
-                                "noopener,noreferrer",
-                              )
-                            }
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                          <Separator orientation="vertical" className="h-5 mx-0.5" />
-                          {row.status === "active" ? (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-amber-600 hover:bg-amber-50"
-                              title="Suspend"
-                              onClick={() => setStatus(row.id, "suspended")}
-                            >
-                              <Pause className="w-4 h-4" />
-                            </Button>
+                        <TableCell className="align-top">
+                          {e.row ? (
+                            statusBadge(e.row.status)
                           ) : (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Not created
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
+                          {e.row
+                            ? new Date(e.row.updated_at).toLocaleString(undefined, {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="text-right align-top">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
-                              title={row.status === "deleted" ? "Restore" : "Activate"}
-                              onClick={() => setStatus(row.id, "active")}
+                              className="h-8 w-8"
+                              title={e.row ? "Edit content" : "Create page content"}
+                              onClick={() => openEditorForPath(e.path)}
                             >
-                              {row.status === "deleted" ? (
-                                <RotateCcw className="w-4 h-4" />
-                              ) : (
-                                <Play className="w-4 h-4" />
-                              )}
+                              <Pencil className="w-4 h-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                            title={row.status === "deleted" ? "Delete permanently" : "Delete"}
-                            onClick={() =>
-                              row.status === "deleted"
-                                ? hardDelete(row.id)
-                                : setStatus(row.id, "deleted")
-                            }
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title="Open page"
+                              onClick={() =>
+                                window.open(
+                                  company.slug
+                                    ? `https://${company.slug}.hcshvac.com${e.path}`
+                                    : `/company/${company.slug ?? ""}${e.path}`,
+                                  "_blank",
+                                  "noopener,noreferrer",
+                                )
+                              }
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                            {e.row && (
+                              <>
+                                <Separator orientation="vertical" className="h-5 mx-0.5" />
+                                {e.row.status === "active" ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600 hover:bg-amber-50"
+                                    title="Suspend"
+                                    onClick={() => setStatus(e.row!.id, "suspended")}
+                                  >
+                                    <Pause className="w-4 h-4" />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
+                                    title={e.row.status === "deleted" ? "Restore" : "Activate"}
+                                    onClick={() => setStatus(e.row!.id, "active")}
+                                  >
+                                    {e.row.status === "deleted" ? (
+                                      <RotateCcw className="w-4 h-4" />
+                                    ) : (
+                                      <Play className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                  title={e.row.status === "deleted" ? "Delete permanently" : "Delete"}
+                                  onClick={() =>
+                                    e.row!.status === "deleted"
+                                      ? hardDelete(e.row!.id)
+                                      : setStatus(e.row!.id, "deleted")
+                                  }
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+
                     )),
                   ])
 
