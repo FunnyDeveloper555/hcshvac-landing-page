@@ -311,7 +311,9 @@ const companySubmenus: MenuItem[] = [
     icon: MapPinned,
     children: [
       { title: "New Campaign", url: "/admin/page-builder/mass-pages", icon: MapPinned },
-      { title: "Master Campaigns", url: "/admin/page-builder/mass-pages/master", icon: Layers },
+      { title: "Active Campaigns", url: "/admin/page-builder/mass-pages/master", icon: Layers },
+      { title: "Campaign Template", url: "/admin/page-builder/mass-pages/templates", icon: PageStack },
+
 
 
     ],

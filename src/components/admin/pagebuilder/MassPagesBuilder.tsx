@@ -1,104 +1,82 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Copy, ExternalLink, MapPin, Plus, Trash2, RotateCcw, Save, Eye } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Loader2,
+  Copy,
+  ExternalLink,
+  MapPin,
+  Pencil,
+  Plus,
+  Pause,
+  Play,
+  RotateCcw,
+  Trash2,
+  Search,
+  LayoutList,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
+import MassContentEditorDialog, {
+  MassContentEditorTarget,
+} from "@/components/admin/pagebuilder/MassContentEditorDialog";
 import {
-  ALL_MASS_SECTIONS,
   LOCATION_TYPES,
   LocationType,
   VISIT_TYPES,
   VisitType,
-  MassImageBox,
-  MassPageSections,
-  MassTextBlock,
   customService,
-  defaultMassOverrides,
-  defaultMassTextBlocks,
   enabledServices,
+  isMassTemplatePath,
   massPagePath,
   massPageSummary,
-  massTemplatePath,
-  massTemplateLabel,
-  MASS_CAMPAIGN_TEMPLATES,
-  DEFAULT_MASS_CAMPAIGN_TEMPLATE,
-
-  isMassTemplatePath,
-  MASS_TEMPLATE_PREFIX,
   compact,
-  mergeMassOverrides,
   resolveMassPage,
   MassLocation,
 } from "@/lib/massPages";
 
-
 type SourceKind = "services" | "products";
-type EditMode = "template" | "page";
 
-type MergedOverrides = ReturnType<typeof mergeMassOverrides>;
-
-const BLANK_OVERRIDES: MergedOverrides = {
-  metaTitle: "",
-  metaDescription: "",
-  heroKicker: "",
-  heroTitle: "",
-  heroSubtitle: "",
-  heading: "",
-  intro: "",
-  bullets: [],
-  brandsHeading: "",
-  brandsNote: "",
-  images: [],
-  nearbyHeading: "",
-  ctaHeading: "",
-  ctaBody: "",
-  ctaButton: "",
-  template: "standard",
-  sections: {},
-
-};
+interface PageRow {
+  id: string;
+  page_path: string;
+  status: string;
+  updated_at: string;
+  overrides: Record<string, unknown> | null;
+}
 
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
   const [searchParams] = useSearchParams();
   const prefillPath = searchParams.get("path");
   const prefilled = useRef(false);
+  const queryClient = useQueryClient();
 
-  const [mode, setMode] = useState<EditMode>("template");
-  const [previewTpl, setPreviewTpl] = useState<string | null>(null);
   const [source, setSource] = useState<SourceKind>("services");
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
-  const [blocks, setBlocks] = useState<MassTextBlock[]>([]);
-  const [ov, setOvState] = useState<MergedOverrides>(BLANK_OVERRIDES);
-  const [isActive, setIsActive] = useState(true);
-
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-
+  const [search, setSearch] = useState("");
+  const [editorTarget, setEditorTarget] = useState<MassContentEditorTarget | null>(null);
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
@@ -128,226 +106,135 @@ export default function MassPagesBuilder() {
     },
   });
 
+  const { data: rows = [], isLoading: rowsLoading } = useQuery({
+    queryKey: ["mass-individual-pages", companyId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mass_page_content")
+        .select("id, page_path, status, updated_at, overrides")
+        .eq("company_id", companyId!)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return ((data || []) as unknown as PageRow[]).filter((r) => !isMassTemplatePath(r.page_path));
+    },
+    enabled: !!companyId,
+  });
+
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: ["mass-individual-pages", companyId] });
+
   const serviceAreas = (company?.service_areas as string[] | null) || null;
   const { groups, loading: areasLoading } = useMassPages(serviceAreas);
 
   const services = useMemo(() => (company ? enabledServices(company) : []), [company]);
-
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
-  // Prefill the form when editing an existing campaign (?path=...)
+  // Prefill the filters (and open the editor) when arriving with ?path=...
   useEffect(() => {
-    if (prefilled.current || !prefillPath || !company) return;
-
-    // Master template path: /__template/LocationType-VisitType-Service
-    if (isMassTemplatePath(prefillPath)) {
-      prefilled.current = true;
-      setMode("template");
-      const parts = prefillPath.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
-      let svc = "";
-      parts.forEach((seg) => {
-        const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-        if (l) return setLocationType(l);
-        const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-        if (v) return setVisitType(v);
-        svc = seg;
-      });
-      const match = services.find((s) => compact(s.label).toLowerCase() === svc.toLowerCase());
-      if (match) {
-        setSource("services");
-        setItem(match.label);
-      } else {
-        const prod = products.find((p) => compact(p.name).toLowerCase() === svc.toLowerCase());
-        if (prod) {
-          setSource("products");
-          setItem(prod.name);
-        }
-      }
-      return;
-    }
-
-    if (groups.length === 0) return;
+    if (prefilled.current || !prefillPath || !company || groups.length === 0) return;
+    if (isMassTemplatePath(prefillPath)) return;
     const ref = resolveMassPage(prefillPath, company, groups);
     if (!ref) return;
     prefilled.current = true;
-    setMode("page");
     setSource(services.some((s) => s.label === ref.service.label) ? "services" : "products");
     setItem(ref.service.label);
     setVisitType(ref.visitType || "");
     setLocationType(ref.locationType || "");
     setCountyKey(`${ref.location.county}|${ref.location.state}`);
     setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
-  }, [prefillPath, company, groups, services, products]);
+    setEditorTarget({
+      path: prefillPath,
+      service: ref.service,
+      location: ref.location,
+      visitType: ref.visitType || null,
+      locationType: ref.locationType || null,
+    });
+  }, [prefillPath, company, groups, services]);
 
   const county = groups.find((g) => `${g.county}|${g.state}` === countyKey) || null;
   const location: MassLocation | null =
     county?.locations.find((l) => `${l.city}|${l.zip}` === cityKeyValue) || null;
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
-
   const opts = { visitType: visitType || null, locationType: locationType || null };
 
-  /** Representative location used only to seed suggested copy in template mode. */
-  const seedLocation: MassLocation | null =
-    mode === "template" ? groups[0]?.locations[0] || null : location;
+  const path = service && location ? massPagePath(service, location, opts) : "";
+  const summary = service && location ? massPageSummary(service.label, location, opts) : "";
+  const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
+  const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
-  const path =
-    mode === "template"
-      ? service
-        ? massTemplatePath(service, opts)
-        : ""
-      : service && location
-        ? massPagePath(service, location, opts)
-        : "";
+  /** Filtered table rows — the selectors above act as filters on this list. */
+  const filtered = useMemo(() => {
+    const tokens = [
+      locationType ? compact(locationType) : "",
+      visitType ? compact(visitType) : "",
+      service ? compact(service.label) : "",
+      county ? compact(county.county) : "",
+      location ? compact(location.city) : "",
+    ].filter(Boolean);
+    const q = search.trim().toLowerCase();
+    return rows.filter((r) => {
+      const p = r.page_path.toLowerCase();
+      if (!tokens.every((t) => p.includes(t.toLowerCase()))) return false;
+      if (q && !p.includes(q)) return false;
+      return true;
+    });
+  }, [rows, locationType, visitType, service, county, location, search]);
 
-  const summary =
-    mode === "template"
-      ? service
-        ? `${massTemplateLabel(massTemplatePath(service, opts))} — all counties & cities`
-        : ""
-      : service && location
-        ? massPageSummary(service.label, location, opts)
-        : "";
+  const exists = !!filtered.find((r) => r.page_path === path) || !!rows.find((r) => r.page_path === path);
 
-  const liveUrl =
-    mode === "page" && company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
-  const previewUrl = mode === "page" && path ? `/company/${company?.slug ?? ""}${path}` : "";
-  /** Sample page path used to preview a master campaign layout. */
-  const previewLocation: MassLocation | null =
-    seedLocation ||
-    location ||
-    (company
-      ? {
-          city: String((company as Record<string, unknown>).city || "Carol Stream"),
-          county: String((company as Record<string, unknown>).county || "DuPage County"),
-          state: String((company as Record<string, unknown>).state || "IL"),
-          zip: String((company as Record<string, unknown>).zip_code || "60188"),
-        }
-      : null);
-  const seedPreviewUrl =
-    mode === "template"
-      ? company?.slug && service && previewLocation
-        ? `/company/${company.slug}${massPagePath(service, previewLocation, opts)}`
-        : ""
-      : previewUrl;
+  const setStatus = async (id: string, next: string) => {
+    const { error } = await supabase.from("mass_page_content").update({ status: next }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`Moved to ${next}`);
+    refresh();
+  };
 
+  const hardDelete = async (id: string) => {
+    const { error } = await supabase.from("mass_page_content").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Permanently deleted");
+    refresh();
+  };
 
-
-  const defaults = useMemo<MassTextBlock[]>(
-    () =>
-      company && service && seedLocation
-        ? defaultMassTextBlocks(
-            company as Record<string, unknown> & { name: string; company_phone?: string | null },
-            service,
-            seedLocation,
-            { visitType: visitType || null, locationType: locationType || null },
-          )
-        : [],
-    [company, service, seedLocation, visitType, locationType],
-  );
-
-  const ovDefaults = useMemo(
-    () =>
-      company && service && seedLocation
-        ? defaultMassOverrides(
-            company as Record<string, unknown> & { name: string; company_phone?: string | null },
-            service,
-            seedLocation,
-            { visitType: visitType || null, locationType: locationType || null },
-          )
-        : null,
-    [company, service, seedLocation, visitType, locationType],
-  );
-
-
-  useEffect(() => {
-    if (!companyId || !path) {
-      setBlocks([]);
-      setOvState(BLANK_OVERRIDES);
+  const openEditorFor = (row: PageRow) => {
+    if (!company) return;
+    const ref = resolveMassPage(row.page_path, company, groups);
+    if (!ref) {
+      toast.error("This page path could not be resolved against the current service areas.");
       return;
     }
-    let active = true;
-    setLoadingContent(true);
-    (async () => {
-      const { data } = await supabase
-        .from("mass_page_content")
-        .select("blocks, overrides, status")
-        .eq("company_id", companyId)
-        .eq("page_path", path)
-        .maybeSingle();
-      if (!active) return;
-      const savedBlocks = (data?.blocks as unknown as MassTextBlock[] | null) || null;
-      setBlocks(Array.isArray(savedBlocks) ? savedBlocks : defaults);
-      setIsActive(data ? (data as { status?: string }).status === "active" : true);
-      if (ovDefaults) {
-        setOvState(
-          mergeMassOverrides(
-            ovDefaults,
-            (data?.overrides as unknown as Record<string, unknown> | null) || null,
-          ),
+    setEditorTarget({
+      path: row.page_path,
+      service: ref.service,
+      location: ref.location,
+      visitType: ref.visitType || null,
+      locationType: ref.locationType || null,
+    });
+  };
+
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">Active</Badge>;
+      case "new":
+        return (
+          <Badge variant="outline" className="border-blue-300 text-blue-600 bg-blue-50">
+            Draft
+          </Badge>
         );
-      }
-      setLoadingContent(false);
-    })();
-    return () => {
-      active = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyId, path]);
-
-  const updateBlock = (index: number, key: keyof MassTextBlock, value: string) =>
-    setBlocks((prev) => prev.map((b, i) => (i === index ? { ...b, [key]: value } : b)));
-
-  function setOv<K extends keyof MergedOverrides>(key: K, value: MergedOverrides[K]) {
-    setOvState((prev) => ({ ...prev, [key]: value }));
-  }
-
-  const updateImage = (index: number, key: keyof MassImageBox, value: string) =>
-    setOvState((prev) => ({
-      ...prev,
-      images: prev.images.map((img, i) => (i === index ? { ...img, [key]: value } : img)),
-    }));
-
-  const resetAll = () => {
-    setBlocks(defaults);
-    if (ovDefaults) setOvState(mergeMassOverrides(ovDefaults, null));
-  };
-
-  const saveContent = async () => {
-    if (!companyId || !path) return;
-    setSaving(true);
-    const { error } = await supabase
-      .from("mass_page_content")
-      .upsert(
-        {
-          company_id: companyId,
-          page_path: path,
-          blocks: blocks as unknown as never,
-          // The theme template lives on the master campaign only, so a
-          // specific page never overrides it.
-          overrides: (mode === "template"
-            ? ov
-            : (() => {
-                const { template: _t, ...rest } = ov;
-                return rest;
-              })()) as unknown as never,
-
-          status: isActive ? "active" : "new",
-        },
-        { onConflict: "company_id,page_path" },
-      );
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+      case "suspended":
+        return (
+          <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
+            Suspended
+          </Badge>
+        );
+      case "deleted":
+        return <Badge variant="destructive">Deleted</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
-    toast.success(
-      isActive ? "Campaign saved and moved to Active Campaigns" : "Campaign saved as a draft",
-    );
   };
-
-
-
 
   if (isLoading) {
     return (
@@ -365,636 +252,374 @@ export default function MassPagesBuilder() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Mass Pages</h2>
+        <h2 className="text-2xl font-bold tracking-tight">New Campaign</h2>
         <p className="text-sm text-muted-foreground">
-          Build mass page content for {company.name}. Edit the master template for a whole
-          campaign, or override a single city page inside that campaign.
+          Create individual mass pages for {company.name}. Use the filters to find or build a page,
+          then edit its content in the popup editor.
         </p>
       </div>
 
-      {/* What are we editing? */}
+      {/* Filters */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">What do you want to edit?</CardTitle>
+          <CardTitle className="text-base">Filters</CardTitle>
           <CardDescription>
-            The master template applies to every county / city page that matches the criteria below.
-            A specific page overrides the template for one city only.
+            {areasLoading
+              ? "Loading service areas…"
+              : `${groups.length} counties · ${totalCities} cities`}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <RadioGroup
-            value={mode}
-            onValueChange={(v) => setMode(v as EditMode)}
-            className="grid gap-2 sm:grid-cols-2"
-          >
-            <label
-              htmlFor="mode-template"
-              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
+        <CardContent className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <div className="space-y-1">
+            <Label className="text-xs">Location type</Label>
+            <Select
+              value={locationType || "all"}
+              onValueChange={(v) => setLocationType(v === "all" ? "" : (v as LocationType))}
             >
-              <RadioGroupItem value="template" id="mode-template" className="mt-1" />
-              <span>
-                <span className="block text-sm font-medium">Master Campaign</span>
-                <span className="block text-xs text-muted-foreground">
-                  No county or city — all matching pages share this content.
-                </span>
-              </span>
-            </label>
-            <label
-              htmlFor="mode-page"
-              className="flex items-start gap-2 rounded-md border p-3 cursor-pointer"
-            >
-              <RadioGroupItem value="page" id="mode-page" className="mt-1" />
-              <span>
-                <span className="block text-sm font-medium">Campaign (specific page)</span>
-                <span className="block text-xs text-muted-foreground">
-                  Pick the county and city / ZIP to override one page.
-                </span>
-              </span>
-            </label>
-          </RadioGroup>
-        </CardContent>
-      </Card>
+              <SelectTrigger>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">All location types</SelectItem>
+                {LOCATION_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Step 1 — Location type */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">1. Location type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={locationType}
-              onValueChange={(v) => setLocationType(v as LocationType)}
-              className="grid grid-cols-2 gap-2"
+          <div className="space-y-1">
+            <Label className="text-xs">Visit type</Label>
+            <Select
+              value={visitType || "all"}
+              onValueChange={(v) => setVisitType(v === "all" ? "" : (v as VisitType))}
             >
-              {LOCATION_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`loc-${t}`} />
-                  <Label htmlFor={`loc-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
+              <SelectTrigger>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">All visit types</SelectItem>
+                {VISIT_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Step 2 — Visit type */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">2. Visit type</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={visitType}
-              onValueChange={(v) => setVisitType(v as VisitType)}
-              className="grid grid-cols-2 gap-2"
-            >
-              {VISIT_TYPES.map((t) => (
-                <div key={t} className="flex items-center gap-2">
-                  <RadioGroupItem value={t} id={`visit-${t}`} />
-                  <Label htmlFor={`visit-${t}`}>{t}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-        {/* Step 3 — Subject */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">3. What is the page about?</CardTitle>
-            <CardDescription>Choose from your services or your product catalog.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <RadioGroup
+          <div className="space-y-1">
+            <Label className="text-xs">Source</Label>
+            <Select
               value={source}
               onValueChange={(v) => {
                 setSource(v as SourceKind);
                 setItem("");
               }}
-              className="flex gap-6"
             >
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="services" id="src-services" />
-                <Label htmlFor="src-services">Services we offer</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="products" id="src-products" />
-                <Label htmlFor="src-products">Products</Label>
-              </div>
-            </RadioGroup>
-
-            <Select value={item} onValueChange={setItem}>
               <SelectTrigger>
-                <SelectValue placeholder={source === "services" ? "Select a service" : "Select a product"} />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="services">Services we offer</SelectItem>
+                <SelectItem value="products">Products</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">What is the page about?</Label>
+            <Select value={item || "all"} onValueChange={(v) => setItem(v === "all" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="All" />
               </SelectTrigger>
               <SelectContent className="max-h-72">
+                <SelectItem value="all">All {source}</SelectItem>
                 {options.map((opt) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Step 4 — Area (specific page only) */}
-        {mode === "page" ? (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">4. Area we service</CardTitle>
-              <CardDescription>
-                {areasLoading
-                  ? "Loading service areas…"
-                  : `${groups.length} counties · ${totalCities} cities`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs">County</Label>
-                <Select
-                  value={countyKey}
-                  onValueChange={(v) => {
-                    setCountyKey(v);
-                    setCityKeyValue("");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a county" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {groups.map((g) => (
-                      <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
-                        {g.county}, {g.state} ({g.locations.length})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">City / ZIP</Label>
-                <Select value={cityKeyValue} onValueChange={setCityKeyValue} disabled={!county}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={county ? "Select a city" : "Pick a county first"} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {(county?.locations || []).map((l) => (
-                      <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
-                        {l.city}, {l.state}{l.zip ? ` ${l.zip}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">4. Area we service</CardTitle>
-              <CardDescription>
-                {areasLoading
-                  ? "Loading service areas…"
-                  : `Applies to all ${groups.length} counties · ${totalCities} cities`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                County and city are not selected for a master template — every matching page uses
-                this content unless it has its own page-specific override.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Theme template (master campaign only) */}
-      {mode === "template" && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">5. Theme template</CardTitle>
-            <CardDescription>
-              Pre-designed mass page layout. Every page in this master campaign uses it.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={ov.template || DEFAULT_MASS_CAMPAIGN_TEMPLATE}
-              onValueChange={(v) => setOv("template", v)}
-              className="grid gap-2 md:grid-cols-2"
+          <div className="space-y-1">
+            <Label className="text-xs">County</Label>
+            <Select
+              value={countyKey || "all"}
+              onValueChange={(v) => {
+                setCountyKey(v === "all" ? "" : v);
+                setCityKeyValue("");
+              }}
             >
-              {MASS_CAMPAIGN_TEMPLATES.map((t) => (
-                <div
-                  key={t.id}
-                  className={`rounded-md border p-3 transition-colors ${
-                    (ov.template || DEFAULT_MASS_CAMPAIGN_TEMPLATE) === t.id
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <label htmlFor={`tpl-${t.id}`} className="flex items-start gap-2 cursor-pointer">
-                    <RadioGroupItem value={t.id} id={`tpl-${t.id}`} className="mt-1" />
-                    <span>
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        {t.name}
-                        <span
-                          className="inline-block h-3 w-3 rounded-full border"
-                          style={{ background: `hsl(${t.theme.primary})` }}
-                        />
-                        <span className="text-[11px] font-normal text-muted-foreground">
-                          {t.theme.label}
-                        </span>
-                      </span>
-                      <span className="block text-xs text-muted-foreground">{t.description}</span>
-                      <span className="mt-1 block text-[11px] font-mono text-muted-foreground">
-                        {t.order.join(" › ")}
-                      </span>
-                    </span>
-                  </label>
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={!seedPreviewUrl}
-                      onClick={() => setPreviewTpl(t.id)}
-                    >
-                      <Eye className="mr-1 h-3.5 w-3.5" />
-                      Preview
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </RadioGroup>
-            {!seedPreviewUrl && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Pick a location type, visit type and service above to enable preview.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              <SelectTrigger>
+                <SelectValue placeholder="All" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">All counties</SelectItem>
+                {groups.map((g) => (
+                  <SelectItem key={`${g.county}|${g.state}`} value={`${g.county}|${g.state}`}>
+                    {g.county}, {g.state} ({g.locations.length})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Theme template live preview */}
-      <Dialog open={!!previewTpl} onOpenChange={(o) => !o && setPreviewTpl(null)}>
-        <DialogContent className="max-w-6xl">
-          <DialogHeader>
-            <DialogTitle>
-              Preview — {MASS_CAMPAIGN_TEMPLATES.find((t) => t.id === previewTpl)?.name}
-            </DialogTitle>
-            <DialogDescription>
-              Live mass page rendered with this layout using a sample city in this campaign.
-            </DialogDescription>
-          </DialogHeader>
-          {previewTpl && seedPreviewUrl && (
-            <>
-              <iframe
-                src={`${seedPreviewUrl}?tpl=${previewTpl}`}
-                title="Mass page template preview"
-                className="h-[70vh] w-full rounded-md border bg-background"
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    window.open(
-                      `${seedPreviewUrl}?tpl=${previewTpl}`,
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
-                >
-                  <ExternalLink className="mr-1 h-4 w-4" />
-                  Open in new tab
-                </Button>
-                <Button
-                  onClick={() => {
-                    setOv("template", previewTpl);
-                    setPreviewTpl(null);
-                  }}
-                >
-                  Use this template
-                </Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-
-
-
-
-      {/* Summary */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">
-            {mode === "template" ? "Campaign summary" : "Page summary"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {summary ? (
-            <>
-              <div className="flex items-center gap-2 flex-wrap">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="font-semibold">{summary}</span>
-              </div>
-              {mode === "page" && (
-                <>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="font-mono text-xs break-all">
-                      {liveUrl || previewUrl}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(liveUrl || previewUrl);
-                        toast.success("URL copied");
-                      }}
-                    >
-                      <Copy className="w-4 h-4 mr-2" /> Copy URL
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")
-                      }
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" /> Open page
-                    </Button>
-                  </div>
-                </>
-              )}
-              {mode === "template" && (
-                <p className="text-sm text-muted-foreground">
-                  This content is used by every matching mass page across all counties and cities.
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {mode === "template"
-                ? "Pick a location type, visit type and service to build the master template."
-                : "Complete the steps above to see the generated page (example: Residential, Emergency, Furnace Repair, Joliet, IL 60431)."}
-            </p>
-          )}
+          <div className="space-y-1">
+            <Label className="text-xs">Area we service (city / ZIP)</Label>
+            <Select
+              value={cityKeyValue || "all"}
+              onValueChange={(v) => setCityKeyValue(v === "all" ? "" : v)}
+              disabled={!county}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={county ? "All cities" : "Pick a county first"} />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">All cities</SelectItem>
+                {(county?.locations || []).map((l) => (
+                  <SelectItem key={`${l.city}|${l.zip}`} value={`${l.city}|${l.zip}`}>
+                    {l.city}, {l.state}
+                    {l.zip ? ` ${l.zip}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
-
-      {/* Full page content editor */}
+      {/* Selected page summary + create */}
       {path && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Page content</CardTitle>
-            <CardDescription>
-              Edit every part of this mass page. Empty fields fall back to the auto-generated copy.
-            </CardDescription>
+            <CardTitle className="text-base">Selected page</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {loadingContent ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              </div>
-            ) : (
-              <Tabs defaultValue="hero">
-                <TabsList className="flex flex-wrap h-auto">
-                  <TabsTrigger value="hero">Hero &amp; SEO</TabsTrigger>
-                  <TabsTrigger value="intro">Intro &amp; bullets</TabsTrigger>
-                  <TabsTrigger value="blocks">Text blocks</TabsTrigger>
-                  <TabsTrigger value="images">Images</TabsTrigger>
-                  <TabsTrigger value="cta">Brands, nearby &amp; CTA</TabsTrigger>
-                  <TabsTrigger value="sections">Sections</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="hero" className="space-y-3 pt-4">
-                  <Field label="Browser title (SEO)" value={ov.metaTitle} onChange={(v) => setOv("metaTitle", v)} />
-                  <Field
-                    label="Meta description (SEO)"
-                    value={ov.metaDescription}
-                    onChange={(v) => setOv("metaDescription", v)}
-                    textarea
-                  />
-                  <Field label="Hero kicker" value={ov.heroKicker} onChange={(v) => setOv("heroKicker", v)} />
-                  <Field label="Hero title" value={ov.heroTitle} onChange={(v) => setOv("heroTitle", v)} />
-                  <Field
-                    label="Hero subtitle"
-                    value={ov.heroSubtitle}
-                    onChange={(v) => setOv("heroSubtitle", v)}
-                    textarea
-                  />
-                </TabsContent>
-
-                <TabsContent value="intro" className="space-y-3 pt-4">
-                  <Field label="Page heading (H1)" value={ov.heading} onChange={(v) => setOv("heading", v)} />
-                  <Field label="Intro paragraph" value={ov.intro} onChange={(v) => setOv("intro", v)} textarea rows={5} />
-                  <div className="space-y-2">
-                    <Label className="text-xs">Highlight bullets</Label>
-                    {ov.bullets.map((b, i) => (
-                      <div key={i} className="flex gap-2">
-                        <Input
-                          value={b}
-                          onChange={(e) =>
-                            setOv(
-                              "bullets",
-                              ov.bullets.map((x, idx) => (idx === i ? e.target.value : x)),
-                            )
-                          }
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setOv("bullets", ov.bullets.filter((_, idx) => idx !== i))}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button variant="outline" size="sm" onClick={() => setOv("bullets", [...ov.bullets, ""])}>
-                      <Plus className="w-4 h-4 mr-2" /> Add bullet
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="blocks" className="space-y-3 pt-4">
-                  {blocks.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      No content blocks — this section will not appear on the page.
-                    </p>
-                  )}
-                  {blocks.map((block, i) => (
-                    <div key={i} className="rounded-md border p-3 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Label className="text-xs">Block {i + 1}</Label>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setBlocks((prev) => prev.filter((_, idx) => idx !== i))}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <Input
-                        value={block.heading}
-                        placeholder="Heading"
-                        onChange={(e) => updateBlock(i, "heading", e.target.value)}
-                      />
-                      <Textarea
-                        value={block.body}
-                        placeholder="Body text"
-                        rows={4}
-                        onChange={(e) => updateBlock(i, "body", e.target.value)}
-                      />
-                    </div>
-                  ))}
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setBlocks((prev) => [...prev, { heading: "", body: "" }])}
-                    >
-                      <Plus className="w-4 h-4 mr-2" /> Add block
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setBlocks(defaults)}>
-                      <RotateCcw className="w-4 h-4 mr-2" /> Reset to suggested copy
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setBlocks([])}>
-                      <Trash2 className="w-4 h-4 mr-2" /> Remove all
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="images" className="space-y-3 pt-4">
-                  {ov.images.map((img, i) => (
-                    <div key={i} className="rounded-md border p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs">Image {i + 1}</Label>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setOv("images", ov.images.filter((_, idx) => idx !== i))}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <Input
-                        value={img.url || ""}
-                        placeholder="Image URL (leave empty to use a stock HVAC photo)"
-                        onChange={(e) => updateImage(i, "url", e.target.value)}
-                      />
-                      <Input
-                        value={img.alt}
-                        placeholder="Alt text"
-                        onChange={(e) => updateImage(i, "alt", e.target.value)}
-                      />
-                      <Input
-                        value={img.caption}
-                        placeholder="Caption"
-                        onChange={(e) => updateImage(i, "caption", e.target.value)}
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setOv("images", [...ov.images, { url: "", alt: "", caption: "" }])}
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Add image box
-                  </Button>
-                </TabsContent>
-
-                <TabsContent value="cta" className="space-y-3 pt-4">
-                  <Field label="Brands heading" value={ov.brandsHeading} onChange={(v) => setOv("brandsHeading", v)} />
-                  <Field
-                    label="Brands note (shown after the brand count)"
-                    value={ov.brandsNote}
-                    onChange={(v) => setOv("brandsNote", v)}
-                  />
-                  <Field
-                    label="Nearby cities heading"
-                    value={ov.nearbyHeading}
-                    onChange={(v) => setOv("nearbyHeading", v)}
-                  />
-                  <Field label="CTA heading" value={ov.ctaHeading} onChange={(v) => setOv("ctaHeading", v)} />
-                  <Field label="CTA text" value={ov.ctaBody} onChange={(v) => setOv("ctaBody", v)} textarea />
-                  <Field label="CTA button label" value={ov.ctaButton} onChange={(v) => setOv("ctaButton", v)} />
-                </TabsContent>
-
-                <TabsContent value="sections" className="space-y-3 pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Turn sections on or off for this page.
-                  </p>
-                  {ALL_MASS_SECTIONS.map(({ key, label }) => (
-                    <div key={key} className="flex items-center justify-between rounded-md border p-3">
-                      <Label className="text-sm">{label}</Label>
-                      <Switch
-                        checked={ov.sections[key] !== false}
-                        onCheckedChange={(checked) =>
-                          setOv("sections", { ...ov.sections, [key]: checked })
-                        }
-                      />
-                    </div>
-                  ))}
-                </TabsContent>
-              </Tabs>
-            )}
-
-            <div className="space-y-3 border-t pt-4">
-              <div className="flex items-center justify-between rounded-md border p-3">
-                <div>
-                  <Label className="text-sm">Active campaign</Label>
-                  <p className="text-xs text-muted-foreground">
-                    When active, this campaign goes live and appears under Active Campaign.
-                    Otherwise it is kept as a draft.
-                  </p>
-                </div>
-                <Switch checked={isActive} onCheckedChange={setIsActive} />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={saveContent} disabled={saving}>
-                  {saving ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
-                  Save campaign
-                </Button>
-                <Button variant="outline" size="sm" onClick={resetAll}>
-                  <RotateCcw className="w-4 h-4 mr-2" /> Reset everything
-                </Button>
-              </div>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span className="font-semibold">{summary}</span>
+            </div>
+            <Badge variant="secondary" className="font-mono text-xs break-all">
+              {liveUrl || previewUrl}
+            </Badge>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                onClick={() =>
+                  service &&
+                  location &&
+                  setEditorTarget({
+                    path,
+                    service,
+                    location,
+                    visitType: visitType || null,
+                    locationType: locationType || null,
+                  })
+                }
+              >
+                {exists ? (
+                  <>
+                    <Pencil className="w-4 h-4 mr-2" /> Edit this page
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" /> Create campaign page
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(liveUrl || previewUrl);
+                  toast.success("URL copied");
+                }}
+              >
+                <Copy className="w-4 h-4 mr-2" /> Copy URL
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(liveUrl || previewUrl, "_blank", "noopener,noreferrer")}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" /> Open page
+              </Button>
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Individual pages table */}
+      <Card className="border shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <LayoutList className="w-4 h-4 text-muted-foreground" />
+            Individual campaign pages
+          </CardTitle>
+          <CardDescription>
+            {filtered.length} record{filtered.length === 1 ? "" : "s"} matching the filters above.
+          </CardDescription>
+        </CardHeader>
+        <Separator />
+        <CardContent className="pt-4 space-y-4">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              className="pl-9 h-9 bg-background"
+              placeholder="Search path..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>Page</TableHead>
+                  <TableHead className="w-[130px]">Status</TableHead>
+                  <TableHead className="w-[180px]">Last Updated</TableHead>
+                  <TableHead className="text-right w-[190px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rowsLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-[260px]" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-16" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="h-8 w-32 ml-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
+                      No individual campaign pages yet for this selection.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered.map((row) => (
+                    <TableRow key={row.id} className="hover:bg-muted/40">
+                      <TableCell className="align-top">
+                        <div className="font-medium break-words">
+                          {(row.overrides?.heroTitle as string) ||
+                            (row.overrides?.heading as string) ||
+                            row.page_path.replace(/^\//, "")}
+                        </div>
+                        <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
+                          {row.page_path}
+                        </div>
+                      </TableCell>
+                      <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
+                      <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
+                        {new Date(row.updated_at).toLocaleString(undefined, {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </TableCell>
+                      <TableCell className="text-right align-top">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="Edit content"
+                            onClick={() => openEditorFor(row)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            title="Open page"
+                            onClick={() =>
+                              window.open(
+                                company.slug
+                                  ? `https://${company.slug}.hcshvac.com${row.page_path}`
+                                  : `/company/${company.slug ?? ""}${row.page_path}`,
+                                "_blank",
+                                "noopener,noreferrer",
+                              )
+                            }
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Button>
+                          <Separator orientation="vertical" className="h-5 mx-0.5" />
+                          {row.status === "active" ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-amber-600 hover:bg-amber-50"
+                              title="Suspend"
+                              onClick={() => setStatus(row.id, "suspended")}
+                            >
+                              <Pause className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
+                              title={row.status === "deleted" ? "Restore" : "Activate"}
+                              onClick={() => setStatus(row.id, "active")}
+                            >
+                              {row.status === "deleted" ? (
+                                <RotateCcw className="w-4 h-4" />
+                              ) : (
+                                <Play className="w-4 h-4" />
+                              )}
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            title={row.status === "deleted" ? "Delete permanently" : "Delete"}
+                            onClick={() =>
+                              row.status === "deleted"
+                                ? hardDelete(row.id)
+                                : setStatus(row.id, "deleted")
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <MassContentEditorDialog
+        open={!!editorTarget}
+        onOpenChange={(o) => !o && setEditorTarget(null)}
+        companyId={companyId!}
+        company={company as Record<string, unknown> & { name: string; company_phone?: string | null }}
+        target={editorTarget}
+        onSaved={refresh}
+      />
     </div>
   );
 }
-
-function Field({
-  label,
-  value,
-  onChange,
-  textarea,
-  rows = 3,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  textarea?: boolean;
-  rows?: number;
-}) {
-  return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      {textarea ? (
-        <Textarea value={value} rows={rows} onChange={(e) => onChange(e.target.value)} />
-      ) : (
-        <Input value={value} onChange={(e) => onChange(e.target.value)} />
-      )}
-    </div>
-  );
-}
-
-
