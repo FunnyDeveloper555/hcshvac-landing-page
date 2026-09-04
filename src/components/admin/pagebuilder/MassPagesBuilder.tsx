@@ -316,7 +316,7 @@ export default function MassPagesBuilder() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">New Campaign</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Campaigns</h2>
         <p className="text-sm text-muted-foreground">
           Create individual mass pages for {company.name}. Use the filters to find or build a page,
           then edit its content in the popup editor.
