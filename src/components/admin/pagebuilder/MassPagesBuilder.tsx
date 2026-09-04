@@ -212,19 +212,15 @@ export default function MassPagesBuilder() {
   const filtered = entries;
 
   /** Entries grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
-  const grouped = useMemo(() => {
-    const map = new Map<string, typeof entries>();
-    for (const e of entries) {
-      const letter = (e.label[0] || "#").toUpperCase();
-      map.set(letter, [...(map.get(letter) || []), e]);
-    }
-    return [...map.entries()]
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([letter, list]) => ({
-        letter,
-        rows: [...list].sort((a, b) => a.label.localeCompare(b.label)),
-      }));
-  }, [entries]);
+  const stats = useMemo(() => {
+    const total = filtered.length;
+    const active = filtered.filter((e) => e.row?.status === "active").length;
+    const notCreated = filtered.filter((e) => !e.row).length;
+    const suspended = filtered.filter((e) => e.row?.status === "suspended").length;
+    const deleted = filtered.filter((e) => e.row?.status === "deleted").length;
+    return { total, active, notCreated, suspended, deleted };
+  }, [filtered]);
+
 
 
   const tableTitle = useMemo(() => {
@@ -519,8 +515,27 @@ export default function MassPagesBuilder() {
               ? "Select a county (and optionally a city / ZIP) to list campaign pages."
               : `${filtered.length} record${filtered.length === 1 ? "" : "s"} in ${county.county}, ${county.state}.`}
           </CardDescription>
-
+          {county && (
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <Badge variant="secondary" className="font-medium">
+                Total {stats.total}
+              </Badge>
+              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
+                Active {stats.active}
+              </Badge>
+              <Badge variant="outline" className="border-blue-300 text-blue-600 bg-blue-50 font-medium">
+                Not created {stats.notCreated}
+              </Badge>
+              <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 font-medium">
+                Suspended {stats.suspended}
+              </Badge>
+              <Badge variant="destructive" className="font-medium">
+                Deleted {stats.deleted}
+              </Badge>
+            </div>
+          )}
         </CardHeader>
+
         <Separator />
         <CardContent className="pt-4 space-y-4">
           <div className="relative max-w-sm">
@@ -587,10 +602,8 @@ export default function MassPagesBuilder() {
                       <TableRow key={e.path} className="hover:bg-muted/40">
                         <TableCell className="align-top">
                           <div className="font-medium break-words">{e.label}</div>
-                          <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-                            {e.path}
-                          </div>
                         </TableCell>
+
                         <TableCell className="align-top">
                           {e.row ? (
                             statusBadge(e.row.status)
