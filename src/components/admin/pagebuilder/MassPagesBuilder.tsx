@@ -163,13 +163,14 @@ export default function MassPagesBuilder() {
   const liveUrl = company?.slug && path ? `https://${company.slug}.hcshvac.com${path}` : "";
   const previewUrl = path ? `/company/${company?.slug ?? ""}${path}` : "";
 
-  /** Filtered table rows — the selectors above act as filters on this list. */
+  /** Filtered table rows — only shown once a county is selected. */
   const filtered = useMemo(() => {
+    if (!county) return [];
     const tokens = [
       locationType ? compact(locationType) : "",
       visitType ? compact(visitType) : "",
       service ? compact(service.label) : "",
-      county ? compact(county.county) : "",
+      compact(county.county),
       location ? compact(location.city) : "",
     ].filter(Boolean);
     const q = search.trim().toLowerCase();
@@ -181,7 +182,37 @@ export default function MassPagesBuilder() {
     });
   }, [rows, locationType, visitType, service, county, location, search]);
 
+  /** "Carol Stream, IL 60108" from a page path's trailing segment */
+  const cityLabel = (p: string) => {
+    const parts = p.replace(/^\//, "").split("-").filter(Boolean);
+    const raw = parts[parts.length - 1] || p;
+    const m = raw.match(/^(.*?)([A-Z]{2})(\d{5})?$/);
+    const city = (m ? m[1] : raw).replace(/([a-z])([A-Z])/g, "$1 $2");
+    return m ? `${city}, ${m[2]}${m[3] ? ` ${m[3]}` : ""}` : city;
+  };
+
+  /** Rows grouped by the first letter of the city, e.g. "A4" = 4 cities starting with A */
+  const grouped = useMemo(() => {
+    const map = new Map<string, PageRow[]>();
+    for (const r of filtered) {
+      const letter = (cityLabel(r.page_path)[0] || "#").toUpperCase();
+      map.set(letter, [...(map.get(letter) || []), r]);
+    }
+    return [...map.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([letter, list]) => ({
+        letter,
+        rows: [...list].sort((a, b) => cityLabel(a.page_path).localeCompare(cityLabel(b.page_path))),
+      }));
+  }, [filtered]);
+
+  const tableTitle = useMemo(() => {
+    const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
+    return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
+  }, [locationType, visitType, service, company]);
+
   const exists = !!filtered.find((r) => r.page_path === path) || !!rows.find((r) => r.page_path === path);
+
 
   const setStatus = async (id: string, next: string) => {
     const { error } = await supabase.from("mass_page_content").update({ status: next }).eq("id", id);
