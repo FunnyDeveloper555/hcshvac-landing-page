@@ -380,15 +380,20 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title={lockTitle ?? "Edit"}
+              title={lockTitle ?? (isTemplate ? "Edit campaign template" : "Edit")}
               disabled={isParentLocked}
               onClick={() =>
                 navigate(
-                  `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
-                    row.page_path,
-                  )}`,
+                  isTemplate
+                    ? `/admin/page-builder/company/${companyId}/mass-pages/templates?path=${encodeURIComponent(
+                        row.page_path,
+                      )}`
+                    : `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
+                        row.page_path,
+                      )}`,
                 )
               }
+
             >
               <Pencil className="w-4 h-4" />
             </Button>
