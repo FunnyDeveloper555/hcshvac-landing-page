@@ -232,7 +232,7 @@ export default function MassPagesBuilder() {
     return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
   }, [locationType, visitType, service, company]);
 
-  const exists = !!filtered.find((r) => r.page_path === path) || !!rows.find((r) => r.page_path === path);
+  const exists = !!rows.find((r) => r.page_path === path);
 
 
   const setStatus = async (id: string, next: string) => {
