@@ -56,15 +56,16 @@ export type CampaignKind = "master" | "page";
 
 const META: Record<CampaignKind, { title: string; description: string }> = {
   master: {
-    title: "Master Campaigns",
+    title: "Active Campaigns",
     description:
-      "Templates that apply to every county / city page matching their criteria.",
+      "Campaigns grouped by their master criteria — expand a row to see its individual city pages.",
   },
   page: {
     title: "Campaigns",
     description: "Single mass pages that override their master campaign template.",
   },
 };
+
 
 const STATUS_OPTIONS = ["all", "active", "new", "suspended", "deleted"] as const;
 const PAGE_SIZES = [10, 25, 50, 100];
