@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Loader2,
   Copy,
@@ -31,6 +32,8 @@ import {
   Trash2,
   Search,
   LayoutList,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
@@ -77,6 +80,8 @@ export default function MassPagesBuilder() {
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [search, setSearch] = useState("");
   const [editorTarget, setEditorTarget] = useState<MassContentEditorTarget | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
@@ -226,6 +231,11 @@ export default function MassPagesBuilder() {
       }));
   }, [entries]);
 
+  // Expand every group by default when the filtered list changes.
+  useEffect(() => {
+    setExpandedGroups(new Set(grouped.map((g) => g.letter)));
+  }, [grouped.map((g) => g.letter).join(",")]);
+
   const stats = useMemo(() => {
     const total = filtered.length;
     const active = filtered.filter((e) => e.row?.status === "active").length;
@@ -257,6 +267,71 @@ export default function MassPagesBuilder() {
     const { error } = await supabase.from("mass_page_content").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Permanently deleted");
+    refresh();
+  };
+
+  const toggleGroup = (letter: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(letter)) next.delete(letter);
+      else next.add(letter);
+      return next;
+    });
+  };
+
+  const toggleSelectGroup = (letter: string, groupRows: typeof entries) => {
+    const groupPaths = new Set(groupRows.map((r) => r.path));
+    const allSelected = groupRows.every((r) => selectedPaths.has(r.path));
+    setSelectedPaths((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        groupPaths.forEach((p) => next.delete(p));
+      } else {
+        groupPaths.forEach((p) => next.add(p));
+      }
+      return next;
+    });
+  };
+
+  const setBulkStatus = async (nextStatus: string) => {
+    const targets = Array.from(selectedPaths)
+      .map((p) => rows.find((r) => r.page_path === p))
+      .filter(Boolean) as PageRow[];
+    if (targets.length === 0) {
+      toast.error("No existing pages selected");
+      return;
+    }
+    const { error } = await supabase
+      .from("mass_page_content")
+      .update({ status: nextStatus })
+      .in(
+        "id",
+        targets.map((t) => t.id)
+      );
+    if (error) return toast.error(error.message);
+    toast.success(`Updated ${targets.length} page${targets.length === 1 ? "" : "s"}`);
+    setSelectedPaths(new Set());
+    refresh();
+  };
+
+  const bulkHardDelete = async () => {
+    const targets = Array.from(selectedPaths)
+      .map((p) => rows.find((r) => r.page_path === p))
+      .filter(Boolean) as PageRow[];
+    if (targets.length === 0) {
+      toast.error("No existing pages selected");
+      return;
+    }
+    const { error } = await supabase
+      .from("mass_page_content")
+      .delete()
+      .in(
+        "id",
+        targets.map((t) => t.id)
+      );
+    if (error) return toast.error(error.message);
+    toast.success(`Deleted ${targets.length} page${targets.length === 1 ? "" : "s"}`);
+    setSelectedPaths(new Set());
     refresh();
   };
 
@@ -563,10 +638,31 @@ export default function MassPagesBuilder() {
             />
           </div>
 
+          {selectedPaths.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 p-2 rounded-md border bg-muted/30">
+              <span className="text-sm font-medium px-2">
+                {selectedPaths.size} selected
+              </span>
+              <Button size="sm" variant="outline" onClick={() => setBulkStatus("active")}>
+                <Play className="w-3.5 h-3.5 mr-1.5" /> Activate
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setBulkStatus("suspended")}>
+                <Pause className="w-3.5 h-3.5 mr-1.5" /> Suspend
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setBulkStatus("deleted")}>
+                <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedPaths(new Set())}>
+                Clear
+              </Button>
+            </div>
+          )}
+
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[40px] px-3" />
                   <TableHead>Page</TableHead>
                   <TableHead className="w-[130px]">Status</TableHead>
                   <TableHead className="w-[180px]">Last Updated</TableHead>
@@ -577,6 +673,9 @@ export default function MassPagesBuilder() {
                 {rowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-4" />
+                      </TableCell>
                       <TableCell>
                         <Skeleton className="h-4 w-[260px]" />
                       </TableCell>
@@ -593,130 +692,172 @@ export default function MassPagesBuilder() {
                   ))
                 ) : !county ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
+                    <TableCell colSpan={5} className="h-28 text-center text-muted-foreground text-sm">
                       Select a county to list its campaign pages.
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-28 text-center text-muted-foreground text-sm">
+                    <TableCell colSpan={5} className="h-28 text-center text-muted-foreground text-sm">
                       No individual campaign pages yet for this selection.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  grouped.flatMap((g) => [
-                    <TableRow key={`grp-${g.letter}`} className="bg-muted/30 hover:bg-muted/30">
-                      <TableCell colSpan={4} className="py-1.5">
-                        <span className="text-xs font-semibold tracking-widest text-muted-foreground">
-                          {g.letter}
-                          {g.rows.length}
-                        </span>
-                      </TableCell>
-                    </TableRow>,
-                    ...g.rows.map((e) => (
-                      <TableRow key={e.path} className="hover:bg-muted/40">
-                        <TableCell className="align-top">
-                          <div className="font-medium break-words">{e.label}</div>
-                        </TableCell>
-
-                        <TableCell className="align-top">
-                          {e.row ? (
-                            statusBadge(e.row.status)
-                          ) : (
-                            <Badge variant="outline" className="text-muted-foreground">
-                              Not created
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
-                          {e.row
-                            ? new Date(e.row.updated_at).toLocaleString(undefined, {
-                                month: "short",
-                                day: "2-digit",
-                                year: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-right align-top">
-                          <div className="flex items-center justify-end gap-1.5">
+                  grouped.flatMap((g) => {
+                    const activeInGroup = g.rows.filter((r) => r.row?.status === "active").length;
+                    const expanded = expandedGroups.has(g.letter);
+                    const allSelected = g.rows.every((r) => selectedPaths.has(r.path));
+                    return [
+                      <TableRow key={`grp-${g.letter}`} className="bg-muted/30 hover:bg-muted/30">
+                        <TableCell colSpan={5} className="py-1.5">
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => toggleGroup(g.letter)}
+                              className="flex items-center gap-2 text-left"
+                            >
+                              {expanded ? (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              )}
+                              <span className="text-xs font-semibold tracking-widest text-muted-foreground">
+                                {g.letter}
+                                {g.rows.length}
+                              </span>
+                              <Badge variant="outline" className="text-xs font-normal">
+                                {activeInGroup} / {g.rows.length} active
+                              </Badge>
+                            </button>
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              title={e.row ? "Edit content" : "Create page content"}
-                              onClick={() => openEditorForPath(e.path)}
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => toggleSelectGroup(g.letter, g.rows)}
                             >
-                              <Pencil className="w-4 h-4" />
+                              {allSelected ? "Deselect" : "Select all"}
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              title="Open page"
-                              onClick={() =>
-                                window.open(
-                                  company.slug
-                                    ? `https://${company.slug}.hcshvac.com${e.path}`
-                                    : `/company/${company.slug ?? ""}${e.path}`,
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                )
-                              }
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                            {e.row && (
-                              <>
-                                <Separator orientation="vertical" className="h-5 mx-0.5" />
-                                {e.row.status === "active" ? (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-amber-600 hover:bg-amber-50"
-                                    title="Suspend"
-                                    onClick={() => setStatus(e.row!.id, "suspended")}
-                                  >
-                                    <Pause className="w-4 h-4" />
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
-                                    title={e.row.status === "deleted" ? "Restore" : "Activate"}
-                                    onClick={() => setStatus(e.row!.id, "active")}
-                                  >
-                                    {e.row.status === "deleted" ? (
-                                      <RotateCcw className="w-4 h-4" />
-                                    ) : (
-                                      <Play className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                                  title={e.row.status === "deleted" ? "Delete permanently" : "Delete"}
-                                  onClick={() =>
-                                    e.row!.status === "deleted"
-                                      ? hardDelete(e.row!.id)
-                                      : setStatus(e.row!.id, "deleted")
-                                  }
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
                           </div>
                         </TableCell>
-                      </TableRow>
+                      </TableRow>,
+                      ...(expanded
+                        ? g.rows.map((e) => (
+                            <TableRow key={e.path} className="hover:bg-muted/40">
+                              <TableCell className="px-3 align-top">
+                                <Checkbox
+                                  checked={selectedPaths.has(e.path)}
+                                  onCheckedChange={() => {
+                                    setSelectedPaths((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(e.path)) next.delete(e.path);
+                                      else next.add(e.path);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell className="align-top">
+                                <div className="font-medium break-words">{e.label}</div>
+                              </TableCell>
 
-                    )),
-                  ])
-
+                              <TableCell className="align-top">
+                                {e.row ? (
+                                  statusBadge(e.row.status)
+                                ) : (
+                                  <Badge variant="outline" className="text-muted-foreground">
+                                    Not created
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
+                                {e.row
+                                  ? new Date(e.row.updated_at).toLocaleString(undefined, {
+                                      month: "short",
+                                      day: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "—"}
+                              </TableCell>
+                              <TableCell className="text-right align-top">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    title={e.row ? "Edit content" : "Create page content"}
+                                    onClick={() => openEditorForPath(e.path)}
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    title="Open page"
+                                    onClick={() =>
+                                      window.open(
+                                        company.slug
+                                          ? `https://${company.slug}.hcshvac.com${e.path}`
+                                          : `/company/${company.slug ?? ""}${e.path}`,
+                                        "_blank",
+                                        "noopener,noreferrer",
+                                      )
+                                    }
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                  {e.row && (
+                                    <>
+                                      <Separator orientation="vertical" className="h-5 mx-0.5" />
+                                      {e.row.status === "active" ? (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8 text-amber-600 hover:bg-amber-50"
+                                          title="Suspend"
+                                          onClick={() => setStatus(e.row!.id, "suspended")}
+                                        >
+                                          <Pause className="w-4 h-4" />
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
+                                          title={e.row.status === "deleted" ? "Restore" : "Activate"}
+                                          onClick={() => setStatus(e.row!.id, "active")}
+                                        >
+                                          {e.row.status === "deleted" ? (
+                                            <RotateCcw className="w-4 h-4" />
+                                          ) : (
+                                            <Play className="w-4 h-4" />
+                                          )}
+                                        </Button>
+                                      )}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                        title={e.row.status === "deleted" ? "Delete permanently" : "Delete"}
+                                        onClick={() =>
+                                          e.row!.status === "deleted"
+                                            ? hardDelete(e.row!.id)
+                                            : setStatus(e.row!.id, "deleted")
+                                        }
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        : []),
+                    ];
+                  })
                 )}
               </TableBody>
             </Table>
