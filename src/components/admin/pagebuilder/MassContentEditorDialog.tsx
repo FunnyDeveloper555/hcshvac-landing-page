@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Eye, EyeOff, ExternalLink, Loader2, Plus, RefreshCw, RotateCcw, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   ALL_MASS_SECTIONS,
@@ -84,6 +84,57 @@ export default function MassContentEditorDialog({
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState("hero");
+  const [showPreview, setShowPreview] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [previewReady, setPreviewReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const slug = (company as { slug?: string | null }).slug || "";
+  const previewUrl =
+    target && slug
+      ? `${window.location.origin}/company/${slug}${target.path}?preview=1`
+      : null;
+
+  const TAB_SECTION: Record<string, string | null> = {
+    hero: "hero",
+    intro: "intro",
+    blocks: "blocks",
+    images: "images",
+    cta: "cta",
+    sections: null,
+  };
+
+  // The preview iframe tells us when it is listening for draft content.
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if ((event.data as { type?: string })?.type === "mass-preview-ready") setPreviewReady(true);
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    setPreviewReady(false);
+  }, [reloadKey, target?.path, open]);
+
+  // Push the unsaved draft into the preview whenever the editor changes.
+  useEffect(() => {
+    if (!showPreview || !previewReady) return;
+    const timer = window.setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        {
+          type: "mass-preview",
+          overrides: ov,
+          blocks,
+          section: TAB_SECTION[tab] ?? null,
+        },
+        "*",
+      );
+    }, 250);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ov, blocks, tab, showPreview, previewReady]);
 
   const opts = {
     visitType: target?.visitType || null,
@@ -187,7 +238,9 @@ export default function MassContentEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto">
+      <DialogContent
+        className={`${showPreview && previewUrl ? "max-w-[1500px]" : "max-w-4xl"} max-h-[92vh] overflow-hidden`}
+      >
         <DialogHeader>
           <DialogTitle>Edit page content</DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-2">
@@ -195,15 +248,37 @@ export default function MassContentEditorDialog({
               {target?.path}
             </Badge>
             <span>Empty fields fall back to the auto-generated copy.</span>
+            {previewUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7"
+                onClick={() => setShowPreview((v) => !v)}
+              >
+                {showPreview ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide live preview
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3.5 h-3.5 mr-1.5" /> Show live preview
+                  </>
+                )}
+              </Button>
+            )}
           </DialogDescription>
         </DialogHeader>
 
+        <div
+          className={`grid gap-4 ${showPreview && previewUrl ? "lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]" : "grid-cols-1"}`}
+        >
+        <div className="max-h-[62vh] overflow-y-auto pr-1">
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : (
-          <Tabs defaultValue="hero">
+          <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="flex flex-wrap h-auto">
               <TabsTrigger value="hero">Hero &amp; SEO</TabsTrigger>
               <TabsTrigger value="intro">Intro &amp; bullets</TabsTrigger>
@@ -380,6 +455,48 @@ export default function MassContentEditorDialog({
             </TabsContent>
           </Tabs>
         )}
+        </div>
+
+        {showPreview && previewUrl && (
+          <div className="hidden lg:flex flex-col rounded-lg border overflow-hidden bg-muted/30">
+            <div className="flex items-center justify-between gap-2 border-b bg-background px-3 py-2">
+              <span className="text-xs font-medium">
+                Live preview{" "}
+                <span className="text-muted-foreground">
+                  — {TAB_SECTION[tab] ? `${TAB_SECTION[tab]} section highlighted` : "full page"}
+                </span>
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  title="Reload preview"
+                  onClick={() => setReloadKey((k) => k + 1)}
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  title="Open in new tab"
+                  onClick={() => window.open(previewUrl, "_blank", "noopener,noreferrer")}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+            <iframe
+              key={reloadKey}
+              ref={iframeRef}
+              src={previewUrl}
+              title="Campaign page preview"
+              className="w-full h-[62vh] bg-background"
+            />
+          </div>
+        )}
+        </div>
 
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center justify-between rounded-md border p-3">

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Phone, CheckCircle2, MapPin } from "lucide-react";
 import {
   MassCountyGroup,
@@ -72,12 +72,48 @@ const MassServicePage = ({
     templatePath,
   );
 
+  // ---- Admin live preview (?preview=1): unsaved edits arrive by postMessage ----
+  const isPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
+  const [draft, setDraft] = useState<{
+    overrides?: Record<string, unknown> | null;
+    blocks?: MassTextBlock[] | null;
+    section?: string | null;
+  } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isPreview) return;
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string } | null;
+      if (!data || data.type !== "mass-preview") return;
+      setDraft(data as typeof draft);
+    };
+    window.addEventListener("message", onMessage);
+    window.parent?.postMessage({ type: "mass-preview-ready" }, "*");
+    return () => window.removeEventListener("message", onMessage);
+  }, [isPreview]);
+
+  const focusSection = isPreview ? draft?.section || null : null;
+
+  // Scroll the previewed section into view whenever the editor changes tabs.
+  useEffect(() => {
+    if (!focusSection || !rootRef.current) return;
+    const el = rootRef.current.querySelector(`[data-mass-section="${focusSection}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [focusSection]);
+
   const defaults = defaultMassOverrides(company, service, location, opts);
-  const content = mergeMassOverrides(defaults, savedOverrides);
+  const effectiveOverrides = isPreview && draft?.overrides
+    ? { ...(savedOverrides || {}), ...draft.overrides }
+    : savedOverrides;
+  const content = mergeMassOverrides(defaults, effectiveOverrides);
   const sections = content.sections;
 
   const defaultBlocks = defaultMassTextBlocks(company, service, location, opts);
-  const textBlocks: MassTextBlock[] = savedBlocks ?? defaultBlocks;
+  const draftBlocks = isPreview && draft?.blocks ? draft.blocks : null;
+  const textBlocks: MassTextBlock[] = draftBlocks ?? savedBlocks ?? defaultBlocks;
 
   useEffect(() => {
     document.title = content.metaTitle;
@@ -659,8 +695,8 @@ const MassServicePage = ({
   };
 
   return (
-    <div style={themeVars} className="pb-0">
-      <div className="pt-24">{templateHeader}</div>
+    <div style={themeVars} className="pb-0" ref={rootRef}>
+      <div className="pt-24" data-mass-section="header">{templateHeader}</div>
       <div className={`container mx-auto px-4 py-8 ${theme.sectionGap}`}>
         <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
           <button onClick={onHome} className="hover:text-primary">Home</button>
@@ -672,9 +708,27 @@ const MassServicePage = ({
           <span className="text-foreground">{content.heading}</span>
         </nav>
 
-        {layout.order.map((key) => (sections[key] === false ? null : nodes[key] || null))}
+        {layout.order.map((key) => {
+          if (sections[key] === false) return null;
+          const node = nodes[key];
+          if (!node) return null;
+          if (!isPreview) return node;
+          return (
+            <div
+              key={`wrap-${key}`}
+              data-mass-section={key}
+              className={
+                focusSection === key
+                  ? "rounded-xl ring-2 ring-primary ring-offset-4 ring-offset-background transition-all"
+                  : undefined
+              }
+            >
+              {node}
+            </div>
+          );
+        })}
       </div>
-      {templateFooter}
+      <div data-mass-section="footer">{templateFooter}</div>
     </div>
   );
 };
