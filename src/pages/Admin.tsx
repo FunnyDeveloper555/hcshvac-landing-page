@@ -34,6 +34,7 @@ import SiteTemplates from "@/components/admin/pagebuilder/SiteTemplates";
 import MassPagesBuilder from "@/components/admin/pagebuilder/MassPagesBuilder";
 import MassCampaignsList from "@/components/admin/pagebuilder/MassCampaignsList";
 import MassCampaignTemplates from "@/components/admin/pagebuilder/MassCampaignTemplates";
+import MassPagesHistory from "@/components/admin/pagebuilder/MassPagesHistory";
 
 import LocalBusiness from "@/components/admin/pagebuilder/LocalBusiness";
 import CampaignDashboard from "@/components/admin/pagebuilder/CampaignDashboard";
@@ -256,6 +257,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/mass-pages" element={<MassPagesBuilder />} />
               <Route path="/page-builder/company/:companyId/mass-pages/master" element={<MassCampaignsList kind="master" />} />
               <Route path="/page-builder/company/:companyId/mass-pages/templates" element={<MassCampaignTemplates />} />
+              <Route path="/page-builder/company/:companyId/mass-pages/history" element={<MassPagesHistory />} />
 
 
 
