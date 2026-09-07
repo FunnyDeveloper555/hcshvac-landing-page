@@ -52,7 +52,7 @@ export default function MassPagesHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("id, company_name")
+        .select("id, name")
         .eq("id", companyId!)
         .maybeSingle();
       if (error) throw error;
@@ -104,7 +104,7 @@ export default function MassPagesHistory() {
               Campaign Page History
             </CardTitle>
             <CardDescription>
-              Activity for {company?.company_name ?? "this company"}
+              Activity for {company?.name ?? "this company"}
               {pathFilter ? ` — ${pathFilter}` : ""}
             </CardDescription>
           </div>
