@@ -264,6 +264,71 @@ export default function MassPagesBuilder() {
     refresh();
   };
 
+  const toggleGroup = (letter: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(letter)) next.delete(letter);
+      else next.add(letter);
+      return next;
+    });
+  };
+
+  const toggleSelectGroup = (letter: string, groupRows: typeof entries) => {
+    const groupPaths = new Set(groupRows.map((r) => r.path));
+    const allSelected = groupRows.every((r) => selectedPaths.has(r.path));
+    setSelectedPaths((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        groupPaths.forEach((p) => next.delete(p));
+      } else {
+        groupPaths.forEach((p) => next.add(p));
+      }
+      return next;
+    });
+  };
+
+  const setBulkStatus = async (nextStatus: string) => {
+    const targets = Array.from(selectedPaths)
+      .map((p) => rows.find((r) => r.page_path === p))
+      .filter(Boolean) as PageRow[];
+    if (targets.length === 0) {
+      toast.error("No existing pages selected");
+      return;
+    }
+    const { error } = await supabase
+      .from("mass_page_content")
+      .update({ status: nextStatus })
+      .in(
+        "id",
+        targets.map((t) => t.id)
+      );
+    if (error) return toast.error(error.message);
+    toast.success(`Updated ${targets.length} page${targets.length === 1 ? "" : "s"}`);
+    setSelectedPaths(new Set());
+    refresh();
+  };
+
+  const bulkHardDelete = async () => {
+    const targets = Array.from(selectedPaths)
+      .map((p) => rows.find((r) => r.page_path === p))
+      .filter(Boolean) as PageRow[];
+    if (targets.length === 0) {
+      toast.error("No existing pages selected");
+      return;
+    }
+    const { error } = await supabase
+      .from("mass_page_content")
+      .delete()
+      .in(
+        "id",
+        targets.map((t) => t.id)
+      );
+    if (error) return toast.error(error.message);
+    toast.success(`Deleted ${targets.length} page${targets.length === 1 ? "" : "s"}`);
+    setSelectedPaths(new Set());
+    refresh();
+  };
+
   const openEditorForPath = (p: string) => {
     if (!company) return;
     const ref = resolveMassPage(p, company, groups);
