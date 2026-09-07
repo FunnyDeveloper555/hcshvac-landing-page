@@ -708,9 +708,27 @@ const MassServicePage = ({
           <span className="text-foreground">{content.heading}</span>
         </nav>
 
-        {layout.order.map((key) => (sections[key] === false ? null : nodes[key] || null))}
+        {layout.order.map((key) => {
+          if (sections[key] === false) return null;
+          const node = nodes[key];
+          if (!node) return null;
+          if (!isPreview) return node;
+          return (
+            <div
+              key={`wrap-${key}`}
+              data-mass-section={key}
+              className={
+                focusSection === key
+                  ? "rounded-xl ring-2 ring-primary ring-offset-4 ring-offset-background transition-all"
+                  : undefined
+              }
+            >
+              {node}
+            </div>
+          );
+        })}
       </div>
-      {templateFooter}
+      <div data-mass-section="footer">{templateFooter}</div>
     </div>
   );
 };
