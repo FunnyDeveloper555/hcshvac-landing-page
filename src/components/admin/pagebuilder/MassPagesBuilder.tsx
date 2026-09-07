@@ -31,6 +31,8 @@ import {
   Trash2,
   Search,
   LayoutList,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
