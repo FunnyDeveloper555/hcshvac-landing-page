@@ -83,6 +83,11 @@ export default function MassPagesBuilder() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
+  // Clear row selection whenever any filter changes
+  useEffect(() => {
+    setSelectedPaths(new Set());
+  }, [source, item, visitType, locationType, countyKey, cityKeyValue, search]);
+
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
     queryFn: async () => {
