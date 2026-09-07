@@ -3930,6 +3930,51 @@ export type Database = {
           },
         ]
       }
+      mass_page_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          changed_by_email: string | null
+          changed_fields: string[]
+          company_id: string
+          content_id: string | null
+          created_at: string
+          id: string
+          page_path: string
+          previous_status: string | null
+          snapshot: Json | null
+          status: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_fields?: string[]
+          company_id: string
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          page_path: string
+          previous_status?: string | null
+          snapshot?: Json | null
+          status?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          changed_by_email?: string | null
+          changed_fields?: string[]
+          company_id?: string
+          content_id?: string | null
+          created_at?: string
+          id?: string
+          page_path?: string
+          previous_status?: string | null
+          snapshot?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
