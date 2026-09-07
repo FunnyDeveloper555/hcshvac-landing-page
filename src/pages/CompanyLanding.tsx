@@ -158,7 +158,8 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   const massBodyVariant = massTheme.bodyVariant;
   // On a live campaign page, the top bar + footer adopt the template primary color.
   const massBarColor = massPage ? `hsl(${massTheme.primary})` : null;
-  const showMassMenu = massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked);
+  const showMassMenu =
+    massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked && !massPreview);
 
   const baseUrl = subdomainSlug ? "" : `/company/${slug}`;
   const goToMassPath = (path: string) => {
