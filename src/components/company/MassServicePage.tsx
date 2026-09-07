@@ -737,7 +737,7 @@ const MassServicePage = ({
         {isolate &&
           (!nodes[focusSection as string] ||
             sections[focusSection as string] === false ||
-            !layout.order.includes(focusSection as string)) && (
+            !(layout.order as string[]).includes(focusSection as string)) && (
           <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
             This section is currently turned off or has no content yet for this page.
           </div>
