@@ -638,14 +638,29 @@ export default function MassPagesBuilder() {
               <span className="text-sm font-medium px-2">
                 {selectedPaths.size} selected
               </span>
-              <Button size="sm" variant="outline" onClick={() => setBulkStatus("active")}>
-                <Play className="w-3.5 h-3.5 mr-1.5" /> Activate
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => setBulkStatus("active")}
+                title="Activate"
+              >
+                <Play className="w-3.5 h-3.5" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setBulkStatus("suspended")}>
-                <Pause className="w-3.5 h-3.5 mr-1.5" /> Suspend
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-yellow-500 hover:bg-yellow-600 text-white"
+                onClick={() => setBulkStatus("suspended")}
+                title="Suspend"
+              >
+                <Pause className="w-3.5 h-3.5" />
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setBulkStatus("deleted")}>
-                <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => setBulkStatus("deleted")}
+                title="Delete"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedPaths(new Set())}>
                 Clear
