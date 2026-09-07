@@ -84,6 +84,57 @@ export default function MassContentEditorDialog({
   const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState("hero");
+  const [showPreview, setShowPreview] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [previewReady, setPreviewReady] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const slug = (company as { slug?: string | null }).slug || "";
+  const previewUrl =
+    target && slug
+      ? `${window.location.origin}/company/${slug}${target.path}?preview=1`
+      : null;
+
+  const TAB_SECTION: Record<string, string | null> = {
+    hero: "hero",
+    intro: "intro",
+    blocks: "blocks",
+    images: "images",
+    cta: "cta",
+    sections: null,
+  };
+
+  // The preview iframe tells us when it is listening for draft content.
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if ((event.data as { type?: string })?.type === "mass-preview-ready") setPreviewReady(true);
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  useEffect(() => {
+    setPreviewReady(false);
+  }, [reloadKey, target?.path, open]);
+
+  // Push the unsaved draft into the preview whenever the editor changes.
+  useEffect(() => {
+    if (!showPreview || !previewReady) return;
+    const timer = window.setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        {
+          type: "mass-preview",
+          overrides: ov,
+          blocks,
+          section: TAB_SECTION[tab] ?? null,
+        },
+        "*",
+      );
+    }, 250);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ov, blocks, tab, showPreview, previewReady]);
 
   const opts = {
     visitType: target?.visitType || null,
