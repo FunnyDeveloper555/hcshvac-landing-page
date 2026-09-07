@@ -72,12 +72,48 @@ const MassServicePage = ({
     templatePath,
   );
 
+  // ---- Admin live preview (?preview=1): unsaved edits arrive by postMessage ----
+  const isPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
+  const [draft, setDraft] = useState<{
+    overrides?: Record<string, unknown> | null;
+    blocks?: MassTextBlock[] | null;
+    section?: string | null;
+  } | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isPreview) return;
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string } | null;
+      if (!data || data.type !== "mass-preview") return;
+      setDraft(data as typeof draft);
+    };
+    window.addEventListener("message", onMessage);
+    window.parent?.postMessage({ type: "mass-preview-ready" }, "*");
+    return () => window.removeEventListener("message", onMessage);
+  }, [isPreview]);
+
+  const focusSection = isPreview ? draft?.section || null : null;
+
+  // Scroll the previewed section into view whenever the editor changes tabs.
+  useEffect(() => {
+    if (!focusSection || !rootRef.current) return;
+    const el = rootRef.current.querySelector(`[data-mass-section="${focusSection}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [focusSection]);
+
   const defaults = defaultMassOverrides(company, service, location, opts);
-  const content = mergeMassOverrides(defaults, savedOverrides);
+  const effectiveOverrides = isPreview && draft?.overrides
+    ? { ...(savedOverrides || {}), ...draft.overrides }
+    : savedOverrides;
+  const content = mergeMassOverrides(defaults, effectiveOverrides);
   const sections = content.sections;
 
   const defaultBlocks = defaultMassTextBlocks(company, service, location, opts);
-  const textBlocks: MassTextBlock[] = savedBlocks ?? defaultBlocks;
+  const draftBlocks = isPreview && draft?.blocks ? draft.blocks : null;
+  const textBlocks: MassTextBlock[] = draftBlocks ?? savedBlocks ?? defaultBlocks;
 
   useEffect(() => {
     document.title = content.metaTitle;
