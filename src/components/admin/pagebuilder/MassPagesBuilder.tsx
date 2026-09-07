@@ -739,11 +739,9 @@ export default function MassPagesBuilder() {
                         ? g.rows.map((e) => (
                             <TableRow key={e.path} className="hover:bg-muted/40">
                               <TableCell className="px-3 align-top">
-                                <input
-                                  type="checkbox"
-                                  className="h-4 w-4 rounded border-input"
+                                <Checkbox
                                   checked={selectedPaths.has(e.path)}
-                                  onChange={() => {
+                                  onCheckedChange={() => {
                                     setSelectedPaths((prev) => {
                                       const next = new Set(prev);
                                       if (next.has(e.path)) next.delete(e.path);
