@@ -775,9 +775,10 @@ export default function MassPagesBuilder() {
                                 {e.row ? (
                                   statusBadge(e.row.status)
                                 ) : (
-                                  <Badge variant="outline" className="text-muted-foreground">
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                    <span className="h-2 w-2 rounded-full bg-slate-300" />
                                     Not created
-                                  </Badge>
+                                  </span>
                                 )}
                               </TableCell>
                               <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
