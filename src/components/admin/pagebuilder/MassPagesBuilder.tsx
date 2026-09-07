@@ -68,6 +68,7 @@ interface PageRow {
 
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const prefillPath = searchParams.get("path");
   const prefilled = useRef(false);
