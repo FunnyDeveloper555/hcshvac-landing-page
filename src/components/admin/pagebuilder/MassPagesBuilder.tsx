@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -34,6 +34,7 @@ import {
   LayoutList,
   ChevronDown,
   ChevronRight,
+  History,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMassPages } from "@/hooks/useMassPages";
@@ -67,6 +68,7 @@ interface PageRow {
 
 export default function MassPagesBuilder() {
   const { companyId } = useParams<{ companyId: string }>();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const prefillPath = searchParams.get("path");
   const prefilled = useRef(false);
@@ -824,6 +826,19 @@ export default function MassPagesBuilder() {
                                     }
                                   >
                                     <ExternalLink className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    title="View activity history"
+                                    onClick={() =>
+                                      navigate(
+                                        `/admin/page-builder/company/${companyId}/mass-pages/history?path=${encodeURIComponent(e.path)}`,
+                                      )
+                                    }
+                                  >
+                                    <History className="w-4 h-4" />
                                   </Button>
                                   {e.row && (
                                     <>
