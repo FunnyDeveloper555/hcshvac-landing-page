@@ -257,11 +257,11 @@ export default function MassContentEditorDialog({
               >
                 {showPreview ? (
                   <>
-                    <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide live preview
+                    <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide preview
                   </>
                 ) : (
                   <>
-                    <Eye className="w-3.5 h-3.5 mr-1.5" /> Show live preview
+                    <Eye className="w-3.5 h-3.5 mr-1.5" /> Show preview
                   </>
                 )}
               </Button>
@@ -461,9 +461,9 @@ export default function MassContentEditorDialog({
           <div className="hidden lg:flex flex-col rounded-lg border overflow-hidden bg-muted/30">
             <div className="flex items-center justify-between gap-2 border-b bg-background px-3 py-2">
               <span className="text-xs font-medium">
-                Live preview{" "}
+                Section preview{" "}
                 <span className="text-muted-foreground">
-                  — {TAB_SECTION[tab] ? `${TAB_SECTION[tab]} section highlighted` : "full page"}
+                  — {TAB_SECTION[tab] ? `how the ${TAB_SECTION[tab]} section looks on the live page` : "full page"}
                 </span>
               </span>
               <div className="flex items-center gap-1">
