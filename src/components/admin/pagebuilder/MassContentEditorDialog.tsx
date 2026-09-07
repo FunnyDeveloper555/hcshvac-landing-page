@@ -455,6 +455,48 @@ export default function MassContentEditorDialog({
             </TabsContent>
           </Tabs>
         )}
+        </div>
+
+        {showPreview && previewUrl && (
+          <div className="hidden lg:flex flex-col rounded-lg border overflow-hidden bg-muted/30">
+            <div className="flex items-center justify-between gap-2 border-b bg-background px-3 py-2">
+              <span className="text-xs font-medium">
+                Live preview{" "}
+                <span className="text-muted-foreground">
+                  — {TAB_SECTION[tab] ? `${TAB_SECTION[tab]} section highlighted` : "full page"}
+                </span>
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  title="Reload preview"
+                  onClick={() => setReloadKey((k) => k + 1)}
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  title="Open in new tab"
+                  onClick={() => window.open(previewUrl, "_blank", "noopener,noreferrer")}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+            <iframe
+              key={reloadKey}
+              ref={iframeRef}
+              src={previewUrl}
+              title="Campaign page preview"
+              className="w-full h-[62vh] bg-background"
+            />
+          </div>
+        )}
+        </div>
 
         <div className="space-y-3 border-t pt-4">
           <div className="flex items-center justify-between rounded-md border p-3">
