@@ -79,6 +79,8 @@ export default function MassPagesBuilder() {
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [search, setSearch] = useState("");
   const [editorTarget, setEditorTarget] = useState<MassContentEditorTarget | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
