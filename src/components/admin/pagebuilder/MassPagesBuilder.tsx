@@ -83,11 +83,6 @@ export default function MassPagesBuilder() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
-  // Expand every group by default when the list changes.
-  useEffect(() => {
-    setExpandedGroups(new Set(grouped.map((g) => g.letter)));
-  }, [grouped.map((g) => g.letter).join(",")]);
-
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
     queryFn: async () => {
