@@ -695,8 +695,8 @@ const MassServicePage = ({
   };
 
   return (
-    <div style={themeVars} className="pb-0">
-      <div className="pt-24">{templateHeader}</div>
+    <div style={themeVars} className="pb-0" ref={rootRef}>
+      <div className="pt-24" data-mass-section="header">{templateHeader}</div>
       <div className={`container mx-auto px-4 py-8 ${theme.sectionGap}`}>
         <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
           <button onClick={onHome} className="hover:text-primary">Home</button>
