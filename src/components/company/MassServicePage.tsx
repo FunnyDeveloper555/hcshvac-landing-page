@@ -694,41 +694,53 @@ const MassServicePage = ({
     cta: <div key="cta">{ctaVariants[theme.bodyVariant] || ctaVariants.standard}</div>,
   };
 
+  // In the admin editor we show only the section belonging to the active tab.
+  const isolate = isPreview && !!focusSection;
+
   return (
     <div style={themeVars} className="pb-0" ref={rootRef}>
-      <div className="pt-24" data-mass-section="header">{templateHeader}</div>
-      <div className={`container mx-auto px-4 py-8 ${theme.sectionGap}`}>
-        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-          <button onClick={onHome} className="hover:text-primary">Home</button>
-          <span>/</span>
-          <button onClick={() => onNavigate("/mass-pages")} className="hover:text-primary">
-            Service Areas
-          </button>
-          <span>/</span>
-          <span className="text-foreground">{content.heading}</span>
-        </nav>
+      {!isolate && (
+        <div className="pt-24" data-mass-section="header">{templateHeader}</div>
+      )}
+      <div
+        className={
+          isolate
+            ? "container mx-auto px-4 py-4"
+            : `container mx-auto px-4 py-8 ${theme.sectionGap}`
+        }
+      >
+        {!isolate && (
+          <nav className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+            <button onClick={onHome} className="hover:text-primary">Home</button>
+            <span>/</span>
+            <button onClick={() => onNavigate("/mass-pages")} className="hover:text-primary">
+              Service Areas
+            </button>
+            <span>/</span>
+            <span className="text-foreground">{content.heading}</span>
+          </nav>
+        )}
 
         {layout.order.map((key) => {
+          if (isolate && key !== focusSection) return null;
           if (sections[key] === false) return null;
           const node = nodes[key];
           if (!node) return null;
           if (!isPreview) return node;
           return (
-            <div
-              key={`wrap-${key}`}
-              data-mass-section={key}
-              className={
-                focusSection === key
-                  ? "rounded-xl ring-2 ring-primary ring-offset-4 ring-offset-background transition-all"
-                  : undefined
-              }
-            >
+            <div key={`wrap-${key}`} data-mass-section={key}>
               {node}
             </div>
           );
         })}
+
+        {isolate && !nodes[focusSection as string] && (
+          <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+            This section is currently turned off or has no content yet for this page.
+          </div>
+        )}
       </div>
-      <div data-mass-section="footer">{templateFooter}</div>
+      {!isolate && <div data-mass-section="footer">{templateFooter}</div>}
     </div>
   );
 };
