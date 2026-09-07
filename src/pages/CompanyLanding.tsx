@@ -147,8 +147,12 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
         })
       : null,
   );
+  // Admin preview (inside the content editor) may view drafts / suspended pages.
+  const massPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("preview") === "1";
   // Suspended / deleted campaigns must not be reachable on the live site.
-  const massPage = massPageBlocked ? null : resolvedMassPage;
+  const massPage = massPageBlocked && !massPreview ? null : resolvedMassPage;
   const showMassHomeBody = massPageOverrides?.sections?.homeBody !== false;
   const massTheme = massCampaignTemplate(massPageOverrides?.template).theme;
   const massBodyVariant = massTheme.bodyVariant;
