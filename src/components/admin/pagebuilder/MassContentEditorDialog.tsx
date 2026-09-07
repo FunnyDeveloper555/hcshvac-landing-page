@@ -238,7 +238,9 @@ export default function MassContentEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto">
+      <DialogContent
+        className={`${showPreview && previewUrl ? "max-w-[1500px]" : "max-w-4xl"} max-h-[92vh] overflow-hidden`}
+      >
         <DialogHeader>
           <DialogTitle>Edit page content</DialogTitle>
           <DialogDescription className="flex flex-wrap items-center gap-2">
@@ -246,15 +248,37 @@ export default function MassContentEditorDialog({
               {target?.path}
             </Badge>
             <span>Empty fields fall back to the auto-generated copy.</span>
+            {previewUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7"
+                onClick={() => setShowPreview((v) => !v)}
+              >
+                {showPreview ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide live preview
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-3.5 h-3.5 mr-1.5" /> Show live preview
+                  </>
+                )}
+              </Button>
+            )}
           </DialogDescription>
         </DialogHeader>
 
+        <div
+          className={`grid gap-4 ${showPreview && previewUrl ? "lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]" : "grid-cols-1"}`}
+        >
+        <div className="max-h-[62vh] overflow-y-auto pr-1">
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
           </div>
         ) : (
-          <Tabs defaultValue="hero">
+          <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="flex flex-wrap h-auto">
               <TabsTrigger value="hero">Hero &amp; SEO</TabsTrigger>
               <TabsTrigger value="intro">Intro &amp; bullets</TabsTrigger>
