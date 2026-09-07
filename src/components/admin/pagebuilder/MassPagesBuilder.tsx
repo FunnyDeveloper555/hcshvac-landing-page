@@ -231,11 +231,6 @@ export default function MassPagesBuilder() {
       }));
   }, [entries]);
 
-  // Expand every group by default when the filtered list changes.
-  useEffect(() => {
-    setExpandedGroups(new Set(grouped.map((g) => g.letter)));
-  }, [grouped.map((g) => g.letter).join(",")]);
-
   const stats = useMemo(() => {
     const total = filtered.length;
     const active = filtered.filter((e) => e.row?.status === "active").length;
