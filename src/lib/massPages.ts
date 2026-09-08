@@ -724,14 +724,14 @@ export const defaultMassOverrides = (
 
   return {
     metaTitle: `${heading} | ${company.name}`.slice(0, 60),
-    metaDescription: `${company.name} provides expert ${serviceTitle.toLowerCase()} for ${audience} in ${place} and throughout ${location.county}.`.slice(0, 158),
+    metaDescription: `${company.name} provides expert ${workAction} ${service.label.toLowerCase()} for ${audience} in ${place} and throughout ${location.county}.`.slice(0, 158),
     heroKicker: `${location.county}, ${location.state}`,
     heroTitle: heading,
     heroSubtitle: massPageSummary(service.label, location, options),
     heading,
-    intro: `${company.name} delivers professional ${service.label.toLowerCase()} for homes and businesses in ${place}. Our technicians know the equipment, the codes and the weather in ${location.county} — so you get a lasting fix the first time.`,
+    intro: `${company.name} delivers professional ${workAction} for ${audience} in ${place}. Our technicians know the equipment, the codes and the weather in ${location.county} — so you get a lasting fix the first time.`,
     bullets: [
-      visitType === "Emergency"
+      visitType === "Emergency" || visitType === "24 Hours" || visitType === "Urgent"
         ? `24/7 emergency ${service.label.toLowerCase()} in ${location.city}`
         : `Same-day ${service.label.toLowerCase()} appointments in ${location.city}`,
       locationType
@@ -740,18 +740,16 @@ export const defaultMassOverrides = (
       "Upfront pricing with no hidden fees",
       `Serving all of ${location.county}, ${location.state}`,
     ],
-    brandsHeading: `Brands we ${
-      service.action === "Installation" ? "install" : service.action.toLowerCase()
-    } in ${location.city}`,
+    brandsHeading: `Brands we ${workAction} in ${location.city}`,
     brandsNote: `manufacturers supported by our ${location.county} technicians`,
     images: [
       {
-        alt: `${company.name} technician performing ${service.label.toLowerCase()} in ${place}`,
+        alt: `${company.name} technician performing ${workAction} in ${place}`,
         caption: `${serviceTitle} in ${location.city}, ${location.state}`,
       },
       {
-        alt: `${service.group} equipment ready for ${service.action.toLowerCase()} in ${location.county}`,
-        caption: `${service.group} ${service.action.toLowerCase()} for ${audience}`,
+        alt: `${service.group} equipment ready for ${workAction} in ${location.county}`,
+        caption: `${service.group} ${workAction} for ${audience}`,
       },
       {
         alt: `${company.name} serving ${location.county}, ${location.state}`,
