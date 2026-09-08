@@ -445,10 +445,10 @@ export default function MassPagesBuilder() {
               onValueChange={(v) => setVisitType(v === "all" ? "" : (v as VisitType))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All" />
+                <SelectValue placeholder="Blank" />
               </SelectTrigger>
               <SelectContent className="max-h-72">
-                <SelectItem value="all">All visit types</SelectItem>
+                <SelectItem value="all">Blank</SelectItem>
                 {VISIT_TYPES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
