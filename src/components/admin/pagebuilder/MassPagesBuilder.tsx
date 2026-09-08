@@ -46,6 +46,8 @@ import {
   LocationType,
   VISIT_TYPES,
   VisitType,
+  SERVICE_TYPES,
+  ServiceType,
   customService,
   enabledServices,
   isMassTemplatePath,
@@ -78,6 +80,7 @@ export default function MassPagesBuilder() {
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
+  const [serviceType, setServiceType] = useState<ServiceType | "">("");
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [search, setSearch] = useState("");
@@ -88,7 +91,7 @@ export default function MassPagesBuilder() {
   // Clear row selection whenever any filter changes
   useEffect(() => {
     setSelectedPaths(new Set());
-  }, [source, item, visitType, locationType, countyKey, cityKeyValue, search]);
+  }, [source, item, visitType, locationType, serviceType, countyKey, cityKeyValue, search]);
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
@@ -152,6 +155,7 @@ export default function MassPagesBuilder() {
     setItem(ref.service.label);
     setVisitType(ref.visitType || "");
     setLocationType(ref.locationType || "");
+    setServiceType(ref.serviceType || "");
     setCountyKey(`${ref.location.county}|${ref.location.state}`);
     setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
     setEditorTarget({
@@ -160,6 +164,7 @@ export default function MassPagesBuilder() {
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
+      serviceType: ref.serviceType || null,
     });
   }, [prefillPath, company, groups, services]);
 
@@ -168,7 +173,7 @@ export default function MassPagesBuilder() {
     county?.locations.find((l) => `${l.city}|${l.zip}` === cityKeyValue) || null;
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
-  const opts = { visitType: visitType || null, locationType: locationType || null };
+  const opts = { visitType: visitType || null, locationType: locationType || null, serviceType: serviceType || null };
 
   const path = service && location ? massPagePath(service, location, opts) : "";
   const summary = service && location ? massPageSummary(service.label, location, opts) : "";
@@ -210,6 +215,7 @@ export default function MassPagesBuilder() {
       const tokens = [
         locationType ? compact(locationType) : "",
         visitType ? compact(visitType) : "",
+        serviceType ? compact(serviceType) : "",
         compact(county.county),
         location ? compact(location.city) : "",
       ].filter(Boolean);
@@ -251,9 +257,9 @@ export default function MassPagesBuilder() {
 
 
   const tableTitle = useMemo(() => {
-    const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
+    const bits = [locationType, visitType, serviceType, service?.label].filter(Boolean).join(" ");
     return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
-  }, [locationType, visitType, service, company]);
+  }, [locationType, visitType, serviceType, service, company]);
 
   const exists = !!rows.find((r) => r.page_path === path);
 
@@ -350,6 +356,7 @@ export default function MassPagesBuilder() {
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
+      serviceType: ref.serviceType || null,
     });
   };
 
@@ -439,10 +446,10 @@ export default function MassPagesBuilder() {
               onValueChange={(v) => setVisitType(v === "all" ? "" : (v as VisitType))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All" />
+                <SelectValue placeholder="Blank" />
               </SelectTrigger>
               <SelectContent className="max-h-72">
-                <SelectItem value="all">All visit types</SelectItem>
+                <SelectItem value="all">Blank</SelectItem>
                 {VISIT_TYPES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
@@ -482,6 +489,26 @@ export default function MassPagesBuilder() {
                 {options.map((opt) => (
                   <SelectItem key={opt} value={opt}>
                     {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-xs">Service type</Label>
+            <Select
+              value={serviceType || "all"}
+              onValueChange={(v) => setServiceType(v === "all" ? "" : (v as ServiceType))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Blank" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">Blank</SelectItem>
+                {SERVICE_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -561,6 +588,7 @@ export default function MassPagesBuilder() {
                     location,
                     visitType: visitType || null,
                     locationType: locationType || null,
+                    serviceType: serviceType || null,
                   })
                 }
               >

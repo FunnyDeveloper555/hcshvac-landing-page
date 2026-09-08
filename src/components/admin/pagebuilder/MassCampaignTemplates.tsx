@@ -26,6 +26,8 @@ import {
   MASS_TEMPLATE_PREFIX,
   VISIT_TYPES,
   VisitType,
+  SERVICE_TYPES,
+  ServiceType,
   MassLocation,
   compact,
   customService,
@@ -48,6 +50,7 @@ export default function MassCampaignTemplates() {
 
   const [locationType, setLocationType] = useState<LocationType | "">("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
+  const [serviceType, setServiceType] = useState<ServiceType | "">("");
   const [source, setSource] = useState<"services" | "products">("services");
   const [item, setItem] = useState("");
   const [template, setTemplate] = useState<string>(DEFAULT_MASS_CAMPAIGN_TEMPLATE);
@@ -107,7 +110,7 @@ export default function MassCampaignTemplates() {
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
-  const opts = { visitType: visitType || null, locationType: locationType || null };
+  const opts = { visitType: visitType || null, locationType: locationType || null, serviceType: serviceType || null };
   const path = service ? massTemplatePath(service, opts) : "";
 
   // Prefill from ?path=/__template/...
@@ -122,6 +125,8 @@ export default function MassCampaignTemplates() {
       if (l) return setLocationType(l);
       const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
       if (v) return setVisitType(v);
+      const s = SERVICE_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+      if (s) return setServiceType(s);
       svc = seg;
     });
     const match = services.find((s) => compact(s.label).toLowerCase() === svc.toLowerCase());
@@ -206,7 +211,7 @@ export default function MassCampaignTemplates() {
           <CardTitle className="text-base">Master campaign</CardTitle>
           <CardDescription>No county or city — the template applies to all its pages.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-4">
+        <CardContent className="grid gap-3 md:grid-cols-5">
           <div className="space-y-1">
             <Label className="text-xs">Location type</Label>
             <Select value={locationType} onValueChange={(v) => setLocationType(v as LocationType)}>
@@ -230,6 +235,21 @@ export default function MassCampaignTemplates() {
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 {VISIT_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Service type</Label>
+            <Select value={serviceType} onValueChange={(v) => setServiceType(v as ServiceType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {SERVICE_TYPES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
                   </SelectItem>
