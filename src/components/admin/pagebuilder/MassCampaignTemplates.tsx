@@ -50,6 +50,7 @@ export default function MassCampaignTemplates() {
 
   const [locationType, setLocationType] = useState<LocationType | "">("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
+  const [serviceType, setServiceType] = useState<ServiceType | "">("");
   const [source, setSource] = useState<"services" | "products">("services");
   const [item, setItem] = useState("");
   const [template, setTemplate] = useState<string>(DEFAULT_MASS_CAMPAIGN_TEMPLATE);
