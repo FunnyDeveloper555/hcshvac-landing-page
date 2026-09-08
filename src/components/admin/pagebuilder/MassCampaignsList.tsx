@@ -94,6 +94,13 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Clear row selection whenever the search or status filter changes
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [search, statusFilter]);
+
 
 
   const { data: company } = useQuery({
