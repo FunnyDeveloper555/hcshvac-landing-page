@@ -297,27 +297,67 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       minute: "2-digit",
     });
 
+  /** Colored status dot, matching the Campaigns page table */
   const statusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">Active</Badge>;
-      case "new":
-        return (
-          <Badge variant="outline" className="border-blue-300 text-blue-600 bg-blue-50">
-            Draft
-          </Badge>
-        );
-      case "suspended":
-        return (
-          <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
-            Suspended
-          </Badge>
-        );
-      case "deleted":
-        return <Badge variant="destructive">Deleted</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+    const configs: Record<string, { dot: string; text: string; label: string }> = {
+      active: { dot: "bg-emerald-500", text: "text-emerald-700", label: "Active" },
+      new: { dot: "bg-blue-500", text: "text-blue-700", label: "Draft" },
+      suspended: { dot: "bg-amber-500", text: "text-amber-700", label: "Suspended" },
+      deleted: { dot: "bg-red-500", text: "text-red-700", label: "Deleted" },
+    };
+    const cfg = configs[status];
+    if (!cfg) {
+      return (
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground capitalize">
+          <span className="h-2 w-2 rounded-full bg-slate-400" />
+          {status}
+        </span>
+      );
     }
+    return (
+      <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${cfg.text}`}>
+        <span className={`h-2 w-2 rounded-full ${cfg.dot}`} />
+        {cfg.label}
+      </span>
+    );
+  };
+
+  /** Headline stats across all campaign rows (masters + pages) */
+  const stats = useMemo(() => {
+    const total = allRows.length;
+    const active = allRows.filter((r) => r.status === "active").length;
+    const suspended = allRows.filter((r) => r.status === "suspended").length;
+    const deleted = allRows.filter((r) => r.status === "deleted").length;
+    return { total, active, suspended, deleted };
+  }, [allRows]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectGroup = (kids: CampaignRow[]) => {
+    const allSelected = kids.length > 0 && kids.every((k) => selectedIds.has(k.id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) kids.forEach((k) => next.delete(k.id));
+      else kids.forEach((k) => next.add(k.id));
+      return next;
+    });
+  };
+
+  const bulkSetStatus = async (next: string) => {
+    await setStatus(Array.from(selectedIds), next);
+    setSelectedIds(new Set());
+  };
+
+  const bulkHardDelete = async () => {
+    await hardDelete(Array.from(selectedIds));
+    setSelectedIds(new Set());
   };
 
   /** "DuPage County · Carol Stream, IL 60108" from a specific page path */
