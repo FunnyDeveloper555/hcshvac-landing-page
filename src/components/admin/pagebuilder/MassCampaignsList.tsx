@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Loader2,
   ExternalLink,
@@ -44,6 +45,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  History,
   LayoutList,
   Settings2,
 } from "lucide-react";
