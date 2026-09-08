@@ -210,9 +210,6 @@ export const massTemplatePathForPage = (pagePath: string): string | null => {
   return MASS_TEMPLATE_PREFIX + parts.slice(0, parts.length - 2).join("-");
 };
 
-const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
-const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
-const serviceTypeSet = new Set(SERVICE_TYPES.map((s) => compact(s).toLowerCase()));
 
 const classifyMiddles = (parts: string[]): {
   loc?: LocationType;
