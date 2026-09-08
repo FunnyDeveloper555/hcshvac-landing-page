@@ -215,6 +215,7 @@ export default function MassPagesBuilder() {
       const tokens = [
         locationType ? compact(locationType) : "",
         visitType ? compact(visitType) : "",
+        serviceType ? compact(serviceType) : "",
         compact(county.county),
         location ? compact(location.city) : "",
       ].filter(Boolean);
