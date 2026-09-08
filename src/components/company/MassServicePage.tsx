@@ -48,9 +48,9 @@ const MassServicePage = ({
   onHome,
   onContact,
 }: MassServicePageProps) => {
-  const { service, location, visitType, locationType } = page;
+  const { service, location, visitType, locationType, serviceType } = page;
   const place = locationLabel(location);
-  const opts = { visitType, locationType };
+  const opts = { visitType, locationType, serviceType };
   const pagePath = massPagePath(service, location, opts);
   const templatePath = massTemplatePath(service, opts);
 
