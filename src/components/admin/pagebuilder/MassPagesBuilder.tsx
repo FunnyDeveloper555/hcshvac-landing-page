@@ -173,7 +173,7 @@ export default function MassPagesBuilder() {
     county?.locations.find((l) => `${l.city}|${l.zip}` === cityKeyValue) || null;
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
-  const opts = { visitType: visitType || null, locationType: locationType || null };
+  const opts = { visitType: visitType || null, locationType: locationType || null, serviceType: serviceType || null };
 
   const path = service && location ? massPagePath(service, location, opts) : "";
   const summary = service && location ? massPageSummary(service.label, location, opts) : "";
