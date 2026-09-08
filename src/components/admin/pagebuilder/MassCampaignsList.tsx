@@ -639,6 +639,20 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
               </CardDescription>
             </div>
           </div>
+          <div className="flex flex-wrap items-center gap-2 pt-3">
+            <Badge variant="secondary" className="font-medium">
+              Total {stats.total}
+            </Badge>
+            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium">
+              Active {stats.active}
+            </Badge>
+            <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 font-medium">
+              Suspended {stats.suspended}
+            </Badge>
+            <Badge variant="destructive" className="font-medium">
+              Deleted {stats.deleted}
+            </Badge>
+          </div>
         </CardHeader>
 
         <Separator />
@@ -700,14 +714,48 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
             </div>
           </div>
 
+          {selectedIds.size > 0 && (
+            <div className="flex flex-wrap items-center gap-2 p-2 rounded-md border bg-muted/30">
+              <span className="text-sm font-medium px-2">{selectedIds.size} selected</span>
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => bulkSetStatus("active")}
+                title="Activate"
+              >
+                <Play className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-yellow-500 hover:bg-yellow-600 text-white"
+                onClick={() => bulkSetStatus("suspended")}
+                title="Suspend"
+              >
+                <Pause className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                size="icon"
+                className="rounded-full w-8 h-8 bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => bulkSetStatus("deleted")}
+                title="Delete"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+                Clear
+              </Button>
+            </div>
+          )}
+
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-transparent">
-                  <SortHead label="Campaign / Path" k="title" className="w-[360px]" />
+                  <TableHead className="w-[40px] px-3" />
+                  <SortHead label="Campaign / Path" k="title" />
                   <SortHead label="Status" k="status" className="w-[130px]" />
                   <SortHead label="Last Updated" k="updated_at" className="w-[180px]" />
-                  <TableHead className="text-right w-[200px]">Actions</TableHead>
+                  <TableHead className="text-right w-[220px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
