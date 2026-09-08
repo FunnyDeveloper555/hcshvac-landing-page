@@ -372,55 +372,140 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     return `${county} · ${tail}`;
   };
 
-  const renderRow = (row: CampaignRow, isChild: boolean, parentStatus?: string): JSX.Element[] => {
-    const isTemplate = isMassTemplatePath(row.page_path);
-    const title = isChild ? locationLabel(row.page_path) : titleFor(row);
+  /** Accordion header row for a master campaign; expands to show its child pages */
+  const renderMasterGroup = (row: CampaignRow): JSX.Element[] => {
     const kids = childrenOf(row);
     const isOpen = !!expanded[row.id];
+    const activeCount = kids.filter((k) => k.status === "active").length;
+    const allSelected = kids.length > 0 && kids.every((k) => selectedIds.has(k.id));
+
+    const out: JSX.Element[] = [
+      <TableRow key={row.id} className="bg-muted/30 hover:bg-muted/30">
+        <TableCell colSpan={5} className="py-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => ({ ...e, [row.id]: !e[row.id] }))}
+              className="flex items-center gap-2 text-left min-w-0"
+            >
+              {isOpen ? (
+                <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              )}
+              <span className="font-medium break-words whitespace-normal">{titleFor(row)}</span>
+              {statusBadge(row.status)}
+              <Badge variant="outline" className="text-xs font-normal shrink-0">
+                {activeCount} / {kids.length} active
+              </Badge>
+            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => toggleSelectGroup(kids)}
+              >
+                {allSelected ? "Deselect" : "Select all"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title="Edit campaign template"
+                onClick={() =>
+                  navigate(
+                    `/admin/page-builder/company/${companyId}/mass-pages/templates?path=${encodeURIComponent(row.page_path)}`,
+                  )
+                }
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title="View activity history"
+                onClick={() =>
+                  navigate(
+                    `/admin/page-builder/company/${companyId}/mass-pages/history?path=${encodeURIComponent(row.page_path)}`,
+                  )
+                }
+              >
+                <History className="w-3.5 h-3.5" />
+              </Button>
+              {row.status === "active" ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-amber-600 hover:bg-amber-50"
+                  title="Suspend campaign"
+                  onClick={() => setStatus(idsFor(row), "suspended")}
+                >
+                  <Pause className="w-3.5 h-3.5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-emerald-600 hover:bg-emerald-50"
+                  title={row.status === "deleted" ? "Restore campaign" : "Activate campaign"}
+                  onClick={() => setStatus(idsFor(row), "active")}
+                >
+                  {row.status === "deleted" ? (
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                title={row.status === "deleted" ? "Delete permanently" : "Delete campaign"}
+                onClick={() =>
+                  row.status === "deleted" ? hardDelete(idsFor(row)) : setStatus(idsFor(row), "deleted")
+                }
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>,
+    ];
+
+    if (isOpen) for (const kid of kids) out.push(renderPageRow(kid, row.status, true));
+    return out;
+  };
+
+  /** A single campaign page row — child of a master group, or standalone */
+  const renderPageRow = (row: CampaignRow, parentStatus?: string, isChild = false): JSX.Element => {
+    const isTemplate = isMassTemplatePath(row.page_path);
     const isParentLocked = parentStatus === "suspended" || parentStatus === "deleted";
     const lockTitle = isParentLocked ? `Disabled because parent campaign is ${parentStatus}` : undefined;
 
-    const out: JSX.Element[] = [
-      <TableRow key={row.id} className="group transition-colors hover:bg-muted/40">
+    return (
+      <TableRow key={row.id} className="hover:bg-muted/40">
+        <TableCell className="px-3 align-top">
+          <Checkbox
+            checked={selectedIds.has(row.id)}
+            onCheckedChange={() => toggleSelect(row.id)}
+          />
+        </TableCell>
         <TableCell className="align-top">
-          <div className={isChild ? "pl-7 border-l-2 border-muted ml-1" : ""}>
-            <div className="flex items-start gap-1.5">
-              {kids.length > 0 ? (
-                <button
-                  className="p-0.5 mt-0.5 rounded hover:bg-muted text-muted-foreground shrink-0"
-                  title={isOpen ? "Collapse campaigns" : "Expand campaigns"}
-                  onClick={() => setExpanded((e) => ({ ...e, [row.id]: !e[row.id] }))}
-                >
-                  {isOpen ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </button>
-              ) : null}
-              <div className="min-w-0">
-                <span
-                  className={`font-medium break-words whitespace-normal ${
-                    isChild ? "text-foreground/90 text-sm" : "text-foreground"
-                  }`}
-                >
-                  {title}
-                </span>
-                {kids.length > 0 && (
-                  <Badge variant="secondary" className="ml-2 align-middle text-[11px]">
-                    {kids.length} page{kids.length === 1 ? "" : "s"}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <div className="font-mono text-xs text-muted-foreground mt-1 break-all">
-              {isTemplate ? "All counties & cities" : row.page_path}
-            </div>
-
+          <div className={isChild ? "pl-4 border-l-2 border-muted" : ""}>
+            <span className="font-medium break-words whitespace-normal text-sm">
+              {isTemplate ? titleFor(row) : locationLabel(row.page_path)}
+            </span>
+            {isTemplate && (
+              <div className="font-mono text-xs text-muted-foreground mt-1">All counties &amp; cities</div>
+            )}
           </div>
         </TableCell>
         <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
-        <TableCell className="text-muted-foreground whitespace-nowrap align-top text-sm">
+        <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
           {formattedDate(row.updated_at)}
         </TableCell>
         <TableCell className="text-right align-top">
@@ -428,21 +513,16 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title={lockTitle ?? (isTemplate ? "Edit campaign template" : "Edit")}
+              className="h-8 w-8"
+              title={lockTitle ?? (isTemplate ? "Edit campaign template" : "Edit content")}
               disabled={isParentLocked}
               onClick={() =>
                 navigate(
                   isTemplate
-                    ? `/admin/page-builder/company/${companyId}/mass-pages/templates?path=${encodeURIComponent(
-                        row.page_path,
-                      )}`
-                    : `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(
-                        row.page_path,
-                      )}`,
+                    ? `/admin/page-builder/company/${companyId}/mass-pages/templates?path=${encodeURIComponent(row.page_path)}`
+                    : `/admin/page-builder/company/${companyId}/mass-pages?path=${encodeURIComponent(row.page_path)}`,
                 )
               }
-
             >
               <Pencil className="w-4 h-4" />
             </Button>
@@ -450,7 +530,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-8 w-8"
                 title={lockTitle ?? "Open page"}
                 disabled={isParentLocked}
                 onClick={() => window.open(urlFor(row.page_path), "_blank", "noopener,noreferrer")}
@@ -458,15 +538,28 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 <ExternalLink className="w-4 h-4" />
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title="View activity history"
+              onClick={() =>
+                navigate(
+                  `/admin/page-builder/company/${companyId}/mass-pages/history?path=${encodeURIComponent(row.page_path)}`,
+                )
+              }
+            >
+              <History className="w-4 h-4" />
+            </Button>
             <Separator orientation="vertical" className="h-5 mx-0.5" />
             {row.status === "active" ? (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                className="h-8 w-8 text-amber-600 hover:bg-amber-50"
                 title={lockTitle ?? "Suspend"}
                 disabled={isParentLocked}
-                onClick={() => setStatus(idsFor(row), "suspended")}
+                onClick={() => setStatus([row.id], "suspended")}
               >
                 <Pause className="w-4 h-4" />
               </Button>
@@ -474,10 +567,10 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
                 title={lockTitle ?? (row.status === "deleted" ? "Restore" : "Activate")}
                 disabled={isParentLocked}
-                onClick={() => setStatus(idsFor(row), "active")}
+                onClick={() => setStatus([row.id], "active")}
               >
                 {row.status === "deleted" ? (
                   <RotateCcw className="w-4 h-4" />
@@ -486,36 +579,22 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                 )}
               </Button>
             )}
-            {row.status !== "deleted" ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                title={lockTitle ?? "Delete"}
-                disabled={isParentLocked}
-                onClick={() => setStatus(idsFor(row), "deleted")}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                title={lockTitle ?? "Delete permanently"}
-                disabled={isParentLocked}
-                onClick={() => hardDelete(idsFor(row))}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10"
+              title={lockTitle ?? (row.status === "deleted" ? "Delete permanently" : "Delete")}
+              disabled={isParentLocked}
+              onClick={() =>
+                row.status === "deleted" ? hardDelete([row.id]) : setStatus([row.id], "deleted")
+              }
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           </div>
         </TableCell>
-      </TableRow>,
-    ];
-
-    if (isOpen) for (const kid of kids) out.push(...renderRow(kid, true, row.status));
-    return out;
+      </TableRow>
+    );
   };
 
 
