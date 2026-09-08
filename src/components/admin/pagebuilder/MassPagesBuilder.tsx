@@ -495,6 +495,26 @@ export default function MassPagesBuilder() {
           </div>
 
           <div className="space-y-1">
+            <Label className="text-xs">Service type</Label>
+            <Select
+              value={serviceType || "all"}
+              onValueChange={(v) => setServiceType(v === "all" ? "" : (v as ServiceType))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Blank" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">Blank</SelectItem>
+                {SERVICE_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
             <Label className="text-xs">County</Label>
             <Select
               value={countyKey || "all"}
