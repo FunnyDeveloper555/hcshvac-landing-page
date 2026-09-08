@@ -93,15 +93,24 @@ export interface MassCountyGroup {
   locations: MassLocation[];
 }
 
-/** Step 2 of the mass page form: the kind of visit. */
+/** Step 2 of the mass page form: the urgency / timing of the visit. */
 export const VISIT_TYPES = [
   "Emergency",
-  "Installation",
-  "Estimate",
-  "Repair",
-  "Service",
+  "24 Hours",
+  "Urgent",
+  "Over Nights",
+  "After Hours",
 ] as const;
 export type VisitType = (typeof VISIT_TYPES)[number];
+
+/** Step 5 of the mass page form: the kind of work being performed. */
+export const SERVICE_TYPES = [
+  "Installation",
+  "Service",
+  "Repair",
+  "Estimate",
+] as const;
+export type ServiceType = (typeof SERVICE_TYPES)[number];
 
 /** Step 3 of the mass page form: the kind of property. */
 export const LOCATION_TYPES = [
@@ -118,6 +127,7 @@ export type LocationType = (typeof LOCATION_TYPES)[number];
 export interface MassPageOptions {
   visitType?: VisitType | null;
   locationType?: LocationType | null;
+  serviceType?: ServiceType | null;
 }
 
 export interface MassPageRef {
@@ -126,6 +136,7 @@ export interface MassPageRef {
   location: MassLocation;
   visitType?: VisitType | null;
   locationType?: LocationType | null;
+  serviceType?: ServiceType | null;
 }
 
 /** "Carol Stream" -> "CarolStream" */
@@ -151,6 +162,7 @@ export const massPageSlug = (
     opts.locationType ? compact(opts.locationType) : "",
     opts.visitType ? compact(opts.visitType) : "",
     serviceSlugPart(service),
+    opts.serviceType ? compact(opts.serviceType) : "",
     ...locationSlugParts(loc),
   ]
     .filter(Boolean)
@@ -178,6 +190,7 @@ export const massTemplatePath = (
     opts.locationType ? compact(opts.locationType) : "",
     opts.visitType ? compact(opts.visitType) : "",
     serviceSlugPart(service),
+    opts.serviceType ? compact(opts.serviceType) : "",
   ]
     .filter(Boolean)
     .join("-");
@@ -187,14 +200,36 @@ export const isMassTemplatePath = (path: string): boolean =>
 
 /**
  * Derive the master template path a specific mass page belongs to.
- * Page slug: LocationType-VisitType-Service-County-CityStateZip
- * Template slug: LocationType-VisitType-Service
+ * Page slug: LocationType-VisitType-Service-ServiceType-County-CityStateZip
+ * Template slug: LocationType-VisitType-Service-ServiceType
  */
 export const massTemplatePathForPage = (pagePath: string): string | null => {
   if (isMassTemplatePath(pagePath)) return pagePath;
   const parts = pagePath.replace(/^\//, "").split("-").filter(Boolean);
   if (parts.length < 3) return null;
   return MASS_TEMPLATE_PREFIX + parts.slice(0, parts.length - 2).join("-");
+};
+
+const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
+const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
+const serviceTypeSet = new Set(SERVICE_TYPES.map((s) => compact(s).toLowerCase()));
+
+const classifyMiddles = (parts: string[]): {
+  loc?: LocationType;
+  visit?: VisitType;
+  serviceType?: ServiceType;
+  serviceCategory?: string;
+} => {
+  const loc = LOCATION_TYPES.find((l) => parts.some((p) => compact(l).toLowerCase() === p.toLowerCase()));
+  const visit = VISIT_TYPES.find((v) => parts.some((p) => compact(v).toLowerCase() === p.toLowerCase()));
+  const serviceType = SERVICE_TYPES.find((s) => parts.some((p) => compact(s).toLowerCase() === p.toLowerCase()));
+  const rest = parts.filter(
+    (p) =>
+      (!loc || compact(loc).toLowerCase() !== p.toLowerCase()) &&
+      (!visit || compact(visit).toLowerCase() !== p.toLowerCase()) &&
+      (!serviceType || compact(serviceType).toLowerCase() !== p.toLowerCase()),
+  );
+  return { loc, visit, serviceType, serviceCategory: rest.join("-") || undefined };
 };
 
 /**
@@ -216,24 +251,20 @@ export const massTemplateKey = (path: string): string | null => {
 
 /**
  * Master template path for a page, with segments normalised to the
- * canonical LocationType-VisitType-Service order (legacy pages were
- * saved Service-VisitType-LocationType).
+ * canonical LocationType-VisitType-Service-ServiceType order (legacy pages
+ * were saved Service-VisitType-LocationType first).
  */
 export const massTemplatePathOrdered = (path: string): string | null => {
   const derived = massTemplatePathForPage(path);
   if (!derived) return null;
   const parts = derived.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
-  const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
-  const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
-  const loc = parts.find((p) => locSet.has(p.toLowerCase()));
-  const visit = parts.find((p) => visitSet.has(p.toLowerCase()));
-  const rest = parts.filter((p) => p !== loc && p !== visit);
-  return MASS_TEMPLATE_PREFIX + [loc, visit, ...rest].filter(Boolean).join("-");
+  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(parts);
+  return MASS_TEMPLATE_PREFIX + [loc, visit, serviceCategory, serviceType].filter(Boolean).join("-");
 };
 
 /**
  * Normalise any mass page path to the canonical
- * LocationType-VisitType-Service-County-CityStateZip order.
+ * LocationType-VisitType-Service-ServiceType-County-CityStateZip order.
  * Legacy paths were saved Service-VisitType-LocationType first.
  */
 export const massCanonicalPagePath = (path: string): string => {
@@ -242,12 +273,8 @@ export const massCanonicalPagePath = (path: string): string => {
   if (parts.length < 3) return path;
   const tail = parts.slice(parts.length - 2);
   const middles = parts.slice(0, parts.length - 2);
-  const locSet = new Set(LOCATION_TYPES.map((l) => compact(l).toLowerCase()));
-  const visitSet = new Set(VISIT_TYPES.map((v) => compact(v).toLowerCase()));
-  const loc = middles.find((p) => locSet.has(p.toLowerCase()));
-  const visit = middles.find((p) => visitSet.has(p.toLowerCase()));
-  const rest = middles.filter((p) => p !== loc && p !== visit);
-  return `/${[loc, visit, ...rest, ...tail].filter(Boolean).join("-")}`;
+  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
+  return `/${[loc, visit, serviceCategory, serviceType, ...tail].filter(Boolean).join("-")}`;
 };
 
 
@@ -265,7 +292,7 @@ export const massTemplateLabel = (path: string): string =>
     .map((p) => uncompact(p))
     .join(" · ");
 
-/** "Furnace Repair, Emergency, Residential, Joliet, IL 60431" */
+/** "Furnace Repair, Service, Emergency, Residential, Joliet, IL 60431" */
 export const massPageSummary = (
   serviceLabel: string,
   loc: MassLocation,
@@ -273,6 +300,7 @@ export const massPageSummary = (
 ): string =>
   [
     serviceLabel,
+    opts.serviceType || "",
     opts.visitType || "",
     opts.locationType || "",
     `${loc.city}, ${loc.state}${loc.zip ? ` ${loc.zip}` : ""}`,
@@ -321,25 +349,28 @@ export const defaultMassTextBlocks = (
   location: MassLocation,
   options: MassPageOptions = {},
 ): MassTextBlock[] => {
-  const { visitType, locationType } = options;
+  const { visitType, locationType, serviceType } = options;
   const place = locationLabel(location);
   const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
   const brands = serviceBrands(service, company);
   const brandLine = brands.length ? brands.slice(0, 6).join(", ") : "all major brands";
   const phone = (company.company_phone as string | null) || null;
+  const work = serviceType
+    ? `${serviceType.toLowerCase()} ${service.action.toLowerCase()}`
+    : service.action.toLowerCase();
 
   return [
     {
       heading: `Why ${location.city} chooses ${company.name}`,
-      body: `${company.name} has built its reputation on honest ${service.label.toLowerCase()} for ${audience} across ${place}. Every visit starts with a full diagnostic, a clear explanation of what we found, and pricing you approve before any work begins — no surprises after the job is done.`,
+      body: `${company.name} has built its reputation on honest ${work} for ${audience} across ${place}. Every visit starts with a full diagnostic, a clear explanation of what we found, and pricing you approve before any work begins — no surprises after the job is done.`,
     },
     {
       heading: `What our ${service.label.toLowerCase()} includes`,
-      body: `Our ${location.county} technicians arrive stocked for ${service.action.toLowerCase()} work on ${brandLine}. We check airflow, electrical connections, refrigerant or gas pressures, safety controls and thermostat operation, then document the results so you know exactly what condition your system is in.`,
+      body: `Our ${location.county} technicians arrive stocked for ${work} on ${brandLine}. We check airflow, electrical connections, refrigerant or gas pressures, safety controls and thermostat operation, then document the results so you know exactly what condition your system is in.`,
     },
     {
       heading: `Fast scheduling across ${location.county}`,
-      body: `${visitType === "Emergency" ? "Emergency calls are dispatched around the clock" : "Same-day and next-day appointments are usually available"} for ${location.city} and neighboring communities in ${location.county}, ${location.state}. Call ${phone || "our office"} or request service online and we will confirm an arrival window that fits your schedule.`,
+      body: `${visitType === "Emergency" || visitType === "24 Hours" || visitType === "Urgent" ? "Calls are dispatched around the clock" : "Same-day and next-day appointments are usually available"} for ${location.city} and neighboring communities in ${location.county}, ${location.state}. Call ${phone || "our office"} or request service online and we will confirm an arrival window that fits your schedule.`,
     },
   ];
 };
@@ -397,7 +428,8 @@ export const buildCountyGroups = (
 
 /**
  * Resolve a URL slug back to a service + optional visit/location type + location.
- * Slug shape: Service[-VisitType][-LocationType]-County-CityStateZip
+ * Slug shape: LocationType-VisitType-Service-ServiceType-County-CityStateZip
+ * Legacy shape: Service[-VisitType][-LocationType]-County-CityStateZip
  */
 export const resolveMassPage = (
   slug: string,
@@ -414,24 +446,8 @@ export const resolveMassPage = (
   const countyPart = parts[parts.length - 2].toLowerCase();
   const middles = parts.slice(0, parts.length - 2);
 
-  let visitType: VisitType | null = null;
-  let locationType: LocationType | null = null;
-  let servicePart = "";
-  for (const seg of middles) {
-    const l = LOCATION_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (l && !locationType) {
-      locationType = l;
-      continue;
-    }
-    const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
-    if (v && !visitType) {
-      visitType = v;
-      continue;
-    }
-    if (servicePart) return null; // more than one service segment
-    servicePart = seg;
-  }
-  if (!servicePart) return null;
+  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
+  if (!serviceCategory) return null;
 
   let location: MassLocation | null = null;
   for (const group of groups) {
@@ -449,15 +465,20 @@ export const resolveMassPage = (
 
   const service =
     enabledServices(company).find(
-      (s) => serviceSlugPart(s).toLowerCase() === servicePart.toLowerCase(),
-    ) || customService(uncompact(servicePart));
+      (s) => serviceSlugPart(s).toLowerCase() === serviceCategory.toLowerCase(),
+    ) || customService(uncompact(serviceCategory));
 
   return {
-    slug: massPageSlug(service, location, { visitType, locationType }),
+    slug: massPageSlug(service, location, {
+      visitType: visit || null,
+      locationType: loc || null,
+      serviceType: serviceType || null,
+    }),
     service,
     location,
-    visitType,
-    locationType,
+    visitType: visit || null,
+    locationType: loc || null,
+    serviceType: serviceType || null,
   };
 };
 
