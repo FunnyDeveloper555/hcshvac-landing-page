@@ -125,6 +125,8 @@ export default function MassCampaignTemplates() {
       if (l) return setLocationType(l);
       const v = VISIT_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
       if (v) return setVisitType(v);
+      const s = SERVICE_TYPES.find((t) => compact(t).toLowerCase() === seg.toLowerCase());
+      if (s) return setServiceType(s);
       svc = seg;
     });
     const match = services.find((s) => compact(s.label).toLowerCase() === svc.toLowerCase());
