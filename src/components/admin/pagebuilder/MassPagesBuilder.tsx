@@ -355,6 +355,7 @@ export default function MassPagesBuilder() {
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
+      serviceType: ref.serviceType || null,
     });
   };
 
