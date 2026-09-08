@@ -155,6 +155,7 @@ export default function MassPagesBuilder() {
     setItem(ref.service.label);
     setVisitType(ref.visitType || "");
     setLocationType(ref.locationType || "");
+    setServiceType(ref.serviceType || "");
     setCountyKey(`${ref.location.county}|${ref.location.state}`);
     setCityKeyValue(`${ref.location.city}|${ref.location.zip}`);
     setEditorTarget({
@@ -163,6 +164,7 @@ export default function MassPagesBuilder() {
       location: ref.location,
       visitType: ref.visitType || null,
       locationType: ref.locationType || null,
+      serviceType: ref.serviceType || null,
     });
   }, [prefillPath, company, groups, services]);
 
