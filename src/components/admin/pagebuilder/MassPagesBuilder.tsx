@@ -80,6 +80,7 @@ export default function MassPagesBuilder() {
   const [item, setItem] = useState<string>("");
   const [visitType, setVisitType] = useState<VisitType | "">("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
+  const [serviceType, setServiceType] = useState<ServiceType | "">("");
   const [countyKey, setCountyKey] = useState<string>("");
   const [cityKeyValue, setCityKeyValue] = useState<string>("");
   const [search, setSearch] = useState("");
@@ -90,7 +91,7 @@ export default function MassPagesBuilder() {
   // Clear row selection whenever any filter changes
   useEffect(() => {
     setSelectedPaths(new Set());
-  }, [source, item, visitType, locationType, countyKey, cityKeyValue, search]);
+  }, [source, item, visitType, locationType, serviceType, countyKey, cityKeyValue, search]);
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["mass-pages-company", companyId],
