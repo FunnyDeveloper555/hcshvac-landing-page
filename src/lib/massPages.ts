@@ -715,11 +715,12 @@ export const defaultMassOverrides = (
   location: MassLocation,
   options: MassPageOptions = {},
 ): Required<Omit<MassPageOverrides, "sections">> & { sections: MassPageSections } => {
-  const { visitType, locationType } = options;
+  const { visitType, locationType, serviceType } = options;
   const place = locationLabel(location);
-  const serviceTitle = visitType ? `${visitType} ${service.label}` : service.label;
+  const serviceTitle = [visitType, serviceType, service.label].filter(Boolean).join(" ");
   const heading = `${serviceTitle} in ${place}`;
   const audience = locationType ? `${locationType.toLowerCase()} properties` : "homes and businesses";
+  const workAction = serviceType ? `${serviceType.toLowerCase()}` : service.action.toLowerCase();
 
   return {
     metaTitle: `${heading} | ${company.name}`.slice(0, 60),
