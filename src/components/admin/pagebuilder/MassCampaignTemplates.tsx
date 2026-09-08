@@ -26,6 +26,8 @@ import {
   MASS_TEMPLATE_PREFIX,
   VISIT_TYPES,
   VisitType,
+  SERVICE_TYPES,
+  ServiceType,
   MassLocation,
   compact,
   customService,
