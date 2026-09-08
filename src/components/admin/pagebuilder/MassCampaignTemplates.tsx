@@ -211,7 +211,7 @@ export default function MassCampaignTemplates() {
           <CardTitle className="text-base">Master campaign</CardTitle>
           <CardDescription>No county or city — the template applies to all its pages.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-4">
+        <CardContent className="grid gap-3 md:grid-cols-5">
           <div className="space-y-1">
             <Label className="text-xs">Location type</Label>
             <Select value={locationType} onValueChange={(v) => setLocationType(v as LocationType)}>
@@ -235,6 +235,21 @@ export default function MassCampaignTemplates() {
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 {VISIT_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Service type</Label>
+            <Select value={serviceType} onValueChange={(v) => setServiceType(v as ServiceType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {SERVICE_TYPES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
                   </SelectItem>
