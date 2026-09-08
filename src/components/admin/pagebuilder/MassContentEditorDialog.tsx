@@ -20,6 +20,7 @@ import {
   ALL_MASS_SECTIONS,
   LocationType,
   VisitType,
+  ServiceType,
   MassImageBox,
   MassLocation,
   MassService,
@@ -57,6 +58,7 @@ export interface MassContentEditorTarget {
   location: MassLocation;
   visitType: VisitType | null;
   locationType: LocationType | null;
+  serviceType: ServiceType | null;
   /** true when editing a master campaign template row (no county / city) */
   isTemplate?: boolean;
 }
