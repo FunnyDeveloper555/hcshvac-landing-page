@@ -305,7 +305,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
   const dateColumn = (row: CampaignRow) => (
     <div className="text-sm text-foreground whitespace-nowrap">
       <div>
-        <span className="font-medium">Last Edit</span>{" "}
+        <span className="font-medium">Last Edit:</span>{" "}
         {formattedDate(row.updated_at)}
       </div>
       <div className="text-xs text-muted-foreground mt-0.5">
