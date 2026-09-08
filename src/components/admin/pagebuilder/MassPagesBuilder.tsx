@@ -256,9 +256,9 @@ export default function MassPagesBuilder() {
 
 
   const tableTitle = useMemo(() => {
-    const bits = [locationType, visitType, service?.label].filter(Boolean).join(" ");
+    const bits = [locationType, visitType, serviceType, service?.label].filter(Boolean).join(" ");
     return bits ? `${bits} in ${company?.name ?? ""}` : "Individual campaign pages";
-  }, [locationType, visitType, service, company]);
+  }, [locationType, visitType, serviceType, service, company]);
 
   const exists = !!rows.find((r) => r.page_path === path);
 
