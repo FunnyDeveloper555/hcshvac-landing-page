@@ -46,6 +46,8 @@ import {
   LocationType,
   VISIT_TYPES,
   VisitType,
+  SERVICE_TYPES,
+  ServiceType,
   customService,
   enabledServices,
   isMassTemplatePath,
