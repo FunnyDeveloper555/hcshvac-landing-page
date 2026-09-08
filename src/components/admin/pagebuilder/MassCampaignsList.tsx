@@ -763,8 +763,10 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                   Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell>
+                        <Skeleton className="h-4 w-4" />
+                      </TableCell>
+                      <TableCell>
                         <Skeleton className="h-4 w-[260px]" />
-                        <Skeleton className="h-3 w-[180px] mt-2" />
                       </TableCell>
                       <TableCell>
                         <Skeleton className="h-5 w-16" />
@@ -779,7 +781,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                   ))
                 ) : paged.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-32 text-center">
+                    <TableCell colSpan={5} className="h-32 text-center">
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
                         <LayoutList className="w-8 h-8 mb-2 opacity-40" />
                         <p className="text-sm">
@@ -792,7 +794,11 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paged.flatMap((row) => renderRow(row, false))
+                  paged.flatMap((row) =>
+                    childrenOf(row).length > 0
+                      ? renderMasterGroup(row)
+                      : [renderPageRow(row)],
+                  )
                 )}
 
               </TableBody>
