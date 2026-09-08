@@ -146,7 +146,8 @@ export const compact = (value: string): string => value.replace(/[^A-Za-z0-9]/g,
 export const uncompact = (value: string): string =>
   value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").trim();
 
-export const serviceSlugPart = (service: MassService): string => compact(service.label);
+export const serviceSlugPart = (service: MassService, serviceType?: ServiceType | null): string =>
+  compact(service.label) + (serviceType ? compact(serviceType) : "");
 
 export const locationSlugParts = (loc: MassLocation): string[] => [
   compact(loc.county),
@@ -161,8 +162,7 @@ export const massPageSlug = (
   [
     opts.locationType ? compact(opts.locationType) : "",
     opts.visitType ? compact(opts.visitType) : "",
-    serviceSlugPart(service),
-    opts.serviceType ? compact(opts.serviceType) : "",
+    serviceSlugPart(service, opts.serviceType),
     ...locationSlugParts(loc),
   ]
     .filter(Boolean)
@@ -189,8 +189,7 @@ export const massTemplatePath = (
   [
     opts.locationType ? compact(opts.locationType) : "",
     opts.visitType ? compact(opts.visitType) : "",
-    serviceSlugPart(service),
-    opts.serviceType ? compact(opts.serviceType) : "",
+    serviceSlugPart(service, opts.serviceType),
   ]
     .filter(Boolean)
     .join("-");
@@ -200,8 +199,8 @@ export const isMassTemplatePath = (path: string): boolean =>
 
 /**
  * Derive the master template path a specific mass page belongs to.
- * Page slug: LocationType-VisitType-Service-ServiceType-County-CityStateZip
- * Template slug: LocationType-VisitType-Service-ServiceType
+ * Page slug: LocationType-VisitType-Service-County-CityStateZip
+ * Template slug: LocationType-VisitType-Service
  */
 export const massTemplatePathForPage = (pagePath: string): string | null => {
   if (isMassTemplatePath(pagePath)) return pagePath;
@@ -210,23 +209,42 @@ export const massTemplatePathForPage = (pagePath: string): string | null => {
   return MASS_TEMPLATE_PREFIX + parts.slice(0, parts.length - 2).join("-");
 };
 
-
 const classifyMiddles = (parts: string[]): {
   loc?: LocationType;
   visit?: VisitType;
-  serviceType?: ServiceType;
-  serviceCategory?: string;
+  serviceSlug?: string;
 } => {
   const loc = LOCATION_TYPES.find((l) => parts.some((p) => compact(l).toLowerCase() === p.toLowerCase()));
   const visit = VISIT_TYPES.find((v) => parts.some((p) => compact(v).toLowerCase() === p.toLowerCase()));
-  const serviceType = SERVICE_TYPES.find((s) => parts.some((p) => compact(s).toLowerCase() === p.toLowerCase()));
   const rest = parts.filter(
     (p) =>
       (!loc || compact(loc).toLowerCase() !== p.toLowerCase()) &&
-      (!visit || compact(visit).toLowerCase() !== p.toLowerCase()) &&
-      (!serviceType || compact(serviceType).toLowerCase() !== p.toLowerCase()),
+      (!visit || compact(visit).toLowerCase() !== p.toLowerCase()),
   );
-  return { loc, visit, serviceType, serviceCategory: rest.join("-") || undefined };
+  return { loc, visit, serviceSlug: rest.join("-") || undefined };
+};
+
+/**
+ * Parse a combined service slug (e.g. "AirConditioningRepair") into the
+ * service category and optional service type (Installation, Service, Repair, Estimate).
+ */
+export const parseServiceSlug = (
+  slug: string,
+): { service: MassService; serviceType?: ServiceType } | null => {
+  if (!slug) return null;
+  const lower = slug.toLowerCase();
+  const exact = MASS_SERVICES.find((s) => compact(s.label).toLowerCase() === lower);
+  if (exact) return { service: exact };
+  for (const svc of MASS_SERVICES) {
+    const base = compact(svc.label).toLowerCase();
+    for (const st of SERVICE_TYPES) {
+      const suffix = compact(st).toLowerCase();
+      if (lower === `${base}${suffix}`) {
+        return { service: svc, serviceType: st };
+      }
+    }
+  }
+  return null;
 };
 
 /**
