@@ -110,7 +110,7 @@ export default function MassCampaignTemplates() {
   const options = source === "services" ? services.map((s) => s.label) : products.map((p) => p.name);
 
   const service = item ? services.find((s) => s.label === item) || customService(item) : null;
-  const opts = { visitType: visitType || null, locationType: locationType || null };
+  const opts = { visitType: visitType || null, locationType: locationType || null, serviceType: serviceType || null };
   const path = service ? massTemplatePath(service, opts) : "";
 
   // Prefill from ?path=/__template/...
