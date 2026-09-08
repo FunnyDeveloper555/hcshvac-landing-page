@@ -567,6 +567,7 @@ export default function MassPagesBuilder() {
                     location,
                     visitType: visitType || null,
                     locationType: locationType || null,
+                    serviceType: serviceType || null,
                   })
                 }
               >
