@@ -77,6 +77,7 @@ interface CampaignRow {
   page_path: string;
   status: string;
   updated_at: string;
+  created_at: string;
   overrides: Record<string, unknown> | null;
 }
 
@@ -122,7 +123,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("mass_page_content")
-        .select("id, page_path, status, updated_at, overrides")
+        .select("id, page_path, status, updated_at, created_at, overrides")
         .eq("company_id", companyId!)
         .order("updated_at", { ascending: false });
       if (error) throw error;
@@ -213,6 +214,10 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
           .map((k) => k.updated_at)
           .sort()
           .slice(-1)[0],
+        created_at: kids
+          .map((k) => k.created_at)
+          .sort()
+          .slice(0)[0],
         overrides: null,
       });
     }
@@ -296,6 +301,18 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
       hour: "2-digit",
       minute: "2-digit",
     });
+
+  const dateColumn = (row: CampaignRow) => (
+    <div className="text-sm text-foreground whitespace-nowrap">
+      <div>
+        <span className="font-medium">Last Edit</span>{" "}
+        {formattedDate(row.updated_at)}
+      </div>
+      <div className="text-xs text-muted-foreground mt-0.5">
+        Created: {formattedDate(row.created_at)}
+      </div>
+    </div>
+  );
 
   /** Colored status dot, matching the Campaigns page table */
   const statusBadge = (status: string) => {
@@ -505,9 +522,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
           </div>
         </TableCell>
         <TableCell className="align-top">{statusBadge(row.status)}</TableCell>
-        <TableCell className="align-top text-sm text-muted-foreground whitespace-nowrap">
-          {formattedDate(row.updated_at)}
-        </TableCell>
+        <TableCell className="align-top">{dateColumn(row)}</TableCell>
         <TableCell className="text-right align-top">
           <div className="flex items-center justify-end gap-1.5">
             <Button
@@ -754,7 +769,7 @@ export default function MassCampaignsList({ kind }: { kind: CampaignKind }) {
                   <TableHead className="w-[40px] px-3" />
                   <SortHead label="Campaign / Path" k="title" />
                   <SortHead label="Status" k="status" className="w-[130px]" />
-                  <SortHead label="Last Updated" k="updated_at" className="w-[180px]" />
+                  <SortHead label="Last Edit" k="updated_at" className="w-[220px]" />
                   <TableHead className="text-right w-[220px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
