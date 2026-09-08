@@ -138,12 +138,14 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
       ? massPagePath(resolvedMassPage.service, resolvedMassPage.location, {
           visitType: resolvedMassPage.visitType,
           locationType: resolvedMassPage.locationType,
+          serviceType: resolvedMassPage.serviceType,
         })
       : null,
     resolvedMassPage
       ? massTemplatePath(resolvedMassPage.service, {
           visitType: resolvedMassPage.visitType,
           locationType: resolvedMassPage.locationType,
+          serviceType: resolvedMassPage.serviceType,
         })
       : null,
   );
