@@ -273,8 +273,12 @@ export const massTemplatePathOrdered = (path: string): string | null => {
   const derived = massTemplatePathForPage(path);
   if (!derived) return null;
   const parts = derived.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(parts);
-  return MASS_TEMPLATE_PREFIX + [loc, visit, serviceCategory, serviceType].filter(Boolean).join("-");
+  const { loc, visit, serviceSlug } = classifyMiddles(parts);
+  if (!serviceSlug) return null;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return null;
+  const { service, serviceType } = parsed;
+  return MASS_TEMPLATE_PREFIX + [loc, visit, compact(service.label), serviceType ? compact(serviceType) : undefined].filter(Boolean).join("-");
 };
 
 /**
