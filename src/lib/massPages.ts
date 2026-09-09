@@ -535,7 +535,6 @@ export interface MassPageSections {
   brands?: boolean;
   blocks?: boolean;
   images?: boolean;
-  nearby?: boolean;
   cta?: boolean;
   homeBody?: boolean;
 }
@@ -552,7 +551,6 @@ export interface MassPageOverrides {
   brandsHeading?: string;
   brandsNote?: string;
   images?: MassImageBox[];
-  nearbyHeading?: string;
   ctaHeading?: string;
   ctaBody?: string;
   ctaButton?: string;
@@ -569,7 +567,6 @@ export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: stri
   { key: "brands", label: "Brands marquee" },
   { key: "blocks", label: "Editorial text blocks" },
   { key: "images", label: "Image boxes" },
-  { key: "nearby", label: "Nearby cities links" },
   { key: "cta", label: "Booking call to action" },
   { key: "homeBody", label: "Home page body content" },
 ];
@@ -617,7 +614,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
     name: "Standard Service Page",
     description:
       "Ocean-blue palette, photo carousel hero, solid header bar and dark footer. Balanced layout that works for every service.",
-    order: ["hero", "intro", "bullets", "brands", "blocks", "images", "nearby", "cta", "homeBody"],
+    order: ["hero", "intro", "bullets", "brands", "blocks", "images", "cta", "homeBody"],
     sections: {},
     theme: {
       label: "Ocean Blue",
@@ -640,7 +637,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
     name: "Image Spotlight",
     description:
       "Deep violet palette, split image hero, glass header and gradient footer. Photo-forward layout for visual services.",
-    order: ["hero", "images", "intro", "bullets", "blocks", "brands", "nearby", "cta", "homeBody"],
+    order: ["hero", "images", "intro", "bullets", "blocks", "brands", "cta", "homeBody"],
     sections: {},
     theme: {
       label: "Violet Studio",
@@ -663,7 +660,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
     name: "Conversion Focused",
     description:
       "Urgent orange palette, bold banner hero, red alert header strip and compact footer. Best for emergency campaigns.",
-    order: ["hero", "intro", "cta", "bullets", "brands", "blocks", "images", "nearby", "homeBody"],
+    order: ["hero", "intro", "cta", "bullets", "brands", "blocks", "images", "homeBody"],
     sections: { homeBody: false },
     theme: {
       label: "Emergency Orange",
@@ -686,7 +683,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
     name: "Local SEO Long-Form",
     description:
       "Forest-green editorial palette, text-first hero, minimal serif header and multi-column footer. Built for search ranking.",
-    order: ["hero", "intro", "blocks", "bullets", "nearby", "brands", "images", "cta", "homeBody"],
+    order: ["hero", "intro", "blocks", "bullets", "brands", "images", "cta", "homeBody"],
     sections: {},
     theme: {
       label: "Forest Editorial",
@@ -709,7 +706,7 @@ export const MASS_CAMPAIGN_TEMPLATES: MassCampaignTemplate[] = [
     name: "Compact Landing",
     description:
       "Indigo mobile-first palette, condensed centered hero, centered header and minimal footer. Fast to load and easy to scan.",
-    order: ["hero", "intro", "bullets", "cta", "nearby"],
+    order: ["hero", "intro", "bullets", "cta"],
     sections: { brands: false, blocks: false, images: false, homeBody: false },
     theme: {
       label: "Indigo Compact",
@@ -785,7 +782,6 @@ export const defaultMassOverrides = (
         caption: `Licensed and insured across ${location.county}`,
       },
     ],
-    nearbyHeading: `${service.label} nearby in ${location.county}`,
     ctaHeading: `Book ${service.label} in ${location.city}`,
     ctaBody: `Tell us what's going on and we'll get a technician scheduled in ${place}.`,
     ctaButton: "Request Service",
@@ -798,7 +794,6 @@ export const defaultMassOverrides = (
       brands: true,
       blocks: true,
       images: true,
-      nearby: true,
       cta: true,
       homeBody: true,
     },
@@ -825,7 +820,6 @@ export const mergeMassOverrides = (
     brandsHeading: text("brandsHeading"),
     brandsNote: text("brandsNote"),
     images: Array.isArray(s.images) && s.images.length > 0 ? s.images : defaults.images,
-    nearbyHeading: text("nearbyHeading"),
     ctaHeading: text("ctaHeading"),
     ctaBody: text("ctaBody"),
     ctaButton: text("ctaButton"),

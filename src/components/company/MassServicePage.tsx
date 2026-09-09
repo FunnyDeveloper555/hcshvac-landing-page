@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Phone, CheckCircle2, MapPin } from "lucide-react";
+import { Phone, CheckCircle2 } from "lucide-react";
 import {
   MassCountyGroup,
   MassPageRef,
@@ -62,9 +62,6 @@ const MassServicePage = ({
   ).filter((r) => r.length > 0);
 
   const phone = company.company_phone || null;
-
-  const siblings =
-    groups.find((g) => g.county === location.county && g.state === location.state)?.locations || [];
 
   const { blocks: savedBlocks, overrides: savedOverrides } = useMassPageContent(
     company.id as string | undefined,
@@ -663,32 +660,6 @@ const MassServicePage = ({
               )}
             </figure>
           ))}
-        </section>
-      ) : null,
-    nearby:
-      siblings.length > 1 ? (
-        <section key="nearby" className="space-y-3">
-          <h2 className={theme.headingClass}>{content.nearbyHeading}</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6">
-            {siblings
-              .filter((l) => l.city !== location.city)
-              .map((l) => (
-                <a
-                  key={`${l.city}-${l.zip}`}
-                  href={`${basePath}${massPagePath(service, l, opts)}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onNavigate(massPagePath(service, l, opts));
-                  }}
-                  className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary"
-                >
-                  <MapPin className="w-3 h-3 shrink-0 text-muted-foreground" />
-                  <span className="truncate">
-                    {service.label} in {l.city}, {l.state}
-                  </span>
-                </a>
-              ))}
-          </div>
         </section>
       ) : null,
     cta: <div key="cta">{ctaVariants[theme.bodyVariant] || ctaVariants.standard}</div>,
