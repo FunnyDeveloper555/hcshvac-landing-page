@@ -63,9 +63,6 @@ const MassServicePage = ({
 
   const phone = company.company_phone || null;
 
-  const siblings =
-    groups.find((g) => g.county === location.county && g.state === location.state)?.locations || [];
-
   const { blocks: savedBlocks, overrides: savedOverrides } = useMassPageContent(
     company.id as string | undefined,
     pagePath,
