@@ -469,8 +469,11 @@ export const resolveMassPage = (
   const countyPart = parts[parts.length - 2].toLowerCase();
   const middles = parts.slice(0, parts.length - 2);
 
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
-  if (!serviceCategory) return null;
+  const { loc, visit, serviceSlug } = classifyMiddles(middles);
+  if (!serviceSlug) return null;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return null;
+  const { service: parsedService, serviceType } = parsed;
 
   let location: MassLocation | null = null;
   for (const group of groups) {
@@ -488,8 +491,8 @@ export const resolveMassPage = (
 
   const service =
     enabledServices(company).find(
-      (s) => serviceSlugPart(s).toLowerCase() === serviceCategory.toLowerCase(),
-    ) || customService(uncompact(serviceCategory));
+      (s) => serviceSlugPart(s).toLowerCase() === compact(parsedService.label).toLowerCase(),
+    ) || customService(parsedService.label);
 
   return {
     slug: massPageSlug(service, location, {
