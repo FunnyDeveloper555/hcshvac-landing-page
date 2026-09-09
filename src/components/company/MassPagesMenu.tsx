@@ -92,7 +92,7 @@ const MassPagesMenu = ({ company, groups, onNavigate, basePath = "" }: MassPages
                         </button>
 
                         {countyOpen && (
-                          <ul className="pl-6 py-1 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                          <ul className="pl-6 py-1 grid sm:grid-cols-2 lg:grid-cols-2 gap-x-6 gap-y-1">
                             {group.locations.map((loc) => (
                               <li key={`${loc.city}-${loc.zip}`}>
                                 <a
@@ -101,10 +101,10 @@ const MassPagesMenu = ({ company, groups, onNavigate, basePath = "" }: MassPages
                                     e.preventDefault();
                                     onNavigate(massPagePath(service, loc));
                                   }}
-                                  className="flex items-center gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary transition-colors"
+                                  className="flex items-start gap-1.5 py-1 text-sm text-foreground/80 hover:text-primary transition-colors"
                                 >
-                                  <MapPin className="w-3 h-3 shrink-0 text-muted-foreground" />
-                                  <span className="truncate">{locationLabel(loc)}</span>
+                                  <MapPin className="w-3 h-3 shrink-0 text-muted-foreground mt-0.5" />
+                                  <span className="break-words leading-snug">{locationLabel(loc)}</span>
                                 </a>
                               </li>
                             ))}
