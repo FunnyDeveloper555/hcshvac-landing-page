@@ -107,16 +107,8 @@ export default function CompanyPartnerAccordion({ companyId, primaryColor = "#0e
 
                 <AccordionContent className="px-0 pb-0">
                   {/* Micro-website layout */}
-                  <div className="border-t relative overflow-hidden">
-                    {/* Background image layer */}
-                    {partner.bg_image_url && (
-                      <div
-                        className="absolute inset-0 bg-cover bg-center opacity-15"
-                        style={{ backgroundImage: `url(${partner.bg_image_url})` }}
-                      />
-                    )}
-
-                    <div className="relative z-10">
+                  <div className="border-t overflow-hidden">
+                    <div>
                       {/* Top Banner: Logo + Name + Phone */}
                       <div
                         className="flex items-center justify-between px-6 py-4 border-b"
