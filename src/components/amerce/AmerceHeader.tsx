@@ -123,9 +123,11 @@ const AmerceHeader = ({
                   className="logo-site bg-transparent border-0 p-0 d-flex align-items-center gap-12"
                 >
                   {logoUrl ? (
-                    <img src={logoUrl} alt={companyName} height={40} style={{ maxHeight: 40, width: "auto" }} />
+                    <img src={logoUrl} alt={companyName} height={56} style={{ maxHeight: 56, width: "auto" }} />
                   ) : null}
-                  <span className="h5 fw-bold mb-0 text-start">{companyName}</span>
+                  <span className="fw-bold mb-0 text-start" style={{ fontSize: "1.125rem", lineHeight: 1.3 }}>
+                    {companyName}
+                  </span>
                 </button>
               </div>
 

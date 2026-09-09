@@ -273,8 +273,12 @@ export const massTemplatePathOrdered = (path: string): string | null => {
   const derived = massTemplatePathForPage(path);
   if (!derived) return null;
   const parts = derived.replace(MASS_TEMPLATE_PREFIX, "").split("-").filter(Boolean);
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(parts);
-  return MASS_TEMPLATE_PREFIX + [loc, visit, serviceCategory, serviceType].filter(Boolean).join("-");
+  const { loc, visit, serviceSlug } = classifyMiddles(parts);
+  if (!serviceSlug) return null;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return null;
+  const { service, serviceType } = parsed;
+  return MASS_TEMPLATE_PREFIX + [loc, visit, compact(service.label), serviceType ? compact(serviceType) : undefined].filter(Boolean).join("-");
 };
 
 /**
@@ -288,8 +292,12 @@ export const massCanonicalPagePath = (path: string): string => {
   if (parts.length < 3) return path;
   const tail = parts.slice(parts.length - 2);
   const middles = parts.slice(0, parts.length - 2);
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
-  return `/${[loc, visit, serviceCategory, serviceType, ...tail].filter(Boolean).join("-")}`;
+  const { loc, visit, serviceSlug } = classifyMiddles(middles);
+  if (!serviceSlug) return path;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return path;
+  const { service, serviceType } = parsed;
+  return `/${[loc, visit, compact(service.label), serviceType ? compact(serviceType) : undefined, ...tail].filter(Boolean).join("-")}`;
 };
 
 
@@ -461,8 +469,11 @@ export const resolveMassPage = (
   const countyPart = parts[parts.length - 2].toLowerCase();
   const middles = parts.slice(0, parts.length - 2);
 
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
-  if (!serviceCategory) return null;
+  const { loc, visit, serviceSlug } = classifyMiddles(middles);
+  if (!serviceSlug) return null;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return null;
+  const { service: parsedService, serviceType } = parsed;
 
   let location: MassLocation | null = null;
   for (const group of groups) {
@@ -480,8 +491,8 @@ export const resolveMassPage = (
 
   const service =
     enabledServices(company).find(
-      (s) => serviceSlugPart(s).toLowerCase() === serviceCategory.toLowerCase(),
-    ) || customService(uncompact(serviceCategory));
+      (s) => serviceSlugPart(s).toLowerCase() === compact(parsedService.label).toLowerCase(),
+    ) || customService(parsedService.label);
 
   return {
     slug: massPageSlug(service, location, {
