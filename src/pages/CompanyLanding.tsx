@@ -160,6 +160,16 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   const massBodyVariant = massTheme.bodyVariant;
   // On a live campaign page, the top bar + footer adopt the template primary color.
   const massBarColor = massPage ? `hsl(${massTheme.primary})` : null;
+  // "Residential-Emergency-AirConditioning" — prefix for the areas-we-service labels.
+  const massAreasPrefix = massPage
+    ? [
+        massPage.locationType ? compact(massPage.locationType) : "",
+        massPage.visitType ? compact(massPage.visitType) : "",
+        serviceSlugPart(massPage.service, massPage.serviceType),
+      ]
+        .filter(Boolean)
+        .join("-")
+    : null;
   const showMassMenu =
     massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked && !massPreview);
 
