@@ -30,6 +30,8 @@ interface CompanyHomeBodyProps {
   showContact?: boolean;
   /** Campaign theme family used to style Partners / Offers / Contact blocks. */
   variant?: "standard" | "spotlight" | "conversion" | "editorial" | "compact";
+  /** Mass page title prefix used in the "Other Areas We Service" city labels. */
+  areasTitlePrefix?: string | null;
 }
 
 const EQUIPMENT_FIELDS = [
