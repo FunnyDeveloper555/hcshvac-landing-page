@@ -44,7 +44,6 @@ const BLANK_OVERRIDES: MergedOverrides = {
   brandsHeading: "",
   brandsNote: "",
   images: [],
-  nearbyHeading: "",
   ctaHeading: "",
   ctaBody: "",
   ctaButton: "",
@@ -286,7 +285,7 @@ export default function MassContentEditorDialog({
               <TabsTrigger value="intro">Intro &amp; bullets</TabsTrigger>
               <TabsTrigger value="blocks">Text blocks</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
-              <TabsTrigger value="cta">Brands, nearby &amp; CTA</TabsTrigger>
+              <TabsTrigger value="cta">Brands &amp; CTA</TabsTrigger>
               <TabsTrigger value="sections">Sections</TabsTrigger>
             </TabsList>
 
@@ -432,11 +431,6 @@ export default function MassContentEditorDialog({
                 label="Brands note (shown after the brand count)"
                 value={ov.brandsNote}
                 onChange={(v) => setOv("brandsNote", v)}
-              />
-              <Field
-                label="Nearby cities heading"
-                value={ov.nearbyHeading}
-                onChange={(v) => setOv("nearbyHeading", v)}
               />
               <Field label="CTA heading" value={ov.ctaHeading} onChange={(v) => setOv("ctaHeading", v)} />
               <Field label="CTA text" value={ov.ctaBody} onChange={(v) => setOv("ctaBody", v)} textarea />

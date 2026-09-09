@@ -535,7 +535,6 @@ export interface MassPageSections {
   brands?: boolean;
   blocks?: boolean;
   images?: boolean;
-  nearby?: boolean;
   cta?: boolean;
   homeBody?: boolean;
 }
@@ -552,7 +551,6 @@ export interface MassPageOverrides {
   brandsHeading?: string;
   brandsNote?: string;
   images?: MassImageBox[];
-  nearbyHeading?: string;
   ctaHeading?: string;
   ctaBody?: string;
   ctaButton?: string;
@@ -569,7 +567,6 @@ export const ALL_MASS_SECTIONS: Array<{ key: keyof MassPageSections; label: stri
   { key: "brands", label: "Brands marquee" },
   { key: "blocks", label: "Editorial text blocks" },
   { key: "images", label: "Image boxes" },
-  { key: "nearby", label: "Nearby cities links" },
   { key: "cta", label: "Booking call to action" },
   { key: "homeBody", label: "Home page body content" },
 ];
@@ -785,7 +782,6 @@ export const defaultMassOverrides = (
         caption: `Licensed and insured across ${location.county}`,
       },
     ],
-    nearbyHeading: `${service.label} nearby in ${location.county}`,
     ctaHeading: `Book ${service.label} in ${location.city}`,
     ctaBody: `Tell us what's going on and we'll get a technician scheduled in ${place}.`,
     ctaButton: "Request Service",
@@ -798,7 +794,6 @@ export const defaultMassOverrides = (
       brands: true,
       blocks: true,
       images: true,
-      nearby: true,
       cta: true,
       homeBody: true,
     },
@@ -825,7 +820,6 @@ export const mergeMassOverrides = (
     brandsHeading: text("brandsHeading"),
     brandsNote: text("brandsNote"),
     images: Array.isArray(s.images) && s.images.length > 0 ? s.images : defaults.images,
-    nearbyHeading: text("nearbyHeading"),
     ctaHeading: text("ctaHeading"),
     ctaBody: text("ctaBody"),
     ctaButton: text("ctaButton"),
