@@ -30,6 +30,8 @@ interface CompanyHomeBodyProps {
   showContact?: boolean;
   /** Campaign theme family used to style Partners / Offers / Contact blocks. */
   variant?: "standard" | "spotlight" | "conversion" | "editorial" | "compact";
+  /** Mass page title prefix used in the "Other Areas We Service" city labels. */
+  areasTitlePrefix?: string | null;
 }
 
 const EQUIPMENT_FIELDS = [
@@ -138,6 +140,7 @@ const CompanyHomeBody = ({
   theme,
   showContact = true,
   variant = "standard",
+  areasTitlePrefix,
 }: CompanyHomeBodyProps) => {
   const vs = BODY_VARIANT_STYLES[variant] || BODY_VARIANT_STYLES.standard;
   const hasLists =
@@ -163,6 +166,7 @@ const CompanyHomeBody = ({
                   companyName={company.name}
                   serviceAreas={company.service_areas}
                   primaryColor={theme.colors.primary}
+                  titlePrefix={areasTitlePrefix}
                 />
                 <CompanyBrandsAccordion
                   companyName={company.name}

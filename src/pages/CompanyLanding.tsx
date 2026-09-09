@@ -15,7 +15,7 @@ import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate } from "@/lib/massPages";
+import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate, compact, serviceSlugPart } from "@/lib/massPages";
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 
 import { Loader2 } from "lucide-react";
@@ -160,6 +160,16 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
   const massBodyVariant = massTheme.bodyVariant;
   // On a live campaign page, the top bar + footer adopt the template primary color.
   const massBarColor = massPage ? `hsl(${massTheme.primary})` : null;
+  // "Residential-Emergency-AirConditioning" — prefix for the areas-we-service labels.
+  const massAreasPrefix = massPage
+    ? [
+        massPage.locationType ? compact(massPage.locationType) : "",
+        massPage.visitType ? compact(massPage.visitType) : "",
+        serviceSlugPart(massPage.service, massPage.serviceType),
+      ]
+        .filter(Boolean)
+        .join("-")
+    : null;
   const showMassMenu =
     massPath === "mass-pages" || (!!resolvedMassPage && massPageBlocked && !massPreview);
 
@@ -344,7 +354,12 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                   />
 
                   <AmerceTailwindScope themeStyle={themeStyle}>
-                    <CompanyHomeBody company={company} theme={theme} variant={massBodyVariant} />
+                    <CompanyHomeBody
+                      company={company}
+                      theme={theme}
+                      variant={massBodyVariant}
+                      areasTitlePrefix={massAreasPrefix}
+                    />
                   </AmerceTailwindScope>
                 </>
               )}
