@@ -140,6 +140,7 @@ const CompanyHomeBody = ({
   theme,
   showContact = true,
   variant = "standard",
+  areasTitlePrefix,
 }: CompanyHomeBodyProps) => {
   const vs = BODY_VARIANT_STYLES[variant] || BODY_VARIANT_STYLES.standard;
   const hasLists =
