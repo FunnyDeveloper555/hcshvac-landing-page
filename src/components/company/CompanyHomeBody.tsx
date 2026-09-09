@@ -166,6 +166,7 @@ const CompanyHomeBody = ({
                   companyName={company.name}
                   serviceAreas={company.service_areas}
                   primaryColor={theme.colors.primary}
+                  titlePrefix={areasTitlePrefix}
                 />
                 <CompanyBrandsAccordion
                   companyName={company.name}
