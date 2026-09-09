@@ -103,7 +103,7 @@ const CompanyServiceAreasAccordion = ({
                                 </div>
                               </AccordionTrigger>
                               <AccordionContent>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1 pb-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 pb-2">
                                   {cities
                                     .sort((a, b) => a.city.localeCompare(b.city))
                                     .map((p, index) => {
@@ -111,10 +111,10 @@ const CompanyServiceAreasAccordion = ({
                                       return (
                                         <div
                                           key={`${p.city}-${index}`}
-                                          className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                                          className="flex items-start gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
                                         >
-                                          <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                          <span className="text-xs truncate" title={text}>
+                                          <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                          <span className="text-xs break-words leading-snug">
                                             {text}
                                           </span>
                                         </div>
