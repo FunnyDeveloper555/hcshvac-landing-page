@@ -292,8 +292,12 @@ export const massCanonicalPagePath = (path: string): string => {
   if (parts.length < 3) return path;
   const tail = parts.slice(parts.length - 2);
   const middles = parts.slice(0, parts.length - 2);
-  const { loc, visit, serviceType, serviceCategory } = classifyMiddles(middles);
-  return `/${[loc, visit, serviceCategory, serviceType, ...tail].filter(Boolean).join("-")}`;
+  const { loc, visit, serviceSlug } = classifyMiddles(middles);
+  if (!serviceSlug) return path;
+  const parsed = parseServiceSlug(serviceSlug);
+  if (!parsed) return path;
+  const { service, serviceType } = parsed;
+  return `/${[loc, visit, compact(service.label), serviceType ? compact(serviceType) : undefined, ...tail].filter(Boolean).join("-")}`;
 };
 
 
