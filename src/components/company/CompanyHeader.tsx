@@ -100,7 +100,7 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
               <img 
                 src={company.logo_url} 
                 alt={`${company.name} logo`}
-                className="h-10 w-auto object-contain"
+                className="h-12 md:h-14 w-auto object-contain"
               />
             ) : (
               <h1 className={cn(
