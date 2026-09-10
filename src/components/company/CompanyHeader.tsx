@@ -56,6 +56,9 @@ const HEADER_PAGES = [
 
 const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: CompanyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
+
 
   const headerStyles = {
     standard: "bg-background/95 backdrop-blur-sm border-b border-border",
