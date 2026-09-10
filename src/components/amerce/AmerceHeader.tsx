@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Clock, Mail, Phone } from "lucide-react";
+import { ChevronDown, Clock, Mail, Phone } from "lucide-react";
 
 export interface AmerceNavItem {
   key: string;
   label: string;
+  children?: AmerceNavItem[];
 }
+
 
 interface AmerceHeaderProps {
   companyName: string;
