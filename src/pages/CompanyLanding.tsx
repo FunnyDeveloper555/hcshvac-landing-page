@@ -296,10 +296,21 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Get page label for display
+  // Get page label for display (searches nested service menus too)
   const getPageLabel = (pageKey: string) => {
-    return HEADER_PAGES.find(p => p.key === pageKey)?.label || pageKey;
+    const find = (items: typeof HEADER_PAGES): string | undefined => {
+      for (const item of items) {
+        if (item.key === pageKey) return item.label;
+        if (item.children) {
+          const child = find(item.children as typeof HEADER_PAGES);
+          if (child) return child;
+        }
+      }
+      return undefined;
+    };
+    return find(HEADER_PAGES) || pageKey;
   };
+
 
   // Get active page content
   const activePageContent = activePage ? company.header_pages?.[activePage] : null;
