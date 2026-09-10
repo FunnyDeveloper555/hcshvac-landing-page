@@ -37,7 +37,10 @@ const AmerceHeader = ({
   barColor,
 }: AmerceHeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
   const location = [city, state].filter(Boolean).join(", ");
+
 
   const messages = [
     "24/7 Emergency Heating & Cooling Service — Same Day Appointments",
