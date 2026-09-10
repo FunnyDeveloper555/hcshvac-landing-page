@@ -404,7 +404,29 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 </div>
               </section>
             </AmerceTailwindScope>
+          ) : activePage && LOCATION_TYPE_PAGES[activePage] ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <section className="pt-24 pb-16">
+                <div className="container mx-auto px-4">
+                  <button
+                    onClick={handleBackToHome}
+                    className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    ← Back to Home
+                  </button>
+                  <CompanyLocationTypeMenu
+                    company={company as unknown as Record<string, unknown> & { name: string }}
+                    groups={massGroups}
+                    locationType={LOCATION_TYPE_PAGES[activePage]}
+                    onNavigate={goToMassPath}
+                    basePath={baseUrl}
+                  />
+                </div>
+                <CompanyCTAIcons companyId={company.id} pageName={activePage} />
+              </section>
+            </AmerceTailwindScope>
           ) : activePage === "products" ? (
+
             <AmerceTailwindScope themeStyle={themeStyle}>
               <section className="pt-24 pb-16">
                 <div className="container mx-auto px-4">
