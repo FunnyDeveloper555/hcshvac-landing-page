@@ -15,7 +15,7 @@ import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
 
 interface FormData {
   companyId: string;
-  linkType: "registration" | "booking";
+  linkType: "registration" | "booking" | "both";
   invitationType: "residential" | "commercial";
   customerType: "new" | "existing";
   recipientPhone: string;
@@ -49,7 +49,7 @@ export default function SMSLinkSend() {
     ...initialFormData,
     recipientPhone: prefillPhone,
     recipientEmail: prefillEmail,
-    linkType: prefillLinkType === "booking" ? "booking" : "registration",
+    linkType: prefillLinkType === "booking" ? "booking" : prefillLinkType === "both" ? "both" : "registration",
     invitationType: prefillType === "commercial" ? "commercial" : "residential",
     customerType: prefillCustomerType === "existing" ? "existing" : "new",
     sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
