@@ -145,7 +145,6 @@ export default function SMSLinkSend() {
         const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: formData.linkType === "registration" ? "customer-registration-invite" : "booking-invite",
-            // Combined link registers the profile and books the appointment in one flow
             recipientEmail: formData.recipientEmail,
             idempotencyKey: `booking-invite-${invitation.id}`,
             templateData: {
@@ -267,7 +266,7 @@ export default function SMSLinkSend() {
                 </div>
               </RadioGroup>
               <p className="text-xs text-muted-foreground">
-                Registration collects profile only. Booking also schedules an appointment. Registration + Booking does both in one link.
+                Registration collects profile only. Booking also schedules an appointment. Registration + Booking does both in one flow.
               </p>
             </div>
 
