@@ -13,9 +13,11 @@ import CompanyHomeBody from "@/components/company/CompanyHomeBody";
 import CompanyProductsList from "@/components/company/CompanyProductsList";
 import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
+import CompanyLocationTypeMenu from "@/components/company/CompanyLocationTypeMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate, compact, serviceSlugPart } from "@/lib/massPages";
+import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate, compact, serviceSlugPart, type LocationType } from "@/lib/massPages";
+
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 
 import { Loader2 } from "lucide-react";
