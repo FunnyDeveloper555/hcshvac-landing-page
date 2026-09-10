@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Phone, Mail, Menu, X } from "lucide-react";
+import { ChevronDown, Mail, Menu, Phone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeConfig } from "@/lib/companyThemes";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 
 interface PageContent {
   title: string;
@@ -33,17 +34,31 @@ interface CompanyHeaderProps {
 }
 
 const HEADER_PAGES = [
-  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
-  { key: "services", label: "Services" },
-  { key: "residential", label: "Residential" },
-  { key: "commercial", label: "Commercial" },
+  {
+    key: "services",
+    label: "Services",
+    children: [
+      { key: "residential", label: "Residential" },
+      { key: "commercial", label: "Commercial" },
+      { key: "light-industrial", label: "Light Industrial" },
+      { key: "industrial", label: "Industrial" },
+      { key: "educational", label: "Educational" },
+      { key: "medical", label: "Medical" },
+      { key: "churches", label: "Churches" },
+    ],
+  },
+  { key: "products", label: "Products" },
   { key: "air-quality", label: "Air Quality" },
 ];
 
+
 const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: CompanyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<Record<string, boolean>>({});
+
 
   const headerStyles = {
     standard: "bg-background/95 backdrop-blur-sm border-b border-border",
@@ -55,11 +70,25 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
 
   const isBoldHeader = theme.layout.headerStyle === 'bold';
 
-  // Get enabled pages
-  const enabledPages = HEADER_PAGES.filter(page => {
-    const pageData = company.header_pages?.[page.key];
+  // Get enabled pages (including nested service location types)
+  const pageEnabled = (key: string) => {
+    const pageData = company.header_pages?.[key];
     return pageData?.enabled !== false; // Show by default if not configured
-  });
+  };
+
+  const enabledPages = HEADER_PAGES.filter((page) => {
+    const selfEnabled = pageEnabled(page.key);
+    if (!selfEnabled) return false;
+    if (page.children) {
+      const visibleChildren = page.children.filter((child) => pageEnabled(child.key));
+      if (visibleChildren.length === 0) return false;
+    }
+    return true;
+  }).map((page) => ({
+    ...page,
+    children: page.children?.filter((child) => pageEnabled(child.key)),
+  }));
+
 
   const handlePageClick = (pageKey: string) => {
     // If clicking the already-active page, go home
@@ -125,20 +154,60 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
             >
               Home
             </button>
-            {enabledPages.map(page => (
-              <button
-                key={page.key}
-                onClick={() => handlePageClick(page.key)}
-                className={cn(
-                  "px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  activePage === page.key 
-                    ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
-                    : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
-                )}
-              >
-                {company.header_pages?.[page.key]?.title || page.label}
-              </button>
-            ))}
+            {enabledPages.map((page) => {
+              const hasChildren = page.children && page.children.length > 0;
+              const isActive = activePage === page.key || page.children?.some((c) => c.key === activePage);
+              return (
+                <div
+                  key={page.key}
+                  className="relative"
+                  onMouseEnter={() => hasChildren && setOpenDropdown(page.key)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  <button
+                    onClick={() => {
+                      if (hasChildren) {
+                        setOpenDropdown(openDropdown === page.key ? null : page.key);
+                      } else {
+                        handlePageClick(page.key);
+                      }
+                    }}
+                    className={cn(
+                      "px-3 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-1",
+                      isActive
+                        ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                        : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
+                    )}
+                  >
+                    {company.header_pages?.[page.key]?.title || page.label}
+                    {hasChildren && <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {hasChildren && openDropdown === page.key && (
+                    <div className="absolute top-full left-0 mt-1 w-56 rounded-md border bg-background shadow-lg z-50 py-1">
+                      {page.children?.map((child) => (
+                        <button
+                          key={child.key}
+                          onClick={() => {
+                            handlePageClick(child.key);
+                            setOpenDropdown(null);
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-sm transition-colors",
+                            activePage === child.key
+                              ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {company.header_pages?.[child.key]?.title || child.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
           </nav>
           
           {/* Contact Info & Mobile Menu */}
@@ -205,20 +274,65 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
                   >
                     Home
                   </button>
-                  {enabledPages.map(page => (
-                    <button
-                      key={page.key}
-                      onClick={() => handlePageClick(page.key)}
-                      className={cn(
-                        "px-4 py-3 text-left text-base font-medium rounded-lg transition-colors",
-                        activePage === page.key 
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-muted"
-                      )}
-                    >
-                      {company.header_pages?.[page.key]?.title || page.label}
-                    </button>
-                  ))}
+                  {enabledPages.map((page) => {
+                    const hasChildren = page.children && page.children.length > 0;
+                    const expanded = mobileExpanded[page.key] || false;
+                    const isActive = activePage === page.key || page.children?.some((c) => c.key === activePage);
+                    return (
+                      <div key={page.key}>
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              if (!hasChildren) handlePageClick(page.key);
+                            }}
+                            className={cn(
+                              "flex-1 text-left px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                              isActive
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground hover:bg-muted"
+                            )}
+                          >
+                            {company.header_pages?.[page.key]?.title || page.label}
+                          </button>
+                          {hasChildren && (
+                            <button
+                              type="button"
+                              aria-label={expanded ? "Collapse" : "Expand"}
+                              onClick={() =>
+                                setMobileExpanded((prev) => ({ ...prev, [page.key]: !expanded }))
+                              }
+                              className="px-3 py-2"
+                            >
+                              <ChevronDown
+                                className="w-5 h-5 transition-transform"
+                                style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                              />
+                            </button>
+                          )}
+                        </div>
+
+                        {hasChildren && expanded && (
+                          <div className="pl-4 mt-1 space-y-1">
+                            {page.children?.map((child) => (
+                              <button
+                                key={child.key}
+                                onClick={() => handlePageClick(child.key)}
+                                className={cn(
+                                  "w-full text-left px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                                  activePage === child.key
+                                    ? "bg-primary/10 text-primary"
+                                    : "text-foreground hover:bg-muted"
+                                )}
+                              >
+                                {company.header_pages?.[child.key]?.title || child.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
                 </nav>
               </SheetContent>
             </Sheet>

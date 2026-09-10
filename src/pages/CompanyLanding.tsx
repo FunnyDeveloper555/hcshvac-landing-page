@@ -101,17 +101,23 @@ interface Company {
 const HEADER_PAGES = [
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
-  { key: "services", label: "Services" },
-  { key: "residential", label: "Residential" },
-  { key: "commercial", label: "Commercial" },
-  { key: "light-industrial", label: "Light Industrial" },
-  { key: "industrial", label: "Industrial" },
-  { key: "educational", label: "Educational" },
-  { key: "medical", label: "Medical" },
-  { key: "churches", label: "Churches" },
+  {
+    key: "services",
+    label: "Services",
+    children: [
+      { key: "residential", label: "Residential" },
+      { key: "commercial", label: "Commercial" },
+      { key: "light-industrial", label: "Light Industrial" },
+      { key: "industrial", label: "Industrial" },
+      { key: "educational", label: "Educational" },
+      { key: "medical", label: "Medical" },
+      { key: "churches", label: "Churches" },
+    ],
+  },
   { key: "products", label: "Products" },
   { key: "air-quality", label: "Air Quality" },
 ];
+
 
 /** Nav keys that open a location-type page (services -> CSZ -> campaign page). */
 const LOCATION_TYPE_PAGES: Record<string, LocationType> = {
@@ -290,10 +296,21 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Get page label for display
+  // Get page label for display (searches nested service menus too)
   const getPageLabel = (pageKey: string) => {
-    return HEADER_PAGES.find(p => p.key === pageKey)?.label || pageKey;
+    const find = (items: typeof HEADER_PAGES): string | undefined => {
+      for (const item of items) {
+        if (item.key === pageKey) return item.label;
+        if (item.children) {
+          const child = find(item.children as typeof HEADER_PAGES);
+          if (child) return child;
+        }
+      }
+      return undefined;
+    };
+    return find(HEADER_PAGES) || pageKey;
   };
+
 
   // Get active page content
   const activePageContent = activePage ? company.header_pages?.[activePage] : null;
