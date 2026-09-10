@@ -15,7 +15,7 @@ import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
 
 interface FormData {
   companyId: string;
-  linkType: "registration" | "booking" | "both";
+  linkType: "registration" | "booking";
   invitationType: "residential" | "commercial";
   customerType: "new" | "existing";
   recipientPhone: string;
@@ -49,7 +49,7 @@ export default function SMSLinkSend() {
     ...initialFormData,
     recipientPhone: prefillPhone,
     recipientEmail: prefillEmail,
-    linkType: prefillLinkType === "booking" ? "booking" : prefillLinkType === "both" ? "both" : "registration",
+    linkType: prefillLinkType === "booking" ? "booking" : "registration",
     invitationType: prefillType === "commercial" ? "commercial" : "residential",
     customerType: prefillCustomerType === "existing" ? "existing" : "new",
     sendMethod: prefillEmail && prefillPhone ? "both" : prefillEmail ? "email" : "sms",
@@ -145,7 +145,6 @@ export default function SMSLinkSend() {
         const { data: emailResult, error: emailError } = await supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: formData.linkType === "registration" ? "customer-registration-invite" : "booking-invite",
-            // Combined link registers the profile and books the appointment in one flow
             recipientEmail: formData.recipientEmail,
             idempotencyKey: `booking-invite-${invitation.id}`,
             templateData: {
@@ -261,13 +260,9 @@ export default function SMSLinkSend() {
                   <RadioGroupItem value="booking" id="link-booking" />
                   <Label htmlFor="link-booking">Booking Appointment</Label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="both" id="link-both" />
-                  <Label htmlFor="link-both">Registration + Booking</Label>
-                </div>
               </RadioGroup>
               <p className="text-xs text-muted-foreground">
-                Registration collects profile only. Booking also schedules an appointment. Registration + Booking does both in one link.
+                Registration collects profile only. Booking also schedules an appointment.
               </p>
             </div>
 
