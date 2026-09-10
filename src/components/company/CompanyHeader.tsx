@@ -274,20 +274,65 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
                   >
                     Home
                   </button>
-                  {enabledPages.map(page => (
-                    <button
-                      key={page.key}
-                      onClick={() => handlePageClick(page.key)}
-                      className={cn(
-                        "px-4 py-3 text-left text-base font-medium rounded-lg transition-colors",
-                        activePage === page.key 
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-muted"
-                      )}
-                    >
-                      {company.header_pages?.[page.key]?.title || page.label}
-                    </button>
-                  ))}
+                  {enabledPages.map((page) => {
+                    const hasChildren = page.children && page.children.length > 0;
+                    const expanded = mobileExpanded[page.key] || false;
+                    const isActive = activePage === page.key || page.children?.some((c) => c.key === activePage);
+                    return (
+                      <div key={page.key}>
+                        <div className="flex items-center justify-between">
+                          <button
+                            onClick={() => {
+                              if (!hasChildren) handlePageClick(page.key);
+                            }}
+                            className={cn(
+                              "flex-1 text-left px-4 py-3 text-base font-medium rounded-lg transition-colors",
+                              isActive
+                                ? "bg-primary/10 text-primary"
+                                : "text-foreground hover:bg-muted"
+                            )}
+                          >
+                            {company.header_pages?.[page.key]?.title || page.label}
+                          </button>
+                          {hasChildren && (
+                            <button
+                              type="button"
+                              aria-label={expanded ? "Collapse" : "Expand"}
+                              onClick={() =>
+                                setMobileExpanded((prev) => ({ ...prev, [page.key]: !expanded }))
+                              }
+                              className="px-3 py-2"
+                            >
+                              <ChevronDown
+                                className="w-5 h-5 transition-transform"
+                                style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                              />
+                            </button>
+                          )}
+                        </div>
+
+                        {hasChildren && expanded && (
+                          <div className="pl-4 mt-1 space-y-1">
+                            {page.children?.map((child) => (
+                              <button
+                                key={child.key}
+                                onClick={() => handlePageClick(child.key)}
+                                className={cn(
+                                  "w-full text-left px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                                  activePage === child.key
+                                    ? "bg-primary/10 text-primary"
+                                    : "text-foreground hover:bg-muted"
+                                )}
+                              >
+                                {company.header_pages?.[child.key]?.title || child.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
                 </nav>
               </SheetContent>
             </Sheet>
