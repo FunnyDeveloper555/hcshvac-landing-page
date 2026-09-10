@@ -34,14 +34,25 @@ interface CompanyHeaderProps {
 }
 
 const HEADER_PAGES = [
-  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
-  { key: "services", label: "Services" },
-  { key: "residential", label: "Residential" },
-  { key: "commercial", label: "Commercial" },
+  {
+    key: "services",
+    label: "Services",
+    children: [
+      { key: "residential", label: "Residential" },
+      { key: "commercial", label: "Commercial" },
+      { key: "light-industrial", label: "Light Industrial" },
+      { key: "industrial", label: "Industrial" },
+      { key: "educational", label: "Educational" },
+      { key: "medical", label: "Medical" },
+      { key: "churches", label: "Churches" },
+    ],
+  },
+  { key: "products", label: "Products" },
   { key: "air-quality", label: "Air Quality" },
 ];
+
 
 const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: CompanyHeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
