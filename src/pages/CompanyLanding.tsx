@@ -13,9 +13,11 @@ import CompanyHomeBody from "@/components/company/CompanyHomeBody";
 import CompanyProductsList from "@/components/company/CompanyProductsList";
 import CompanyProductDetail from "@/components/company/CompanyProductDetail";
 import MassPagesMenu from "@/components/company/MassPagesMenu";
+import CompanyLocationTypeMenu from "@/components/company/CompanyLocationTypeMenu";
 import MassServicePage from "@/components/company/MassServicePage";
 import { useMassPages } from "@/hooks/useMassPages";
-import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate, compact, serviceSlugPart } from "@/lib/massPages";
+import { resolveMassPage, massPagePath, massTemplatePath, massCampaignTemplate, compact, serviceSlugPart, type LocationType } from "@/lib/massPages";
+
 import { useMassPageContent } from "@/hooks/useMassPageContent";
 
 import { Loader2 } from "lucide-react";
@@ -97,15 +99,31 @@ interface Company {
 }
 
 const HEADER_PAGES = [
-  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
   { key: "services", label: "Services" },
   { key: "residential", label: "Residential" },
   { key: "commercial", label: "Commercial" },
+  { key: "light-industrial", label: "Light Industrial" },
+  { key: "industrial", label: "Industrial" },
+  { key: "educational", label: "Educational" },
+  { key: "medical", label: "Medical" },
+  { key: "churches", label: "Churches" },
+  { key: "products", label: "Products" },
   { key: "air-quality", label: "Air Quality" },
-  { key: "mass-pages", label: "Mass Pages" },
 ];
+
+/** Nav keys that open a location-type page (services -> CSZ -> campaign page). */
+const LOCATION_TYPE_PAGES: Record<string, LocationType> = {
+  residential: "Residential",
+  commercial: "Commercial",
+  "light-industrial": "Light Industrial",
+  industrial: "Industrial",
+  educational: "Educational Facilities",
+  medical: "Medical Offices",
+  churches: "Churches",
+};
+
 
 interface CompanyLandingProps {
   subdomainSlug?: string;
@@ -386,7 +404,29 @@ const CompanyLanding = ({ subdomainSlug }: CompanyLandingProps) => {
                 </div>
               </section>
             </AmerceTailwindScope>
+          ) : activePage && LOCATION_TYPE_PAGES[activePage] ? (
+            <AmerceTailwindScope themeStyle={themeStyle}>
+              <section className="pt-24 pb-16">
+                <div className="container mx-auto px-4">
+                  <button
+                    onClick={handleBackToHome}
+                    className="mb-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                  >
+                    ← Back to Home
+                  </button>
+                  <CompanyLocationTypeMenu
+                    company={company as unknown as Record<string, unknown> & { name: string }}
+                    groups={massGroups}
+                    locationType={LOCATION_TYPE_PAGES[activePage]}
+                    onNavigate={goToMassPath}
+                    basePath={baseUrl}
+                  />
+                </div>
+                <CompanyCTAIcons companyId={company.id} pageName={activePage} />
+              </section>
+            </AmerceTailwindScope>
           ) : activePage === "products" ? (
+
             <AmerceTailwindScope themeStyle={themeStyle}>
               <section className="pt-24 pb-16">
                 <div className="container mx-auto px-4">
