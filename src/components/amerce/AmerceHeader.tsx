@@ -147,19 +147,58 @@ const AmerceHeader = ({
                       Home
                     </button>
                   </li>
-                  {navItems.map((item) => (
-                    <li key={item.key} className={`menu-item ${activePage === item.key ? "active" : ""}`}>
-                      <button
-                        type="button"
-                        className="item-link bg-transparent border-0 p-0 fw-medium"
-                        onClick={() => onPageChange(item.key)}
+                  {navItems.map((item) => {
+                    const hasChildren = item.children && item.children.length > 0;
+                    const isActive = activePage === item.key || item.children?.some((c) => c.key === activePage);
+                    return (
+                      <li
+                        key={item.key}
+                        className={`menu-item ${isActive ? "active" : ""} position-relative`}
+                        onMouseEnter={() => hasChildren && setOpenDropdown(item.key)}
+                        onMouseLeave={() => setOpenDropdown(null)}
                       >
-                        {item.label}
-                      </button>
-                    </li>
-                  ))}
+                        <button
+                          type="button"
+                          className="item-link bg-transparent border-0 p-0 fw-medium d-inline-flex align-items-center gap-6"
+                          onClick={() => {
+                            if (hasChildren) {
+                              setOpenDropdown(openDropdown === item.key ? null : item.key);
+                            } else {
+                              onPageChange(item.key);
+                            }
+                          }}
+                        >
+                          {item.label}
+                          {hasChildren && <ChevronDown size={14} />}
+                        </button>
+
+                        {hasChildren && openDropdown === item.key && (
+                          <ul
+                            className="list-group position-absolute bg-white rounded-2 shadow overflow-hidden"
+                            style={{ top: "calc(100% + 8px)", left: 0, minWidth: 220, zIndex: 1000 }}
+                          >
+                            {item.children.map((child) => (
+                              <li key={child.key} className="list-group-item p-0 border-0">
+                                <button
+                                  type="button"
+                                  className={`dropdown-item d-block w-100 text-start px-4 py-2 bg-transparent border-0 ${activePage === child.key ? "active" : ""}`}
+                                  onClick={() => {
+                                    onPageChange(child.key);
+                                    setOpenDropdown(null);
+                                  }}
+                                >
+                                  {child.label}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </nav>
+
 
               <div className="header-right d-flex align-items-center gap-16">
                 {phone && (
