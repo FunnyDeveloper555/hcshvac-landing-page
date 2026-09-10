@@ -260,9 +260,13 @@ export default function SMSLinkSend() {
                   <RadioGroupItem value="booking" id="link-booking" />
                   <Label htmlFor="link-booking">Booking Appointment</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="both" id="link-both" />
+                  <Label htmlFor="link-both">Registration + Booking</Label>
+                </div>
               </RadioGroup>
               <p className="text-xs text-muted-foreground">
-                Registration collects profile only. Booking also schedules an appointment.
+                Registration collects profile only. Booking also schedules an appointment. Registration + Booking does both in one flow.
               </p>
             </div>
 
