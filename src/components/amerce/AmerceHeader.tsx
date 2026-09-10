@@ -223,21 +223,62 @@ const AmerceHeader = ({
                     Home
                   </button>
                 </li>
-                {navItems.map((item) => (
-                  <li key={item.key} className="menu-item py-2">
-                    <button
-                      type="button"
-                      className="item-link bg-transparent border-0 p-0 fw-medium"
-                      onClick={() => onPageChange(item.key)}
-                    >
-                      {item.label}
-                    </button>
-                  </li>
-                ))}
+                {navItems.map((item) => {
+                  const hasChildren = item.children && item.children.length > 0;
+                  const expanded = mobileExpanded[item.key] || false;
+                  const isActive = activePage === item.key || item.children?.some((c) => c.key === activePage);
+                  return (
+                    <li key={item.key} className={`menu-item py-2 ${isActive ? "active" : ""}`}>
+                      <div className="d-flex align-items-center justify-content-between">
+                        <button
+                          type="button"
+                          className="item-link bg-transparent border-0 p-0 fw-medium"
+                          onClick={() => {
+                            if (!hasChildren) onPageChange(item.key);
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                        {hasChildren && (
+                          <button
+                            type="button"
+                            className="bg-transparent border-0 p-0"
+                            aria-label={expanded ? "Collapse" : "Expand"}
+                            onClick={() =>
+                              setMobileExpanded((prev) => ({ ...prev, [item.key]: !expanded }))
+                            }
+                          >
+                            <ChevronDown
+                              size={16}
+                              style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+                            />
+                          </button>
+                        )}
+                      </div>
+
+                      {hasChildren && expanded && (
+                        <ul className="ps-4 mt-2 mb-0">
+                          {item.children.map((child) => (
+                            <li key={child.key} className={`menu-item py-2 ${activePage === child.key ? "active" : ""}`}>
+                              <button
+                                type="button"
+                                className="item-link bg-transparent border-0 p-0 fw-medium"
+                                onClick={() => onPageChange(child.key)}
+                              >
+                                {child.label}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>
         )}
+
       </header>
     </>
   );
