@@ -97,15 +97,31 @@ interface Company {
 }
 
 const HEADER_PAGES = [
-  { key: "products", label: "Products" },
   { key: "about-us", label: "About Us" },
   { key: "financing", label: "Financing" },
   { key: "services", label: "Services" },
   { key: "residential", label: "Residential" },
   { key: "commercial", label: "Commercial" },
+  { key: "light-industrial", label: "Light Industrial" },
+  { key: "industrial", label: "Industrial" },
+  { key: "educational", label: "Educational" },
+  { key: "medical", label: "Medical" },
+  { key: "churches", label: "Churches" },
+  { key: "products", label: "Products" },
   { key: "air-quality", label: "Air Quality" },
-  { key: "mass-pages", label: "Mass Pages" },
 ];
+
+/** Nav keys that open a location-type page (services -> CSZ -> campaign page). */
+const LOCATION_TYPE_PAGES: Record<string, LocationType> = {
+  residential: "Residential",
+  commercial: "Commercial",
+  "light-industrial": "Light Industrial",
+  industrial: "Industrial",
+  educational: "Educational Facilities",
+  medical: "Medical Offices",
+  churches: "Churches",
+};
+
 
 interface CompanyLandingProps {
   subdomainSlug?: string;
