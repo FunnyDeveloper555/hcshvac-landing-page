@@ -154,20 +154,60 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
             >
               Home
             </button>
-            {enabledPages.map(page => (
-              <button
-                key={page.key}
-                onClick={() => handlePageClick(page.key)}
-                className={cn(
-                  "px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  activePage === page.key 
-                    ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
-                    : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
-                )}
-              >
-                {company.header_pages?.[page.key]?.title || page.label}
-              </button>
-            ))}
+            {enabledPages.map((page) => {
+              const hasChildren = page.children && page.children.length > 0;
+              const isActive = activePage === page.key || page.children?.some((c) => c.key === activePage);
+              return (
+                <div
+                  key={page.key}
+                  className="relative"
+                  onMouseEnter={() => hasChildren && setOpenDropdown(page.key)}
+                  onMouseLeave={() => setOpenDropdown(null)}
+                >
+                  <button
+                    onClick={() => {
+                      if (hasChildren) {
+                        setOpenDropdown(openDropdown === page.key ? null : page.key);
+                      } else {
+                        handlePageClick(page.key);
+                      }
+                    }}
+                    className={cn(
+                      "px-3 py-2 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-1",
+                      isActive
+                        ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                        : (isBoldHeader ? "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-muted")
+                    )}
+                  >
+                    {company.header_pages?.[page.key]?.title || page.label}
+                    {hasChildren && <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {hasChildren && openDropdown === page.key && (
+                    <div className="absolute top-full left-0 mt-1 w-56 rounded-md border bg-background shadow-lg z-50 py-1">
+                      {page.children?.map((child) => (
+                        <button
+                          key={child.key}
+                          onClick={() => {
+                            handlePageClick(child.key);
+                            setOpenDropdown(null);
+                          }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-sm transition-colors",
+                            activePage === child.key
+                              ? (isBoldHeader ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary")
+                              : "hover:bg-muted"
+                          )}
+                        >
+                          {company.header_pages?.[child.key]?.title || child.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
           </nav>
           
           {/* Contact Info & Mobile Menu */}
