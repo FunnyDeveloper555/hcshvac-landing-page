@@ -70,11 +70,25 @@ const CompanyHeader = ({ company, theme, activePage, onPageChange, onGoHome }: C
 
   const isBoldHeader = theme.layout.headerStyle === 'bold';
 
-  // Get enabled pages
-  const enabledPages = HEADER_PAGES.filter(page => {
-    const pageData = company.header_pages?.[page.key];
+  // Get enabled pages (including nested service location types)
+  const pageEnabled = (key: string) => {
+    const pageData = company.header_pages?.[key];
     return pageData?.enabled !== false; // Show by default if not configured
-  });
+  };
+
+  const enabledPages = HEADER_PAGES.filter((page) => {
+    const selfEnabled = pageEnabled(page.key);
+    if (!selfEnabled) return false;
+    if (page.children) {
+      const visibleChildren = page.children.filter((child) => pageEnabled(child.key));
+      if (visibleChildren.length === 0) return false;
+    }
+    return true;
+  }).map((page) => ({
+    ...page,
+    children: page.children?.filter((child) => pageEnabled(child.key)),
+  }));
+
 
   const handlePageClick = (pageKey: string) => {
     // If clicking the already-active page, go home
