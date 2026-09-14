@@ -3,15 +3,32 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_calendar/calendar/v3";
 
-function parseTime(t: string): { h: number; m: number } {
-  const m = (t || "").trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
-  if (!m) return { h: 9, m: 0 };
+// Handles "9:30 AM", "9 AM", "12 Noon", "12 Midnight"
+function parseClock(t: string): { h: number; m: number } | null {
+  const s = (t || "").trim();
+  if (/noon/i.test(s)) return { h: 12, m: 0 };
+  if (/midnight/i.test(s)) return { h: 0, m: 0 };
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?/);
+  if (!m) return null;
   let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
   const suf = m[3]?.toUpperCase();
-  if (suf === "PM" && h < 12) h += 12;
-  if (suf === "AM" && h === 12) h = 0;
+  if (suf === "P" && h < 12) h += 12;
+  if (suf === "A" && h === 12) h = 0;
   return { h, m: min };
+}
+
+// Splits "1 PM to 3 PM" into start/end; single times return only a start
+function parseRange(t: string): { start: { h: number; m: number }; end: { h: number; m: number } | null } {
+  const parts = (t || "").split(/\s+(?:to|-|–|—|through|until)\s+/i);
+  return {
+    start: parseClock(parts[0] || "") || { h: 9, m: 0 },
+    end: parts[1] ? parseClock(parts[1]) : null,
+  };
+}
+
+function parseTime(t: string): { h: number; m: number } {
+  return parseRange(t).start;
 }
 
 function iso(date: string, time: string, addMinutes = 0): string {
@@ -81,7 +98,11 @@ Deno.serve(async (req) => {
       return json({ success: true, deleted: true });
     }
 
-    const duration = Number((apt as any).duration_minutes) || 60;
+    const range = parseRange(apt.scheduled_time);
+    const startMin = range.start.h * 60 + range.start.m;
+    const endMin = range.end ? range.end.h * 60 + range.end.m : null;
+    const duration =
+      endMin !== null && endMin > startMin ? endMin - startMin : Number((apt as any).duration_minutes) || 60;
     const attendees: Array<{ email: string }> = [];
     if (apt.customer_email) attendees.push({ email: apt.customer_email });
     if (calRow?.email) attendees.push({ email: calRow.email });

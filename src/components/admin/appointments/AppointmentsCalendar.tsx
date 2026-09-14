@@ -59,14 +59,19 @@ const statusColors: Record<AppointmentStatus, string> = {
 // 7 AM – 7 PM hour rows for the week/day grids
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 7);
 
+// Handles "9:30 AM", "9 AM", "12 Noon", "12 Midnight" and ranges like "1 PM to 3 PM"
 function timeToMinutes(t: string): number {
-  const m = (t || "").trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  const raw = (t || "").trim();
+  const first = raw.split(/\s+(?:to|-|–|—|through|until)\s+/i)[0]?.trim() || raw;
+  if (/noon/i.test(first)) return 12 * 60;
+  if (/midnight/i.test(first)) return 0;
+  const m = first.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?/);
   if (!m) return 9 * 60;
   let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
   const suf = m[3]?.toUpperCase();
-  if (suf === "PM" && h < 12) h += 12;
-  if (suf === "AM" && h === 12) h = 0;
+  if (suf === "P" && h < 12) h += 12;
+  if (suf === "A" && h === 12) h = 0;
   return h * 60 + min;
 }
 
@@ -79,6 +84,7 @@ export default function AppointmentsCalendar() {
   const [companyFilter, setCompanyFilter] = useState<string>("all");
   const [calendarFilter, setCalendarFilter] = useState<string>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const { data: companies } = useQuery({
     queryKey: ["companies-active"],
@@ -166,6 +172,39 @@ export default function AppointmentsCalendar() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const syncAllVisible = async () => {
+    const start = view === "month" ? startOfWeek(startOfMonth(cursor)) : view === "week" ? startOfWeek(cursor) : cursor;
+    const end = view === "month" ? endOfWeek(endOfMonth(cursor)) : view === "week" ? endOfWeek(cursor) : cursor;
+    const startKey = format(start, "yyyy-MM-dd");
+    const endKey = format(end, "yyyy-MM-dd");
+    const targets = filtered.filter(
+      (a) => a.status !== "cancelled" && a.scheduled_date >= startKey && a.scheduled_date <= endKey,
+    );
+    if (targets.length === 0) {
+      toast.info("No appointments to send for this period");
+      return;
+    }
+    setSyncingAll(true);
+    let ok = 0;
+    const failures: string[] = [];
+    for (const apt of targets) {
+      try {
+        const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
+          body: { appointment_id: apt.id },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        ok++;
+      } catch (e) {
+        failures.push(`${apt.customer_name}: ${(e as Error).message}`);
+      }
+    }
+    setSyncingAll(false);
+    queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+    if (failures.length === 0) toast.success(`${ok} appointment${ok === 1 ? "" : "s"} added to Google Calendar`);
+    else toast.error(`${ok} added, ${failures.length} failed. ${failures[0]}`);
   };
 
   const sendReminder = async (apt: Appointment) => {
@@ -276,6 +315,10 @@ export default function AppointmentsCalendar() {
               {calendars?.map((c) => <SelectItem key={c.id} value={c.id}>{c.calendar_name}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" disabled={syncingAll} onClick={syncAllVisible}>
+            {syncingAll ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CalendarCheck className="h-4 w-4 mr-1" />}
+            Sync all shown
+          </Button>
           <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] })}>
             <RefreshCw className="h-4 w-4" />
           </Button>
