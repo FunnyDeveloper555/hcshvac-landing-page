@@ -973,6 +973,7 @@ const CompaniesAdd = () => {
       gas_pipe_install: formData.gas_pipe_install,
       gas_pipe_service: formData.gas_pipe_service,
       gas_pipe_repair: formData.gas_pipe_repair,
+      our_services: formData.our_services,
     };
 
     let error;
