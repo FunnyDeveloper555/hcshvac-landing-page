@@ -162,6 +162,11 @@ const CompanyHomeBody = ({
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <Accordion type="multiple" className="w-full space-y-2">
+                <CompanyOurServicesAccordion
+                  companyName={company.name}
+                  ourServices={company.our_services}
+                  primaryColor={theme.colors.primary}
+                />
                 <CompanyServiceAreasAccordion
                   companyName={company.name}
                   serviceAreas={company.service_areas}
