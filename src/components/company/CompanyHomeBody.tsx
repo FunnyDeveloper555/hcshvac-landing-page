@@ -145,6 +145,7 @@ const CompanyHomeBody = ({
 }: CompanyHomeBodyProps) => {
   const vs = BODY_VARIANT_STYLES[variant] || BODY_VARIANT_STYLES.standard;
   const hasLists =
+    Object.values(company.our_services || {}).some(Boolean) ||
     (company.service_areas?.length ?? 0) > 0 ||
     (company.hvac_brands_install?.length ?? 0) > 0 ||
     (company.hvac_brands_service?.length ?? 0) > 0 ||
