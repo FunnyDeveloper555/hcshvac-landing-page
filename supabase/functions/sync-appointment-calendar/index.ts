@@ -98,7 +98,11 @@ Deno.serve(async (req) => {
       return json({ success: true, deleted: true });
     }
 
-    const duration = Number((apt as any).duration_minutes) || 60;
+    const range = parseRange(apt.scheduled_time);
+    const startMin = range.start.h * 60 + range.start.m;
+    const endMin = range.end ? range.end.h * 60 + range.end.m : null;
+    const duration =
+      endMin !== null && endMin > startMin ? endMin - startMin : Number((apt as any).duration_minutes) || 60;
     const attendees: Array<{ email: string }> = [];
     if (apt.customer_email) attendees.push({ email: apt.customer_email });
     if (calRow?.email) attendees.push({ email: calRow.email });
