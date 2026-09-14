@@ -1,254 +1,207 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Building2, User, CalendarPlus, Mail, Plus, Search, Star, Grid3X3, List } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import {
+  Building2, User, CalendarPlus, Mail, Phone, Plus, Search, Loader2, Trash2, Pencil, CheckCircle2,
+} from "lucide-react";
 
-// Mock data - will be replaced with actual database data
-const mockCalendars = [
-  { id: "1", name: "Company Calendar 1", type: "company", email: "company1@email.com", color: "#3b82f6", is_active: true },
-  { id: "2", name: "Company Calendar 2", type: "company", email: "company2@email.com", color: "#10b981", is_active: true },
-  { id: "3", name: "Company Calendar 3", type: "company", email: "company3@email.com", color: "#f59e0b", is_active: true },
-  { id: "4", name: "Employee_Calendar", type: "employee", email: "employee1@email.com", color: "#8b5cf6", is_active: true },
-  { id: "5", name: "Employee_Calendar", type: "employee", email: "employee2@email.com", color: "#ec4899", is_active: true },
-  { id: "6", name: "Employee_Calendar", type: "employee", email: "employee3@email.com", color: "#06b6d4", is_active: false },
-];
+interface CalendarRow {
+  id: string;
+  calendar_name: string;
+  calendar_type: string;
+  email: string | null;
+  phone: string | null;
+  color: string;
+  google_calendar_id: string | null;
+  is_active: boolean;
+  company_id: string | null;
+  employee_id: string | null;
+}
 
 const CalendarList = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const filteredCalendars = mockCalendars.filter((cal) => {
-    const matchesSearch = cal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cal.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || cal.type === filterType;
+  const { data: calendars, isLoading } = useQuery({
+    queryKey: ["calendars"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("calendars")
+        .select("id, calendar_name, calendar_type, email, phone, color, google_calendar_id, is_active, company_id, employee_id")
+        .order("calendar_type")
+        .order("calendar_name");
+      if (error) throw error;
+      return data as CalendarRow[];
+    },
+    staleTime: 30_000,
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase.from("calendars").update({ is_active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendars"] });
+      toast.success("Calendar updated");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeCalendar = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("calendars").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendars"] });
+      toast.success("Calendar deleted");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const filtered = (calendars || []).filter((cal) => {
+    const q = searchTerm.toLowerCase();
+    const matchesSearch =
+      cal.calendar_name.toLowerCase().includes(q) || (cal.email || "").toLowerCase().includes(q);
+    const matchesType = filterType === "all" || cal.calendar_type === filterType;
     return matchesSearch && matchesType;
   });
 
-  const companyCalendars = filteredCalendars.filter(c => c.type === "company");
-  const employeeCalendars = filteredCalendars.filter(c => c.type === "employee");
+  const companyCalendars = filtered.filter((c) => c.calendar_type === "company");
+  const employeeCalendars = filtered.filter((c) => c.calendar_type === "employee");
 
-  const CalendarItem = ({ calendar }: { calendar: typeof mockCalendars[0] }) => (
-    <div 
-      className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg cursor-pointer transition-colors group"
-      onClick={() => navigate(`/admin/calendar/edit/${calendar.id}`)}
-    >
-      <div 
-        className="w-8 h-8 rounded flex items-center justify-center"
+  const CalendarItem = ({ calendar }: { calendar: CalendarRow }) => (
+    <div className="flex items-center gap-3 p-2.5 hover:bg-muted/50 rounded-md transition-colors group">
+      <div
+        className="w-8 h-8 rounded flex items-center justify-center shrink-0"
         style={{ backgroundColor: calendar.color + "20" }}
       >
-        {calendar.type === "company" ? (
+        {calendar.calendar_type === "company" ? (
           <Building2 className="h-4 w-4" style={{ color: calendar.color }} />
         ) : (
           <User className="h-4 w-4" style={{ color: calendar.color }} />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-sm truncate">{calendar.name}</span>
-          {!calendar.is_active && (
-            <Badge variant="secondary" className="text-xs">Inactive</Badge>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-medium text-sm">{calendar.calendar_name}</span>
+          {!calendar.is_active && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
+          {calendar.google_calendar_id && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <CheckCircle2 className="h-3 w-3 text-green-600" /> Google linked
+            </Badge>
           )}
         </div>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Mail className="h-3 w-3" />
-          <span className="truncate">{calendar.email}</span>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          {calendar.email && (
+            <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{calendar.email}</span>
+          )}
+          {calendar.phone && (
+            <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{calendar.phone}</span>
+          )}
         </div>
       </div>
-      <Star className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="flex items-center gap-1">
+        <Switch
+          checked={calendar.is_active}
+          onCheckedChange={(v) => toggleActive.mutate({ id: calendar.id, is_active: v })}
+        />
+        <Button variant="ghost" size="icon" className="h-8 w-8"
+          onClick={() => navigate(`/admin/calendar/add?edit=${calendar.id}`)}>
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+          onClick={() => { if (confirm(`Delete "${calendar.calendar_name}"?`)) removeCalendar.mutate(calendar.id); }}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 
   return (
-    <div className="space-y-6">
-      {/* Azure-style header */}
-      <div className="border-b pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-lg font-semibold">
-            <span className="text-muted-foreground">Calendar</span>
-            <span className="text-muted-foreground">|</span>
-            <span>Current Calendar</span>
-          </div>
-          <Button onClick={() => navigate("/admin/calendar/add")} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            New Calendar
-          </Button>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b pb-3">
+        <div className="flex items-center gap-2 text-lg font-semibold">
+          <CalendarPlus className="h-5 w-5 text-primary" />
+          Calendars
         </div>
+        <Button size="sm" onClick={() => navigate("/admin/calendar/add")}>
+          <Plus className="h-4 w-4 mr-1" /> New Calendar
+        </Button>
       </div>
 
-      {/* Filter bar - Azure style */}
-      <div className="flex items-center justify-between gap-4 py-2 border-b">
-        <div className="flex items-center gap-4">
-          <div className="relative max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Filter calendars..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-sm pl-9 w-64"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setFilterType("all")}
-              className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                filterType === "all" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilterType("company")}
-              className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                filterType === "company" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
-              }`}
-            >
-              Company
-            </button>
-            <button
-              onClick={() => setFilterType("employee")}
-              className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                filterType === "employee" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
-              }`}
-            >
-              Employee
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Detail view</span>
-          <Switch 
-            checked={viewMode === "list"} 
-            onCheckedChange={(checked) => setViewMode(checked ? "list" : "grid")} 
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search calendars..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-9 pl-8 text-sm"
           />
         </div>
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="h-9 w-[180px] text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="company">Company</SelectItem>
+            <SelectItem value="employee">Employee</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left sidebar - Azure categories style */}
-        <div className="lg:col-span-1">
+      {isLoading ? (
+        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+            No calendars yet. Create one to start syncing appointments.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="space-y-1">
-                <button 
-                  onClick={() => setFilterType("all")}
-                  className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-muted transition-colors ${filterType === "all" ? "bg-muted font-medium" : ""}`}
-                >
-                  All
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-muted transition-colors">
-                  Favorites
-                </button>
-                <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-muted transition-colors">
-                  Recents
-                </button>
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <p className="text-xs font-semibold text-muted-foreground mb-2 px-3">Categories</p>
-                <div className="space-y-1">
-                  <button 
-                    onClick={() => setFilterType("company")}
-                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-muted transition-colors flex items-center gap-2 ${filterType === "company" ? "bg-muted font-medium" : ""}`}
-                  >
-                    <Building2 className="h-4 w-4" />
-                    Company Calendars
-                  </button>
-                  <button 
-                    onClick={() => setFilterType("employee")}
-                    className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-muted transition-colors flex items-center gap-2 ${filterType === "employee" ? "bg-muted font-medium" : ""}`}
-                  >
-                    <User className="h-4 w-4" />
-                    Employee Calendars
-                  </button>
-                </div>
-              </div>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Building2 className="h-4 w-4" /> Company Calendars ({companyCalendars.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-1">
+              {companyCalendars.length === 0 && (
+                <p className="text-xs text-muted-foreground py-2">None</p>
+              )}
+              {companyCalendars.map((c) => <CalendarItem key={c.id} calendar={c} />)}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <User className="h-4 w-4" /> Employee Calendars ({employeeCalendars.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-1">
+              {employeeCalendars.length === 0 && (
+                <p className="text-xs text-muted-foreground py-2">None</p>
+              )}
+              {employeeCalendars.map((c) => <CalendarItem key={c.id} calendar={c} />)}
             </CardContent>
           </Card>
         </div>
-
-        {/* Main content - Calendar grid */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Company Calendars Section */}
-          {companyCalendars.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Company Calendars
-              </h3>
-              <Card>
-                <CardContent className="p-2">
-                  {viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1">
-                      {companyCalendars.map((calendar) => (
-                        <CalendarItem key={calendar.id} calendar={calendar} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {companyCalendars.map((calendar) => (
-                        <CalendarItem key={calendar.id} calendar={calendar} />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Employee Calendars Section */}
-          {employeeCalendars.length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Employee Calendars
-              </h3>
-              <Card>
-                <CardContent className="p-2">
-                  {viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1">
-                      {employeeCalendars.map((calendar) => (
-                        <CalendarItem key={calendar.id} calendar={calendar} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {employeeCalendars.map((calendar) => (
-                        <CalendarItem key={calendar.id} calendar={calendar} />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {filteredCalendars.length === 0 && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <CalendarPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No calendars found</p>
-                <Button 
-                  className="mt-4" 
-                  onClick={() => navigate("/admin/calendar/add")}
-                >
-                  Create New Calendar
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Give feedback section */}
-          <div className="pt-4 border-t">
-            <p className="text-sm font-medium">Give feedback</p>
-            <a href="#" className="text-sm text-primary hover:underline">Help improve this page</a>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
