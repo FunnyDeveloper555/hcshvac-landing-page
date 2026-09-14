@@ -179,6 +179,25 @@ export default function AppointmentsAdd() {
     },
   });
 
+  // The assigned company's checked "Our Services" drive the Select Visit Reason options.
+  const { data: companyOurServices } = useQuery({
+    queryKey: ["company-our-services", formData.company_id],
+    enabled: !!formData.company_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("our_services")
+        .eq("id", formData.company_id)
+        .maybeSingle();
+      if (error) throw error;
+      return ourServiceVisitReasons(parseOurServices((data as any)?.our_services));
+    },
+    staleTime: 30_000,
+  });
+
+  const visitReasonOptions = companyOurServices?.length ? companyOurServices : visitTypes;
+
+
   const { data: calendarOptions } = useQuery({
     queryKey: ["calendars-active"],
     queryFn: async () => {
