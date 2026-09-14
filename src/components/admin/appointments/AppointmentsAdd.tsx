@@ -316,17 +316,56 @@ export default function AppointmentsAdd() {
       company_id: data.company_id || null,
       occupied: data.occupied || null,
       equipment_location: data.equipment_location || null,
+      calendar_id: data.calendar_id || null,
+      assigned_employee_id: data.assigned_employee_id || null,
+      technician_phone: data.technician_phone || null,
+      duration_minutes: Number(data.duration_minutes) || 60,
+      sms_reminders_enabled: data.sms_reminders_enabled,
     };
+  };
+
+  // Push the appointment to Google Calendar (best effort — never blocks saving)
+  const syncCalendar = async (appointmentId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
+        body: { appointment_id: appointmentId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Added to the Google calendar");
+    } catch (e) {
+      console.error("Calendar sync failed:", e);
+      toast.error("Saved, but the calendar event could not be created");
+    }
+  };
+
+  // Immediate booking confirmation text to customer + technician
+  const sendBookingSms = async (appointmentId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("appointment-sms", {
+        body: { appointment_id: appointmentId, kind: "booking" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const sent = (data?.results || []).filter((r: any) => r.status === "sent").length;
+      if (sent > 0) toast.success(`Confirmation text sent (${sent})`);
+    } catch (e) {
+      console.error("Booking SMS failed:", e);
+      toast.error("Saved, but the confirmation text could not be sent");
+    }
   };
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const { data: result, error } = await supabase.from("appointments").insert(buildPayload(data)).select().single();
       if (error) throw error;
+      await syncCalendar(result.id);
+      if (data.sms_reminders_enabled) await sendBookingSms(result.id);
       return result;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
       toast.success("Appointment created successfully");
       logAction("create", "appointment", data.id, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
@@ -340,9 +379,11 @@ export default function AppointmentsAdd() {
     mutationFn: async (data: FormData) => {
       const { error } = await supabase.from("appointments").update(buildPayload(data)).eq("id", editId);
       if (error) throw error;
+      await syncCalendar(editId!);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
       toast.success("Appointment updated successfully");
       logAction("update", "appointment", editId!, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
