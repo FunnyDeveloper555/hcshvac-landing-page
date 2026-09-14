@@ -315,6 +315,10 @@ export default function AppointmentsCalendar() {
               {calendars?.map((c) => <SelectItem key={c.id} value={c.id}>{c.calendar_name}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" disabled={syncingAll} onClick={syncAllVisible}>
+            {syncingAll ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CalendarCheck className="h-4 w-4 mr-1" />}
+            Sync all shown
+          </Button>
           <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] })}>
             <RefreshCw className="h-4 w-4" />
           </Button>
