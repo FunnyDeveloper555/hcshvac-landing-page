@@ -1632,6 +1632,24 @@ const CompaniesAdd = () => {
 
       </TabsContent>
 
+      <TabsContent value="our-services" className="space-y-6 mt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Our Services</CardTitle>
+          <CardDescription>
+            Please check all &ldquo;Services your Company Performs&rdquo;.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OurServicesEditor
+            value={formData.our_services}
+            onChange={(next) => setFormData({ ...formData, our_services: next })}
+          />
+        </CardContent>
+      </Card>
+      </TabsContent>
+
+
       <TabsContent value="brands" className="space-y-6 mt-4">
       <Tabs defaultValue="brands-install" className="w-full">
         <TabsList className="w-full flex-wrap h-auto gap-1 bg-muted p-1">
