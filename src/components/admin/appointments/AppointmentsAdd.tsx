@@ -743,6 +743,94 @@ export default function AppointmentsAdd() {
                   </Select>
                 </div>
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Calendar</Label>
+                  <Select
+                    value={formData.calendar_id || undefined}
+                    onValueChange={(v) => {
+                      const cal = calendarOptions?.find((c) => c.id === v);
+                      setFormData((prev) => ({
+                        ...prev,
+                        calendar_id: v,
+                        technician_phone: prev.technician_phone || cal?.phone || "",
+                      }));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select calendar" /></SelectTrigger>
+                    <SelectContent>
+                      {calendarOptions?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.calendar_name}{c.google_calendar_id ? "" : " (not linked to Google)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Assigned Technician</Label>
+                  <Select
+                    value={formData.assigned_employee_id || undefined}
+                    onValueChange={(v) => {
+                      const emp = employeeOptions?.find((e) => e.id === v);
+                      setFormData((prev) => ({
+                        ...prev,
+                        assigned_employee_id: v,
+                        technician_phone: emp?.phone_number || prev.technician_phone,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select technician" /></SelectTrigger>
+                    <SelectContent>
+                      {employeeOptions?.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Duration</Label>
+                  <Select
+                    value={formData.duration_minutes}
+                    onValueChange={(v) => handleChange("duration_minutes", v)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["30", "45", "60", "90", "120", "180", "240"].map((m) => (
+                        <SelectItem key={m} value={m}>{Number(m) >= 60 ? `${Number(m) / 60} hr` : `${m} min`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="technician_phone">Technician Mobile (for text reminders)</Label>
+                  <Input
+                    id="technician_phone"
+                    value={formData.technician_phone}
+                    onChange={(e) => handleChange("technician_phone", e.target.value)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={formData.sms_reminders_enabled}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, sms_reminders_enabled: e.target.checked }))
+                      }
+                    />
+                    Send text confirmation now and a reminder 1 hour before
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Occupied + Equipment Location */}
