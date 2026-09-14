@@ -84,6 +84,7 @@ export default function AppointmentsCalendar() {
   const [companyFilter, setCompanyFilter] = useState<string>("all");
   const [calendarFilter, setCalendarFilter] = useState<string>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const { data: companies } = useQuery({
     queryKey: ["companies-active"],
@@ -171,6 +172,39 @@ export default function AppointmentsCalendar() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const syncAllVisible = async () => {
+    const start = view === "month" ? startOfWeek(startOfMonth(cursor)) : view === "week" ? startOfWeek(cursor) : cursor;
+    const end = view === "month" ? endOfWeek(endOfMonth(cursor)) : view === "week" ? endOfWeek(cursor) : cursor;
+    const startKey = format(start, "yyyy-MM-dd");
+    const endKey = format(end, "yyyy-MM-dd");
+    const targets = filtered.filter(
+      (a) => a.status !== "cancelled" && a.scheduled_date >= startKey && a.scheduled_date <= endKey,
+    );
+    if (targets.length === 0) {
+      toast.info("No appointments to send for this period");
+      return;
+    }
+    setSyncingAll(true);
+    let ok = 0;
+    const failures: string[] = [];
+    for (const apt of targets) {
+      try {
+        const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
+          body: { appointment_id: apt.id },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        ok++;
+      } catch (e) {
+        failures.push(`${apt.customer_name}: ${(e as Error).message}`);
+      }
+    }
+    setSyncingAll(false);
+    queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+    if (failures.length === 0) toast.success(`${ok} appointment${ok === 1 ? "" : "s"} added to Google Calendar`);
+    else toast.error(`${ok} added, ${failures.length} failed. ${failures[0]}`);
   };
 
   const sendReminder = async (apt: Appointment) => {
