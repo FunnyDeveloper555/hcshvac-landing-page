@@ -189,6 +189,7 @@ const CompaniesAdd = () => {
     gas_pipe_install: [] as string[],
     gas_pipe_service: [] as string[],
     gas_pipe_repair: [] as string[],
+    our_services: {} as OurServicesMap,
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
