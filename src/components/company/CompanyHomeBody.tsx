@@ -7,6 +7,7 @@ import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesIns
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
 import CompanyEquipmentListAccordion from "@/components/company/CompanyEquipmentListAccordion";
+import CompanyOurServicesAccordion from "@/components/company/CompanyOurServicesAccordion";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyContact from "@/components/company/CompanyContact";
