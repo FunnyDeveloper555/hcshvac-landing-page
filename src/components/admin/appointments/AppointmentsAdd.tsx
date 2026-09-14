@@ -65,6 +65,11 @@ interface FormData {
   company_id: string;
   occupied: string;
   equipment_location: string;
+  calendar_id: string;
+  assigned_employee_id: string;
+  technician_phone: string;
+  duration_minutes: string;
+  sms_reminders_enabled: boolean;
 }
 
 const initialFormData: FormData = {
@@ -84,6 +89,11 @@ const initialFormData: FormData = {
   company_id: "",
   occupied: "",
   equipment_location: "",
+  calendar_id: "",
+  assigned_employee_id: "",
+  technician_phone: "",
+  duration_minutes: "60",
+  sms_reminders_enabled: true,
 };
 
 const appointmentTypes: { value: AppointmentType; label: string }[] = [
