@@ -59,14 +59,19 @@ const statusColors: Record<AppointmentStatus, string> = {
 // 7 AM – 7 PM hour rows for the week/day grids
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 7);
 
+// Handles "9:30 AM", "9 AM", "12 Noon", "12 Midnight" and ranges like "1 PM to 3 PM"
 function timeToMinutes(t: string): number {
-  const m = (t || "").trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  const raw = (t || "").trim();
+  const first = raw.split(/\s+(?:to|-|–|—|through|until)\s+/i)[0]?.trim() || raw;
+  if (/noon/i.test(first)) return 12 * 60;
+  if (/midnight/i.test(first)) return 0;
+  const m = first.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?/);
   if (!m) return 9 * 60;
   let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
   const suf = m[3]?.toUpperCase();
-  if (suf === "PM" && h < 12) h += 12;
-  if (suf === "AM" && h === 12) h = 0;
+  if (suf === "P" && h < 12) h += 12;
+  if (suf === "A" && h === 12) h = 0;
   return h * 60 + min;
 }
 
