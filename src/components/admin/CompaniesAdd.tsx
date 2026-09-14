@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import EquipmentListEditor from "@/components/admin/companies/EquipmentListEditor";
 import { WATER_HEATER_BRANDS } from "@/lib/waterHeaterBrands";
+import OurServicesEditor from "@/components/admin/companies/OurServicesEditor";
+import { OurServicesMap, parseOurServices } from "@/lib/ourServices";
 
 
 interface City {
