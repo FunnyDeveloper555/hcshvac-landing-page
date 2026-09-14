@@ -179,6 +179,34 @@ export default function AppointmentsAdd() {
     },
   });
 
+  const { data: calendarOptions } = useQuery({
+    queryKey: ["calendars-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("calendars")
+        .select("id, calendar_name, calendar_type, company_id, employee_id, phone, google_calendar_id, is_active")
+        .eq("is_active", true)
+        .order("calendar_type")
+        .order("calendar_name");
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: employeeOptions } = useQuery({
+    queryKey: ["employees-for-appointment"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, first_name, last_name, phone_number")
+        .order("first_name");
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
+  });
+
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
   const [customerPickerOpen, setCustomerPickerOpen] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
