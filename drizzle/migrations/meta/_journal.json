@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789375378459,
+      "tag": "0000_calendars_and_appointment_reminders",
+      "breakpoints": true
+    }
+  ]
+}
