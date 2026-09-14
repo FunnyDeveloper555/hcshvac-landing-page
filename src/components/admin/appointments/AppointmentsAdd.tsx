@@ -16,6 +16,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { cn } from "@/lib/utils";
 import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
+import { ourServiceVisitReasons, parseOurServices } from "@/lib/ourServices";
 
 interface CustomerRecord {
   id: string;
@@ -178,6 +179,25 @@ export default function AppointmentsAdd() {
       return data;
     },
   });
+
+  // The assigned company's checked "Our Services" drive the Select Visit Reason options.
+  const { data: companyOurServices } = useQuery({
+    queryKey: ["company-our-services", formData.company_id],
+    enabled: !!formData.company_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("companies")
+        .select("our_services")
+        .eq("id", formData.company_id)
+        .maybeSingle();
+      if (error) throw error;
+      return ourServiceVisitReasons(parseOurServices((data as any)?.our_services));
+    },
+    staleTime: 30_000,
+  });
+
+  const visitReasonOptions = companyOurServices?.length ? companyOurServices : visitTypes;
+
 
   const { data: calendarOptions } = useQuery({
     queryKey: ["calendars-active"],
@@ -522,16 +542,16 @@ export default function AppointmentsAdd() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="visit_type">Visit Type *</Label>
+              <Label htmlFor="visit_type">Select Visit Reason *</Label>
               <Select
                 value={formData.visit_type || undefined}
                 onValueChange={(v) => handleChange("visit_type", v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select visit type" />
+                  <SelectValue placeholder="Select visit reason" />
                 </SelectTrigger>
-                <SelectContent>
-                  {visitTypes.map((vt) => (
+                <SelectContent className="max-h-72">
+                  {visitReasonOptions.map((vt) => (
                     <SelectItem key={vt} value={vt}>
                       {vt}
                     </SelectItem>

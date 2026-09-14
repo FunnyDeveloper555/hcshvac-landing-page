@@ -7,6 +7,7 @@ import PlumbingTypesInstallAccordion from "@/components/company/PlumbingTypesIns
 import PlumbingTypesServiceAccordion from "@/components/company/PlumbingTypesServiceAccordion";
 import PlumbingTypesRepairAccordion from "@/components/company/PlumbingTypesRepairAccordion";
 import CompanyEquipmentListAccordion from "@/components/company/CompanyEquipmentListAccordion";
+import CompanyOurServicesAccordion from "@/components/company/CompanyOurServicesAccordion";
 import CompanyPartnerAccordion from "@/components/company/CompanyPartnerAccordion";
 import CompanyCoupons from "@/components/company/CompanyCoupons";
 import CompanyContact from "@/components/company/CompanyContact";
@@ -144,6 +145,7 @@ const CompanyHomeBody = ({
 }: CompanyHomeBodyProps) => {
   const vs = BODY_VARIANT_STYLES[variant] || BODY_VARIANT_STYLES.standard;
   const hasLists =
+    Object.values(company.our_services || {}).some(Boolean) ||
     (company.service_areas?.length ?? 0) > 0 ||
     (company.hvac_brands_install?.length ?? 0) > 0 ||
     (company.hvac_brands_service?.length ?? 0) > 0 ||
@@ -162,6 +164,11 @@ const CompanyHomeBody = ({
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <Accordion type="multiple" className="w-full space-y-2">
+                <CompanyOurServicesAccordion
+                  companyName={company.name}
+                  ourServices={company.our_services}
+                  primaryColor={theme.colors.primary}
+                />
                 <CompanyServiceAreasAccordion
                   companyName={company.name}
                   serviceAreas={company.service_areas}

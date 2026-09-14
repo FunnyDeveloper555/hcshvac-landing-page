@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import EquipmentListEditor from "@/components/admin/companies/EquipmentListEditor";
 import { WATER_HEATER_BRANDS } from "@/lib/waterHeaterBrands";
+import OurServicesEditor from "@/components/admin/companies/OurServicesEditor";
+import { OurServicesMap, parseOurServices } from "@/lib/ourServices";
 
 
 interface City {
@@ -189,6 +191,7 @@ const CompaniesAdd = () => {
     gas_pipe_install: [] as string[],
     gas_pipe_service: [] as string[],
     gas_pipe_repair: [] as string[],
+    our_services: {} as OurServicesMap,
   });
   const [brandInput, setBrandInput] = useState("");
   const [serviceInput, setServiceInput] = useState("");
@@ -324,6 +327,7 @@ const CompaniesAdd = () => {
           gas_pipe_install: Array.isArray(companyData.gas_pipe_install) ? companyData.gas_pipe_install as string[] : [],
           gas_pipe_service: Array.isArray(companyData.gas_pipe_service) ? companyData.gas_pipe_service as string[] : [],
           gas_pipe_repair: Array.isArray(companyData.gas_pipe_repair) ? companyData.gas_pipe_repair as string[] : [],
+          our_services: parseOurServices((companyData as any).our_services),
         });
 
         // Restore the state / county / city selections from the saved service areas
@@ -973,6 +977,7 @@ const CompaniesAdd = () => {
       gas_pipe_install: formData.gas_pipe_install,
       gas_pipe_service: formData.gas_pipe_service,
       gas_pipe_repair: formData.gas_pipe_repair,
+      our_services: formData.our_services,
     };
 
     let error;
@@ -1032,6 +1037,7 @@ const CompaniesAdd = () => {
           <TabsTrigger value="general" className="flex-1 min-w-[110px]">General</TabsTrigger>
           <TabsTrigger value="contacts" className="flex-1 min-w-[110px]">Contacts</TabsTrigger>
           <TabsTrigger value="services" className="flex-1 min-w-[110px]">Services &amp; Areas</TabsTrigger>
+          <TabsTrigger value="our-services" className="flex-1 min-w-[110px]">Our Services</TabsTrigger>
           <TabsTrigger value="brands" className="flex-1 min-w-[110px]">Brands</TabsTrigger>
           <TabsTrigger value="equipment" className="flex-1 min-w-[110px]">Equipment</TabsTrigger>
           <TabsTrigger value="marketing" className="flex-1 min-w-[110px]">Marketing</TabsTrigger>
@@ -1625,6 +1631,24 @@ const CompaniesAdd = () => {
       </Card>
 
       </TabsContent>
+
+      <TabsContent value="our-services" className="space-y-6 mt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Our Services</CardTitle>
+          <CardDescription>
+            Please check all &ldquo;Services your Company Performs&rdquo;.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <OurServicesEditor
+            value={formData.our_services}
+            onChange={(next) => setFormData({ ...formData, our_services: next })}
+          />
+        </CardContent>
+      </Card>
+      </TabsContent>
+
 
       <TabsContent value="brands" className="space-y-6 mt-4">
       <Tabs defaultValue="brands-install" className="w-full">

@@ -1270,6 +1270,7 @@ export type Database = {
           is_active: boolean | null
           logo_url: string | null
           name: string
+          our_services: Json
           partner_companies: Json | null
           plumbing_equipment_install: Json | null
           plumbing_equipment_repair: Json | null
@@ -1348,6 +1349,7 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name: string
+          our_services?: Json
           partner_companies?: Json | null
           plumbing_equipment_install?: Json | null
           plumbing_equipment_repair?: Json | null
@@ -1426,6 +1428,7 @@ export type Database = {
           is_active?: boolean | null
           logo_url?: string | null
           name?: string
+          our_services?: Json
           partner_companies?: Json | null
           plumbing_equipment_install?: Json | null
           plumbing_equipment_repair?: Json | null
