@@ -65,6 +65,11 @@ interface FormData {
   company_id: string;
   occupied: string;
   equipment_location: string;
+  calendar_id: string;
+  assigned_employee_id: string;
+  technician_phone: string;
+  duration_minutes: string;
+  sms_reminders_enabled: boolean;
 }
 
 const initialFormData: FormData = {
@@ -84,6 +89,11 @@ const initialFormData: FormData = {
   company_id: "",
   occupied: "",
   equipment_location: "",
+  calendar_id: "",
+  assigned_employee_id: "",
+  technician_phone: "",
+  duration_minutes: "60",
+  sms_reminders_enabled: true,
 };
 
 const appointmentTypes: { value: AppointmentType; label: string }[] = [
@@ -167,6 +177,34 @@ export default function AppointmentsAdd() {
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: calendarOptions } = useQuery({
+    queryKey: ["calendars-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("calendars")
+        .select("id, calendar_name, calendar_type, company_id, employee_id, phone, google_calendar_id, is_active")
+        .eq("is_active", true)
+        .order("calendar_type")
+        .order("calendar_name");
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
+  });
+
+  const { data: employeeOptions } = useQuery({
+    queryKey: ["employees-for-appointment"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, first_name, last_name, phone_number")
+        .order("first_name");
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
   });
 
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
@@ -268,6 +306,11 @@ export default function AppointmentsAdd() {
         company_id: data.company_id || "",
         occupied: (data as any).occupied || "",
         equipment_location: (data as any).equipment_location || "",
+        calendar_id: (data as any).calendar_id || "",
+        assigned_employee_id: (data as any).assigned_employee_id || "",
+        technician_phone: (data as any).technician_phone || "",
+        duration_minutes: String((data as any).duration_minutes ?? 60),
+        sms_reminders_enabled: (data as any).sms_reminders_enabled !== false,
       });
       // Try to match an existing customer by phone
       const digits = (data.customer_phone || "").replace(/\D/g, "").slice(-10);
@@ -301,17 +344,56 @@ export default function AppointmentsAdd() {
       company_id: data.company_id || null,
       occupied: data.occupied || null,
       equipment_location: data.equipment_location || null,
+      calendar_id: data.calendar_id || null,
+      assigned_employee_id: data.assigned_employee_id || null,
+      technician_phone: data.technician_phone || null,
+      duration_minutes: Number(data.duration_minutes) || 60,
+      sms_reminders_enabled: data.sms_reminders_enabled,
     };
+  };
+
+  // Push the appointment to Google Calendar (best effort — never blocks saving)
+  const syncCalendar = async (appointmentId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
+        body: { appointment_id: appointmentId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Added to the Google calendar");
+    } catch (e) {
+      console.error("Calendar sync failed:", e);
+      toast.error("Saved, but the calendar event could not be created");
+    }
+  };
+
+  // Immediate booking confirmation text to customer + technician
+  const sendBookingSms = async (appointmentId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("appointment-sms", {
+        body: { appointment_id: appointmentId, kind: "booking" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const sent = (data?.results || []).filter((r: any) => r.status === "sent").length;
+      if (sent > 0) toast.success(`Confirmation text sent (${sent})`);
+    } catch (e) {
+      console.error("Booking SMS failed:", e);
+      toast.error("Saved, but the confirmation text could not be sent");
+    }
   };
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const { data: result, error } = await supabase.from("appointments").insert(buildPayload(data)).select().single();
       if (error) throw error;
+      await syncCalendar(result.id);
+      if (data.sms_reminders_enabled) await sendBookingSms(result.id);
       return result;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
       toast.success("Appointment created successfully");
       logAction("create", "appointment", data.id, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
@@ -325,9 +407,11 @@ export default function AppointmentsAdd() {
     mutationFn: async (data: FormData) => {
       const { error } = await supabase.from("appointments").update(buildPayload(data)).eq("id", editId);
       if (error) throw error;
+      await syncCalendar(editId!);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
       toast.success("Appointment updated successfully");
       logAction("update", "appointment", editId!, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
@@ -657,6 +741,94 @@ export default function AppointmentsAdd() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Calendar</Label>
+                  <Select
+                    value={formData.calendar_id || undefined}
+                    onValueChange={(v) => {
+                      const cal = calendarOptions?.find((c) => c.id === v);
+                      setFormData((prev) => ({
+                        ...prev,
+                        calendar_id: v,
+                        technician_phone: prev.technician_phone || cal?.phone || "",
+                      }));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select calendar" /></SelectTrigger>
+                    <SelectContent>
+                      {calendarOptions?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.calendar_name}{c.google_calendar_id ? "" : " (not linked to Google)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Assigned Technician</Label>
+                  <Select
+                    value={formData.assigned_employee_id || undefined}
+                    onValueChange={(v) => {
+                      const emp = employeeOptions?.find((e) => e.id === v);
+                      setFormData((prev) => ({
+                        ...prev,
+                        assigned_employee_id: v,
+                        technician_phone: emp?.phone_number || prev.technician_phone,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select technician" /></SelectTrigger>
+                    <SelectContent>
+                      {employeeOptions?.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Duration</Label>
+                  <Select
+                    value={formData.duration_minutes}
+                    onValueChange={(v) => handleChange("duration_minutes", v)}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["30", "45", "60", "90", "120", "180", "240"].map((m) => (
+                        <SelectItem key={m} value={m}>{Number(m) >= 60 ? `${Number(m) / 60} hr` : `${m} min`}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="technician_phone">Technician Mobile (for text reminders)</Label>
+                  <Input
+                    id="technician_phone"
+                    value={formData.technician_phone}
+                    onChange={(e) => handleChange("technician_phone", e.target.value)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={formData.sms_reminders_enabled}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, sms_reminders_enabled: e.target.checked }))
+                      }
+                    />
+                    Send text confirmation now and a reminder 1 hour before
+                  </label>
                 </div>
               </div>
             </div>

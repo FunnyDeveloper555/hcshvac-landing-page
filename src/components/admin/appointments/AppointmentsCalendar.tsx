@@ -1,26 +1,43 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
+import { toast } from "sonner";
+import {
+  Loader2, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CalendarCheck, Pencil, CheckCircle2,
+} from "lucide-react";
+import {
+  format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay,
+  addMonths, subMonths, startOfWeek, endOfWeek, addDays, subDays, addWeeks, subWeeks,
+} from "date-fns";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
+type ViewMode = "month" | "week" | "day";
 
 interface Appointment {
   id: string;
+  appointment_number: string | null;
   customer_name: string;
   customer_phone: string;
+  customer_address: string | null;
   appointment_type: AppointmentType;
   status: AppointmentStatus;
   scheduled_date: string;
   scheduled_time: string;
+  duration_minutes: number | null;
+  notes: string | null;
   company_id: string | null;
+  calendar_id: string | null;
+  google_event_id: string | null;
+  reminder_sms_sent_at: string | null;
+  booking_sms_sent_at: string | null;
   companies?: { name: string } | null;
+  calendars?: { calendar_name: string; color: string } | null;
 }
 
 const typeColors: Record<AppointmentType, string> = {
@@ -39,22 +56,51 @@ const statusColors: Record<AppointmentStatus, string> = {
   cancelled: "border-l-red-500",
 };
 
+// 7 AM – 7 PM hour rows for the week/day grids
+const HOURS = Array.from({ length: 13 }, (_, i) => i + 7);
+
+function timeToMinutes(t: string): number {
+  const m = (t || "").trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  if (!m) return 9 * 60;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const suf = m[3]?.toUpperCase();
+  if (suf === "PM" && h < 12) h += 12;
+  if (suf === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
 export default function AppointmentsCalendar() {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [view, setView] = useState<ViewMode>("month");
+  const [cursor, setCursor] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [calendarFilter, setCalendarFilter] = useState<string>("all");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data: companies } = useQuery({
     queryKey: ["companies-active"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("companies")
-        .select("id, name")
-        .eq("is_active", true)
-        .order("name");
+      const { data, error } = await supabase.from("companies").select("id, name").eq("is_active", true).order("name");
       if (error) throw error;
       return data;
     },
+  });
+
+  const { data: calendars } = useQuery({
+    queryKey: ["calendars-active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("calendars")
+        .select("id, calendar_name, calendar_type, company_id, employee_id, phone, google_calendar_id, is_active")
+        .eq("is_active", true)
+        .order("calendar_name");
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 30_000,
   });
 
   const { data: appointments, isLoading } = useQuery({
@@ -62,32 +108,139 @@ export default function AppointmentsCalendar() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("id, customer_name, customer_phone, appointment_type, status, scheduled_date, scheduled_time, company_id, companies(name)")
-        .order("scheduled_time", { ascending: true });
-      
+        .select(
+          "id, appointment_number, customer_name, customer_phone, customer_address, appointment_type, status, scheduled_date, scheduled_time, duration_minutes, notes, company_id, calendar_id, google_event_id, reminder_sms_sent_at, booking_sms_sent_at, companies(name), calendars(calendar_name, color)"
+        )
+        .order("scheduled_date", { ascending: true });
       if (error) throw error;
-      return data as Appointment[];
+      return data as unknown as Appointment[];
     },
+    staleTime: 15_000,
   });
 
-  const filteredAppointments = appointments?.filter(apt => {
-    if (companyFilter === "all") return true;
-    return apt.company_id === companyFilter;
-  });
+  const filtered = useMemo(
+    () =>
+      (appointments || []).filter((apt) => {
+        if (companyFilter !== "all" && apt.company_id !== companyFilter) return false;
+        if (calendarFilter !== "all" && apt.calendar_id !== calendarFilter) return false;
+        return true;
+      }),
+    [appointments, companyFilter, calendarFilter],
+  );
 
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-
-  const getAppointmentsForDay = (date: Date) => {
-    if (!filteredAppointments) return [];
-    const dateStr = format(date, "yyyy-MM-dd");
-    return filteredAppointments.filter(apt => apt.scheduled_date === dateStr);
+  const forDay = (date: Date) => {
+    const key = format(date, "yyyy-MM-dd");
+    return filtered
+      .filter((a) => a.scheduled_date === key)
+      .sort((a, b) => timeToMinutes(a.scheduled_time) - timeToMinutes(b.scheduled_time));
   };
 
-  const selectedDateAppointments = selectedDate ? getAppointmentsForDay(selectedDate) : [];
+  const goPrev = () =>
+    setCursor((c) => (view === "month" ? subMonths(c, 1) : view === "week" ? subWeeks(c, 1) : subDays(c, 1)));
+  const goNext = () =>
+    setCursor((c) => (view === "month" ? addMonths(c, 1) : view === "week" ? addWeeks(c, 1) : addDays(c, 1)));
+  const goToday = () => {
+    setCursor(new Date());
+    setSelectedDate(new Date());
+  };
+
+  const heading =
+    view === "month"
+      ? format(cursor, "MMMM yyyy")
+      : view === "week"
+        ? `${format(startOfWeek(cursor), "MMM d")} – ${format(endOfWeek(cursor), "MMM d, yyyy")}`
+        : format(cursor, "EEEE, MMMM d, yyyy");
+
+  const resync = async (apt: Appointment) => {
+    setBusyId(apt.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
+        body: { appointment_id: apt.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Google Calendar updated");
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+    } catch (e) {
+      toast.error("Calendar sync failed: " + (e as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const sendReminder = async (apt: Appointment) => {
+    setBusyId(apt.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("appointment-sms", {
+        body: { appointment_id: apt.id, kind: "reminder" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const sent = (data?.results || []).filter((r: any) => r.status === "sent").length;
+      toast.success(sent ? `Reminder text sent (${sent})` : "No mobile numbers to text");
+      queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+    } catch (e) {
+      toast.error("Text failed: " + (e as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const AppointmentCard = ({ apt, compact }: { apt: Appointment; compact?: boolean }) => (
+    <div className={`p-2.5 border-l-4 rounded-r-md bg-muted/30 ${statusColors[apt.status]}`}>
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <span className="font-medium text-sm">{apt.scheduled_time}</span>
+        <Badge
+          variant={apt.status === "open" ? "default" : apt.status === "cancelled" ? "destructive" : "secondary"}
+          className="text-xs"
+        >
+          {apt.status}
+        </Badge>
+      </div>
+      <div className="text-sm font-medium">{apt.customer_name}</div>
+      <div className="text-xs text-muted-foreground">{apt.customer_phone}</div>
+      {!compact && apt.customer_address && (
+        <div className="text-xs text-muted-foreground">{apt.customer_address}</div>
+      )}
+      {apt.companies?.name && <div className="text-xs text-muted-foreground mt-0.5">{apt.companies.name}</div>}
+      {apt.calendars?.calendar_name && (
+        <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+          <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: apt.calendars.color }} />
+          {apt.calendars.calendar_name}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+        <Badge variant="outline" className="text-xs capitalize">
+          {apt.appointment_type.replace("_", " ")}
+        </Badge>
+        {apt.google_event_id && (
+          <Badge variant="outline" className="text-xs gap-1">
+            <CheckCircle2 className="h-3 w-3 text-green-600" /> On calendar
+          </Badge>
+        )}
+        {apt.reminder_sms_sent_at && (
+          <Badge variant="outline" className="text-xs gap-1">
+            <MessageSquare className="h-3 w-3 text-green-600" /> Reminded
+          </Badge>
+        )}
+      </div>
+      <div className="flex items-center gap-1 mt-2">
+        <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
+          onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}>
+          <Pencil className="h-3 w-3 mr-1" /> Edit
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
+          disabled={busyId === apt.id} onClick={() => resync(apt)}>
+          {busyId === apt.id ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <CalendarCheck className="h-3 w-3 mr-1" />}
+          Sync
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
+          disabled={busyId === apt.id} onClick={() => sendReminder(apt)}>
+          <MessageSquare className="h-3 w-3 mr-1" /> Text
+        </Button>
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -97,104 +250,202 @@ export default function AppointmentsCalendar() {
     );
   }
 
+  const monthStart = startOfMonth(cursor);
+  const calendarDays = eachDayOfInterval({
+    start: startOfWeek(monthStart),
+    end: endOfWeek(endOfMonth(cursor)),
+  });
+  const weekDays = eachDayOfInterval({ start: startOfWeek(cursor), end: endOfWeek(cursor) });
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-2xl font-bold">Appointments Calendar</h2>
-        <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by company" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Companies</SelectItem>
-            {companies?.map((company) => (
-              <SelectItem key={company.id} value={company.id}>
-                {company.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="space-y-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <h2 className="text-xl font-bold">Appointments Calendar</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="h-9 w-[180px] text-sm"><SelectValue placeholder="Company" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All companies</SelectItem>
+              {companies?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={calendarFilter} onValueChange={setCalendarFilter}>
+            <SelectTrigger className="h-9 w-[180px] text-sm"><SelectValue placeholder="Calendar" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All calendars</SelectItem>
+              {calendars?.map((c) => <SelectItem key={c.id} value={c.id}>{c.calendar_name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] })}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
-        <Card className="lg:col-span-2">
-          <CardContent className="p-4">
-            {/* Calendar Header */}
-            <div className="flex items-center justify-between mb-4">
-              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <h3 className="text-lg font-semibold">
-                {format(currentMonth, "MMMM yyyy")}
-              </h3>
-              <Button variant="outline" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={goPrev}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-base font-semibold min-w-[220px] text-center">{heading}</h3>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={goNext}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={goToday}>Today</Button>
+        </div>
+        <div className="flex items-center rounded-md border p-0.5">
+          {(["month", "week", "day"] as ViewMode[]).map((v) => (
+            <Button
+              key={v}
+              size="sm"
+              variant={view === v ? "default" : "ghost"}
+              className="h-7 px-3 text-xs capitalize"
+              onClick={() => setView(v)}
+            >
+              {v}
+            </Button>
+          ))}
+        </div>
+      </div>
 
-            {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-                <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
-                  {day}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="xl:col-span-2">
+          <CardContent className="p-3">
+            {view === "month" && (
+              <>
+                <div className="grid grid-cols-7 gap-1 mb-1">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                    <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
+                  ))}
                 </div>
-              ))}
-            </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {calendarDays.map((day) => {
+                    const dayAppointments = forDay(day);
+                    const isCurrentMonth = isSameMonth(day, cursor);
+                    const isSelected = selectedDate && isSameDay(day, selectedDate);
+                    const isToday = isSameDay(day, new Date());
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        onClick={() => setSelectedDate(day)}
+                        onDoubleClick={() => { setCursor(day); setView("day"); }}
+                        className={`min-h-[74px] p-1 border rounded-md cursor-pointer transition-colors
+                          ${!isCurrentMonth ? "bg-muted/30 text-muted-foreground" : "bg-background"}
+                          ${isSelected ? "ring-2 ring-primary" : ""}
+                          ${isToday ? "border-primary" : "border-border"} hover:bg-accent/50`}
+                      >
+                        <div className={`text-xs font-medium mb-1 ${isToday ? "text-primary" : ""}`}>
+                          {format(day, "d")}
+                        </div>
+                        <div className="space-y-0.5">
+                          {dayAppointments.slice(0, 3).map((apt) => (
+                            <div
+                              key={apt.id}
+                              onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
+                              className={`text-[10px] truncate px-1 py-0.5 rounded text-white ${typeColors[apt.appointment_type]}`}
+                              title={`${apt.scheduled_time} — ${apt.customer_name}`}
+                            >
+                              {apt.scheduled_time} {apt.customer_name}
+                            </div>
+                          ))}
+                          {dayAppointments.length > 3 && (
+                            <div className="text-[10px] text-muted-foreground text-center">
+                              +{dayAppointments.length - 3} more
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1">
-              {calendarDays.map(day => {
-                const dayAppointments = getAppointmentsForDay(day);
-                const isCurrentMonth = isSameMonth(day, currentMonth);
-                const isSelected = selectedDate && isSameDay(day, selectedDate);
-                const isToday = isSameDay(day, new Date());
-                const openCount = dayAppointments.filter(a => a.status === "open").length;
-
-                return (
-                  <div
-                    key={day.toISOString()}
-                    onClick={() => setSelectedDate(day)}
-                    className={`
-                      min-h-[80px] p-1 border rounded-md cursor-pointer transition-colors
-                      ${!isCurrentMonth ? "bg-muted/30 text-muted-foreground" : "bg-background"}
-                      ${isSelected ? "ring-2 ring-primary" : ""}
-                      ${isToday ? "border-primary" : "border-border"}
-                      hover:bg-accent/50
-                    `}
-                  >
-                    <div className={`text-sm font-medium mb-1 ${isToday ? "text-primary" : ""}`}>
-                      {format(day, "d")}
+            {view === "week" && (
+              <div className="overflow-x-auto">
+                <div className="min-w-[720px]">
+                  <div className="grid grid-cols-[56px_repeat(7,1fr)] gap-1 mb-1">
+                    <div />
+                    {weekDays.map((d) => (
+                      <div
+                        key={d.toISOString()}
+                        onClick={() => setSelectedDate(d)}
+                        className={`text-center text-xs py-1 rounded cursor-pointer ${
+                          isSameDay(d, new Date()) ? "bg-primary/10 text-primary font-semibold" : "text-muted-foreground"
+                        }`}
+                      >
+                        {format(d, "EEE d")}
+                      </div>
+                    ))}
+                  </div>
+                  {HOURS.map((h) => (
+                    <div key={h} className="grid grid-cols-[56px_repeat(7,1fr)] gap-1">
+                      <div className="text-[10px] text-muted-foreground text-right pr-1 pt-1">
+                        {format(new Date(2000, 0, 1, h), "h a")}
+                      </div>
+                      {weekDays.map((d) => {
+                        const slot = forDay(d).filter(
+                          (a) => Math.floor(timeToMinutes(a.scheduled_time) / 60) === h,
+                        );
+                        return (
+                          <div
+                            key={d.toISOString() + h}
+                            className="min-h-[38px] border rounded-sm p-0.5 space-y-0.5 hover:bg-accent/40"
+                            onClick={() => setSelectedDate(d)}
+                          >
+                            {slot.map((apt) => (
+                              <div
+                                key={apt.id}
+                                onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
+                                className={`text-[10px] truncate px-1 py-0.5 rounded text-white cursor-pointer ${typeColors[apt.appointment_type]}`}
+                                title={`${apt.scheduled_time} — ${apt.customer_name}`}
+                              >
+                                {apt.scheduled_time} {apt.customer_name}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {dayAppointments.length > 0 && (
-                      <div className="space-y-0.5">
-                        {dayAppointments.slice(0, 3).map(apt => (
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {view === "day" && (
+              <div className="space-y-1">
+                {HOURS.map((h) => {
+                  const slot = forDay(cursor).filter(
+                    (a) => Math.floor(timeToMinutes(a.scheduled_time) / 60) === h,
+                  );
+                  return (
+                    <div key={h} className="grid grid-cols-[64px_1fr] gap-2">
+                      <div className="text-xs text-muted-foreground text-right pt-2">
+                        {format(new Date(2000, 0, 1, h), "h a")}
+                      </div>
+                      <div className="min-h-[46px] border rounded-md p-1 space-y-1">
+                        {slot.length === 0 && <div className="text-xs text-muted-foreground/60 px-1">—</div>}
+                        {slot.map((apt) => (
                           <div
                             key={apt.id}
-                            className={`text-xs truncate px-1 py-0.5 rounded ${typeColors[apt.appointment_type]} text-white`}
+                            onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}
+                            className="flex items-center gap-2 text-xs px-2 py-1.5 rounded cursor-pointer hover:bg-accent"
                           >
-                            {apt.scheduled_time}
+                            <span className={`w-2 h-2 rounded-full ${typeColors[apt.appointment_type]}`} />
+                            <span className="font-medium">{apt.scheduled_time}</span>
+                            <span>{apt.customer_name}</span>
+                            <span className="text-muted-foreground">{apt.customer_phone}</span>
+                            {apt.google_event_id && <CheckCircle2 className="h-3 w-3 text-green-600" />}
                           </div>
                         ))}
-                        {dayAppointments.length > 3 && (
-                          <div className="text-xs text-muted-foreground text-center">
-                            +{dayAppointments.length - 3} more
-                          </div>
-                        )}
                       </div>
-                    )}
-                    {openCount > 0 && (
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0 mt-1">
-                        {openCount} open
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
-            {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-3 text-xs">
+            <div className="mt-3 flex flex-wrap gap-3 text-[11px]">
               {Object.entries(typeColors).map(([type, color]) => (
                 <div key={type} className="flex items-center gap-1">
                   <div className={`w-3 h-3 rounded ${color}`} />
@@ -205,45 +456,27 @@ export default function AppointmentsCalendar() {
           </CardContent>
         </Card>
 
-        {/* Selected Day Details */}
         <Card>
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-4">
-              {selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : "Select a date"}
+          <CardContent className="p-3">
+            <h3 className="font-semibold text-sm mb-3">
+              {view === "day"
+                ? format(cursor, "EEEE, MMMM d, yyyy")
+                : selectedDate
+                  ? format(selectedDate, "EEEE, MMMM d, yyyy")
+                  : "Select a date"}
             </h3>
-            
-            {selectedDate && selectedDateAppointments.length === 0 && (
-              <p className="text-muted-foreground text-sm">No appointments scheduled</p>
-            )}
 
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">
-              {selectedDateAppointments.map(apt => (
-                <div
-                  key={apt.id}
-                  className={`p-3 border-l-4 rounded-r-md bg-muted/30 ${statusColors[apt.status]}`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-sm">{apt.scheduled_time}</span>
-                    <Badge
-                      variant={apt.status === "open" ? "default" : apt.status === "cancelled" ? "destructive" : "secondary"}
-                      className="text-xs"
-                    >
-                      {apt.status}
-                    </Badge>
-                  </div>
-                  <div className="text-sm font-medium">{apt.customer_name}</div>
-                  <div className="text-xs text-muted-foreground">{apt.customer_phone}</div>
-                  {apt.companies?.name && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Company: {apt.companies.name}
-                    </div>
-                  )}
-                  <Badge variant="outline" className="mt-2 text-xs capitalize">
-                    {apt.appointment_type.replace("_", " ")}
-                  </Badge>
+            {(() => {
+              const day = view === "day" ? cursor : selectedDate;
+              const list = day ? forDay(day) : [];
+              if (!day) return <p className="text-muted-foreground text-sm">Pick a day to see its jobs.</p>;
+              if (list.length === 0) return <p className="text-muted-foreground text-sm">No appointments scheduled</p>;
+              return (
+                <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+                  {list.map((apt) => <AppointmentCard key={apt.id} apt={apt} />)}
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </CardContent>
         </Card>
       </div>

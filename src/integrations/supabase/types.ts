@@ -614,10 +614,60 @@ export type Database = {
           },
         ]
       }
+      appointment_sms_log: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          message: string | null
+          phone: string
+          provider_sid: string | null
+          recipient_type: string
+          status: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind: string
+          message?: string | null
+          phone: string
+          provider_sid?: string | null
+          recipient_type: string
+          status?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          message?: string | null
+          phone?: string
+          provider_sid?: string | null
+          recipient_type?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_sms_log_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_number: string | null
           appointment_type: Database["public"]["Enums"]["appointment_type"]
+          assigned_employee_id: string | null
+          booking_sms_sent_at: string | null
+          calendar_id: string | null
           closed_at: string | null
           company_id: string | null
           confirmed_at: string | null
@@ -627,19 +677,28 @@ export type Database = {
           customer_email: string | null
           customer_name: string
           customer_phone: string
+          duration_minutes: number
           equipment_location: string | null
+          google_calendar_id: string | null
+          google_event_id: string | null
           id: string
           notes: string | null
           occupied: string | null
+          reminder_sms_sent_at: string | null
           scheduled_date: string
           scheduled_time: string
+          sms_reminders_enabled: boolean
           status: Database["public"]["Enums"]["appointment_status"]
+          technician_phone: string | null
           updated_at: string
           visit_type: string | null
         }
         Insert: {
           appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          assigned_employee_id?: string | null
+          booking_sms_sent_at?: string | null
+          calendar_id?: string | null
           closed_at?: string | null
           company_id?: string | null
           confirmed_at?: string | null
@@ -649,19 +708,28 @@ export type Database = {
           customer_email?: string | null
           customer_name: string
           customer_phone: string
+          duration_minutes?: number
           equipment_location?: string | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
           notes?: string | null
           occupied?: string | null
+          reminder_sms_sent_at?: string | null
           scheduled_date: string
           scheduled_time: string
+          sms_reminders_enabled?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
+          technician_phone?: string | null
           updated_at?: string
           visit_type?: string | null
         }
         Update: {
           appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          assigned_employee_id?: string | null
+          booking_sms_sent_at?: string | null
+          calendar_id?: string | null
           closed_at?: string | null
           company_id?: string | null
           confirmed_at?: string | null
@@ -671,17 +739,37 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string
+          duration_minutes?: number
           equipment_location?: string | null
+          google_calendar_id?: string | null
+          google_event_id?: string | null
           id?: string
           notes?: string | null
           occupied?: string | null
+          reminder_sms_sent_at?: string | null
           scheduled_date?: string
           scheduled_time?: string
+          sms_reminders_enabled?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
+          technician_phone?: string | null
           updated_at?: string
           visit_type?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_assigned_employee_id_fkey"
+            columns: ["assigned_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_calendar_id_fkey"
+            columns: ["calendar_id"]
+            isOneToOne: false
+            referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_company_id_fkey"
             columns: ["company_id"]
@@ -917,6 +1005,69 @@ export type Database = {
           zip?: string | null
         }
         Relationships: []
+      }
+      calendars: {
+        Row: {
+          calendar_name: string
+          calendar_type: string
+          color: string
+          company_id: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          employee_id: string | null
+          google_calendar_id: string | null
+          id: string
+          is_active: boolean
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          calendar_name: string
+          calendar_type?: string
+          color?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_id?: string | null
+          google_calendar_id?: string | null
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          calendar_name?: string
+          calendar_type?: string
+          color?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_id?: string | null
+          google_calendar_id?: string | null
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendars_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendars_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       call_logs_3cx: {
         Row: {
