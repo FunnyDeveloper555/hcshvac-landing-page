@@ -327,6 +327,7 @@ const CompaniesAdd = () => {
           gas_pipe_install: Array.isArray(companyData.gas_pipe_install) ? companyData.gas_pipe_install as string[] : [],
           gas_pipe_service: Array.isArray(companyData.gas_pipe_service) ? companyData.gas_pipe_service as string[] : [],
           gas_pipe_repair: Array.isArray(companyData.gas_pipe_repair) ? companyData.gas_pipe_repair as string[] : [],
+          our_services: parseOurServices((companyData as any).our_services),
         });
 
         // Restore the state / county / city selections from the saved service areas
