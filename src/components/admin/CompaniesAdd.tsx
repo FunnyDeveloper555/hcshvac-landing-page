@@ -1037,6 +1037,7 @@ const CompaniesAdd = () => {
           <TabsTrigger value="general" className="flex-1 min-w-[110px]">General</TabsTrigger>
           <TabsTrigger value="contacts" className="flex-1 min-w-[110px]">Contacts</TabsTrigger>
           <TabsTrigger value="services" className="flex-1 min-w-[110px]">Services &amp; Areas</TabsTrigger>
+          <TabsTrigger value="our-services" className="flex-1 min-w-[110px]">Our Services</TabsTrigger>
           <TabsTrigger value="brands" className="flex-1 min-w-[110px]">Brands</TabsTrigger>
           <TabsTrigger value="equipment" className="flex-1 min-w-[110px]">Equipment</TabsTrigger>
           <TabsTrigger value="marketing" className="flex-1 min-w-[110px]">Marketing</TabsTrigger>
