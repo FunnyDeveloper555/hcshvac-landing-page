@@ -278,6 +278,11 @@ export default function AppointmentsAdd() {
         company_id: data.company_id || "",
         occupied: (data as any).occupied || "",
         equipment_location: (data as any).equipment_location || "",
+        calendar_id: (data as any).calendar_id || "",
+        assigned_employee_id: (data as any).assigned_employee_id || "",
+        technician_phone: (data as any).technician_phone || "",
+        duration_minutes: String((data as any).duration_minutes ?? 60),
+        sms_reminders_enabled: (data as any).sms_reminders_enabled !== false,
       });
       // Try to match an existing customer by phone
       const digits = (data.customer_phone || "").replace(/\D/g, "").slice(-10);
