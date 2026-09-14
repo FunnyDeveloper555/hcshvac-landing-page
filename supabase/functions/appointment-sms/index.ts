@@ -33,13 +33,30 @@ function parseTime(t: string): { h: number; m: number } {
   return { h, m: min };
 }
 
-// Appointment times are stored without a timezone; treat them as US Central.
-const OFFSET_MINUTES = 5 * 60;
+// Appointment times are stored without a timezone; treat them as US Central,
+// resolving the real CST/CDT offset for that date instead of a fixed guess.
+const ZONE = "America/Chicago";
+
+function zoneOffsetMinutes(utc: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: ZONE,
+    hour12: false,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  }).formatToParts(utc);
+  const get = (t: string) => parseInt(parts.find((p) => p.type === t)!.value, 10);
+  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour") % 24, get("minute"), get("second"));
+  return (asUtc - utc.getTime()) / 60000; // negative west of Greenwich
+}
 
 function appointmentUtc(date: string, time: string): Date {
   const [y, mo, d] = date.split("-").map((v) => parseInt(v, 10));
   const { h, m } = parseTime(time);
-  return new Date(Date.UTC(y, mo - 1, d, h + Math.floor(OFFSET_MINUTES / 60), m));
+  const naive = Date.UTC(y, mo - 1, d, h, m);
+  // Two passes settle the offset even near a DST boundary.
+  let guess = new Date(naive - zoneOffsetMinutes(new Date(naive)) * 60000);
+  guess = new Date(naive - zoneOffsetMinutes(guess) * 60000);
+  return guess;
 }
 
 async function sendSms(to: string, body: string) {
