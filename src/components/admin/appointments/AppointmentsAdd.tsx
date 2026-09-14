@@ -542,16 +542,16 @@ export default function AppointmentsAdd() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="visit_type">Visit Type *</Label>
+              <Label htmlFor="visit_type">Select Visit Reason *</Label>
               <Select
                 value={formData.visit_type || undefined}
                 onValueChange={(v) => handleChange("visit_type", v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select visit type" />
+                  <SelectValue placeholder="Select visit reason" />
                 </SelectTrigger>
-                <SelectContent>
-                  {visitTypes.map((vt) => (
+                <SelectContent className="max-h-72">
+                  {visitReasonOptions.map((vt) => (
                     <SelectItem key={vt} value={vt}>
                       {vt}
                     </SelectItem>
