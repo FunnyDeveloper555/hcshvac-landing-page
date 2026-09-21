@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ interface BookingInvitation {
   company_id: string;
   invitation_type: string;
   customer_type: string;
+  link_type?: string | null;
   status: string;
   expires_at: string;
   companies: { name: string; company_phone: string | null; logo_url: string | null } | null;
@@ -66,6 +67,11 @@ interface FormData {
   lockBoxAccessCodes: string;
   emsMonitoring: string;
   
+  // Appointment request
+  visitReason: string;
+  preferredDate: string;
+  preferredTime: string;
+
   // Common
   initialVisitNotes: string;
 }
@@ -103,6 +109,9 @@ const initialFormData: FormData = {
   securityGateAccess: "",
   lockBoxAccessCodes: "",
   emsMonitoring: "",
+  visitReason: "",
+  preferredDate: "",
+  preferredTime: "",
   initialVisitNotes: "",
 };
 
