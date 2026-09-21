@@ -101,3 +101,45 @@ export function ourServiceVisitReasons(map: OurServicesMap): string[] {
 
 export const countOurServices = (map: OurServicesMap) =>
   Object.values(map).filter(Boolean).length;
+
+/** Maps the appointment_type enum to an "Our Services" property type. */
+export const APPOINTMENT_TYPE_PROPERTY: Record<string, string | null> = {
+  residential: "Residential",
+  commercial: "Commercial",
+  non_profit: "Commercial",
+  church: "Churches",
+  school: "Educational Facilities",
+  government: "Commercial",
+  other: null,
+};
+
+export interface VisitReasonOption {
+  /** Stored value (full label, includes property type). */
+  value: string;
+  /** Shown to the user (property type omitted when already known). */
+  label: string;
+}
+
+/**
+ * Visit reason options, optionally limited to a single property type so the
+ * list stays short (residential appointments only show residential services).
+ */
+export function ourServiceVisitOptions(
+  map: OurServicesMap,
+  property?: string | null,
+): VisitReasonOption[] {
+  const rows = listOurServices(map);
+  const scoped = property ? rows.filter((r) => r.property === property) : rows;
+  const use = scoped.length ? scoped : rows;
+  const seen = new Set<string>();
+  const out: VisitReasonOption[] = [];
+  for (const r of use) {
+    if (seen.has(r.label)) continue;
+    seen.add(r.label);
+    out.push({
+      value: r.label,
+      label: property && scoped.length ? `${r.equipment} - ${r.job}` : r.label,
+    });
+  }
+  return out;
+}

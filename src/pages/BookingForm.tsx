@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,13 +11,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building2, Home, CheckCircle } from "lucide-react";
+import { Loader2, Building2, Home, CheckCircle, CalendarDays } from "lucide-react";
+import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
 
 interface BookingInvitation {
   id: string;
   company_id: string;
   invitation_type: string;
   customer_type: string;
+  link_type?: string | null;
   status: string;
   expires_at: string;
   companies: { name: string; company_phone: string | null; logo_url: string | null } | null;
@@ -66,6 +68,11 @@ interface FormData {
   lockBoxAccessCodes: string;
   emsMonitoring: string;
   
+  // Appointment request
+  visitReason: string;
+  preferredDate: string;
+  preferredTime: string;
+
   // Common
   initialVisitNotes: string;
 }
@@ -103,8 +110,21 @@ const initialFormData: FormData = {
   securityGateAccess: "",
   lockBoxAccessCodes: "",
   emsMonitoring: "",
+  visitReason: "",
+  preferredDate: "",
+  preferredTime: "",
   initialVisitNotes: "",
 };
+
+const FALLBACK_VISIT_REASONS = [
+  "Service Repair",
+  "Estimate",
+  "Warranty",
+  "Inspection Report",
+  "Maintenance",
+  "Installation",
+  "Other",
+];
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -117,6 +137,7 @@ const US_STATES = [
 export default function BookingForm() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -155,6 +176,32 @@ export default function BookingForm() {
     }
   }, [invitation, token]);
 
+  // What this link is for: profile registration, appointment booking, or both.
+  const rawMode = (searchParams.get("mode") || invitation?.link_type || "registration").toLowerCase();
+  const mode: "registration" | "booking" | "both" =
+    rawMode === "booking" ? "booking" : rawMode === "both" ? "both" : "registration";
+  const wantsProfile = mode === "registration" || mode === "both";
+  const wantsBooking = mode === "booking" || mode === "both";
+
+  // Visit reasons come from the company's own "Our Services" selections,
+  // limited to this customer's property type.
+  const { data: visitReasonOptions } = useQuery({
+    queryKey: ["booking-visit-reasons", invitation?.company_id, invitation?.invitation_type],
+    enabled: !!invitation?.company_id && wantsBooking,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("our_services")
+        .eq("id", invitation!.company_id)
+        .maybeSingle();
+      const property =
+        APPOINTMENT_TYPE_PROPERTY[(invitation!.invitation_type || "residential").toLowerCase()] ?? null;
+      const options = ourServiceVisitOptions(parseOurServices((data as any)?.our_services), property);
+      return options.length ? options : FALLBACK_VISIT_REASONS.map((v) => ({ value: v, label: v }));
+    },
+    staleTime: 30_000,
+  });
+
   const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -163,39 +210,64 @@ export default function BookingForm() {
     mutationFn: async () => {
       if (!invitation) throw new Error("No invitation found");
 
-      // Create customer registration
-      const registrationData = {
-        email: formData.email,
-        phone: formData.phone,
-        ship_to_first_name: formData.shipToFirstName,
-        ship_to_last_name: formData.shipToLastName,
-        ship_to_business_name: formData.shipToBusinessName || null,
-        ship_to_address: formData.shipToAddress,
-        ship_to_suite_number: formData.shipToSuiteUnit || null,
-        ship_to_city: formData.shipToCity,
-        ship_to_state: formData.shipToState,
-        ship_to_zip_code: formData.shipToZipCode,
-        bill_to_same_as_ship_to: formData.billToSameAsShipTo,
-        bill_to_first_name: formData.billToSameAsShipTo ? null : formData.billToFirstName,
-        bill_to_last_name: formData.billToSameAsShipTo ? null : formData.billToLastName,
-        bill_to_address: formData.billToSameAsShipTo ? null : formData.billToAddress,
-        bill_to_suite_number: formData.billToSameAsShipTo ? null : formData.billToSuiteUnit,
-        bill_to_city: formData.billToSameAsShipTo ? null : formData.billToCity,
-        bill_to_state: formData.billToSameAsShipTo ? null : formData.billToState,
-        bill_to_zip_code: formData.billToSameAsShipTo ? null : formData.billToZipCode,
-        location_type: invitation.invitation_type,
-        residential_type: invitation.invitation_type === "residential" ? formData.residentialType : null,
-        residential_occupancy: invitation.invitation_type === "residential" ? formData.residentialOccupancy : null,
-        point_of_contact_name: invitation.invitation_type === "commercial" ? `${formData.pocFirstName} ${formData.pocLastName}` : null,
-        point_of_contact_phone: invitation.invitation_type === "commercial" ? formData.pocPhone : null,
-        point_of_contact_email: invitation.invitation_type === "commercial" ? formData.pocEmail : null,
-      };
+      if (wantsProfile) {
+        // Create customer registration
+        const registrationData = {
+          email: formData.email,
+          phone: formData.phone,
+          ship_to_first_name: formData.shipToFirstName,
+          ship_to_last_name: formData.shipToLastName,
+          ship_to_business_name: formData.shipToBusinessName || null,
+          ship_to_address: formData.shipToAddress,
+          ship_to_suite_number: formData.shipToSuiteUnit || null,
+          ship_to_city: formData.shipToCity,
+          ship_to_state: formData.shipToState,
+          ship_to_zip_code: formData.shipToZipCode,
+          bill_to_same_as_ship_to: formData.billToSameAsShipTo,
+          bill_to_first_name: formData.billToSameAsShipTo ? null : formData.billToFirstName,
+          bill_to_last_name: formData.billToSameAsShipTo ? null : formData.billToLastName,
+          bill_to_address: formData.billToSameAsShipTo ? null : formData.billToAddress,
+          bill_to_suite_number: formData.billToSameAsShipTo ? null : formData.billToSuiteUnit,
+          bill_to_city: formData.billToSameAsShipTo ? null : formData.billToCity,
+          bill_to_state: formData.billToSameAsShipTo ? null : formData.billToState,
+          bill_to_zip_code: formData.billToSameAsShipTo ? null : formData.billToZipCode,
+          location_type: invitation.invitation_type,
+          residential_type: invitation.invitation_type === "residential" ? formData.residentialType : null,
+          residential_occupancy: invitation.invitation_type === "residential" ? formData.residentialOccupancy : null,
+          point_of_contact_name: invitation.invitation_type === "commercial" ? `${formData.pocFirstName} ${formData.pocLastName}` : null,
+          point_of_contact_phone: invitation.invitation_type === "commercial" ? formData.pocPhone : null,
+          point_of_contact_email: invitation.invitation_type === "commercial" ? formData.pocEmail : null,
+        };
 
-      const { error: regError } = await supabase
-        .from("customer_registrations")
-        .insert(registrationData);
+        const { error: regError } = await supabase
+          .from("customer_registrations")
+          .insert(registrationData);
 
-      if (regError) throw regError;
+        if (regError) throw regError;
+      }
+
+      if (wantsBooking) {
+        const address = [
+          formData.shipToAddress,
+          formData.shipToSuiteUnit,
+          formData.shipToCity,
+          formData.shipToState,
+          formData.shipToZipCode,
+        ].filter(Boolean).join(", ");
+
+        const { error: apptError } = await supabase.rpc("submit_appointment_request", {
+          _token: token!,
+          _customer_name: `${formData.shipToFirstName} ${formData.shipToLastName}`.trim(),
+          _customer_phone: formData.phone,
+          _customer_email: formData.email,
+          _customer_address: address,
+          _visit_type: formData.visitReason,
+          _scheduled_date: formData.preferredDate,
+          _scheduled_time: formData.preferredTime,
+          _notes: formData.initialVisitNotes,
+        });
+        if (apptError) throw apptError;
+      }
 
       // Update invitation status via secure RPC
       if (token) {
@@ -209,7 +281,7 @@ export default function BookingForm() {
     onSuccess: () => {
       setIsSubmitted(true);
       toast({
-        title: "Registration Complete",
+        title: wantsBooking ? "Appointment Requested" : "Registration Complete",
         description: "Thank you! Your information has been submitted successfully.",
       });
     },
@@ -240,6 +312,15 @@ export default function BookingForm() {
       toast({
         title: "Required Fields",
         description: "Please fill in all Ship To address fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (wantsBooking && (!formData.visitReason || !formData.preferredDate || !formData.preferredTime)) {
+      toast({
+        title: "Required Fields",
+        description: "Please choose a reason for the visit and a preferred date and time",
         variant: "destructive",
       });
       return;
@@ -279,7 +360,7 @@ export default function BookingForm() {
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
-            <CardTitle className="text-green-700">Registration Complete!</CardTitle>
+            <CardTitle className="text-green-700">{wantsBooking ? "Request Received!" : "Registration Complete!"}</CardTitle>
             <CardDescription className="text-base">
               Thank you for completing your registration with {invitation.companies?.name}. 
               We will be in touch shortly to confirm your appointment.
@@ -332,7 +413,12 @@ export default function BookingForm() {
               {invitation.companies?.name}
             </CardTitle>
             <CardDescription>
-              {isResidential ? "Residential" : "Commercial"} Customer Registration
+              {isResidential ? "Residential" : "Commercial"}{" "}
+              {mode === "booking"
+                ? "Appointment Request"
+                : mode === "both"
+                  ? "Customer Registration & Appointment Request"
+                  : "Customer Registration"}
             </CardDescription>
             {invitation.companies?.company_phone && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -469,6 +555,8 @@ export default function BookingForm() {
             </CardContent>
           </Card>
 
+          {wantsProfile && (
+          <>
           {/* Bill To Section */}
           <Card className="mb-6">
             <CardHeader>
@@ -776,6 +864,65 @@ export default function BookingForm() {
               </Card>
             </>
           )}
+          </>
+          )}
+
+          {wantsBooking && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  Appointment Request
+                </CardTitle>
+                <CardDescription>
+                  Tell us what you need and when works best. We will confirm the final time with you.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Reason for Visit *</Label>
+                  <Select
+                    value={formData.visitReason || undefined}
+                    onValueChange={(v) => handleChange("visitReason", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {(visitReasonOptions ?? []).map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredDate">Preferred Date *</Label>
+                    <Input
+                      id="preferredDate"
+                      type="date"
+                      value={formData.preferredDate}
+                      min={new Date().toISOString().slice(0, 10)}
+                      onChange={(e) => handleChange("preferredDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredTime">Preferred Time *</Label>
+                    <Input
+                      id="preferredTime"
+                      type="time"
+                      value={formData.preferredTime}
+                      onChange={(e) => handleChange("preferredTime", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           {/* Notes */}
           <Card className="mb-6">
@@ -806,7 +953,11 @@ export default function BookingForm() {
                   Submitting...
                 </>
               ) : (
-                "Submit Registration"
+                mode === "booking"
+                  ? "Request Appointment"
+                  : mode === "both"
+                    ? "Submit & Request Appointment"
+                    : "Submit Registration"
               )}
             </Button>
           </div>

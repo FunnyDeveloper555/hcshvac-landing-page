@@ -816,6 +816,7 @@ export type Database = {
           expires_at: string | null
           id: string
           invitation_type: string
+          link_type: string | null
           notes: string | null
           opened_at: string | null
           recipient_email: string | null
@@ -833,6 +834,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invitation_type: string
+          link_type?: string | null
           notes?: string | null
           opened_at?: string | null
           recipient_email?: string | null
@@ -850,6 +852,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           invitation_type?: string
+          link_type?: string | null
           notes?: string | null
           opened_at?: string | null
           recipient_email?: string | null
@@ -5792,6 +5795,7 @@ export type Database = {
           expires_at: string | null
           id: string
           invitation_type: string
+          link_type: string | null
           notes: string | null
           opened_at: string | null
           recipient_email: string | null
@@ -5905,6 +5909,20 @@ export type Database = {
         }[]
       }
       recalc_cart_totals: { Args: { _cart_id: string }; Returns: undefined }
+      submit_appointment_request: {
+        Args: {
+          _customer_address: string
+          _customer_email: string
+          _customer_name: string
+          _customer_phone: string
+          _notes: string
+          _scheduled_date: string
+          _scheduled_time: string
+          _token: string
+          _visit_type: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "moderator"

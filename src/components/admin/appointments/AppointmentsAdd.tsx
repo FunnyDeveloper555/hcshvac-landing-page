@@ -16,7 +16,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { cn } from "@/lib/utils";
 import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
-import { ourServiceVisitReasons, parseOurServices } from "@/lib/ourServices";
+import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
 
 interface CustomerRecord {
   id: string;
@@ -191,12 +191,22 @@ export default function AppointmentsAdd() {
         .eq("id", formData.company_id)
         .maybeSingle();
       if (error) throw error;
-      return ourServiceVisitReasons(parseOurServices((data as any)?.our_services));
+      return parseOurServices((data as any)?.our_services);
     },
     staleTime: 30_000,
   });
 
-  const visitReasonOptions = companyOurServices?.length ? companyOurServices : visitTypes;
+  // Only show reasons that match the appointment's property type (residential
+  // appointments list residential services only).
+  const visitReasonOptions = useMemo(() => {
+    const property = APPOINTMENT_TYPE_PROPERTY[formData.appointment_type] ?? null;
+    const scoped = companyOurServices
+      ? ourServiceVisitOptions(companyOurServices, property)
+      : [];
+    if (scoped.length) return scoped;
+    return visitTypes.map((v) => ({ value: v, label: v }));
+  }, [companyOurServices, formData.appointment_type]);
+
 
 
   const { data: calendarOptions } = useQuery({
@@ -552,10 +562,11 @@ export default function AppointmentsAdd() {
                 </SelectTrigger>
                 <SelectContent className="max-h-72">
                   {visitReasonOptions.map((vt) => (
-                    <SelectItem key={vt} value={vt}>
-                      {vt}
+                    <SelectItem key={vt.value} value={vt.value}>
+                      {vt.label}
                     </SelectItem>
                   ))}
+
                 </SelectContent>
               </Select>
             </div>

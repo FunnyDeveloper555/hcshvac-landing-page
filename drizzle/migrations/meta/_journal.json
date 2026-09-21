@@ -15,6 +15,13 @@
       "when": 1789388846764,
       "tag": "0001_add_company_our_services",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789992294201,
+      "tag": "0002_add_submit_appointment_request_rpc",
+      "breakpoints": true
     }
   ]
 }
