@@ -16,7 +16,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { cn } from "@/lib/utils";
 import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
-import { ourServiceVisitReasons, parseOurServices } from "@/lib/ourServices";
+import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
 
 interface CustomerRecord {
   id: string;
