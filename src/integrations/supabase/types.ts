@@ -5909,6 +5909,20 @@ export type Database = {
         }[]
       }
       recalc_cart_totals: { Args: { _cart_id: string }; Returns: undefined }
+      submit_appointment_request: {
+        Args: {
+          _customer_address: string
+          _customer_email: string
+          _customer_name: string
+          _customer_phone: string
+          _notes: string
+          _scheduled_date: string
+          _scheduled_time: string
+          _token: string
+          _visit_type: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "moderator"
