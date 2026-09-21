@@ -360,7 +360,7 @@ export default function BookingForm() {
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
-            <CardTitle className="text-green-700">Registration Complete!</CardTitle>
+            <CardTitle className="text-green-700">{wantsBooking ? "Request Received!" : "Registration Complete!"}</CardTitle>
             <CardDescription className="text-base">
               Thank you for completing your registration with {invitation.companies?.name}. 
               We will be in touch shortly to confirm your appointment.
@@ -413,7 +413,12 @@ export default function BookingForm() {
               {invitation.companies?.name}
             </CardTitle>
             <CardDescription>
-              {isResidential ? "Residential" : "Commercial"} Customer Registration
+              {isResidential ? "Residential" : "Commercial"}{" "}
+              {mode === "booking"
+                ? "Appointment Request"
+                : mode === "both"
+                  ? "Customer Registration & Appointment Request"
+                  : "Customer Registration"}
             </CardDescription>
             {invitation.companies?.company_phone && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -948,7 +953,11 @@ export default function BookingForm() {
                   Submitting...
                 </>
               ) : (
-                "Submit Registration"
+                mode === "booking"
+                  ? "Request Appointment"
+                  : mode === "both"
+                    ? "Submit & Request Appointment"
+                    : "Submit Registration"
               )}
             </Button>
           </div>
