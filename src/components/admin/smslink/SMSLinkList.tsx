@@ -74,13 +74,13 @@ export default function SMSLinkList() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-2xl font-bold">SMS Link Invitations</h2>
           <p className="text-muted-foreground">Manage booking link invitations sent to customers</p>
         </div>
-        <Button onClick={() => navigate("/admin/sms-link/send")} className="flex items-center gap-2">
+        <Button onClick={() => navigate("/admin/sms-link/send")} className="flex w-full items-center gap-2 sm:w-auto">
           <Plus className="h-4 w-4" />
           Send New Link
         </Button>
@@ -96,76 +96,144 @@ export default function SMSLinkList() {
             Track the status of booking link invitations
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           {invitations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No invitations sent yet. Click "Send New Link" to get started.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Recipient</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Sent At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              <div className="space-y-3 md:hidden">
                 {invitations.map((invitation) => (
-                  <TableRow key={invitation.id}>
-                    <TableCell className="font-medium">
-                      {invitation.companies?.name || "Unknown"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {invitation.invitation_type}
-                      </Badge>
-                      <span className="ml-2 text-xs text-muted-foreground capitalize">
-                        ({invitation.customer_type})
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        {invitation.recipient_phone && (
-                          <div className="text-sm">{invitation.recipient_phone}</div>
-                        )}
-                        {invitation.recipient_email && (
-                          <div className="text-sm text-muted-foreground">{invitation.recipient_email}</div>
-                        )}
+                  <div key={invitation.id} className="space-y-3 rounded-md border p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-words font-semibold">
+                          {invitation.companies?.name || "Unknown"}
+                        </p>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <Badge variant="outline" className="capitalize">
+                            {invitation.invitation_type}
+                          </Badge>
+                          <span className="text-xs capitalize text-muted-foreground">
+                            {invitation.customer_type}
+                          </span>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(invitation.status)}</TableCell>
-                    <TableCell>
-                      {invitation.sent_at 
-                        ? format(new Date(invitation.sent_at), "MMM d, yyyy h:mm a")
-                        : "-"
-                      }
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyBookingLink(invitation.token)}
-                        >
-                          Copy Link
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(`/book/${invitation.token}`, "_blank")}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+                      <div className="shrink-0">{getStatusBadge(invitation.status)}</div>
+                    </div>
+
+                    <dl className="grid gap-2 text-sm">
+                      <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">Recipient</dt>
+                        <dd className="min-w-0">
+                          {invitation.recipient_phone && <div>{invitation.recipient_phone}</div>}
+                          {invitation.recipient_email && (
+                            <div className="break-all text-muted-foreground">{invitation.recipient_email}</div>
+                          )}
+                          {!invitation.recipient_phone && !invitation.recipient_email && "—"}
+                        </dd>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                      <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">Sent</dt>
+                        <dd>
+                          {invitation.sent_at
+                            ? format(new Date(invitation.sent_at), "MMM d, yyyy h:mm a")
+                            : "—"}
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="grid grid-cols-[1fr_auto] gap-2 border-t pt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyBookingLink(invitation.token)}
+                      >
+                        Copy Link
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Open booking link"
+                        aria-label="Open booking link"
+                        onClick={() => window.open(`/book/${invitation.token}`, "_blank")}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Recipient</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Sent At</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invitations.map((invitation) => (
+                      <TableRow key={invitation.id}>
+                        <TableCell className="font-medium">
+                          {invitation.companies?.name || "Unknown"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {invitation.invitation_type}
+                          </Badge>
+                          <span className="ml-2 text-xs text-muted-foreground capitalize">
+                            ({invitation.customer_type})
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {invitation.recipient_phone && (
+                              <div className="text-sm">{invitation.recipient_phone}</div>
+                            )}
+                            {invitation.recipient_email && (
+                              <div className="text-sm text-muted-foreground">{invitation.recipient_email}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(invitation.status)}</TableCell>
+                        <TableCell>
+                          {invitation.sent_at
+                            ? format(new Date(invitation.sent_at), "MMM d, yyyy h:mm a")
+                            : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyBookingLink(invitation.token)}
+                            >
+                              Copy Link
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Open booking link"
+                              aria-label="Open booking link"
+                              onClick={() => window.open(`/book/${invitation.token}`, "_blank")}
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
