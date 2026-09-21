@@ -210,39 +210,64 @@ export default function BookingForm() {
     mutationFn: async () => {
       if (!invitation) throw new Error("No invitation found");
 
-      // Create customer registration
-      const registrationData = {
-        email: formData.email,
-        phone: formData.phone,
-        ship_to_first_name: formData.shipToFirstName,
-        ship_to_last_name: formData.shipToLastName,
-        ship_to_business_name: formData.shipToBusinessName || null,
-        ship_to_address: formData.shipToAddress,
-        ship_to_suite_number: formData.shipToSuiteUnit || null,
-        ship_to_city: formData.shipToCity,
-        ship_to_state: formData.shipToState,
-        ship_to_zip_code: formData.shipToZipCode,
-        bill_to_same_as_ship_to: formData.billToSameAsShipTo,
-        bill_to_first_name: formData.billToSameAsShipTo ? null : formData.billToFirstName,
-        bill_to_last_name: formData.billToSameAsShipTo ? null : formData.billToLastName,
-        bill_to_address: formData.billToSameAsShipTo ? null : formData.billToAddress,
-        bill_to_suite_number: formData.billToSameAsShipTo ? null : formData.billToSuiteUnit,
-        bill_to_city: formData.billToSameAsShipTo ? null : formData.billToCity,
-        bill_to_state: formData.billToSameAsShipTo ? null : formData.billToState,
-        bill_to_zip_code: formData.billToSameAsShipTo ? null : formData.billToZipCode,
-        location_type: invitation.invitation_type,
-        residential_type: invitation.invitation_type === "residential" ? formData.residentialType : null,
-        residential_occupancy: invitation.invitation_type === "residential" ? formData.residentialOccupancy : null,
-        point_of_contact_name: invitation.invitation_type === "commercial" ? `${formData.pocFirstName} ${formData.pocLastName}` : null,
-        point_of_contact_phone: invitation.invitation_type === "commercial" ? formData.pocPhone : null,
-        point_of_contact_email: invitation.invitation_type === "commercial" ? formData.pocEmail : null,
-      };
+      if (wantsProfile) {
+        // Create customer registration
+        const registrationData = {
+          email: formData.email,
+          phone: formData.phone,
+          ship_to_first_name: formData.shipToFirstName,
+          ship_to_last_name: formData.shipToLastName,
+          ship_to_business_name: formData.shipToBusinessName || null,
+          ship_to_address: formData.shipToAddress,
+          ship_to_suite_number: formData.shipToSuiteUnit || null,
+          ship_to_city: formData.shipToCity,
+          ship_to_state: formData.shipToState,
+          ship_to_zip_code: formData.shipToZipCode,
+          bill_to_same_as_ship_to: formData.billToSameAsShipTo,
+          bill_to_first_name: formData.billToSameAsShipTo ? null : formData.billToFirstName,
+          bill_to_last_name: formData.billToSameAsShipTo ? null : formData.billToLastName,
+          bill_to_address: formData.billToSameAsShipTo ? null : formData.billToAddress,
+          bill_to_suite_number: formData.billToSameAsShipTo ? null : formData.billToSuiteUnit,
+          bill_to_city: formData.billToSameAsShipTo ? null : formData.billToCity,
+          bill_to_state: formData.billToSameAsShipTo ? null : formData.billToState,
+          bill_to_zip_code: formData.billToSameAsShipTo ? null : formData.billToZipCode,
+          location_type: invitation.invitation_type,
+          residential_type: invitation.invitation_type === "residential" ? formData.residentialType : null,
+          residential_occupancy: invitation.invitation_type === "residential" ? formData.residentialOccupancy : null,
+          point_of_contact_name: invitation.invitation_type === "commercial" ? `${formData.pocFirstName} ${formData.pocLastName}` : null,
+          point_of_contact_phone: invitation.invitation_type === "commercial" ? formData.pocPhone : null,
+          point_of_contact_email: invitation.invitation_type === "commercial" ? formData.pocEmail : null,
+        };
 
-      const { error: regError } = await supabase
-        .from("customer_registrations")
-        .insert(registrationData);
+        const { error: regError } = await supabase
+          .from("customer_registrations")
+          .insert(registrationData);
 
-      if (regError) throw regError;
+        if (regError) throw regError;
+      }
+
+      if (wantsBooking) {
+        const address = [
+          formData.shipToAddress,
+          formData.shipToSuiteUnit,
+          formData.shipToCity,
+          formData.shipToState,
+          formData.shipToZipCode,
+        ].filter(Boolean).join(", ");
+
+        const { error: apptError } = await supabase.rpc("submit_appointment_request", {
+          _token: token!,
+          _customer_name: `${formData.shipToFirstName} ${formData.shipToLastName}`.trim(),
+          _customer_phone: formData.phone,
+          _customer_email: formData.email,
+          _customer_address: address,
+          _visit_type: formData.visitReason,
+          _scheduled_date: formData.preferredDate,
+          _scheduled_time: formData.preferredTime,
+          _notes: formData.initialVisitNotes,
+        });
+        if (apptError) throw apptError;
+      }
 
       // Update invitation status via secure RPC
       if (token) {
@@ -256,7 +281,7 @@ export default function BookingForm() {
     onSuccess: () => {
       setIsSubmitted(true);
       toast({
-        title: "Registration Complete",
+        title: wantsBooking ? "Appointment Requested" : "Registration Complete",
         description: "Thank you! Your information has been submitted successfully.",
       });
     },
