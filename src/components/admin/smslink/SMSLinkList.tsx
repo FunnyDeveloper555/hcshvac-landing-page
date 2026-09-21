@@ -170,12 +170,12 @@ export default function SMSLinkList() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[18%]">Company</TableHead>
-                      <TableHead className="w-[14%]">Type</TableHead>
-                      <TableHead className="w-[24%]">Recipient</TableHead>
-                      <TableHead className="w-[10%]">Status</TableHead>
-                      <TableHead className="w-[16%] whitespace-nowrap">Sent At</TableHead>
-                      <TableHead className="w-[14%] whitespace-nowrap">Actions</TableHead>
+                      <TableHead className="w-[45%]">Company</TableHead>
+                      <TableHead className="w-[11%]">Type</TableHead>
+                      <TableHead className="w-[16%]">Recipient</TableHead>
+                      <TableHead className="w-[8%]">Status</TableHead>
+                      <TableHead className="w-[10%] whitespace-nowrap">Sent At</TableHead>
+                      <TableHead className="w-[10%] whitespace-nowrap">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
