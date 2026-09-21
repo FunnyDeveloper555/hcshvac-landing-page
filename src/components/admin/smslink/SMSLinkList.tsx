@@ -197,12 +197,17 @@ export default function SMSLinkList() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
-                            {invitation.invitation_type}
+                          <Badge variant={linkTypeConfig[invitation.link_type || ""]?.variant || "outline"}>
+                            {linkTypeConfig[invitation.link_type || ""]?.label || "Booking"}
                           </Badge>
-                          <span className="ml-2 text-xs text-muted-foreground capitalize">
-                            ({invitation.customer_type})
-                          </span>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <Badge variant="outline" className="capitalize">
+                              {invitation.invitation_type}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              ({invitation.customer_type})
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell className="break-all">
                           <div className="space-y-1">
