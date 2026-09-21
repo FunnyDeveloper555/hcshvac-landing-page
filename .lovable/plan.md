@@ -1,13 +1,14 @@
-# Fix: "Cannot read properties of null (reading 'useMemo')" crash
+# Mobile SMS Link List
 
-## Root cause
-The preview loaded two different Vite dependency prebundle versions (`?v=3f403847` and `?v=fc81e508`) at the same time. That created **two copies of React** in the browser — the second copy has a null internal dispatcher, so any hook call (e.g. `useMemo` inside a Radix/provider component) crashes the whole app. This is a stale `node_modules/.vite` cache issue, and the config has no `react` dedupe to guard against it.
+## Goal
+Make the SMS Link invitation list readable and usable on mobile without changing its desktop behavior.
 
-## Fix (small, config-only)
-1. **Clear the stale Vite cache** — delete `node_modules/.vite` and restart the dev server so all prebundles are rebuilt under one version hash.
-2. **Add `resolve.dedupe: ["react", "react-dom"]` to `vite.config.ts`** — forces every dependency to share a single React instance, preventing this class of crash from recurring when the cache gets mixed again.
+## Changes
+- Stack the page title and “Send New Link” action cleanly on narrow screens.
+- Replace the wide table with compact mobile invitation cards showing company, type, recipient, status, sent time, and actions.
+- Keep the existing table on tablet/desktop widths.
+- Ensure long phone numbers, emails, and action controls wrap without overflow.
 
-No source/component changes needed; no database changes.
-
-## Note on the previous plan
-The bulk photo upload plan for Site Profiles was set aside after rejection — happy to revisit or adjust it if you'd like.
+## Validation
+- Check the page at the current mobile-sized viewport and at desktop width.
+- Confirm Copy Link, Open Link, and Send New Link remain available.
