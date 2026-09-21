@@ -99,6 +99,7 @@ export default function SMSLinkSend() {
         .from("booking_invitations")
         .insert({
           company_id: formData.companyId,
+          link_type: formData.linkType,
           invitation_type: formData.invitationType,
           customer_type: formData.customerType,
           recipient_phone: formData.recipientPhone || null,
