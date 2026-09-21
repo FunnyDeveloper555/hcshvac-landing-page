@@ -11,6 +11,7 @@ import { MessageSquare, Plus, ExternalLink, Clock, CheckCircle, Send, Eye, XCirc
 interface BookingInvitation {
   id: string;
   company_id: string;
+  link_type?: string | null;
   invitation_type: string;
   customer_type: string;
   recipient_phone: string | null;
@@ -32,6 +33,12 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   opened: { label: "Opened", variant: "outline", icon: Eye },
   completed: { label: "Completed", variant: "default", icon: CheckCircle },
   expired: { label: "Expired", variant: "destructive", icon: XCircle },
+};
+
+const linkTypeConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  registration: { label: "Registration", variant: "secondary" },
+  booking: { label: "Booking", variant: "default" },
+  both: { label: "Registration + Booking", variant: "outline" },
 };
 
 export default function SMSLinkList() {
@@ -112,6 +119,9 @@ export default function SMSLinkList() {
                           {invitation.companies?.name || "Unknown"}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <Badge variant={linkTypeConfig[invitation.link_type || ""]?.variant || "outline"}>
+                            {linkTypeConfig[invitation.link_type || ""]?.label || "Booking"}
+                          </Badge>
                           <Badge variant="outline" className="capitalize">
                             {invitation.invitation_type}
                           </Badge>
@@ -187,12 +197,17 @@ export default function SMSLinkList() {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="capitalize">
-                            {invitation.invitation_type}
+                          <Badge variant={linkTypeConfig[invitation.link_type || ""]?.variant || "outline"}>
+                            {linkTypeConfig[invitation.link_type || ""]?.label || "Booking"}
                           </Badge>
-                          <span className="ml-2 text-xs text-muted-foreground capitalize">
-                            ({invitation.customer_type})
-                          </span>
+                          <div className="mt-1 flex items-center gap-1.5">
+                            <Badge variant="outline" className="capitalize">
+                              {invitation.invitation_type}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              ({invitation.customer_type})
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell className="break-all">
                           <div className="space-y-1">
