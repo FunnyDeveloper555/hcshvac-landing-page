@@ -119,6 +119,9 @@ export default function SMSLinkList() {
                           {invitation.companies?.name || "Unknown"}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <Badge variant={linkTypeConfig[invitation.link_type || ""]?.variant || "outline"}>
+                            {linkTypeConfig[invitation.link_type || ""]?.label || "Booking"}
+                          </Badge>
                           <Badge variant="outline" className="capitalize">
                             {invitation.invitation_type}
                           </Badge>
