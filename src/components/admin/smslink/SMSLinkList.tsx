@@ -167,7 +167,7 @@ export default function SMSLinkList() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <Table>
+                <Table className="min-w-[1000px] table-fixed">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[45%]">Company</TableHead>
@@ -182,7 +182,9 @@ export default function SMSLinkList() {
                     {invitations.map((invitation) => (
                       <TableRow key={invitation.id}>
                         <TableCell className="font-medium">
-                          {invitation.companies?.name || "Unknown"}
+                          <span className="block truncate" title={invitation.companies?.name || "Unknown"}>
+                            {invitation.companies?.name || "Unknown"}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="capitalize">
