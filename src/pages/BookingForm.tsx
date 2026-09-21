@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Building2, Home, CheckCircle, CalendarDays } from "lucide-react";
 import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
-import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
 
 interface BookingInvitation {
   id: string;
@@ -117,6 +116,16 @@ const initialFormData: FormData = {
   initialVisitNotes: "",
 };
 
+const FALLBACK_VISIT_REASONS = [
+  "Service Repair",
+  "Estimate",
+  "Warranty",
+  "Inspection Report",
+  "Maintenance",
+  "Installation",
+  "Other",
+];
+
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
   "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
@@ -188,7 +197,7 @@ export default function BookingForm() {
       const property =
         APPOINTMENT_TYPE_PROPERTY[(invitation!.invitation_type || "residential").toLowerCase()] ?? null;
       const options = ourServiceVisitOptions(parseOurServices((data as any)?.our_services), property);
-      return options.length ? options : VISIT_TYPES.map((v) => ({ value: v, label: v }));
+      return options.length ? options : FALLBACK_VISIT_REASONS.map((v) => ({ value: v, label: v }));
     },
     staleTime: 30_000,
   });
