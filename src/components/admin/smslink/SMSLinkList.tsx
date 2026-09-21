@@ -11,7 +11,7 @@ import { MessageSquare, Plus, ExternalLink, Clock, CheckCircle, Send, Eye, XCirc
 interface BookingInvitation {
   id: string;
   company_id: string;
-  link_type: string | null;
+  link_type?: string | null;
   invitation_type: string;
   customer_type: string;
   recipient_phone: string | null;
