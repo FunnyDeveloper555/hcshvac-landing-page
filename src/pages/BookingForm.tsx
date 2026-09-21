@@ -317,6 +317,15 @@ export default function BookingForm() {
       return;
     }
 
+    if (wantsBooking && (!formData.visitReason || !formData.preferredDate || !formData.preferredTime)) {
+      toast({
+        title: "Required Fields",
+        description: "Please choose a reason for the visit and a preferred date and time",
+        variant: "destructive",
+      });
+      return;
+    }
+
     submitMutation.mutate();
   };
 
