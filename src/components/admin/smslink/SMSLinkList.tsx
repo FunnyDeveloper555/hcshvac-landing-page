@@ -170,12 +170,12 @@ export default function SMSLinkList() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Recipient</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Sent At</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="w-[18%]">Company</TableHead>
+                      <TableHead className="w-[14%]">Type</TableHead>
+                      <TableHead className="w-[24%]">Recipient</TableHead>
+                      <TableHead className="w-[10%]">Status</TableHead>
+                      <TableHead className="w-[16%] whitespace-nowrap">Sent At</TableHead>
+                      <TableHead className="w-[14%] whitespace-nowrap">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -192,18 +192,18 @@ export default function SMSLinkList() {
                             ({invitation.customer_type})
                           </span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="break-all">
                           <div className="space-y-1">
                             {invitation.recipient_phone && (
-                              <div className="text-sm">{invitation.recipient_phone}</div>
+                              <div className="whitespace-nowrap text-sm">{invitation.recipient_phone}</div>
                             )}
                             {invitation.recipient_email && (
-                              <div className="text-sm text-muted-foreground">{invitation.recipient_email}</div>
+                              <div className="break-all text-sm text-muted-foreground">{invitation.recipient_email}</div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>{getStatusBadge(invitation.status)}</TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {invitation.sent_at
                             ? format(new Date(invitation.sent_at), "MMM d, yyyy h:mm a")
                             : "—"}
