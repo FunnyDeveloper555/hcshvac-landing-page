@@ -11,7 +11,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Building2, Home, CheckCircle } from "lucide-react";
+import { Loader2, Building2, Home, CheckCircle, CalendarDays } from "lucide-react";
+import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
+import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
 
 interface BookingInvitation {
   id: string;
@@ -126,6 +128,7 @@ const US_STATES = [
 export default function BookingForm() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -163,6 +166,32 @@ export default function BookingForm() {
         .then(() => console.log("Invitation marked as opened"));
     }
   }, [invitation, token]);
+
+  // What this link is for: profile registration, appointment booking, or both.
+  const rawMode = (searchParams.get("mode") || invitation?.link_type || "registration").toLowerCase();
+  const mode: "registration" | "booking" | "both" =
+    rawMode === "booking" ? "booking" : rawMode === "both" ? "both" : "registration";
+  const wantsProfile = mode === "registration" || mode === "both";
+  const wantsBooking = mode === "booking" || mode === "both";
+
+  // Visit reasons come from the company's own "Our Services" selections,
+  // limited to this customer's property type.
+  const { data: visitReasonOptions } = useQuery({
+    queryKey: ["booking-visit-reasons", invitation?.company_id, invitation?.invitation_type],
+    enabled: !!invitation?.company_id && wantsBooking,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("our_services")
+        .eq("id", invitation!.company_id)
+        .maybeSingle();
+      const property =
+        APPOINTMENT_TYPE_PROPERTY[(invitation!.invitation_type || "residential").toLowerCase()] ?? null;
+      const options = ourServiceVisitOptions(parseOurServices((data as any)?.our_services), property);
+      return options.length ? options : VISIT_TYPES.map((v) => ({ value: v, label: v }));
+    },
+    staleTime: 30_000,
+  });
 
   const handleChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
