@@ -550,6 +550,8 @@ export default function BookingForm() {
             </CardContent>
           </Card>
 
+          {wantsProfile && (
+          <>
           {/* Bill To Section */}
           <Card className="mb-6">
             <CardHeader>
@@ -857,6 +859,65 @@ export default function BookingForm() {
               </Card>
             </>
           )}
+          </>
+          )}
+
+          {wantsBooking && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  Appointment Request
+                </CardTitle>
+                <CardDescription>
+                  Tell us what you need and when works best. We will confirm the final time with you.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Reason for Visit *</Label>
+                  <Select
+                    value={formData.visitReason || undefined}
+                    onValueChange={(v) => handleChange("visitReason", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a reason" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {(visitReasonOptions ?? []).map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredDate">Preferred Date *</Label>
+                    <Input
+                      id="preferredDate"
+                      type="date"
+                      value={formData.preferredDate}
+                      min={new Date().toISOString().slice(0, 10)}
+                      onChange={(e) => handleChange("preferredDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredTime">Preferred Time *</Label>
+                    <Input
+                      id="preferredTime"
+                      type="time"
+                      value={formData.preferredTime}
+                      onChange={(e) => handleChange("preferredTime", e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           {/* Notes */}
           <Card className="mb-6">
