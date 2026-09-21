@@ -11,6 +11,7 @@ import { MessageSquare, Plus, ExternalLink, Clock, CheckCircle, Send, Eye, XCirc
 interface BookingInvitation {
   id: string;
   company_id: string;
+  link_type: string | null;
   invitation_type: string;
   customer_type: string;
   recipient_phone: string | null;
@@ -32,6 +33,12 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   opened: { label: "Opened", variant: "outline", icon: Eye },
   completed: { label: "Completed", variant: "default", icon: CheckCircle },
   expired: { label: "Expired", variant: "destructive", icon: XCircle },
+};
+
+const linkTypeConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  registration: { label: "Registration", variant: "secondary" },
+  booking: { label: "Booking", variant: "default" },
+  both: { label: "Registration + Booking", variant: "outline" },
 };
 
 export default function SMSLinkList() {
