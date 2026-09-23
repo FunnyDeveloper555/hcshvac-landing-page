@@ -145,14 +145,62 @@ export default function AppointmentsCalendar() {
     staleTime: 15_000,
   });
 
+  // Tickets and tasks with a date share the calendar with real appointments.
+  const { data: workItems } = useQuery({
+    queryKey: ["work-items-calendar"],
+    queryFn: async () => {
+      const [ticketsRes, tasksRes] = await Promise.all([
+        supabase
+          .from("tickets")
+          .select("id, ticket_number, subject, customer_name, customer_phone, status, scheduled_date, scheduled_time, expected_completion_date, duration_minutes, notes, calendar_id, google_event_id, assigned_team, calendars(calendar_name, color)")
+          .neq("status", "cancelled"),
+        supabase
+          .from("tasks")
+          .select("id, task_number, title, task_type, customer_name, location, status, scheduled_date, scheduled_time, due_date, duration_minutes, notes, calendar_id, google_event_id, assigned_team, calendars(calendar_name, color)")
+          .neq("status", "cancelled"),
+      ]);
+      if (ticketsRes.error) throw ticketsRes.error;
+      if (tasksRes.error) throw tasksRes.error;
+
+      const map = (row: Record<string, any>, kind: EntryKind): Appointment => ({
+        kind,
+        id: row.id,
+        appointment_number: kind === "ticket" ? row.ticket_number : row.task_number,
+        customer_name: kind === "ticket" ? row.subject : row.title,
+        customer_phone: row.customer_phone || row.customer_name || "",
+        customer_address: row.location || row.customer_name || null,
+        appointment_type: "other",
+        status: row.status === "completed" ? "closed" : "open",
+        scheduled_date: row.scheduled_date || row.expected_completion_date || row.due_date,
+        scheduled_time: row.scheduled_time || "9 AM",
+        duration_minutes: row.duration_minutes ?? 60,
+        notes: row.notes || null,
+        company_id: null,
+        calendar_id: row.calendar_id || null,
+        google_event_id: row.google_event_id || null,
+        reminder_sms_sent_at: null,
+        booking_sms_sent_at: null,
+        assigned_team: row.assigned_team || [],
+        companies: null,
+        calendars: row.calendars || null,
+      });
+
+      return [
+        ...(ticketsRes.data || []).map((r) => map(r as Record<string, any>, "ticket")),
+        ...(tasksRes.data || []).map((r) => map(r as Record<string, any>, "task")),
+      ].filter((e) => !!e.scheduled_date);
+    },
+    staleTime: 15_000,
+  });
+
   const filtered = useMemo(
     () =>
-      (appointments || []).filter((apt) => {
+      [...(appointments || []), ...(workItems || [])].filter((apt) => {
         if (companyFilter !== "all" && apt.company_id !== companyFilter) return false;
         if (calendarFilter !== "all" && apt.calendar_id !== calendarFilter) return false;
         return true;
       }),
-    [appointments, companyFilter, calendarFilter],
+    [appointments, workItems, companyFilter, calendarFilter],
   );
 
   const forDay = (date: Date) => {
