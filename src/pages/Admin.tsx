@@ -101,6 +101,11 @@ import InstallationsAdd from "@/components/admin/installations/InstallationsAdd"
 import InstallationsList from "@/components/admin/installations/InstallationsList";
 import InventoryAdd from "@/components/admin/inventory/InventoryAdd";
 import InventoryList from "@/components/admin/inventory/InventoryList";
+import TicketsAdd from "@/components/admin/workitems/TicketsAdd";
+import TasksAdd from "@/components/admin/workitems/TasksAdd";
+import WorkItemsList from "@/components/admin/workitems/WorkItemsList";
+import WorkItemsLogs from "@/components/admin/workitems/WorkItemsLogs";
+import WorkItemsBoard from "@/components/admin/workitems/WorkItemsBoard";
 
 
 
