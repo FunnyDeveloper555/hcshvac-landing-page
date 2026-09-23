@@ -33,7 +33,9 @@ type EntityType =
   | "content"
   | "content_metadata"
   | "gallery"
-  | "product_category";
+  | "product_category"
+  | "ticket"
+  | "task";
 
 type ActionType = 
   | "create" 
