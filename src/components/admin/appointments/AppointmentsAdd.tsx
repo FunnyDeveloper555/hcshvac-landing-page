@@ -68,9 +68,18 @@ interface FormData {
   equipment_location: string;
   calendar_id: string;
   assigned_employee_id: string;
+  assigned_team: TeamMember[];
   technician_phone: string;
   duration_minutes: string;
   sms_reminders_enabled: boolean;
+}
+
+interface TeamMemberOption {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string | null;
+  email_address: string | null;
 }
 
 const initialFormData: FormData = {
@@ -92,6 +101,7 @@ const initialFormData: FormData = {
   equipment_location: "",
   calendar_id: "",
   assigned_employee_id: "",
+  assigned_team: [],
   technician_phone: "",
   duration_minutes: "60",
   sms_reminders_enabled: true,
@@ -229,7 +239,7 @@ export default function AppointmentsAdd() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, phone_number")
+        .select("id, first_name, last_name, phone_number, email_address")
         .order("first_name");
       if (error) throw error;
       return data;
@@ -338,6 +348,7 @@ export default function AppointmentsAdd() {
         equipment_location: (data as any).equipment_location || "",
         calendar_id: (data as any).calendar_id || "",
         assigned_employee_id: (data as any).assigned_employee_id || "",
+        assigned_team: Array.isArray((data as any).assigned_team) ? ((data as any).assigned_team as TeamMember[]) : [],
         technician_phone: (data as any).technician_phone || "",
         duration_minutes: String((data as any).duration_minutes ?? 60),
         sms_reminders_enabled: (data as any).sms_reminders_enabled !== false,
@@ -358,6 +369,29 @@ export default function AppointmentsAdd() {
     setLoading(false);
   };
 
+  const toggleTeamMember = (emp: TeamMemberOption, checked: boolean) => {
+    setFormData((prev) => {
+      const team = checked
+        ? [
+            ...prev.assigned_team,
+            {
+              id: emp.id,
+              name: `${emp.first_name} ${emp.last_name}`.trim(),
+              phone: emp.phone_number || "",
+              email: emp.email_address || "",
+            },
+          ]
+        : prev.assigned_team.filter((m) => m.id !== emp.id);
+      const lead = team[0];
+      return {
+        ...prev,
+        assigned_team: team,
+        assigned_employee_id: lead?.id || "",
+        technician_phone: lead?.phone || (team.length ? prev.technician_phone : ""),
+      };
+    });
+  };
+
   const buildPayload = (data: FormData) => {
     const fullName = `${data.first_name.trim()} ${data.last_name.trim()}`.trim();
     const fullAddress = joinAddress(data);
@@ -376,6 +410,7 @@ export default function AppointmentsAdd() {
       equipment_location: data.equipment_location || null,
       calendar_id: data.calendar_id || null,
       assigned_employee_id: data.assigned_employee_id || null,
+      assigned_team: data.assigned_team,
       technician_phone: data.technician_phone || null,
       duration_minutes: Number(data.duration_minutes) || 60,
       sms_reminders_enabled: data.sms_reminders_enabled,
@@ -801,25 +836,31 @@ export default function AppointmentsAdd() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Assigned Technician</Label>
-                  <Select
-                    value={formData.assigned_employee_id || undefined}
-                    onValueChange={(v) => {
-                      const emp = employeeOptions?.find((e) => e.id === v);
-                      setFormData((prev) => ({
-                        ...prev,
-                        assigned_employee_id: v,
-                        technician_phone: emp?.phone_number || prev.technician_phone,
-                      }));
-                    }}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select technician" /></SelectTrigger>
-                    <SelectContent>
-                      {employeeOptions?.map((e) => (
-                        <SelectItem key={e.id} value={e.id}>{e.first_name} {e.last_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Assigned Team</Label>
+                  <div className="max-h-40 overflow-y-auto rounded-md border p-2 space-y-1">
+                    {(employeeOptions || []).length === 0 && (
+                      <p className="text-xs text-muted-foreground">No employees found</p>
+                    )}
+                    {(employeeOptions || []).map((e) => {
+                      const checked = formData.assigned_team.some((m) => m.id === e.id);
+                      return (
+                        <label key={e.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4"
+                            checked={checked}
+                            onChange={(ev) => toggleTeamMember(e as TeamMemberOption, ev.target.checked)}
+                          />
+                          {e.first_name} {e.last_name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {formData.assigned_team.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {formData.assigned_team.length} assigned — {formData.assigned_team.map((m) => m.name).join(", ")}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -840,7 +881,7 @@ export default function AppointmentsAdd() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="technician_phone">Technician Mobile (for text reminders)</Label>
+                  <Label htmlFor="technician_phone">Lead Technician Mobile (for text reminders)</Label>
                   <Input
                     id="technician_phone"
                     value={formData.technician_phone}
