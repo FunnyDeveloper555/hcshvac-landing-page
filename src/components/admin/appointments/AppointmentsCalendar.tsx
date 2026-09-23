@@ -18,7 +18,10 @@ type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 type ViewMode = "month" | "week" | "day";
 
+type EntryKind = "appointment" | "ticket" | "task";
+
 interface Appointment {
+  kind?: EntryKind;
   id: string;
   appointment_number: string | null;
   customer_name: string;
@@ -39,6 +42,19 @@ interface Appointment {
   companies?: { name: string } | null;
   calendars?: { calendar_name: string; color: string } | null;
 }
+
+const entryKind = (apt: Appointment): EntryKind => apt.kind || "appointment";
+
+// Tickets and tasks get their own colours so they stand out from real jobs.
+const entryColor = (apt: Appointment): string =>
+  entryKind(apt) === "ticket" ? "bg-rose-600" : entryKind(apt) === "task" ? "bg-indigo-600" : typeColors[apt.appointment_type];
+
+const entryPath = (apt: Appointment): string =>
+  entryKind(apt) === "ticket"
+    ? `/admin/tickets/add?id=${apt.id}`
+    : entryKind(apt) === "task"
+      ? `/admin/tasks/add?id=${apt.id}`
+      : `/admin/appointments/add?id=${apt.id}`;
 
 const teamNames = (apt: Appointment): string[] =>
   Array.isArray(apt.assigned_team)
