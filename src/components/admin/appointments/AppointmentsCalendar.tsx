@@ -288,9 +288,13 @@ export default function AppointmentsCalendar() {
   const sendReminder = async (apt: Appointment) => {
     setBusyId(apt.id);
     try {
-      const { data, error } = await supabase.functions.invoke("appointment-sms", {
-        body: { appointment_id: apt.id, kind: "reminder" },
-      });
+      const kind = entryKind(apt);
+      const { data, error } =
+        kind === "appointment"
+          ? await supabase.functions.invoke("appointment-sms", { body: { appointment_id: apt.id, kind: "reminder" } })
+          : await supabase.functions.invoke("workitem-notify", {
+              body: { item_type: kind, item_id: apt.id, action: "sms" },
+            });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const sent = (data?.results || []).filter((r: any) => r.status === "sent").length;
