@@ -229,13 +229,18 @@ export default function AppointmentsCalendar() {
   const resync = async (apt: Appointment) => {
     setBusyId(apt.id);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
-        body: { appointment_id: apt.id },
-      });
+      const kind = entryKind(apt);
+      const { data, error } =
+        kind === "appointment"
+          ? await supabase.functions.invoke("sync-appointment-calendar", { body: { appointment_id: apt.id } })
+          : await supabase.functions.invoke("workitem-notify", {
+              body: { item_type: kind, item_id: apt.id, action: "sync" },
+            });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success("Google Calendar updated");
       queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+      queryClient.invalidateQueries({ queryKey: ["work-items-calendar"] });
     } catch (e) {
       toast.error("Calendar sync failed: " + (e as Error).message);
     } finally {
