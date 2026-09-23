@@ -74,6 +74,13 @@ interface FormData {
   sms_reminders_enabled: boolean;
 }
 
+interface TeamMember {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+}
+
 interface TeamMemberOption {
   id: string;
   first_name: string;

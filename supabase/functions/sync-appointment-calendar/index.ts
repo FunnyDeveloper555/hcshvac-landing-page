@@ -106,16 +106,27 @@ Deno.serve(async (req) => {
     const attendees: Array<{ email: string }> = [];
     if (apt.customer_email) attendees.push({ email: apt.customer_email });
     if (calRow?.email) attendees.push({ email: calRow.email });
+    const crew: Array<{ name?: string; email?: string }> = Array.isArray((apt as any).assigned_team)
+      ? (apt as any).assigned_team
+      : [];
+    const crewNames = crew.map((m) => (m?.name || "").trim()).filter(Boolean);
+    for (const m of crew) {
+      const email = (m?.email || "").trim();
+      if (email && !attendees.some((a) => a.email.toLowerCase() === email.toLowerCase())) {
+        attendees.push({ email });
+      }
+    }
 
     const body = {
       summary: `${apt.visit_type ? apt.visit_type + " — " : ""}${apt.customer_name}${
         (apt as any).appointment_number ? ` (${(apt as any).appointment_number})` : ""
-      }`,
+      }${crewNames.length ? ` [${crewNames.join(", ")}]` : ""}`,
       description: [
         (apt as any).appointment_number ? `Appointment: ${(apt as any).appointment_number}` : "",
         `Customer: ${apt.customer_name}`,
         apt.customer_phone ? `Phone: ${apt.customer_phone}` : "",
         (apt as any).companies?.name ? `Company: ${(apt as any).companies.name}` : "",
+        crewNames.length ? `Team: ${crewNames.join(", ")}` : "",
         apt.notes ? `Notes: ${apt.notes}` : "",
       ].filter(Boolean).join("\n"),
       location: apt.customer_address || undefined,
