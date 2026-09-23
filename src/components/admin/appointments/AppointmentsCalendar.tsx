@@ -249,7 +249,11 @@ export default function AppointmentsCalendar() {
     const startKey = format(start, "yyyy-MM-dd");
     const endKey = format(end, "yyyy-MM-dd");
     const targets = filtered.filter(
-      (a) => a.status !== "cancelled" && a.scheduled_date >= startKey && a.scheduled_date <= endKey,
+      (a) =>
+        entryKind(a) === "appointment" &&
+        a.status !== "cancelled" &&
+        a.scheduled_date >= startKey &&
+        a.scheduled_date <= endKey,
     );
     if (targets.length === 0) {
       toast.info("No appointments to send for this period");
@@ -325,7 +329,7 @@ export default function AppointmentsCalendar() {
       )}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
         <Badge variant="outline" className="text-xs capitalize">
-          {apt.appointment_type.replace("_", " ")}
+          {entryKind(apt) === "appointment" ? apt.appointment_type.replace("_", " ") : entryKind(apt)}
         </Badge>
         {apt.google_event_id && (
           <Badge variant="outline" className="text-xs gap-1">
@@ -340,7 +344,7 @@ export default function AppointmentsCalendar() {
       </div>
       <div className="flex items-center gap-1 mt-2">
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
-          onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}>
+          onClick={() => navigate(entryPath(apt))}>
           <Pencil className="h-3 w-3 mr-1" /> Edit
         </Button>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
@@ -459,8 +463,8 @@ export default function AppointmentsCalendar() {
                           {dayAppointments.slice(0, 3).map((apt) => (
                             <div
                               key={apt.id}
-                              onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
-                              className={`text-[10px] truncate px-1 py-0.5 rounded text-white ${typeColors[apt.appointment_type]}`}
+                              onClick={(e) => { e.stopPropagation(); navigate(entryPath(apt)); }}
+                              className={`text-[10px] truncate px-1 py-0.5 rounded text-white ${entryColor(apt)}`}
                               title={`${apt.scheduled_time} — ${apt.customer_name}`}
                             >
                               {apt.scheduled_time} {apt.customer_name}
@@ -514,8 +518,8 @@ export default function AppointmentsCalendar() {
                             {slot.map((apt) => (
                               <div
                                 key={apt.id}
-                                onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
-                                className={`text-[10px] truncate px-1 py-0.5 rounded text-white cursor-pointer ${typeColors[apt.appointment_type]}`}
+                                onClick={(e) => { e.stopPropagation(); navigate(entryPath(apt)); }}
+                                className={`text-[10px] truncate px-1 py-0.5 rounded text-white cursor-pointer ${entryColor(apt)}`}
                                 title={`${apt.scheduled_time} — ${apt.customer_name}`}
                               >
                                 {apt.scheduled_time} {apt.customer_name}
@@ -546,10 +550,10 @@ export default function AppointmentsCalendar() {
                         {slot.map((apt) => (
                           <div
                             key={apt.id}
-                            onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}
+                            onClick={() => navigate(entryPath(apt))}
                             className="flex items-center gap-2 text-xs px-2 py-1.5 rounded cursor-pointer hover:bg-accent"
                           >
-                            <span className={`w-2 h-2 rounded-full ${typeColors[apt.appointment_type]}`} />
+                            <span className={`w-2 h-2 rounded-full ${entryColor(apt)}`} />
                             <span className="font-medium">{apt.scheduled_time}</span>
                             <span>{apt.customer_name}</span>
                             <span className="text-muted-foreground">{apt.customer_phone}</span>
