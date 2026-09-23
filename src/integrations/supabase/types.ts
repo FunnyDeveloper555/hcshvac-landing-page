@@ -5607,6 +5607,201 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_employee_id: string | null
+          assigned_team: Json
+          calendar_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          customer_id: string | null
+          customer_name: string | null
+          due_date: string | null
+          duration_minutes: number | null
+          google_event_id: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          reminder_sent_at: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          send_sms_reminder: boolean
+          status: string
+          task_number: string | null
+          task_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_employee_id?: string | null
+          assigned_team?: Json
+          calendar_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          due_date?: string | null
+          duration_minutes?: number | null
+          google_event_id?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          reminder_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          send_sms_reminder?: boolean
+          status?: string
+          task_number?: string | null
+          task_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_employee_id?: string | null
+          assigned_team?: Json
+          calendar_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          due_date?: string | null
+          duration_minutes?: number | null
+          google_event_id?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          reminder_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          send_sms_reminder?: boolean
+          status?: string
+          task_number?: string | null
+          task_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_calendar_id_fkey"
+            columns: ["calendar_id"]
+            isOneToOne: false
+            referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_employee_id: string | null
+          assigned_team: Json
+          calendar_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          duration_minutes: number | null
+          expected_completion_date: string | null
+          google_event_id: string | null
+          id: string
+          notes: string | null
+          priority: string
+          reason: string | null
+          reminder_sent_at: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          send_sms_reminder: boolean
+          status: string
+          subject: string
+          ticket_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_employee_id?: string | null
+          assigned_team?: Json
+          calendar_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          duration_minutes?: number | null
+          expected_completion_date?: string | null
+          google_event_id?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          reason?: string | null
+          reminder_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          send_sms_reminder?: boolean
+          status?: string
+          subject: string
+          ticket_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_employee_id?: string | null
+          assigned_team?: Json
+          calendar_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          duration_minutes?: number | null
+          expected_completion_date?: string | null
+          google_event_id?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          reason?: string | null
+          reminder_sent_at?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          send_sms_reminder?: boolean
+          status?: string
+          subject?: string
+          ticket_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_calendar_id_fkey"
+            columns: ["calendar_id"]
+            isOneToOne: false
+            referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_group_members: {
         Row: {
           created_at: string

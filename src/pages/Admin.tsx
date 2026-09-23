@@ -101,6 +101,11 @@ import InstallationsAdd from "@/components/admin/installations/InstallationsAdd"
 import InstallationsList from "@/components/admin/installations/InstallationsList";
 import InventoryAdd from "@/components/admin/inventory/InventoryAdd";
 import InventoryList from "@/components/admin/inventory/InventoryList";
+import TicketsAdd from "@/components/admin/workitems/TicketsAdd";
+import TasksAdd from "@/components/admin/workitems/TasksAdd";
+import WorkItemsList from "@/components/admin/workitems/WorkItemsList";
+import WorkItemsLogs from "@/components/admin/workitems/WorkItemsLogs";
+import WorkItemsBoard from "@/components/admin/workitems/WorkItemsBoard";
 
 
 
@@ -297,6 +302,13 @@ const Admin = () => {
               <Route path="/inventory/add" element={<InventoryAdd />} />
               <Route path="/inventory/receiving" element={<InventoryList mode="receiving" />} />
               <Route path="/inventory/history" element={<InventoryList mode="history" />} />
+              <Route path="/tickets/add" element={<TicketsAdd />} />
+              <Route path="/tickets/list" element={<WorkItemsList kind="ticket" />} />
+              <Route path="/tasks/add" element={<TasksAdd />} />
+              <Route path="/tasks/list" element={<WorkItemsList kind="task" />} />
+              <Route path="/work-items/board" element={<WorkItemsBoard />} />
+              <Route path="/logs/tickets" element={<WorkItemsLogs kind="ticket" />} />
+              <Route path="/logs/tasks" element={<WorkItemsLogs kind="task" />} />
             </Routes>
 
             </div>

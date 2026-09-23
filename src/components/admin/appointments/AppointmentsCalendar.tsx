@@ -18,7 +18,10 @@ type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
 type ViewMode = "month" | "week" | "day";
 
+type EntryKind = "appointment" | "ticket" | "task";
+
 interface Appointment {
+  kind?: EntryKind;
   id: string;
   appointment_number: string | null;
   customer_name: string;
@@ -39,6 +42,19 @@ interface Appointment {
   companies?: { name: string } | null;
   calendars?: { calendar_name: string; color: string } | null;
 }
+
+const entryKind = (apt: Appointment): EntryKind => apt.kind || "appointment";
+
+// Tickets and tasks get their own colours so they stand out from real jobs.
+const entryColor = (apt: Appointment): string =>
+  entryKind(apt) === "ticket" ? "bg-rose-600" : entryKind(apt) === "task" ? "bg-indigo-600" : typeColors[apt.appointment_type];
+
+const entryPath = (apt: Appointment): string =>
+  entryKind(apt) === "ticket"
+    ? `/admin/tickets/add?id=${apt.id}`
+    : entryKind(apt) === "task"
+      ? `/admin/tasks/add?id=${apt.id}`
+      : `/admin/appointments/add?id=${apt.id}`;
 
 const teamNames = (apt: Appointment): string[] =>
   Array.isArray(apt.assigned_team)
@@ -129,14 +145,62 @@ export default function AppointmentsCalendar() {
     staleTime: 15_000,
   });
 
+  // Tickets and tasks with a date share the calendar with real appointments.
+  const { data: workItems } = useQuery({
+    queryKey: ["work-items-calendar"],
+    queryFn: async () => {
+      const [ticketsRes, tasksRes] = await Promise.all([
+        supabase
+          .from("tickets")
+          .select("id, ticket_number, subject, customer_name, customer_phone, status, scheduled_date, scheduled_time, expected_completion_date, duration_minutes, notes, calendar_id, google_event_id, assigned_team, calendars(calendar_name, color)")
+          .neq("status", "cancelled"),
+        supabase
+          .from("tasks")
+          .select("id, task_number, title, task_type, customer_name, location, status, scheduled_date, scheduled_time, due_date, duration_minutes, notes, calendar_id, google_event_id, assigned_team, calendars(calendar_name, color)")
+          .neq("status", "cancelled"),
+      ]);
+      if (ticketsRes.error) throw ticketsRes.error;
+      if (tasksRes.error) throw tasksRes.error;
+
+      const map = (row: Record<string, any>, kind: EntryKind): Appointment => ({
+        kind,
+        id: row.id,
+        appointment_number: kind === "ticket" ? row.ticket_number : row.task_number,
+        customer_name: kind === "ticket" ? row.subject : row.title,
+        customer_phone: row.customer_phone || row.customer_name || "",
+        customer_address: row.location || row.customer_name || null,
+        appointment_type: "other",
+        status: row.status === "completed" ? "closed" : "open",
+        scheduled_date: row.scheduled_date || row.expected_completion_date || row.due_date,
+        scheduled_time: row.scheduled_time || "9 AM",
+        duration_minutes: row.duration_minutes ?? 60,
+        notes: row.notes || null,
+        company_id: null,
+        calendar_id: row.calendar_id || null,
+        google_event_id: row.google_event_id || null,
+        reminder_sms_sent_at: null,
+        booking_sms_sent_at: null,
+        assigned_team: row.assigned_team || [],
+        companies: null,
+        calendars: row.calendars || null,
+      });
+
+      return [
+        ...(ticketsRes.data || []).map((r) => map(r as Record<string, any>, "ticket")),
+        ...(tasksRes.data || []).map((r) => map(r as Record<string, any>, "task")),
+      ].filter((e) => !!e.scheduled_date);
+    },
+    staleTime: 15_000,
+  });
+
   const filtered = useMemo(
     () =>
-      (appointments || []).filter((apt) => {
+      [...(appointments || []), ...(workItems || [])].filter((apt) => {
         if (companyFilter !== "all" && apt.company_id !== companyFilter) return false;
         if (calendarFilter !== "all" && apt.calendar_id !== calendarFilter) return false;
         return true;
       }),
-    [appointments, companyFilter, calendarFilter],
+    [appointments, workItems, companyFilter, calendarFilter],
   );
 
   const forDay = (date: Date) => {
@@ -165,13 +229,18 @@ export default function AppointmentsCalendar() {
   const resync = async (apt: Appointment) => {
     setBusyId(apt.id);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-appointment-calendar", {
-        body: { appointment_id: apt.id },
-      });
+      const kind = entryKind(apt);
+      const { data, error } =
+        kind === "appointment"
+          ? await supabase.functions.invoke("sync-appointment-calendar", { body: { appointment_id: apt.id } })
+          : await supabase.functions.invoke("workitem-notify", {
+              body: { item_type: kind, item_id: apt.id, action: "sync" },
+            });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success("Google Calendar updated");
       queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
+      queryClient.invalidateQueries({ queryKey: ["work-items-calendar"] });
     } catch (e) {
       toast.error("Calendar sync failed: " + (e as Error).message);
     } finally {
@@ -185,7 +254,11 @@ export default function AppointmentsCalendar() {
     const startKey = format(start, "yyyy-MM-dd");
     const endKey = format(end, "yyyy-MM-dd");
     const targets = filtered.filter(
-      (a) => a.status !== "cancelled" && a.scheduled_date >= startKey && a.scheduled_date <= endKey,
+      (a) =>
+        entryKind(a) === "appointment" &&
+        a.status !== "cancelled" &&
+        a.scheduled_date >= startKey &&
+        a.scheduled_date <= endKey,
     );
     if (targets.length === 0) {
       toast.info("No appointments to send for this period");
@@ -215,9 +288,13 @@ export default function AppointmentsCalendar() {
   const sendReminder = async (apt: Appointment) => {
     setBusyId(apt.id);
     try {
-      const { data, error } = await supabase.functions.invoke("appointment-sms", {
-        body: { appointment_id: apt.id, kind: "reminder" },
-      });
+      const kind = entryKind(apt);
+      const { data, error } =
+        kind === "appointment"
+          ? await supabase.functions.invoke("appointment-sms", { body: { appointment_id: apt.id, kind: "reminder" } })
+          : await supabase.functions.invoke("workitem-notify", {
+              body: { item_type: kind, item_id: apt.id, action: "sms" },
+            });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const sent = (data?.results || []).filter((r: any) => r.status === "sent").length;
@@ -261,7 +338,7 @@ export default function AppointmentsCalendar() {
       )}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
         <Badge variant="outline" className="text-xs capitalize">
-          {apt.appointment_type.replace("_", " ")}
+          {entryKind(apt) === "appointment" ? apt.appointment_type.replace("_", " ") : entryKind(apt)}
         </Badge>
         {apt.google_event_id && (
           <Badge variant="outline" className="text-xs gap-1">
@@ -276,7 +353,7 @@ export default function AppointmentsCalendar() {
       </div>
       <div className="flex items-center gap-1 mt-2">
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
-          onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}>
+          onClick={() => navigate(entryPath(apt))}>
           <Pencil className="h-3 w-3 mr-1" /> Edit
         </Button>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs"
@@ -395,8 +472,8 @@ export default function AppointmentsCalendar() {
                           {dayAppointments.slice(0, 3).map((apt) => (
                             <div
                               key={apt.id}
-                              onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
-                              className={`text-[10px] truncate px-1 py-0.5 rounded text-white ${typeColors[apt.appointment_type]}`}
+                              onClick={(e) => { e.stopPropagation(); navigate(entryPath(apt)); }}
+                              className={`text-[10px] truncate px-1 py-0.5 rounded text-white ${entryColor(apt)}`}
                               title={`${apt.scheduled_time} — ${apt.customer_name}`}
                             >
                               {apt.scheduled_time} {apt.customer_name}
@@ -450,8 +527,8 @@ export default function AppointmentsCalendar() {
                             {slot.map((apt) => (
                               <div
                                 key={apt.id}
-                                onClick={(e) => { e.stopPropagation(); navigate(`/admin/appointments/add?id=${apt.id}`); }}
-                                className={`text-[10px] truncate px-1 py-0.5 rounded text-white cursor-pointer ${typeColors[apt.appointment_type]}`}
+                                onClick={(e) => { e.stopPropagation(); navigate(entryPath(apt)); }}
+                                className={`text-[10px] truncate px-1 py-0.5 rounded text-white cursor-pointer ${entryColor(apt)}`}
                                 title={`${apt.scheduled_time} — ${apt.customer_name}`}
                               >
                                 {apt.scheduled_time} {apt.customer_name}
@@ -482,10 +559,10 @@ export default function AppointmentsCalendar() {
                         {slot.map((apt) => (
                           <div
                             key={apt.id}
-                            onClick={() => navigate(`/admin/appointments/add?id=${apt.id}`)}
+                            onClick={() => navigate(entryPath(apt))}
                             className="flex items-center gap-2 text-xs px-2 py-1.5 rounded cursor-pointer hover:bg-accent"
                           >
-                            <span className={`w-2 h-2 rounded-full ${typeColors[apt.appointment_type]}`} />
+                            <span className={`w-2 h-2 rounded-full ${entryColor(apt)}`} />
                             <span className="font-medium">{apt.scheduled_time}</span>
                             <span>{apt.customer_name}</span>
                             <span className="text-muted-foreground">{apt.customer_phone}</span>
