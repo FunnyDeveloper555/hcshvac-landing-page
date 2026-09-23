@@ -36,9 +36,15 @@ interface Appointment {
   google_event_id: string | null;
   reminder_sms_sent_at: string | null;
   booking_sms_sent_at: string | null;
+  assigned_team?: Array<{ id?: string; name?: string; phone?: string; email?: string }> | null;
   companies?: { name: string } | null;
   calendars?: { calendar_name: string; color: string } | null;
 }
+
+const teamNames = (apt: Appointment): string[] =>
+  Array.isArray(apt.assigned_team)
+    ? apt.assigned_team.map((m) => (m?.name || "").trim()).filter(Boolean)
+    : [];
 
 const typeColors: Record<AppointmentType, string> = {
   residential: "bg-blue-500",
