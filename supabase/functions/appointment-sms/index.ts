@@ -113,6 +113,16 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
     },
   ];
 
+  // Extra crew members assigned to the job also get the technician message.
+  const crew = Array.isArray(apt.assigned_team) ? apt.assigned_team : [];
+  const seen = new Set(targets.map((t) => t.phone).filter(Boolean) as string[]);
+  for (const m of crew) {
+    const phone = normalizePhone(m?.phone);
+    if (!phone || seen.has(phone)) continue;
+    seen.add(phone);
+    targets.push({ type: "technician", phone, message: targets[1].message });
+  }
+
   for (const t of targets) {
     if (!t.phone) continue;
     const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: t.phone });
@@ -145,7 +155,7 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
   return results;
 }
 
-const SELECT = "id, appointment_number, customer_name, customer_phone, customer_address, scheduled_date, scheduled_time, status, notes, technician_phone, sms_reminders_enabled, booking_sms_sent_at, reminder_sms_sent_at, companies(name), calendars(phone)";
+const SELECT = "id, assigned_team, appointment_number, customer_name, customer_phone, customer_address, scheduled_date, scheduled_time, status, notes, technician_phone, sms_reminders_enabled, booking_sms_sent_at, reminder_sms_sent_at, companies(name), calendars(phone)";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });

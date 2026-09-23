@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Loader2, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CalendarCheck, Pencil, CheckCircle2,
-} from "lucide-react";
+  Loader2, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CalendarCheck, Pencil, CheckCircle2, Users } from "lucide-react";
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay,
   addMonths, subMonths, startOfWeek, endOfWeek, addDays, subDays, addWeeks, subWeeks,
@@ -36,9 +35,15 @@ interface Appointment {
   google_event_id: string | null;
   reminder_sms_sent_at: string | null;
   booking_sms_sent_at: string | null;
+  assigned_team?: Array<{ id?: string; name?: string; phone?: string; email?: string }> | null;
   companies?: { name: string } | null;
   calendars?: { calendar_name: string; color: string } | null;
 }
+
+const teamNames = (apt: Appointment): string[] =>
+  Array.isArray(apt.assigned_team)
+    ? apt.assigned_team.map((m) => (m?.name || "").trim()).filter(Boolean)
+    : [];
 
 const typeColors: Record<AppointmentType, string> = {
   residential: "bg-blue-500",
@@ -115,7 +120,7 @@ export default function AppointmentsCalendar() {
       const { data, error } = await supabase
         .from("appointments")
         .select(
-          "id, appointment_number, customer_name, customer_phone, customer_address, appointment_type, status, scheduled_date, scheduled_time, duration_minutes, notes, company_id, calendar_id, google_event_id, reminder_sms_sent_at, booking_sms_sent_at, companies(name), calendars(calendar_name, color)"
+          "id, appointment_number, customer_name, customer_phone, customer_address, appointment_type, status, scheduled_date, scheduled_time, duration_minutes, notes, company_id, calendar_id, google_event_id, reminder_sms_sent_at, booking_sms_sent_at, assigned_team, companies(name), calendars(calendar_name, color)"
         )
         .order("scheduled_date", { ascending: true });
       if (error) throw error;
@@ -240,6 +245,12 @@ export default function AppointmentsCalendar() {
       <div className="text-xs text-muted-foreground">{apt.customer_phone}</div>
       {!compact && apt.customer_address && (
         <div className="text-xs text-muted-foreground">{apt.customer_address}</div>
+      )}
+      {teamNames(apt).length > 0 && (
+        <div className="text-xs text-muted-foreground flex items-start gap-1 mt-0.5">
+          <Users className="h-3 w-3 mt-0.5 flex-shrink-0" />
+          <span>{teamNames(apt).join(", ")}</span>
+        </div>
       )}
       {apt.companies?.name && <div className="text-xs text-muted-foreground mt-0.5">{apt.companies.name}</div>}
       {apt.calendars?.calendar_name && (

@@ -666,6 +666,7 @@ export type Database = {
           appointment_number: string | null
           appointment_type: Database["public"]["Enums"]["appointment_type"]
           assigned_employee_id: string | null
+          assigned_team: Json
           booking_sms_sent_at: string | null
           calendar_id: string | null
           closed_at: string | null
@@ -697,6 +698,7 @@ export type Database = {
           appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           assigned_employee_id?: string | null
+          assigned_team?: Json
           booking_sms_sent_at?: string | null
           calendar_id?: string | null
           closed_at?: string | null
@@ -728,6 +730,7 @@ export type Database = {
           appointment_number?: string | null
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
           assigned_employee_id?: string | null
+          assigned_team?: Json
           booking_sms_sent_at?: string | null
           calendar_id?: string | null
           closed_at?: string | null
