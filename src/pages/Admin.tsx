@@ -302,6 +302,13 @@ const Admin = () => {
               <Route path="/inventory/add" element={<InventoryAdd />} />
               <Route path="/inventory/receiving" element={<InventoryList mode="receiving" />} />
               <Route path="/inventory/history" element={<InventoryList mode="history" />} />
+              <Route path="/tickets/add" element={<TicketsAdd />} />
+              <Route path="/tickets/list" element={<WorkItemsList kind="ticket" />} />
+              <Route path="/tasks/add" element={<TasksAdd />} />
+              <Route path="/tasks/list" element={<WorkItemsList kind="task" />} />
+              <Route path="/work-items/board" element={<WorkItemsBoard />} />
+              <Route path="/logs/tickets" element={<WorkItemsLogs kind="ticket" />} />
+              <Route path="/logs/tasks" element={<WorkItemsLogs kind="task" />} />
             </Routes>
 
             </div>

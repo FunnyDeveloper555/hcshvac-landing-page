@@ -76,8 +76,13 @@ const staticMenuItems: MenuItem[] = [
     icon: CalendarDays,
     children: [
       { title: "Book New", url: "/admin/appointments/add", icon: Plus },
+      { title: "New Ticket", url: "/admin/tickets/add", icon: Plus },
+      { title: "New Task", url: "/admin/tasks/add", icon: Plus },
       { title: "Open", url: "/admin/appointments/open", icon: CheckCircle },
       { title: "Closed", url: "/admin/appointments/closed", icon: FolderClosed },
+      { title: "Tickets", url: "/admin/tickets/list", icon: List },
+      { title: "Tasks", url: "/admin/tasks/list", icon: List },
+      { title: "Tickets & Tasks Board", url: "/admin/work-items/board", icon: ClipboardList },
       { title: "Calendar", url: "/admin/appointments/calendar", icon: Calendar },
       { title: "Diagnostic Fees", url: "/admin/diagnostic-fees", icon: Stethoscope },
     ]
@@ -231,6 +236,8 @@ const staticMenuItems: MenuItem[] = [
     children: [
       { title: "Log Call", url: "/admin/logs/call", icon: Plus },
       { title: "Call Log", url: "/admin/logs/call-log", icon: List },
+      { title: "Tickets", url: "/admin/logs/tickets", icon: List },
+      { title: "Tasks", url: "/admin/logs/tasks", icon: List },
       { title: "Activity Log", url: "/admin/logs/list", icon: List },
     ]
   },
