@@ -417,7 +417,7 @@ export default function AppointmentsAdd() {
       equipment_location: data.equipment_location || null,
       calendar_id: data.calendar_id || null,
       assigned_employee_id: data.assigned_employee_id || null,
-      assigned_team: data.assigned_team,
+      assigned_team: data.assigned_team as unknown as any,
       technician_phone: data.technician_phone || null,
       duration_minutes: Number(data.duration_minutes) || 60,
       sms_reminders_enabled: data.sms_reminders_enabled,
