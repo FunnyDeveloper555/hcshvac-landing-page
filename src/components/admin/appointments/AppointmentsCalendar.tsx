@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  Loader2, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CalendarCheck, Pencil, CheckCircle2,, Users } from "lucide-react";
+  Loader2, ChevronLeft, ChevronRight, RefreshCw, MessageSquare, CalendarCheck, Pencil, CheckCircle2, Users } from "lucide-react";
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay,
   addMonths, subMonths, startOfWeek, endOfWeek, addDays, subDays, addWeeks, subWeeks,
