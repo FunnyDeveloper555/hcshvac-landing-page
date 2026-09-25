@@ -16,6 +16,8 @@ export interface EmployeeOption {
   last_name: string;
   phone_number: string | null;
   email_address: string | null;
+  employee_code?: string | null;
+  company_id?: string | null;
 }
 
 export const WORK_ITEM_STATUSES: { value: WorkItemStatus; label: string }[] = [

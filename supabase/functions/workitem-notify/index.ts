@@ -55,6 +55,99 @@ function prettyWhen(date: string, time?: string | null) {
   return `${day} at ${time}`;
 }
 
+function zoneOffsetMinutes(utc: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: ZONE, hour12: false, year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  }).formatToParts(utc);
+  const get = (t: string) => parseInt(parts.find((p) => p.type === t)!.value, 10);
+  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour") % 24, get("minute"), get("second"));
+  return (asUtc - utc.getTime()) / 60000;
+}
+
+function centralUtc(date: string, h: number, m: number): number {
+  const [y, mo, d] = date.split("-").map((v) => parseInt(v, 10));
+  const naive = Date.UTC(y, mo - 1, d, h, m);
+  let g = new Date(naive - zoneOffsetMinutes(new Date(naive)) * 60000);
+  g = new Date(naive - zoneOffsetMinutes(g) * 60000);
+  return g.getTime();
+}
+
+function describe(itemType: string, row: any) {
+  const label = itemType === "task" ? row.task_number : row.ticket_number;
+  const title = itemType === "task" ? row.title : row.subject;
+  const forWho = row.for_type === "vendor"
+    ? row.vendor_name
+    : row.customer_name || (row.for_type === "other" ? "Other" : "");
+  const when = row.scheduled_date
+    ? prettyWhen(row.scheduled_date, row.scheduled_time)
+    : row.expected_completion_date || row.due_date
+      ? `due ${prettyWhen(row.expected_completion_date || row.due_date)}`
+      : "no date set";
+  return { label, title, forWho, when, kindWord: itemType === "task" ? "Task" : "Ticket" };
+}
+
+async function smsCrew(supabase: any, itemType: string, row: any, prefix = "") {
+  const d = describe(itemType, row);
+  const crew: Array<{ name?: string; phone?: string }> = Array.isArray(row.assigned_team) ? row.assigned_team : [];
+  const message = [
+    `${prefix}${d.kindWord} ${d.label || ""}: ${d.title}`.trim(),
+    d.when,
+    d.forWho ? `For: ${d.forWho}` : "",
+    row.location ? `Where: ${row.location}` : "",
+    row.public_notes ? `Notes: ${String(row.public_notes).slice(0, 160)}` : "",
+    row.notes ? `Private: ${String(row.notes).slice(0, 160)}` : "",
+  ].filter(Boolean).join(" | ");
+  const results: any[] = [];
+  const seen = new Set<string>();
+  for (const m of crew) {
+    const phone = normalizePhone(m?.phone);
+    if (!phone || seen.has(phone)) continue;
+    seen.add(phone);
+    const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
+    if (blocked) continue;
+    try {
+      await sendSms(phone, message);
+      results.push({ name: m?.name, status: "sent" });
+    } catch (e) {
+      console.error(`work item SMS failed: ${(e as Error).message}`);
+      results.push({ name: m?.name, status: "failed", error: (e as Error).message });
+    }
+  }
+  return results;
+}
+
+async function emailCrew(itemType: string, row: any) {
+  const d = describe(itemType, row);
+  const crew: Array<{ name?: string; email?: string }> = Array.isArray(row.assigned_team) ? row.assigned_team : [];
+  const out: any[] = [];
+  const seen = new Set<string>();
+  for (const m of crew) {
+    const email = (m?.email || "").trim().toLowerCase();
+    if (!email || seen.has(email)) continue;
+    seen.add(email);
+    const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        templateName: "work-item-assigned",
+        recipientEmail: email,
+        idempotencyKey: `wi-${row.id}-${email}-${row.updated_at}`,
+        templateData: {
+          kind: d.kindWord, number: d.label, title: d.title, when: d.when, forWho: d.forWho,
+          location: row.location, publicNotes: row.public_notes, privateNotes: row.notes, employeeName: m?.name,
+        },
+      }),
+    });
+    out.push({ email, status: res.ok ? "sent" : "failed" });
+    if (!res.ok) console.error("work item email failed", await res.text());
+  }
+  return out;
+}
+
 function normalizePhone(raw?: string | null): string | null {
   if (!raw) return null;
   let d = raw.replace(/\D/g, "");
@@ -87,6 +180,40 @@ Deno.serve(async (req) => {
 
   try {
     const payload = await req.json().catch(() => ({}));
+
+    // Cron: 8 PM the night before, and 2 hours before the scheduled time.
+    if (payload.action === "cron") {
+      const sb = admin();
+      if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
+      const now = Date.now();
+      const from = new Date(now - 86400000).toISOString().slice(0, 10);
+      const to = new Date(now + 2 * 86400000).toISOString().slice(0, 10);
+      const sent: any[] = [];
+      for (const [t, table] of [["ticket", "tickets"], ["task", "tasks"]] as const) {
+        const { data: rows } = await sb.from(table).select("*")
+          .in("status", ["open", "in_progress"]).eq("send_sms_reminder", true)
+          .gte("scheduled_date", from).lte("scheduled_date", to);
+        for (const row of rows || []) {
+          const r: any = row;
+          const st = parseRange(r.scheduled_time || "9 AM").start;
+          const start = centralUtc(r.scheduled_date, st.h, st.m);
+          const [y, mo, d] = r.scheduled_date.split("-").map((v: string) => parseInt(v, 10));
+          const prev = new Date(Date.UTC(y, mo - 1, d - 1)).toISOString().slice(0, 10);
+          const night = centralUtc(prev, 20, 0);
+          if (!r.reminder_night_sent_at && now >= night && now < start - 2 * 3600000) {
+            await smsCrew(sb, t, r, "Reminder (tomorrow) ");
+            await sb.from(table).update({ reminder_night_sent_at: new Date().toISOString() }).eq("id", r.id);
+            sent.push({ id: r.id, kind: "night" });
+          } else if (!r.reminder_2h_sent_at && now >= start - 2 * 3600000 && now < start) {
+            await smsCrew(sb, t, r, "Reminder (in 2 hrs) ");
+            await sb.from(table).update({ reminder_2h_sent_at: new Date().toISOString() }).eq("id", r.id);
+            sent.push({ id: r.id, kind: "2h" });
+          }
+        }
+      }
+      return json({ success: true, sent });
+    }
+
     const itemType = payload.item_type === "task" ? "task" : "ticket";
     const table = itemType === "task" ? "tasks" : "tickets";
     const itemId = payload.item_id;
@@ -115,41 +242,14 @@ Deno.serve(async (req) => {
       : [];
     const crewNames = crew.map((m) => (m?.name || "").trim()).filter(Boolean);
 
-    // ---------- Text messages to the assigned crew ----------
+    // ---------- Text + email to the assigned crew ----------
     if (action === "sms") {
       if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
-      const when = row.scheduled_date
-        ? prettyWhen(row.scheduled_date, row.scheduled_time)
-        : row.expected_completion_date || row.due_date
-          ? `due ${prettyWhen(row.expected_completion_date || row.due_date)}`
-          : "no date set";
-      const kindWord = itemType === "task" ? "Task" : "Ticket";
-      const message = [
-        `${kindWord} ${label || ""}: ${title}`.trim(),
-        when,
-        row.customer_name ? `Customer: ${row.customer_name}` : "",
-        row.location ? `Where: ${row.location}` : "",
-        row.notes ? `Notes: ${String(row.notes).slice(0, 200)}` : "",
-      ].filter(Boolean).join(" | ");
-
-      const results: any[] = [];
-      const seen = new Set<string>();
-      for (const m of crew) {
-        const phone = normalizePhone(m?.phone);
-        if (!phone || seen.has(phone)) continue;
-        seen.add(phone);
-        const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
-        if (blocked) continue;
-        try {
-          await sendSms(phone, message);
-          results.push({ name: m?.name, status: "sent" });
-        } catch (e) {
-          console.error(`work item SMS failed: ${(e as Error).message}`);
-          results.push({ name: m?.name, status: "failed", error: (e as Error).message });
-        }
-      }
+      const results = await smsCrew(supabase, itemType, row);
+      let emails: any[] = [];
+      try { emails = await emailCrew(itemType, row); } catch (e) { console.error(e); }
       await supabase.from(table).update({ reminder_sent_at: new Date().toISOString() }).eq("id", itemId);
-      return json({ success: true, results });
+      return json({ success: true, results, emails });
     }
 
     // ---------- Google Calendar ----------
@@ -207,11 +307,13 @@ Deno.serve(async (req) => {
         row.customer_phone ? `Phone: ${row.customer_phone}` : "",
         row.reason ? `Reason: ${row.reason}` : "",
         row.task_type ? `Type: ${row.task_type}` : "",
+        row.vendor_name ? `Vendor: ${row.vendor_name}` : "",
+        row.public_notes ? `Public notes: ${row.public_notes}` : "",
         row.location ? `Where: ${row.location}` : "",
         crewNames.length ? `Team: ${crewNames.join(", ")}` : "",
         row.expected_completion_date ? `Expected completion: ${row.expected_completion_date}` : "",
         row.due_date ? `Due: ${row.due_date}` : "",
-        row.notes ? `Notes: ${row.notes}` : "",
+        row.notes ? `Private notes: ${row.notes}` : "",
         row.created_by_name ? `Created by: ${row.created_by_name}` : "",
       ].filter(Boolean).join("\n"),
       location: row.location || row.customer_address || undefined,

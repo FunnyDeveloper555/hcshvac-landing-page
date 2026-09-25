@@ -259,6 +259,12 @@ export function EmployeesAdd() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [companyId, setCompanyId] = useState<string>("");
+  const [employeeCode, setEmployeeCode] = useState<string | null>(null);
+  const [companyOptions, setCompanyOptions] = useState<{ id: string; name: string; company_initials: string | null }[]>([]);
+  useEffect(() => {
+    supabase.from("companies").select("id, name, company_initials").order("name").then(({ data }) => setCompanyOptions(data || []));
+  }, []);
   const [step, setStep] = useState(0);
   const [uploadingCert, setUploadingCert] = useState(false);
   const certFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -333,6 +339,8 @@ export function EmployeesAdd() {
           return;
         }
         const data = empRes.data;
+        setCompanyId((data as any).company_id || "");
+        setEmployeeCode((data as any).employee_code || null);
         form.reset({
           first_name: data.first_name || "",
           middle_name: data.middle_name || "",
@@ -431,6 +439,7 @@ export function EmployeesAdd() {
 
       const employeeFields = {
         ...rest,
+        company_id: companyId || null,
         languages: mergedLanguages,
         comfort_assessment,
       };
@@ -674,6 +683,22 @@ export function EmployeesAdd() {
                       </FormItem>
                     )} />
                   </div>
+                </section>
+
+                <section className="space-y-2">
+                  <label className="text-sm font-medium">Works For (Company)</label>
+                  <Select value={companyId || "none"} onValueChange={(v) => setCompanyId(v === "none" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="Head office (HCS)" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Head office (HCS)</SelectItem>
+                      {companyOptions.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}{c.company_initials ? ` (${c.company_initials})` : ""}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Staff code is created automatically from the company initials and office city{employeeCode ? ` — current code: ${employeeCode}` : ""}.
+                  </p>
                 </section>
 
                 {/* Address */}

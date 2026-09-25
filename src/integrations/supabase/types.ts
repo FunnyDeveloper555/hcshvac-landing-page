@@ -1239,6 +1239,7 @@ export type Database = {
           company_address: string | null
           company_city: string | null
           company_email_primary: string | null
+          company_initials: string | null
           company_phone: string | null
           company_state: string | null
           company_support_email: string | null
@@ -1318,6 +1319,7 @@ export type Database = {
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
+          company_initials?: string | null
           company_phone?: string | null
           company_state?: string | null
           company_support_email?: string | null
@@ -1397,6 +1399,7 @@ export type Database = {
           company_address?: string | null
           company_city?: string | null
           company_email_primary?: string | null
+          company_initials?: string | null
           company_phone?: string | null
           company_state?: string | null
           company_support_email?: string | null
@@ -3008,10 +3011,12 @@ export type Database = {
           city: string
           city_of_birth: string | null
           comfort_assessment: Json | null
+          company_id: string | null
           created_at: string
           date_of_birth: string
           drivers_license_number: string | null
           email_address: string
+          employee_code: string | null
           first_name: string
           four_year_college: string | null
           high_school: string | null
@@ -3062,10 +3067,12 @@ export type Database = {
           city: string
           city_of_birth?: string | null
           comfort_assessment?: Json | null
+          company_id?: string | null
           created_at?: string
           date_of_birth: string
           drivers_license_number?: string | null
           email_address: string
+          employee_code?: string | null
           first_name: string
           four_year_college?: string | null
           high_school?: string | null
@@ -3116,10 +3123,12 @@ export type Database = {
           city?: string
           city_of_birth?: string | null
           comfort_assessment?: Json | null
+          company_id?: string | null
           created_at?: string
           date_of_birth?: string
           drivers_license_number?: string | null
           email_address?: string
+          employee_code?: string | null
           first_name?: string
           four_year_college?: string | null
           high_school?: string | null
@@ -3163,7 +3172,15 @@ export type Database = {
           us_citizen?: boolean | null
           zip_code?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       file_folders: {
         Row: {
@@ -5609,9 +5626,12 @@ export type Database = {
       }
       tasks: {
         Row: {
+          appointment_id: string | null
           assigned_employee_id: string | null
           assigned_team: Json
+          attachments: Json
           calendar_id: string | null
+          company_id: string | null
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -5620,10 +5640,14 @@ export type Database = {
           customer_name: string | null
           due_date: string | null
           duration_minutes: number | null
+          for_type: string
           google_event_id: string | null
           id: string
           location: string | null
           notes: string | null
+          public_notes: string | null
+          reminder_2h_sent_at: string | null
+          reminder_night_sent_at: string | null
           reminder_sent_at: string | null
           scheduled_date: string | null
           scheduled_time: string | null
@@ -5633,11 +5657,16 @@ export type Database = {
           task_type: string
           title: string
           updated_at: string
+          vendor_id: string | null
+          vendor_name: string | null
         }
         Insert: {
+          appointment_id?: string | null
           assigned_employee_id?: string | null
           assigned_team?: Json
+          attachments?: Json
           calendar_id?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -5646,10 +5675,14 @@ export type Database = {
           customer_name?: string | null
           due_date?: string | null
           duration_minutes?: number | null
+          for_type?: string
           google_event_id?: string | null
           id?: string
           location?: string | null
           notes?: string | null
+          public_notes?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
@@ -5659,11 +5692,16 @@ export type Database = {
           task_type?: string
           title: string
           updated_at?: string
+          vendor_id?: string | null
+          vendor_name?: string | null
         }
         Update: {
+          appointment_id?: string | null
           assigned_employee_id?: string | null
           assigned_team?: Json
+          attachments?: Json
           calendar_id?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -5672,10 +5710,14 @@ export type Database = {
           customer_name?: string | null
           due_date?: string | null
           duration_minutes?: number | null
+          for_type?: string
           google_event_id?: string | null
           id?: string
           location?: string | null
           notes?: string | null
+          public_notes?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
@@ -5685,13 +5727,29 @@ export type Database = {
           task_type?: string
           title?: string
           updated_at?: string
+          vendor_id?: string | null
+          vendor_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_calendar_id_fkey"
             columns: ["calendar_id"]
             isOneToOne: false
             referencedRelation: "calendars"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -5701,13 +5759,23 @@ export type Database = {
             referencedRelation: "customer_registrations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tasks_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tickets: {
         Row: {
+          appointment_id: string | null
           assigned_employee_id: string | null
           assigned_team: Json
+          attachments: Json
           calendar_id: string | null
+          company_id: string | null
           completed_at: string | null
           created_at: string
           created_by: string | null
@@ -5717,11 +5785,16 @@ export type Database = {
           customer_phone: string | null
           duration_minutes: number | null
           expected_completion_date: string | null
+          for_type: string
           google_event_id: string | null
           id: string
+          location: string | null
           notes: string | null
           priority: string
+          public_notes: string | null
           reason: string | null
+          reminder_2h_sent_at: string | null
+          reminder_night_sent_at: string | null
           reminder_sent_at: string | null
           scheduled_date: string | null
           scheduled_time: string | null
@@ -5730,11 +5803,16 @@ export type Database = {
           subject: string
           ticket_number: string | null
           updated_at: string
+          vendor_id: string | null
+          vendor_name: string | null
         }
         Insert: {
+          appointment_id?: string | null
           assigned_employee_id?: string | null
           assigned_team?: Json
+          attachments?: Json
           calendar_id?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -5744,11 +5822,16 @@ export type Database = {
           customer_phone?: string | null
           duration_minutes?: number | null
           expected_completion_date?: string | null
+          for_type?: string
           google_event_id?: string | null
           id?: string
+          location?: string | null
           notes?: string | null
           priority?: string
+          public_notes?: string | null
           reason?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
@@ -5757,11 +5840,16 @@ export type Database = {
           subject: string
           ticket_number?: string | null
           updated_at?: string
+          vendor_id?: string | null
+          vendor_name?: string | null
         }
         Update: {
+          appointment_id?: string | null
           assigned_employee_id?: string | null
           assigned_team?: Json
+          attachments?: Json
           calendar_id?: string | null
+          company_id?: string | null
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
@@ -5771,11 +5859,16 @@ export type Database = {
           customer_phone?: string | null
           duration_minutes?: number | null
           expected_completion_date?: string | null
+          for_type?: string
           google_event_id?: string | null
           id?: string
+          location?: string | null
           notes?: string | null
           priority?: string
+          public_notes?: string | null
           reason?: string | null
+          reminder_2h_sent_at?: string | null
+          reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
@@ -5784,8 +5877,17 @@ export type Database = {
           subject?: string
           ticket_number?: string | null
           updated_at?: string
+          vendor_id?: string | null
+          vendor_name?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tickets_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tickets_calendar_id_fkey"
             columns: ["calendar_id"]
@@ -5794,10 +5896,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tickets_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customer_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -5962,6 +6078,36 @@ export type Database = {
         }
         Relationships: []
       }
+      work_item_replies: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          message: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          message: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          message?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -5978,6 +6124,7 @@ export type Database = {
         Returns: boolean
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
+      employee_code_for: { Args: { _company_id: string }; Returns: string }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -6121,6 +6268,7 @@ export type Database = {
         }
         Returns: string
       }
+      work_item_prefix: { Args: { _company_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user" | "moderator"
