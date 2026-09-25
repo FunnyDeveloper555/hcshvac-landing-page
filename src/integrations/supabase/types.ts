@@ -6124,6 +6124,7 @@ export type Database = {
         Returns: boolean
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
+      employee_code_for: { Args: { _company_id: string }; Returns: string }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
