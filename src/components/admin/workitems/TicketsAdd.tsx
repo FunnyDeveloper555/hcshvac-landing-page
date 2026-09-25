@@ -339,7 +339,7 @@ export default function TicketsAdd() {
         </CardContent>
       </Card>
 
-      <WhoForCard kind="ticket" value={who} onChange={setWho} hasSchedule={!!form.scheduled_date} />
+      <WhoForCard kind="ticket" value={who} onChange={setWho} hasSchedule={!!form.scheduled_date} teamSlot={<TeamChecklist companyId={who.company_id} employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -394,18 +394,16 @@ export default function TicketsAdd() {
             />
           </div>
           <div>
-            <Label>Calendar</Label>
+            <Label>Show on Calendar (optional)</Label>
             <Select value={form.calendar_id} onValueChange={(v) => set("calendar_id", v)}>
-              <SelectTrigger><SelectValue placeholder="Select a calendar" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Choose which calendar shows this" /></SelectTrigger>
               <SelectContent>
                 {(calendars || []).map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.calendar_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="md:col-span-2">
-            <TeamChecklist companyId={who.company_id} employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />
+            <p className="mt-1 text-xs text-muted-foreground">The Google calendar this appears on. Assigned staff get an invite either way.</p>
           </div>
           <div className="md:col-span-2 flex items-center justify-between rounded-md border p-3">
             <div>
