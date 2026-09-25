@@ -124,11 +124,13 @@ export function WhoForCard({
   value,
   onChange,
   hasSchedule,
+  teamSlot,
 }: {
   kind: WorkItemKind;
   value: WhoFor;
   onChange: (w: WhoFor) => void;
   hasSchedule: boolean;
+  teamSlot?: React.ReactNode;
 }) {
   const set = <K extends keyof WhoFor>(k: K, v: WhoFor[K]) => onChange({ ...value, [k]: v });
   const { data: companies } = useCompanyOptions();
@@ -145,8 +147,14 @@ export function WhoForCard({
         <CardTitle className="text-base">Who is this for?</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
-        <CompanySelect value={value.company_id} onChange={(v) => set("company_id", v)} />
-        <ForTypeRadio value={value.for_type} onChange={(v) => set("for_type", v)} />
+        <div className="md:col-span-2">
+          <ForTypeRadio value={value.for_type} onChange={(v) => set("for_type", v)} />
+        </div>
+        <div className="md:col-span-2">
+          <CompanySelect value={value.company_id} onChange={(v) => set("company_id", v)} />
+        </div>
+
+        {value.for_type === "employee" && teamSlot && <div className="md:col-span-2">{teamSlot}</div>}
 
         {value.for_type === "customer" && (
           <div className="md:col-span-2 space-y-2">
@@ -189,16 +197,7 @@ export function WhoForCard({
           </div>
         )}
 
-        {value.for_type === "employee" && (
-          <div className="md:col-span-2 space-y-2">
-            <Label>Related customer (optional)</Label>
-            <CustomerPicker
-              selected={value.customer}
-              onSelect={(c) => set("customer", c)}
-              onClear={() => set("customer", null)}
-            />
-          </div>
-        )}
+        {value.for_type !== "employee" && teamSlot && <div className="md:col-span-2">{teamSlot}</div>}
 
         <div className="md:col-span-2">
           <Label htmlFor="wf-location">Location</Label>

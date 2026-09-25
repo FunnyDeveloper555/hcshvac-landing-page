@@ -72,19 +72,25 @@ export function CompanySelect({ value, onChange }: { value: string; onChange: (v
   const { data } = useCompanyOptions();
   return (
     <div>
-      <Label>Company</Label>
-      <Select value={value || "none"} onValueChange={(v) => onChange(v === "none" ? "" : v)}>
-        <SelectTrigger><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="none">No company (HCS)</SelectItem>
-          {(data || []).map((c) => (
-            <SelectItem key={c.id} value={c.id}>
+      <Label className="mb-2 block">Company</Label>
+      <RadioGroup
+        value={value || "none"}
+        onValueChange={(v) => onChange(v === "none" ? "" : v)}
+        className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <label className="flex cursor-pointer items-center gap-2 rounded-md border p-2 text-sm">
+          <RadioGroupItem value="none" /> HCS Corp (head office)
+        </label>
+        {(data || []).map((c) => (
+          <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-md border p-2 text-sm">
+            <RadioGroupItem value={c.id} />
+            <span className="truncate">
               {c.name}
               {c.company_initials ? ` (${c.company_initials})` : ""}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            </span>
+          </label>
+        ))}
+      </RadioGroup>
       <p className="mt-1 text-xs text-muted-foreground">The number starts with this company's initials.</p>
     </div>
   );
