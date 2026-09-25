@@ -115,6 +115,7 @@ const CompaniesAdd = () => {
   
   const [formData, setFormData] = useState({
     name: "",
+    company_initials: "",
     slug: "",
     company_address: "",
     company_city: "",
@@ -230,6 +231,7 @@ const CompaniesAdd = () => {
         const companyData = data as Record<string, unknown>;
         setFormData({
           name: data.name || "",
+          company_initials: (companyData.company_initials as string) || "",
           slug: (companyData.slug as string) || "",
           company_address: data.company_address || "",
           company_city: data.company_city || "",
@@ -948,6 +950,7 @@ const CompaniesAdd = () => {
 
     const companyData = {
       ...formData,
+      company_initials: formData.company_initials.trim().toUpperCase() || null,
       service_areas: serviceAreas,
       services_provided: formData.services_provided,
       brands_installed: formData.brands_installed,
@@ -1073,6 +1076,17 @@ const CompaniesAdd = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="company_initials">Company Initials</Label>
+              <Input
+                id="company_initials"
+                maxLength={6}
+                value={formData.company_initials}
+                onChange={(e) => setFormData({ ...formData, company_initials: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })}
+                placeholder="e.g. BCJ"
+              />
+              <p className="text-xs text-muted-foreground">Used at the start of ticket and task numbers (BCJ-TSK260001) and staff codes (BCJ-JO).</p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="slug">Website Subdomain (slug) *</Label>
               <div className="flex items-center gap-2">
