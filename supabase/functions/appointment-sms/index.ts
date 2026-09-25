@@ -171,6 +171,12 @@ Deno.serve(async (req) => {
 
     // Cron mode: send the 1-hour reminders that are due.
     if (payload.mode === "cron") {
+      // Piggy-back ticket/task reminders on the same schedule.
+      fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/workitem-notify`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cron" }),
+      }).catch((e) => console.error("workitem cron failed", e));
       const now = Date.now();
       const { data: rows, error } = await supabase
         .from("appointments")
