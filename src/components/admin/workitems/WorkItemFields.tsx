@@ -133,27 +133,53 @@ export function TeamChecklist({
   employees,
   team,
   onToggle,
+  companyId,
 }: {
   employees: EmployeeOption[] | undefined;
   team: TeamMember[];
   onToggle: (emp: EmployeeOption, checked: boolean) => void;
+  companyId?: string;
 }) {
+  const [q, setQ] = useState("");
+  const [onlyCompany, setOnlyCompany] = useState(true);
+  const term = q.trim().toLowerCase();
+  const list = (employees || []).filter((e) => {
+    if (companyId && onlyCompany && e.company_id && e.company_id !== companyId) return false;
+    if (!term) return true;
+    return [e.first_name, e.last_name, e.employee_code, e.phone_number, e.email_address, e.id]
+      .filter(Boolean)
+      .some((v) => String(v).toLowerCase().includes(term));
+  });
   return (
     <div className="space-y-2">
       <Label className="flex items-center gap-2">
         <Users className="h-4 w-4" /> Assign To *
       </Label>
-      <div className="max-h-40 space-y-1.5 overflow-y-auto rounded-md border p-2">
-        {(employees || []).length === 0 && (
-          <p className="text-xs text-muted-foreground">No staff records yet.</p>
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search name, staff code, phone, email…"
+          className="h-8 flex-1 rounded-md border bg-background px-2 text-sm"
+        />
+        {companyId && (
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Checkbox checked={onlyCompany} onCheckedChange={(v) => setOnlyCompany(v === true)} /> This company's staff only
+          </label>
         )}
-        {(employees || []).map((e) => {
+      </div>
+      <div className="max-h-40 space-y-1.5 overflow-y-auto rounded-md border p-2">
+        {list.length === 0 && (
+          <p className="text-xs text-muted-foreground">No matching staff.</p>
+        )}
+        {list.map((e) => {
           const checked = team.some((m) => m.id === e.id);
           return (
             <label key={e.id} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox checked={checked} onCheckedChange={(v) => onToggle(e, v === true)} />
               <span>
                 {e.first_name} {e.last_name}
+                {e.employee_code && <span className="ml-1 font-mono text-xs text-muted-foreground">({e.employee_code})</span>}
               </span>
               {e.phone_number && <span className="text-xs text-muted-foreground">{e.phone_number}</span>}
             </label>
@@ -175,7 +201,7 @@ export function useEmployeeOptions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
-        .select("id, first_name, last_name, phone_number, email_address")
+        .select("id, first_name, last_name, phone_number, email_address, employee_code, company_id")
         .order("first_name");
       if (error) throw error;
       return data as EmployeeOption[];
