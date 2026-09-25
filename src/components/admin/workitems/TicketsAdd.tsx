@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, Ticket } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { WhoFor, WhoForCard, emptyWhoFor, whoForFromRow, whoForPayload, createCustomerAppointment } from "./WhoForCard";
+import { RepliesThread } from "./WorkItemExtras";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import {
   CustomerLite,
@@ -69,6 +71,17 @@ const initialForm: TicketForm = {
 export default function TicketsAdd() {
   const [form, setForm] = useState<TicketForm>(initialForm);
   const [customer, setCustomer] = useState<CustomerLite | null>(null);
+  const [who, setWho] = useState<WhoFor>(emptyWhoFor("customer"));
+  const [rowCache, setRowCache] = useState<Record<string, any> | null>(null);
+  useEffect(() => {
+    if (customer && !who.customer) setWho((w) => ({ ...w, customer, location: w.location || "" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer]);
+  useEffect(() => {
+    if (!rowCache) return;
+    whoForFromRow(rowCache, customer).then(setWho);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowCache, customer]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ticketNumber, setTicketNumber] = useState<string | null>(null);
@@ -99,6 +112,7 @@ export default function TicketsAdd() {
       } else {
         setTicketNumber(data.ticket_number);
         setCreatedBy({ name: data.created_by_name, at: data.created_at });
+        setRowCache(data as Record<string, any>);
         setForm({
           subject: data.subject || "",
           reason: data.reason || "",
@@ -174,15 +188,21 @@ export default function TicketsAdd() {
       return;
     }
 
+    if (who.for_type === "customer" && !who.customer) {
+      toast.error("Pick the customer");
+      return;
+    }
+    if (who.for_type === "vendor" && !who.vendor) {
+      toast.error("Pick the vendor");
+      return;
+    }
+
     setSaving(true);
     const payload = {
-      customer_id: customer?.id || null,
-      customer_name: customer ? customerLabel(customer) : null,
-      customer_phone: customer ? formatPhone(customer.phone) : null,
+      customer_phone: who.customer ? formatPhone(who.customer.phone) : null,
       subject: form.subject.trim(),
       reason: form.reason || null,
       priority: form.priority,
-      notes: form.notes || null,
       expected_completion_date: form.expected_completion_date || null,
       scheduled_date: form.scheduled_date || null,
       scheduled_time: form.scheduled_time || null,
@@ -190,6 +210,7 @@ export default function TicketsAdd() {
       calendar_id: form.calendar_id || null,
       assigned_team: form.assigned_team as unknown as never,
       assigned_employee_id: form.assigned_team[0]?.id || null,
+      ...whoForPayload(who),
       status: form.status,
       send_sms_reminder: form.send_sms_reminder,
       completed_at: form.status === "completed" ? new Date().toISOString() : null,
@@ -209,6 +230,27 @@ export default function TicketsAdd() {
         if (error) throw error;
         id = data.id;
         setTicketNumber(data.ticket_number);
+      }
+
+      if (id && who.for_type === "customer" && who.create_appointment && !who.appointment_id && form.scheduled_date) {
+        try {
+          const apptId = await createCustomerAppointment({
+            w: who,
+            title: form.subject.trim(),
+            scheduled_date: form.scheduled_date,
+            scheduled_time: form.scheduled_time,
+            duration_minutes: Number(form.duration_minutes) || 60,
+            calendar_id: form.calendar_id,
+            team: form.assigned_team,
+            lead_id: form.assigned_team[0]?.id || null,
+          });
+          if (apptId) {
+            await supabase.from("tickets").update({ appointment_id: apptId }).eq("id", id);
+            toast.success("Customer appointment booked");
+          }
+        } catch (err) {
+          toast.error("Saved, but the customer appointment could not be booked: " + (err as Error).message);
+        }
       }
 
       logAction(isEditing ? "update" : "create", "ticket", id!, { subject: form.subject });
@@ -262,15 +304,6 @@ export default function TicketsAdd() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Customer (leave empty for an internal ticket)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CustomerPicker selected={customer} onSelect={setCustomer} onClear={() => setCustomer(null)} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
           <CardTitle className="text-base">Ticket Details</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
@@ -303,38 +336,16 @@ export default function TicketsAdd() {
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              rows={4}
-              value={form.notes}
-              onChange={(e) => set("notes", e.target.value)}
-              placeholder="What happened, what needs to be done…"
-            />
-          </div>
-          {customer && (
-            <div className="md:col-span-2 rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
-              {customerAddress(customer)}
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      <WhoForCard kind="ticket" value={who} onChange={setWho} hasSchedule={!!form.scheduled_date} />
 
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Dates &amp; Assignment</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <div>
-            <Label htmlFor="expected">Expected Completion Date</Label>
-            <Input
-              id="expected"
-              type="date"
-              value={form.expected_completion_date}
-              onChange={(e) => set("expected_completion_date", e.target.value)}
-            />
-          </div>
           <div>
             <Label>Status</Label>
             <Select value={form.status} onValueChange={(v) => set("status", v as WorkItemStatus)}>
@@ -363,6 +374,15 @@ export default function TicketsAdd() {
             </Select>
           </div>
           <div>
+            <Label htmlFor="expected">Expected Completion (End) Date</Label>
+            <Input
+              id="expected"
+              type="date"
+              value={form.expected_completion_date}
+              onChange={(e) => set("expected_completion_date", e.target.value)}
+            />
+          </div>
+          <div>
             <Label htmlFor="duration">Duration (minutes)</Label>
             <Input
               id="duration"
@@ -385,7 +405,7 @@ export default function TicketsAdd() {
             </Select>
           </div>
           <div className="md:col-span-2">
-            <TeamChecklist employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />
+            <TeamChecklist companyId={who.company_id} employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />
           </div>
           <div className="md:col-span-2 flex items-center justify-between rounded-md border p-3">
             <div>
@@ -396,6 +416,14 @@ export default function TicketsAdd() {
           </div>
         </CardContent>
       </Card>
+
+      {isEditing && editId && (
+        <Card>
+          <CardContent className="pt-4">
+            <RepliesThread kind="ticket" itemId={editId} />
+          </CardContent>
+        </Card>
+      )}
 
       {createdBy.name && (
         <p className="text-xs text-muted-foreground">

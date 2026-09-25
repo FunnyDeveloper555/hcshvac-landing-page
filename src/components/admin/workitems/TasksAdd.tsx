@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, ListChecks } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { WhoFor, WhoForCard, emptyWhoFor, whoForFromRow, whoForPayload, createCustomerAppointment } from "./WhoForCard";
+import { RepliesThread } from "./WorkItemExtras";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import {
   CustomerLite,
@@ -66,6 +68,17 @@ const initialForm: TaskForm = {
 export default function TasksAdd() {
   const [form, setForm] = useState<TaskForm>(initialForm);
   const [customer, setCustomer] = useState<CustomerLite | null>(null);
+  const [who, setWho] = useState<WhoFor>(emptyWhoFor("employee"));
+  const [rowCache, setRowCache] = useState<Record<string, any> | null>(null);
+  useEffect(() => {
+    if (customer && !who.customer) setWho((w) => ({ ...w, customer, location: w.location || "" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer]);
+  useEffect(() => {
+    if (!rowCache) return;
+    whoForFromRow(rowCache, customer).then(setWho);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowCache, customer]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [taskNumber, setTaskNumber] = useState<string | null>(null);
@@ -96,6 +109,7 @@ export default function TasksAdd() {
       } else {
         setTaskNumber(data.task_number);
         setCreatedBy({ name: data.created_by_name, at: data.created_at });
+        setRowCache(data as Record<string, any>);
         setForm({
           task_type: data.task_type || "Other",
           title: data.title || "",
@@ -154,14 +168,19 @@ export default function TasksAdd() {
       return;
     }
 
+    if (who.for_type === "customer" && !who.customer) {
+      toast.error("Pick the customer");
+      return;
+    }
+    if (who.for_type === "vendor" && !who.vendor) {
+      toast.error("Pick the vendor");
+      return;
+    }
+
     setSaving(true);
     const payload = {
       task_type: form.task_type,
       title: form.title.trim(),
-      location: form.location || null,
-      customer_id: customer?.id || null,
-      customer_name: customer ? customerLabel(customer) : null,
-      notes: form.notes || null,
       due_date: form.due_date || null,
       scheduled_date: form.scheduled_date || null,
       scheduled_time: form.scheduled_time || null,
@@ -169,6 +188,7 @@ export default function TasksAdd() {
       calendar_id: form.calendar_id || null,
       assigned_team: form.assigned_team as unknown as never,
       assigned_employee_id: form.assigned_team[0]?.id || null,
+      ...whoForPayload(who),
       status: form.status,
       send_sms_reminder: form.send_sms_reminder,
       completed_at: form.status === "completed" ? new Date().toISOString() : null,
@@ -188,6 +208,27 @@ export default function TasksAdd() {
         if (error) throw error;
         id = data.id;
         setTaskNumber(data.task_number);
+      }
+
+      if (id && who.for_type === "customer" && who.create_appointment && !who.appointment_id && form.scheduled_date) {
+        try {
+          const apptId = await createCustomerAppointment({
+            w: who,
+            title: form.title.trim(),
+            scheduled_date: form.scheduled_date,
+            scheduled_time: form.scheduled_time,
+            duration_minutes: Number(form.duration_minutes) || 60,
+            calendar_id: form.calendar_id,
+            team: form.assigned_team,
+            lead_id: form.assigned_team[0]?.id || null,
+          });
+          if (apptId) {
+            await supabase.from("tasks").update({ appointment_id: apptId }).eq("id", id);
+            toast.success("Customer appointment booked");
+          }
+        } catch (err) {
+          toast.error("Saved, but the customer appointment could not be booked: " + (err as Error).message);
+        }
       }
 
       logAction(isEditing ? "update" : "create", "task", id!, { title: form.title, task_type: form.task_type });
@@ -261,25 +302,10 @@ export default function TasksAdd() {
               placeholder="e.g. Pick up condenser from supply house"
             />
           </div>
-          <div className="md:col-span-2">
-            <Label htmlFor="location">Where / Who</Label>
-            <Input
-              id="location"
-              value={form.location}
-              onChange={(e) => set("location", e.target.value)}
-              placeholder="Address, supplier, or meeting place"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Label htmlFor="task-notes">Notes</Label>
-            <Textarea id="task-notes" rows={4} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
-          </div>
-          <div className="md:col-span-2">
-            <Label className="mb-2 block">Related Customer (optional)</Label>
-            <CustomerPicker selected={customer} onSelect={setCustomer} onClear={() => setCustomer(null)} />
-          </div>
         </CardContent>
       </Card>
+
+      <WhoForCard kind="task" value={who} onChange={setWho} hasSchedule={!!form.scheduled_date} />
 
       <Card>
         <CardHeader className="pb-3">
@@ -340,7 +366,7 @@ export default function TasksAdd() {
             </Select>
           </div>
           <div className="md:col-span-2">
-            <TeamChecklist employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />
+            <TeamChecklist companyId={who.company_id} employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />
           </div>
           <div className="md:col-span-2 flex items-center justify-between rounded-md border p-3">
             <div>
@@ -351,6 +377,14 @@ export default function TasksAdd() {
           </div>
         </CardContent>
       </Card>
+
+      {isEditing && editId && (
+        <Card>
+          <CardContent className="pt-4">
+            <RepliesThread kind="task" itemId={editId} />
+          </CardContent>
+        </Card>
+      )}
 
       {createdBy.name && (
         <p className="text-xs text-muted-foreground">
