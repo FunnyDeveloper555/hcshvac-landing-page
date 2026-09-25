@@ -236,10 +236,11 @@ export function WhoForCard({
             />
           </div>
           <div>
-            <Label htmlFor="wf-private">Private Notes</Label>
+            <Label htmlFor="wf-private" className="text-destructive">Private Notes</Label>
             <Textarea
               id="wf-private"
               rows={4}
+              className="text-destructive placeholder:text-destructive/50"
               value={value.private_notes}
               onChange={(e) => set("private_notes", e.target.value)}
               placeholder="Staff only"
