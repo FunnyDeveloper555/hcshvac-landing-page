@@ -6100,29 +6100,47 @@ export type Database = {
         Row: {
           author_id: string | null
           author_name: string | null
+          channel: string | null
           created_at: string
+          direction: string
           id: string
           item_id: string
           item_type: string
+          media: Json
           message: string
+          phone: string | null
+          read_at: string | null
+          vendor_id: string | null
         }
         Insert: {
           author_id?: string | null
           author_name?: string | null
+          channel?: string | null
           created_at?: string
+          direction?: string
           id?: string
           item_id: string
           item_type: string
+          media?: Json
           message: string
+          phone?: string | null
+          read_at?: string | null
+          vendor_id?: string | null
         }
         Update: {
           author_id?: string | null
           author_name?: string | null
+          channel?: string | null
           created_at?: string
+          direction?: string
           id?: string
           item_id?: string
           item_type?: string
+          media?: Json
           message?: string
+          phone?: string | null
+          read_at?: string | null
+          vendor_id?: string | null
         }
         Relationships: []
       }
