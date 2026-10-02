@@ -316,24 +316,28 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
   const send = async () => {
     if (!text.trim() || !user) return;
     setSending(true);
+    const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
     const { error } = await supabase.from("work_item_replies").insert({
       item_type: kind,
       item_id: itemId,
       author_id: user.id,
-      author_name: user.email,
+      author_name: prof?.display_name || user.email,
       message: text.trim(),
     });
     setSending(false);
     if (error) return toast.error(error.message);
     setText("");
+    toast.success("Note posted");
     qc.invalidateQueries({ queryKey: key });
+    qc.invalidateQueries({ queryKey: ["customer-work-history"] });
   };
 
   return (
     <div className="space-y-3">
-      <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Replies</Label>
+      <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Notes Log</Label>
+      <p className="text-xs text-muted-foreground">Each note is posted on its own and stamped with who wrote it, plus the date and time. Notes also show in the customer's history.</p>
       <div className="max-h-72 space-y-2 overflow-y-auto">
-        {(replies || []).length === 0 && <p className="text-xs text-muted-foreground">No replies yet.</p>}
+        {(replies || []).length === 0 && <p className="text-xs text-muted-foreground">No notes yet.</p>}
         {(replies || []).map((r) => (
           <div
             key={r.id}
@@ -350,9 +354,9 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
         ))}
       </div>
       <div className="flex gap-2">
-        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write a reply…" />
+        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write a note update…" />
         <Button type="button" onClick={send} disabled={sending || !text.trim()}>
-          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-1 h-4 w-4" />Submit Note</>}
         </Button>
       </div>
     </div>

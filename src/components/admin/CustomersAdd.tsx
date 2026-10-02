@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import CustomerWorkHistory from "@/components/admin/workitems/CustomerWorkHistory";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -1044,6 +1045,7 @@ const CustomersAdd = () => {
             </Button>
           )}
         </div>
+        {isEditing && editId && <CustomerWorkHistory customerId={editId} />}
       </div>
     </div>
   );
