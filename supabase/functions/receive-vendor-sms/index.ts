@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
   const alert = [
     `New text from ${vendorName} on ${match.task_number || "task"}:`,
     `"${body.slice(0, 200)}"${media.length ? ` (+${media.length} photo)` : ""}`,
-    `Reply: ${SITE}/admin/tasks/add?edit=${match.id}`,
+    `Reply: ${SITE}/admin/tasks/add?id=${match.id}`,
   ].join("\n");
   for (const m of crew) {
     const p = normalizePhone(m?.phone);
