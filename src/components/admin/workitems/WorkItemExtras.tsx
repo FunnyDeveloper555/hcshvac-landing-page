@@ -254,7 +254,7 @@ export function AttachmentsField({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+          accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
           className="hidden"
           onChange={(e) => upload(e.target.files)}
         />

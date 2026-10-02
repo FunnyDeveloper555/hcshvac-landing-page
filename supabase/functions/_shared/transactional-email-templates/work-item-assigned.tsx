@@ -10,7 +10,6 @@ interface Props {
   forWho?: string
   location?: string
   publicNotes?: string
-  privateNotes?: string
   employeeName?: string
 }
 
@@ -30,7 +29,6 @@ const WorkItemAssigned = (p: Props) => (
         {p.forWho && <Text style={text}><b>For:</b> {p.forWho}</Text>}
         {p.location && <Text style={text}><b>Location:</b> {p.location}</Text>}
         {p.publicNotes && <Text style={text}><b>Public notes:</b> {p.publicNotes}</Text>}
-        {p.privateNotes && <Text style={text}><b>Private notes:</b> {p.privateNotes}</Text>}
         <Text style={{ ...text, color: '#6b7280', fontSize: '12px' }}>Open the Tickets &amp; Tasks board to reply.</Text>
       </Container>
     </Body>

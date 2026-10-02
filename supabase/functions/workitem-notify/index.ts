@@ -96,7 +96,6 @@ async function smsCrew(supabase: any, itemType: string, row: any, prefix = "") {
     d.forWho ? `For: ${d.forWho}` : "",
     row.location ? `Where: ${row.location}` : "",
     row.public_notes ? `Notes: ${String(row.public_notes).slice(0, 160)}` : "",
-    row.notes ? `Private: ${String(row.notes).slice(0, 160)}` : "",
   ].filter(Boolean).join(" | ");
   const results: any[] = [];
   const seen = new Set<string>();
@@ -138,7 +137,7 @@ async function emailCrew(itemType: string, row: any) {
         idempotencyKey: `wi-${row.id}-${email}-${row.updated_at}`,
         templateData: {
           kind: d.kindWord, number: d.label, title: d.title, when: d.when, forWho: d.forWho,
-          location: row.location, publicNotes: row.public_notes, privateNotes: row.notes, employeeName: m?.name,
+          location: row.location, publicNotes: row.public_notes, employeeName: m?.name,
         },
       }),
     });
@@ -313,7 +312,6 @@ Deno.serve(async (req) => {
         crewNames.length ? `Team: ${crewNames.join(", ")}` : "",
         row.expected_completion_date ? `Expected completion: ${row.expected_completion_date}` : "",
         row.due_date ? `Due: ${row.due_date}` : "",
-        row.notes ? `Private notes: ${row.notes}` : "",
         row.created_by_name ? `Created by: ${row.created_by_name}` : "",
       ].filter(Boolean).join("\n"),
       location: row.location || row.customer_address || undefined,
