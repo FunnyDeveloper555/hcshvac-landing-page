@@ -24,7 +24,7 @@ export default function QuoteApproval() {
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.rpc("get_task_quote" as never, { _token: token } as never);
-      const row = Array.isArray(data) ? (data[0] as Quote) : null;
+      const row = Array.isArray(data) ? ((data as Quote[])[0]) : null;
       if (error || !row) setError("This quote link is not valid.");
       else setQuote(row);
       setLoading(false);
