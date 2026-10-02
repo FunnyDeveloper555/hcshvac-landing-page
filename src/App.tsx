@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import ServiceDetail from "./pages/ServiceDetail";
 import BookingForm from "./pages/BookingForm";
+import QuoteApproval from "./pages/QuoteApproval";
 import HireApplicationForm from "./pages/HireApplicationForm";
 import CompanyLanding from "./pages/CompanyLanding";
 import Products from "./pages/Products";
@@ -53,6 +54,7 @@ const App = () => (
           <Routes>
             <Route path="/apply/:token" element={<HireApplicationForm />} />
             <Route path="/book/:token" element={<BookingForm />} />
+            <Route path="/quote/:token" element={<QuoteApproval />} />
             <Route path="/applicant" element={<ApplicantPortal />} />
             <Route path="/applicant/set-password" element={<ApplicantSetPassword />} />
             <Route path="/auth" element={<Auth />} />
@@ -69,6 +71,7 @@ const App = () => (
             <Route path="/admin/*" element={<Admin />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
             <Route path="/book/:token" element={<BookingForm />} />
+            <Route path="/quote/:token" element={<QuoteApproval />} />
             <Route path="/apply/:token" element={<HireApplicationForm />} />
             <Route path="/company/:slug" element={<CompanyLanding />} />
             <Route path="/company/:slug/:massSlug" element={<CompanyLanding />} />

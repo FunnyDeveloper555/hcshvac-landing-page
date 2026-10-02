@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { WhoFor, WhoForCard, emptyWhoFor, whoForFromRow, whoForPayload, createCustomerAppointment } from "./WhoForCard";
 import { RepliesThread } from "./WorkItemExtras";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { QuoteState, Sourcing, SourcingCard, emptySourcing, isSourcingType, toSourcing } from "./SourcingCard";
 import {
   CustomerLite,
   CustomerPicker,
@@ -80,6 +81,9 @@ export default function TasksAdd() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rowCache, customer]);
   const [saving, setSaving] = useState(false);
+  const [sourcing, setSourcing] = useState<Sourcing>(emptySourcing());
+  const [quote, setQuote] = useState<QuoteState>({ quote_total: "", quote_status: null, quote_sent_at: null });
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [taskNumber, setTaskNumber] = useState<string | null>(null);
   const [createdBy, setCreatedBy] = useState<{ name: string | null; at: string | null }>({ name: null, at: null });
@@ -124,6 +128,13 @@ export default function TasksAdd() {
           status: (data.status as WorkItemStatus) || "open",
           send_sms_reminder: data.send_sms_reminder !== false,
         });
+        const d = data as Record<string, any>;
+        setSourcing(toSourcing(d.sourcing));
+        setQuote({
+          quote_total: d.quote_total != null ? String(d.quote_total) : "",
+          quote_status: d.quote_status || null,
+          quote_sent_at: d.quote_sent_at || null,
+        });
         if (data.customer_id) {
           const { data: c } = await supabase
             .from("customer_registrations")
@@ -157,52 +168,81 @@ export default function TasksAdd() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validate = () => {
     if (!form.title.trim()) {
       toast.error("Give the task a short title");
-      return;
+      return false;
     }
     if (form.assigned_team.length === 0) {
       toast.error("Assign at least one staff member");
-      return;
+      return false;
     }
-
     if (who.for_type === "customer" && !who.customer) {
       toast.error("Pick the customer");
-      return;
+      return false;
     }
     if (who.for_type === "vendor" && !who.vendor) {
       toast.error("Pick the vendor");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const buildPayload = () => ({
+    task_type: form.task_type,
+    title: form.title.trim(),
+    due_date: form.due_date || null,
+    scheduled_date: form.scheduled_date || null,
+    scheduled_time: form.scheduled_time || null,
+    duration_minutes: Number(form.duration_minutes) || 60,
+    calendar_id: form.calendar_id || null,
+    assigned_team: form.assigned_team as unknown as never,
+    assigned_employee_id: form.assigned_team[0]?.id || null,
+    ...whoForPayload(who),
+    status: form.status,
+    send_sms_reminder: form.send_sms_reminder,
+    completed_at: form.status === "completed" ? new Date().toISOString() : null,
+    sourcing: (isSourcingType(form.task_type) ? sourcing : {}) as unknown as never,
+    quote_total: quote.quote_total ? Number(quote.quote_total) || null : null,
+  } as Record<string, unknown>);
+
+  /** Save without leaving the page (used before sending to vendors / customer). */
+  const saveInPlace = async (): Promise<string | null> => {
+    if (!validate()) return null;
+    const payload = buildPayload();
+    const id = savedId || editId;
+    if (id) {
+      const { error } = await supabase.from("tasks").update(payload as never).eq("id", id);
+      if (error) { toast.error(error.message); return null; }
+      return id;
+    }
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert({ ...payload, created_by: user?.id || null, created_by_name: user?.email || null } as never)
+      .select("id, task_number")
+      .single();
+    if (error) { toast.error(error.message); return null; }
+    setSavedId(data.id);
+    setTaskNumber(data.task_number);
+    return data.id;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
 
     setSaving(true);
-    const payload = {
-      task_type: form.task_type,
-      title: form.title.trim(),
-      due_date: form.due_date || null,
-      scheduled_date: form.scheduled_date || null,
-      scheduled_time: form.scheduled_time || null,
-      duration_minutes: Number(form.duration_minutes) || 60,
-      calendar_id: form.calendar_id || null,
-      assigned_team: form.assigned_team as unknown as never,
-      assigned_employee_id: form.assigned_team[0]?.id || null,
-      ...whoForPayload(who),
-      status: form.status,
-      send_sms_reminder: form.send_sms_reminder,
-      completed_at: form.status === "completed" ? new Date().toISOString() : null,
-    };
+    const payload = buildPayload();
 
     try {
-      let id = editId;
-      if (isEditing) {
-        const { error } = await supabase.from("tasks").update(payload).eq("id", editId!);
+      let id = savedId || editId;
+      if (id) {
+        const { error } = await supabase.from("tasks").update(payload as never).eq("id", id);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from("tasks")
-          .insert({ ...payload, created_by: user?.id || null, created_by_name: user?.email || null })
+          .insert({ ...payload, created_by: user?.id || null, created_by_name: user?.email || null } as never)
           .select("id, task_number")
           .single();
         if (error) throw error;
@@ -306,6 +346,19 @@ export default function TasksAdd() {
       </Card>
 
       <WhoForCard kind="task" value={who} onChange={setWho} hasSchedule={!!form.scheduled_date} teamSlot={<TeamChecklist companyId={who.company_id} employees={employees} team={form.assigned_team} onToggle={toggleTeamMember} />} />
+
+      {isSourcingType(form.task_type) && (
+        <SourcingCard
+          taskType={form.task_type}
+          value={sourcing}
+          onChange={setSourcing}
+          taskId={savedId || editId}
+          hasCustomer={!!who.customer}
+          quote={quote}
+          onQuoteChange={setQuote}
+          onBeforeSend={saveInPlace}
+        />
+      )}
 
       <Card>
         <CardHeader className="pb-3">

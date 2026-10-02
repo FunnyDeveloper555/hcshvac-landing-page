@@ -96,7 +96,6 @@ async function smsCrew(supabase: any, itemType: string, row: any, prefix = "") {
     d.forWho ? `For: ${d.forWho}` : "",
     row.location ? `Where: ${row.location}` : "",
     row.public_notes ? `Notes: ${String(row.public_notes).slice(0, 160)}` : "",
-    row.notes ? `Private: ${String(row.notes).slice(0, 160)}` : "",
   ].filter(Boolean).join(" | ");
   const results: any[] = [];
   const seen = new Set<string>();
@@ -138,7 +137,7 @@ async function emailCrew(itemType: string, row: any) {
         idempotencyKey: `wi-${row.id}-${email}-${row.updated_at}`,
         templateData: {
           kind: d.kindWord, number: d.label, title: d.title, when: d.when, forWho: d.forWho,
-          location: row.location, publicNotes: row.public_notes, privateNotes: row.notes, employeeName: m?.name,
+          location: row.location, publicNotes: row.public_notes, employeeName: m?.name,
         },
       }),
     });
@@ -252,6 +251,133 @@ Deno.serve(async (req) => {
       return json({ success: true, results, emails });
     }
 
+    // ---------- Vendor price & availability request ----------
+    if (action === "rfq" && itemType === "task") {
+      const s: any = row.sourcing && typeof row.sourcing === "object" ? row.sourcing : {};
+      const vendors: any[] = Array.isArray(s.vendors) ? s.vendors : [];
+      if (!vendors.length) return json({ error: "No vendors on this task" }, 400);
+      let companyName = "HCS HVAC";
+      if (row.company_id) {
+        const { data: c } = await supabase.from("companies").select("name").eq("id", row.company_id).maybeSingle();
+        if (c?.name) companyName = c.name;
+      }
+      // Customer: first, last, address, phone only.
+      let customer = "";
+      if (s.include_customer && row.customer_id) {
+        const { data: c } = await supabase.from("customer_registrations")
+          .select("ship_to_first_name, ship_to_last_name, ship_to_address, ship_to_city, ship_to_state, ship_to_zip_code, phone")
+          .eq("id", row.customer_id).maybeSingle();
+        if (c) {
+          customer = [
+            `${c.ship_to_first_name || ""} ${c.ship_to_last_name || ""}`.trim(),
+            [c.ship_to_address, c.ship_to_city, [c.ship_to_state, c.ship_to_zip_code].filter(Boolean).join(" ")].filter(Boolean).join(", "),
+            c.phone,
+          ].filter(Boolean).join(", ");
+        }
+      }
+      const files: any[] = [
+        ...(s.include_task_photos && Array.isArray(row.attachments) ? row.attachments : []),
+        ...(Array.isArray(s.media) ? s.media : []),
+      ];
+      const media: Array<{ url: string; name: string; isImage: boolean }> = [];
+      if (files.length) {
+        const { data: signed } = await supabase.storage.from("workitem-files")
+          .createSignedUrls(files.map((f) => f.path), 60 * 60 * 24 * 14);
+        (signed || []).forEach((sg: any, i: number) => {
+          if (sg?.signedUrl) media.push({ url: sg.signedUrl, name: files[i].name, isImage: String(files[i].type || "").startsWith("image/") });
+        });
+      }
+      const results: any[] = [];
+      const now = new Date().toISOString();
+      for (const v of vendors) {
+        if (!v?.vendor_id) continue;
+        const method = v.method || "both";
+        let sent = false;
+        if (method === "text" || method === "both") {
+          const phone = normalizePhone(v.alt_sms || v.sms || v.phone);
+          if (!phone || !SID || !TOKEN || !FROM) {
+            results.push({ to: `${v.name} (text)`, status: "failed", error: "no text number" });
+          } else {
+            const body = [
+              `${companyName} – Price & Availability ${label || ""}`.trim(),
+              v.account_number ? `Acct #: ${v.account_number}` : "",
+              s.message || "",
+              customer ? `Job site: ${customer}` : "",
+              ...media.slice(0, 5).map((m) => m.url),
+            ].filter(Boolean).join("\n");
+            try {
+              const form = new URLSearchParams({ To: phone, From: FROM!, Body: body.slice(0, 1550) });
+              media.filter((m) => m.isImage).slice(0, 10).forEach((m) => form.append("MediaUrl", m.url));
+              const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${SID}/Messages.json`, {
+                method: "POST",
+                headers: { Authorization: `Basic ${btoa(`${SID}:${TOKEN}`)}`, "Content-Type": "application/x-www-form-urlencoded" },
+                body: form.toString(),
+              });
+              if (!res.ok) throw new Error((await res.json())?.message || `Twilio ${res.status}`);
+              results.push({ to: `${v.name} (text)`, status: "sent" });
+              sent = true;
+            } catch (e) {
+              results.push({ to: `${v.name} (text)`, status: "failed", error: (e as Error).message });
+            }
+          }
+        }
+        if (method === "email" || method === "both") {
+          const email = (v.alt_email || v.email || "").trim();
+          if (!email) {
+            results.push({ to: `${v.name} (email)`, status: "failed", error: "no email" });
+          } else {
+            const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-transactional-email`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                templateName: "vendor-rfq",
+                recipientEmail: email,
+                idempotencyKey: `rfq-${row.id}-${v.vendor_id}-${now}`,
+                templateData: { companyName, vendorName: v.name, accountNumber: v.account_number, number: label, message: s.message, customer, media },
+              }),
+            });
+            if (res.ok) { results.push({ to: `${v.name} (email)`, status: "sent" }); sent = true; }
+            else results.push({ to: `${v.name} (email)`, status: "failed", error: await res.text() });
+          }
+        }
+        if (sent) v.sent_at = now;
+      }
+      await supabase.from(table).update({ sourcing: s }).eq("id", itemId);
+      await supabase.from("work_item_replies").insert({
+        item_type: "task", item_id: itemId, author_id: userData.user.id, author_name: userData.user.email,
+        message: `Price & availability request sent to: ${vendors.filter((v) => v.sent_at === now).map((v) => v.name).join(", ") || "nobody"}`,
+      });
+      return json({ success: true, results, sourcing: s });
+    }
+
+    // ---------- Customer quote approval text ----------
+    if (action === "quote" && itemType === "task") {
+      if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
+      if (!row.customer_id) return json({ error: "No customer on this task" }, 400);
+      if (!row.quote_total) return json({ error: "No quote total set" }, 400);
+      const { data: c } = await supabase.from("customer_registrations")
+        .select("ship_to_first_name, phone").eq("id", row.customer_id).maybeSingle();
+      const phone = normalizePhone(c?.phone);
+      if (!phone) return json({ error: "The customer has no mobile number on file" }, 400);
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
+      if (blocked) return json({ error: "The customer's number is blocked" }, 400);
+      let companyName = "HCS HVAC";
+      if (row.company_id) {
+        const { data: co } = await supabase.from("companies").select("name").eq("id", row.company_id).maybeSingle();
+        if (co?.name) companyName = co.name;
+      }
+      const origin = typeof payload.origin === "string" && /^https?:\/\//.test(payload.origin) ? payload.origin : "https://hcshvac.com";
+      const link = `${origin}/quote/${row.quote_token}`;
+      const msg = `${companyName}: Hi ${c?.ship_to_first_name || ""}, we located the part for your repair (${title}). Total: $${Number(row.quote_total).toFixed(2)}. Approve or decline here: ${link}`;
+      await sendSms(phone, msg);
+      await supabase.from(table).update({ quote_status: "pending", quote_sent_at: new Date().toISOString() }).eq("id", itemId);
+      await supabase.from("work_item_replies").insert({
+        item_type: "task", item_id: itemId, author_id: userData.user.id, author_name: userData.user.email,
+        message: `Quote of $${Number(row.quote_total).toFixed(2)} texted to customer for approval`,
+      });
+      return json({ success: true });
+    }
+
     // ---------- Google Calendar ----------
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     const gcalKey = Deno.env.get("GOOGLE_CALENDAR_API_KEY");
@@ -313,7 +439,6 @@ Deno.serve(async (req) => {
         crewNames.length ? `Team: ${crewNames.join(", ")}` : "",
         row.expected_completion_date ? `Expected completion: ${row.expected_completion_date}` : "",
         row.due_date ? `Due: ${row.due_date}` : "",
-        row.notes ? `Private notes: ${row.notes}` : "",
         row.created_by_name ? `Created by: ${row.created_by_name}` : "",
       ].filter(Boolean).join("\n"),
       location: row.location || row.customer_address || undefined,
