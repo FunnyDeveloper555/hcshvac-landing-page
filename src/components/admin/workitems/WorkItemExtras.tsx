@@ -291,16 +291,18 @@ export function AttachmentsField({
   );
 }
 
-/** Two-way conversation on a ticket or task. */
+/** Two-way conversation on a ticket or task, including vendor text threads. */
 export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: string }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [target, setTarget] = useState<string>("note");
   const key = ["workitem-replies", kind, itemId];
 
   const { data: replies } = useQuery({
     queryKey: key,
+    refetchInterval: 20000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("work_item_replies")
@@ -313,9 +315,38 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
     },
   });
 
+  const { data: vendors } = useQuery({
+    queryKey: ["workitem-sourcing-vendors", itemId],
+    enabled: kind === "task",
+    queryFn: async () => {
+      const { data } = await supabase.from("tasks").select("sourcing").eq("id", itemId).maybeSingle();
+      const list: any[] = Array.isArray((data?.sourcing as any)?.vendors) ? (data!.sourcing as any).vendors : [];
+      return list.filter((v) => v?.vendor_id && (v.alt_sms || v.sms || v.phone)) as Array<{ vendor_id: string; name: string }>;
+    },
+  });
+
+  // Mark vendor texts as read once someone opens the task.
+  useEffect(() => {
+    const unread = (replies || []).filter((r) => r.direction === "inbound" && !r.read_at).map((r) => r.id);
+    if (unread.length) {
+      supabase.from("work_item_replies").update({ read_at: new Date().toISOString() }).in("id", unread)
+        .then(() => qc.invalidateQueries({ queryKey: ["vendor-unread-count"] }));
+    }
+  }, [replies, qc]);
+
   const send = async () => {
     if (!text.trim() || !user) return;
     setSending(true);
+    if (target !== "note") {
+      const { data, error } = await supabase.functions.invoke("workitem-notify", {
+        body: { item_type: "task", item_id: itemId, action: "vendor_text", vendor_id: target, message: text.trim() },
+      });
+      setSending(false);
+      if (error || (data as any)?.error) return toast.error((data as any)?.error || "Text could not be sent");
+      setText("");
+      toast.success("Text sent to vendor");
+      return qc.invalidateQueries({ queryKey: key });
+    }
     const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
     const { error } = await supabase.from("work_item_replies").insert({
       item_type: kind,
@@ -335,31 +366,64 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
   return (
     <div className="space-y-3">
       <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Notes Log</Label>
-      <p className="text-xs text-muted-foreground">Each note is posted on its own and stamped with who wrote it, plus the date and time. Notes also show in the customer's history.</p>
-      <div className="max-h-72 space-y-2 overflow-y-auto">
+      <p className="text-xs text-muted-foreground">Each note is stamped with who wrote it and when. Vendor text replies show up here automatically, and assigned staff get a text alert.</p>
+      <div className="max-h-96 space-y-2 overflow-y-auto">
         {(replies || []).length === 0 && <p className="text-xs text-muted-foreground">No notes yet.</p>}
-        {(replies || []).map((r) => (
-          <div
-            key={r.id}
-            className={cn(
-              "rounded-md border p-2 text-sm",
-              r.author_id === user?.id ? "ml-8 bg-primary/5" : "mr-8 bg-muted/40",
-            )}
-          >
-            <div className="mb-1 text-xs text-muted-foreground">
-              {r.author_name || "Staff"} • {new Date(r.created_at).toLocaleString()}
+        {(replies || []).map((r) => {
+          const inbound = r.direction === "inbound";
+          const outbound = r.direction === "outbound";
+          const media: Array<{ url: string; type: string }> = Array.isArray(r.media) ? (r.media as any) : [];
+          return (
+            <div
+              key={r.id}
+              className={cn(
+                "rounded-md border p-2 text-sm",
+                inbound ? "mr-8 border-accent bg-accent/30" : outbound ? "ml-8 border-primary/40 bg-primary/10"
+                  : r.author_id === user?.id ? "ml-8 bg-primary/5" : "mr-8 bg-muted/40",
+              )}
+            >
+              <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+                {(inbound || outbound) && (
+                  <span className="rounded bg-background px-1.5 py-0.5 font-medium text-foreground">
+                    {inbound ? "Vendor text" : "Text sent"}
+                  </span>
+                )}
+                {r.author_name || "Staff"} • {new Date(r.created_at).toLocaleString()}
+              </div>
+              <div className="whitespace-pre-wrap">{r.message}</div>
+              {media.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {media.map((m, i) => (
+                    <a key={i} href={m.url} target="_blank" rel="noreferrer" className="text-xs underline">
+                      Photo {i + 1}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="whitespace-pre-wrap">{r.message}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+      {kind === "task" && (vendors || []).length > 0 && (
+        <Select value={target} onValueChange={setTarget}>
+          <SelectTrigger className="w-full sm:w-80"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="note">Internal note (staff only)</SelectItem>
+            {(vendors || []).map((v) => (
+              <SelectItem key={v.vendor_id} value={v.vendor_id}>Text reply to {v.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <div className="flex gap-2">
-        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="Write a note update…" />
+        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
+          placeholder={target === "note" ? "Write a note update…" : "Type your text to the vendor…"} />
         <Button type="button" onClick={send} disabled={sending || !text.trim()}>
-          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-1 h-4 w-4" />Submit Note</>}
+          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-1 h-4 w-4" />{target === "note" ? "Submit Note" : "Send Text"}</>}
         </Button>
       </div>
     </div>
   );
 }
+
 

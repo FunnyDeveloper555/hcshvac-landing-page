@@ -350,6 +350,31 @@ Deno.serve(async (req) => {
       return json({ success: true, results, sourcing: s });
     }
 
+    // ---------- Text one vendor from the Notes Log ----------
+    if (action === "vendor_text" && itemType === "task") {
+      if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
+      const message = String(payload.message || "").trim().slice(0, 1500);
+      if (!message) return json({ error: "Message is required" }, 400);
+      const vendors: any[] = Array.isArray(row.sourcing?.vendors) ? row.sourcing.vendors : [];
+      const v = vendors.find((x) => x?.vendor_id === payload.vendor_id);
+      if (!v) return json({ error: "Vendor is not on this task" }, 400);
+      const phone = normalizePhone(v.alt_sms || v.sms || v.phone);
+      if (!phone) return json({ error: "This vendor has no text number" }, 400);
+      const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", userData.user.id).maybeSingle();
+      const who = prof?.display_name || userData.user.email;
+      try {
+        await sendSms(phone, `${label ? label + ": " : ""}${message}`);
+      } catch (e) {
+        return json({ error: (e as Error).message }, 502);
+      }
+      await supabase.from("work_item_replies").insert({
+        item_type: "task", item_id: itemId, author_id: userData.user.id,
+        author_name: `${who} → ${v.name || "vendor"} (text)`, message,
+        direction: "outbound", channel: "sms", phone, vendor_id: v.vendor_id,
+      });
+      return json({ success: true });
+    }
+
     // ---------- Customer quote approval text ----------
     if (action === "quote" && itemType === "task") {
       if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
