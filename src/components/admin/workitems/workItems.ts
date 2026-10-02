@@ -58,6 +58,9 @@ export const TASK_TYPES = [
   "Callback",
   "Errand",
   "Training",
+  "P&A Part (Sourcing)",
+  "P&A Part & Get Customer Approval (Sourcing)",
+  "Order Parts/Materials",
   "Other",
 ];
 
