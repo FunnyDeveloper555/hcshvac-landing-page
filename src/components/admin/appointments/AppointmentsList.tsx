@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye, ClipboardList } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye, ClipboardList, ListChecks, Ticket } from "lucide-react";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { buildAppointmentIcs, buildMeetingUrl } from "@/lib/appointmentIcs";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
@@ -411,7 +411,17 @@ export default function AppointmentsList() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Appointments</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-2xl font-bold">Appointments</h2>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate("/admin/tasks/add")}>
+            <ListChecks className="mr-2 h-4 w-4" /> Create Task
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/admin/tickets/add")}>
+            <Ticket className="mr-2 h-4 w-4" /> Create Ticket
+          </Button>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
