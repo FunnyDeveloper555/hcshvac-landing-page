@@ -5646,12 +5646,18 @@ export type Database = {
           location: string | null
           notes: string | null
           public_notes: string | null
+          quote_responded_at: string | null
+          quote_sent_at: string | null
+          quote_status: string | null
+          quote_token: string
+          quote_total: number | null
           reminder_2h_sent_at: string | null
           reminder_night_sent_at: string | null
           reminder_sent_at: string | null
           scheduled_date: string | null
           scheduled_time: string | null
           send_sms_reminder: boolean
+          sourcing: Json
           status: string
           task_number: string | null
           task_type: string
@@ -5681,12 +5687,18 @@ export type Database = {
           location?: string | null
           notes?: string | null
           public_notes?: string | null
+          quote_responded_at?: string | null
+          quote_sent_at?: string | null
+          quote_status?: string | null
+          quote_token?: string
+          quote_total?: number | null
           reminder_2h_sent_at?: string | null
           reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
           send_sms_reminder?: boolean
+          sourcing?: Json
           status?: string
           task_number?: string | null
           task_type?: string
@@ -5716,12 +5728,18 @@ export type Database = {
           location?: string | null
           notes?: string | null
           public_notes?: string | null
+          quote_responded_at?: string | null
+          quote_sent_at?: string | null
+          quote_status?: string | null
+          quote_token?: string
+          quote_total?: number | null
           reminder_2h_sent_at?: string | null
           reminder_night_sent_at?: string | null
           reminder_sent_at?: string | null
           scheduled_date?: string | null
           scheduled_time?: string | null
           send_sms_reminder?: boolean
+          sourcing?: Json
           status?: string
           task_number?: string | null
           task_type?: string
@@ -6217,6 +6235,17 @@ export type Database = {
           state: string
         }[]
       }
+      get_task_quote: {
+        Args: { _token: string }
+        Returns: {
+          company_name: string
+          customer_name: string
+          quote_status: string
+          quote_total: number
+          task_number: string
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -6254,6 +6283,10 @@ export type Database = {
         }[]
       }
       recalc_cart_totals: { Args: { _cart_id: string }; Returns: undefined }
+      respond_task_quote: {
+        Args: { _decision: string; _token: string }
+        Returns: string
+      }
       submit_appointment_request: {
         Args: {
           _customer_address: string
