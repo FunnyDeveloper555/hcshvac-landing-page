@@ -43,7 +43,7 @@ export default function WorkItemsList({ kind }: { kind: WorkItemKind }) {
   const { logAction } = useAdminLog();
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("open");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
 
