@@ -276,6 +276,30 @@ export default function BookingForm() {
         if (updateError) throw updateError;
       }
 
+      // Receipt email (not a confirmation) — best effort, never blocks submission
+      if (formData.email) {
+        const inv: any = invitation;
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "booking-received",
+            recipientEmail: formData.email,
+            idempotencyKey: `booking-received-${token}`,
+            templateData: {
+              customerName: `${formData.shipToFirstName || ""} ${formData.shipToLastName || ""}`.trim() || undefined,
+              companyName: inv?.companies?.name,
+              companyPhone: inv?.companies?.company_phone,
+              isBooking: wantsBooking,
+              visitReason: wantsBooking ? formData.visitReason : undefined,
+              preferredDate: wantsBooking ? formData.preferredDate : undefined,
+              preferredTime: wantsBooking ? formData.preferredTime : undefined,
+              address: wantsBooking
+                ? [formData.shipToAddress, formData.shipToCity, formData.shipToState, formData.shipToZipCode].filter(Boolean).join(", ")
+                : undefined,
+            },
+          },
+        }).catch((e) => console.error("booking receipt email failed", e));
+      }
+
       return true;
     },
     onSuccess: () => {

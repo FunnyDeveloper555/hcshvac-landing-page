@@ -21,6 +21,7 @@ import { template as customerRegistrationInvite } from './customer-registration-
 import { template as siteProfileReport } from './site-profile-report.tsx'
 import { template as installationSummary } from './installation-summary.tsx'
 import { template as workItemAssigned } from './work-item-assigned.tsx'
+import { template as bookingReceived } from './booking-received.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
@@ -35,5 +36,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'site-profile-report': siteProfileReport,
   'installation-summary': installationSummary,
   'work-item-assigned': workItemAssigned,
+  'booking-received': bookingReceived,
 }
 
