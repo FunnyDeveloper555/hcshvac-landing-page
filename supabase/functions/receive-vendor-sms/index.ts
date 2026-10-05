@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
   if (lastOut) {
     itemType = lastOut.item_type as any;
     const { data: t } = await sb.from(itemType === "task" ? "tasks" : "tickets")
-      .select(`id, ${itemType === "task" ? "task_number" : "ticket_number"}, status, assigned_team, customer_name, vendor_name, sourcing:${itemType === "task" ? "sourcing" : "id"}`)
+      .select("*")
       .eq("id", lastOut.item_id).maybeSingle();
     if (t) {
       match = { ...t, task_number: (t as any).task_number || (t as any).ticket_number };
@@ -132,9 +132,9 @@ Deno.serve(async (req) => {
   const crew: any[] = Array.isArray(match.assigned_team) ? match.assigned_team : [];
   const seen = new Set<string>();
   const alert = [
-    `New text from ${vendorName} on ${match.task_number || "task"}:`,
+    `New text from ${vendorName} on ${match.task_number || itemType}:`,
     `"${body.slice(0, 200)}"${media.length ? ` (+${media.length} photo)` : ""}`,
-    `Reply: ${SITE}/admin/tasks/add?id=${match.id}`,
+    `Reply: ${SITE}/admin/${itemType}s/add?id=${match.id}`,
   ].join("\n");
   for (const m of crew) {
     const p = normalizePhone(m?.phone);
