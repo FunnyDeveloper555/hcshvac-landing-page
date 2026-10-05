@@ -72,30 +72,51 @@ Deno.serve(async (req) => {
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  // Find the most recent active task that sent a request to this phone.
   const since = new Date(Date.now() - 90 * 86400000).toISOString();
-  const { data: tasks } = await sb.from("tasks")
-    .select("id, task_number, title, status, assigned_team, sourcing, updated_at")
-    .neq("status", "cancelled").gte("updated_at", since)
-    .order("updated_at", { ascending: false }).limit(300);
-
   let match: any = null;
   let vendor: any = null;
-  for (const t of tasks || []) {
-    const vendors: any[] = Array.isArray((t as any).sourcing?.vendors) ? (t as any).sourcing.vendors : [];
-    const v = vendors.find((x) => [x?.alt_sms, x?.sms, x?.phone].some((p) => normalizePhone(p) === from));
-    if (v) { match = t; vendor = v; break; }
+  let itemType: "task" | "ticket" = "task";
+  let senderName: string | null = null;
+
+  // 1) The ticket/task that most recently texted this number (customer or vendor).
+  const { data: lastOut } = await sb.from("work_item_replies")
+    .select("item_type, item_id, author_name, vendor_id")
+    .eq("direction", "outbound").eq("phone", from).gte("created_at", since)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (lastOut) {
+    itemType = lastOut.item_type as any;
+    const { data: t } = await sb.from(itemType === "task" ? "tasks" : "tickets")
+      .select("*")
+      .eq("id", lastOut.item_id).maybeSingle();
+    if (t) {
+      match = { ...t, task_number: (t as any).task_number || (t as any).ticket_number };
+      const arrow = String(lastOut.author_name || "").split("→")[1];
+      senderName = arrow ? arrow.replace(/\(text\)/, "").trim() : null;
+      if (lastOut.vendor_id) vendor = { vendor_id: lastOut.vendor_id, name: senderName };
+    }
   }
 
-  // Fall back to the vendor directory so we at least know the name.
+  // 2) Fall back to vendors on recent sourcing tasks.
   if (!match) {
-    console.log(`Inbound SMS from ${from} did not match any sourcing task`);
+    const { data: tasks } = await sb.from("tasks")
+      .select("id, task_number, title, status, assigned_team, sourcing, updated_at")
+      .neq("status", "cancelled").gte("updated_at", since)
+      .order("updated_at", { ascending: false }).limit(300);
+    for (const t of tasks || []) {
+      const vendors: any[] = Array.isArray((t as any).sourcing?.vendors) ? (t as any).sourcing.vendors : [];
+      const v = vendors.find((x) => [x?.alt_sms, x?.sms, x?.phone].some((p) => normalizePhone(p) === from));
+      if (v) { match = t; vendor = v; itemType = "task"; break; }
+    }
+  }
+
+  if (!match) {
+    console.log(`Inbound SMS from ${from} did not match any ticket or task`);
     return twiml();
   }
 
-  const vendorName = vendor?.name || from;
+  const vendorName = vendor?.name || senderName || from;
   await sb.from("work_item_replies").insert({
-    item_type: "task",
+    item_type: itemType,
     item_id: match.id,
     author_name: `${vendorName} (text)`,
     message: body || (media.length ? "[photo]" : "[empty message]"),
@@ -105,15 +126,15 @@ Deno.serve(async (req) => {
     vendor_id: vendor?.vendor_id || null,
     media,
   });
-  await sb.from("tasks").update({ updated_at: new Date().toISOString() }).eq("id", match.id);
+  await sb.from(itemType === "task" ? "tasks" : "tickets").update({ updated_at: new Date().toISOString() }).eq("id", match.id);
 
   // Alert the assigned staff.
   const crew: any[] = Array.isArray(match.assigned_team) ? match.assigned_team : [];
   const seen = new Set<string>();
   const alert = [
-    `New text from ${vendorName} on ${match.task_number || "task"}:`,
+    `New text from ${vendorName} on ${match.task_number || itemType}:`,
     `"${body.slice(0, 200)}"${media.length ? ` (+${media.length} photo)` : ""}`,
-    `Reply: ${SITE}/admin/tasks/add?id=${match.id}`,
+    `Reply: ${SITE}/admin/${itemType}s/add?id=${match.id}`,
   ].join("\n");
   for (const m of crew) {
     const p = normalizePhone(m?.phone);
