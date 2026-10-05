@@ -89,7 +89,14 @@ function describe(itemType: string, row: any) {
 
 async function smsCrew(supabase: any, itemType: string, row: any, prefix = "") {
   const d = describe(itemType, row);
-  const crew: Array<{ name?: string; phone?: string }> = Array.isArray(row.assigned_team) ? row.assigned_team : [];
+  let crew: Array<{ id?: string; name?: string; phone?: string }> = Array.isArray(row.assigned_team) ? row.assigned_team : [];
+  // Use the latest phone numbers from staff profiles, not the copy saved on the item.
+  const ids = crew.map((m) => m?.id).filter(Boolean) as string[];
+  if (ids.length) {
+    const { data: emps } = await supabase.from("employees").select("id, phone_number").in("id", ids);
+    const map = new Map((emps || []).map((e: any) => [e.id, e.phone_number]));
+    crew = crew.map((m) => (m?.id && map.get(m.id) ? { ...m, phone: map.get(m.id) } : m));
+  }
   const message = [
     `${prefix}${d.kindWord} ${d.label || ""}: ${d.title}`.trim(),
     d.when,
@@ -380,6 +387,15 @@ Deno.serve(async (req) => {
           name = (vd as any)?.vendor_name || row.vendor_name || "vendor";
         } else return json({ error: "Vendor is not on this item" }, 400);
         if (!phone) return json({ error: "This vendor has no text number" }, 400);
+      } else if (target.startsWith("staff:")) {
+        const empId = target.slice(6);
+        const crew: any[] = Array.isArray(row.assigned_team) ? row.assigned_team : [];
+        const m = crew.find((x) => x?.id === empId);
+        if (!m) return json({ error: "That staff member is not assigned here" }, 400);
+        const { data: emp } = await supabase.from("employees").select("first_name, last_name, phone_number").eq("id", empId).maybeSingle();
+        phone = normalizePhone((emp as any)?.phone_number || m.phone);
+        name = m.name || [emp?.first_name, emp?.last_name].filter(Boolean).join(" ") || "staff";
+        if (!phone) return json({ error: "This staff member has no mobile number on file" }, 400);
       } else return json({ error: "Unknown recipient" }, 400);
       const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
       if (blocked) return json({ error: "This number is blocked" }, 400);

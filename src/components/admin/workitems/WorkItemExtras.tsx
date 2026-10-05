@@ -323,6 +323,8 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
       const out: Array<{ value: string; name: string }> = [];
       if (data?.customer_id || data?.customer_phone) out.push({ value: "customer", name: `${data.customer_name || "customer"} (customer)` });
       if (data?.vendor_id) out.push({ value: `vendor:${data.vendor_id}`, name: data.vendor_name || "vendor" });
+      const crew: any[] = Array.isArray(data?.assigned_team) ? data.assigned_team : [];
+      crew.filter((m) => m?.id).forEach((m) => out.push({ value: `staff:${m.id}`, name: `${m.name || "staff"} (staff)` }));
       const list: any[] = Array.isArray(data?.sourcing?.vendors) ? data.sourcing.vendors : [];
       list.filter((v) => v?.vendor_id && (v.alt_sms || v.sms || v.phone))
         .forEach((v) => { if (!out.some((o) => o.value === `vendor:${v.vendor_id}`)) out.push({ value: `vendor:${v.vendor_id}`, name: v.name }); });
