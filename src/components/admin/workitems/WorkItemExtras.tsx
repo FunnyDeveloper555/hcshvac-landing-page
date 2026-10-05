@@ -316,12 +316,17 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
   });
 
   const { data: vendors } = useQuery({
-    queryKey: ["workitem-sourcing-vendors", itemId],
-    enabled: kind === "task",
+    queryKey: ["workitem-text-targets", kind, itemId],
     queryFn: async () => {
-      const { data } = await supabase.from("tasks").select("sourcing").eq("id", itemId).maybeSingle();
-      const list: any[] = Array.isArray((data?.sourcing as any)?.vendors) ? (data!.sourcing as any).vendors : [];
-      return list.filter((v) => v?.vendor_id && (v.alt_sms || v.sms || v.phone)) as Array<{ vendor_id: string; name: string }>;
+      const table = kind === "task" ? "tasks" : "tickets";
+      const { data } = await (supabase.from(table) as any).select("*").eq("id", itemId).maybeSingle();
+      const out: Array<{ value: string; name: string }> = [];
+      if (data?.customer_id || data?.customer_phone) out.push({ value: "customer", name: `${data.customer_name || "customer"} (customer)` });
+      if (data?.vendor_id) out.push({ value: `vendor:${data.vendor_id}`, name: data.vendor_name || "vendor" });
+      const list: any[] = Array.isArray(data?.sourcing?.vendors) ? data.sourcing.vendors : [];
+      list.filter((v) => v?.vendor_id && (v.alt_sms || v.sms || v.phone))
+        .forEach((v) => { if (!out.some((o) => o.value === `vendor:${v.vendor_id}`)) out.push({ value: `vendor:${v.vendor_id}`, name: v.name }); });
+      return out;
     },
   });
 
@@ -339,7 +344,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
     setSending(true);
     if (target !== "note") {
       const { data, error } = await supabase.functions.invoke("workitem-notify", {
-        body: { item_type: "task", item_id: itemId, action: "vendor_text", vendor_id: target, message: text.trim() },
+        body: { item_type: kind, item_id: itemId, action: "contact_text", target, message: text.trim() },
       });
       setSending(false);
       if (error || (data as any)?.error) return toast.error((data as any)?.error || "Text could not be sent");
@@ -404,13 +409,13 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
           );
         })}
       </div>
-      {kind === "task" && (vendors || []).length > 0 && (
+      {(vendors || []).length > 0 && (
         <Select value={target} onValueChange={setTarget}>
           <SelectTrigger className="w-full sm:w-80"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="note">Internal note (staff only)</SelectItem>
             {(vendors || []).map((v) => (
-              <SelectItem key={v.vendor_id} value={v.vendor_id}>Text reply to {v.name}</SelectItem>
+              <SelectItem key={v.value} value={v.value}>Text {v.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
