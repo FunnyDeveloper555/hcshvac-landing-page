@@ -349,7 +349,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
       setSending(false);
       if (error || (data as any)?.error) return toast.error((data as any)?.error || "Text could not be sent");
       setText("");
-      toast.success("Text sent to vendor");
+      toast.success("Text sent");
       return qc.invalidateQueries({ queryKey: key });
     }
     const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle();
@@ -371,7 +371,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
   return (
     <div className="space-y-3">
       <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Notes Log</Label>
-      <p className="text-xs text-muted-foreground">Each note is stamped with who wrote it and when. Vendor text replies show up here automatically, and assigned staff get a text alert.</p>
+      <p className="text-xs text-muted-foreground">Each note is stamped with who wrote it and when. Customer and vendor text replies show up here automatically, and assigned staff get a text alert.</p>
       <div className="max-h-96 space-y-2 overflow-y-auto">
         {(replies || []).length === 0 && <p className="text-xs text-muted-foreground">No notes yet.</p>}
         {(replies || []).map((r) => {
@@ -390,7 +390,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
               <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
                 {(inbound || outbound) && (
                   <span className="rounded bg-background px-1.5 py-0.5 font-medium text-foreground">
-                    {inbound ? "Vendor text" : "Text sent"}
+                    {inbound ? "Text received" : "Text sent"}
                   </span>
                 )}
                 {r.author_name || "Staff"} • {new Date(r.created_at).toLocaleString()}
@@ -422,7 +422,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
       )}
       <div className="flex gap-2">
         <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)}
-          placeholder={target === "note" ? "Write a note update…" : "Type your text to the vendor…"} />
+          placeholder={target === "note" ? "Write a note update…" : "Type your text message…"} />
         <Button type="button" onClick={send} disabled={sending || !text.trim()}>
           {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-1 h-4 w-4" />{target === "note" ? "Submit Note" : "Send Text"}</>}
         </Button>
