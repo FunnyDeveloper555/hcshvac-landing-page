@@ -351,15 +351,38 @@ Deno.serve(async (req) => {
     }
 
     // ---------- Text one vendor from the Notes Log ----------
-    if (action === "vendor_text" && itemType === "task") {
+    if (action === "vendor_text" || action === "contact_text") {
       if (!SID || !TOKEN || !FROM) return json({ error: "Text messaging is not configured" }, 500);
       const message = String(payload.message || "").trim().slice(0, 1500);
       if (!message) return json({ error: "Message is required" }, 400);
-      const vendors: any[] = Array.isArray(row.sourcing?.vendors) ? row.sourcing.vendors : [];
-      const v = vendors.find((x) => x?.vendor_id === payload.vendor_id);
-      if (!v) return json({ error: "Vendor is not on this task" }, 400);
-      const phone = normalizePhone(v.alt_sms || v.sms || v.phone);
-      if (!phone) return json({ error: "This vendor has no text number" }, 400);
+      let phone: string | null = null;
+      let name = "contact";
+      let vendorId: string | null = null;
+      const target = String(payload.target || (payload.vendor_id ? `vendor:${payload.vendor_id}` : ""));
+      if (target === "customer") {
+        if (row.customer_id) {
+          const { data: c } = await supabase.from("customer_registrations")
+            .select("ship_to_first_name, ship_to_last_name, phone").eq("id", row.customer_id).maybeSingle();
+          phone = normalizePhone(c?.phone);
+          name = [c?.ship_to_first_name, c?.ship_to_last_name].filter(Boolean).join(" ") || "customer";
+        }
+        phone = phone || normalizePhone(row.customer_phone);
+        name = name === "contact" ? row.customer_name || "customer" : name;
+        if (!phone) return json({ error: "The customer has no mobile number on file" }, 400);
+      } else if (target.startsWith("vendor:")) {
+        vendorId = target.slice(7);
+        const vendors: any[] = Array.isArray(row.sourcing?.vendors) ? row.sourcing.vendors : [];
+        const v = vendors.find((x) => x?.vendor_id === vendorId);
+        if (v) { phone = normalizePhone(v.alt_sms || v.sms || v.phone); name = v.name || "vendor"; }
+        else if (row.vendor_id === vendorId) {
+          const { data: vd } = await supabase.from("vendors").select("*").eq("id", vendorId).maybeSingle();
+          phone = normalizePhone((vd as any)?.representative_phone || (vd as any)?.phone);
+          name = (vd as any)?.vendor_name || row.vendor_name || "vendor";
+        } else return json({ error: "Vendor is not on this item" }, 400);
+        if (!phone) return json({ error: "This vendor has no text number" }, 400);
+      } else return json({ error: "Unknown recipient" }, 400);
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
+      if (blocked) return json({ error: "This number is blocked" }, 400);
       const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", userData.user.id).maybeSingle();
       const who = prof?.display_name || userData.user.email;
       try {
@@ -368,10 +391,11 @@ Deno.serve(async (req) => {
         return json({ error: (e as Error).message }, 502);
       }
       await supabase.from("work_item_replies").insert({
-        item_type: "task", item_id: itemId, author_id: userData.user.id,
-        author_name: `${who} → ${v.name || "vendor"} (text)`, message,
-        direction: "outbound", channel: "sms", phone, vendor_id: v.vendor_id,
+        item_type: itemType, item_id: itemId, author_id: userData.user.id,
+        author_name: `${who} → ${name} (text)`, message,
+        direction: "outbound", channel: "sms", phone, vendor_id: vendorId,
       });
+      await supabase.from(table).update({ updated_at: new Date().toISOString() }).eq("id", itemId);
       return json({ success: true });
     }
 
