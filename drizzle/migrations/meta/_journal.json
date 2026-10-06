@@ -64,6 +64,13 @@
       "when": 1790971055085,
       "tag": "0008_replies_mark_read",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791290771646,
+      "tag": "0009_auto_close_past_appointments",
+      "breakpoints": true
     }
   ]
 }
