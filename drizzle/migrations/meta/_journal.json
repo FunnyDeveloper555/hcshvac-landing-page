@@ -71,6 +71,13 @@
       "when": 1791290771646,
       "tag": "0009_auto_close_past_appointments",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791290788324,
+      "tag": "0010_grant_auto_close_past_appointments",
+      "breakpoints": true
     }
   ]
 }
