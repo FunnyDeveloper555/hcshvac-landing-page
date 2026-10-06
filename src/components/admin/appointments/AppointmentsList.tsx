@@ -15,6 +15,7 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
 import SendInvitationDialog from "./SendInvitationDialog";
 import SubmissionDetailsDialog from "./SubmissionDetailsDialog";
+import { sortOpenAppointments } from "./appointmentOrder";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -358,7 +359,10 @@ export default function AppointmentsList() {
   };
 
   const stats = getStats();
-  const filteredAppointments = filterAppointments(appointments);
+  const matchingAppointments = filterAppointments(appointments);
+  const filteredAppointments = filter === "open" || filter === "open_today"
+    ? sortOpenAppointments(matchingAppointments, format(new Date(), "yyyy-MM-dd"))
+    : matchingAppointments;
   
   // Pagination
   const totalPages = Math.ceil(filteredAppointments.length / ITEMS_PER_PAGE);
