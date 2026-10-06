@@ -61,11 +61,13 @@ export default function AppointmentsList() {
   const { data: appointments, isLoading } = useQuery({
     queryKey: ["appointments"],
     queryFn: async () => {
+      // Auto-close any open appointments whose date has already passed
+      await supabase.rpc("auto_close_past_appointments" as never).then(() => {});
       const { data, error } = await supabase
         .from("appointments")
         .select("*, companies(name)")
         .order("scheduled_date", { ascending: false });
-      
+
       if (error) throw error;
       return data as Appointment[];
     },

@@ -6149,6 +6149,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_close_past_appointments: { Args: never; Returns: number }
       company_initials: { Args: { _name: string }; Returns: string }
       complete_booking_invitation: {
         Args: { _token: string }

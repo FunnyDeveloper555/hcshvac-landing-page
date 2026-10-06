@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.auto_close_past_appointments() TO authenticated;
