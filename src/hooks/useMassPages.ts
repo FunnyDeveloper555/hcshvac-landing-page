@@ -38,7 +38,7 @@ export const useMassPages = (serviceAreas: string[] | null | undefined) => {
     const load = async () => {
       setLoading(true);
       const nameList = Array.from(names);
-      const map: Record<string, CityMeta> = {};
+      const candidates: Record<string, CityMeta[]> = {};
 
       for (let i = 0; i < nameList.length; i += 200) {
         const chunk = nameList.slice(i, i + 200);
@@ -50,9 +50,26 @@ export const useMassPages = (serviceAreas: string[] | null | undefined) => {
 
         (data || []).forEach((row) => {
           const key = cityKey(row.name || "", row.state_code || "");
-          if (!map[key]) map[key] = { county: row.county, zip: row.zip_codes };
+          (candidates[key] ||= []).push({ county: row.county, zip: row.zip_codes });
         });
       }
+
+      // Town names repeat across counties (e.g. "Troy" in Will and Madison County).
+      // Prefer the county that the company's unambiguous service areas use most.
+      const countyWeight: Record<string, number> = {};
+      Object.values(candidates).forEach((list) => {
+        const counties = new Set(list.map((c) => c.county));
+        if (counties.size === 1) {
+          const c = list[0].county || "";
+          countyWeight[c] = (countyWeight[c] || 0) + 1;
+        }
+      });
+      const map: Record<string, CityMeta> = {};
+      Object.entries(candidates).forEach(([key, list]) => {
+        map[key] = [...list].sort(
+          (a, b) => (countyWeight[b.county || ""] || 0) - (countyWeight[a.county || ""] || 0),
+        )[0];
+      });
 
       if (!cancelled) {
         setCityMeta(map);
