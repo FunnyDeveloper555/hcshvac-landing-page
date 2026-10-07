@@ -20,7 +20,7 @@ interface InboundText {
   id: string;
   item_type: string;
   item_id: string;
-  body: string | null;
+  message: string | null;
   phone: string | null;
   created_at: string;
 }
@@ -44,15 +44,15 @@ export default function NotificationBell() {
           .limit(10),
         supabase
           .from("work_item_replies")
-          .select("id, item_type, item_id, body, phone, created_at")
+          .select("id, item_type, item_id, message, phone, created_at")
           .eq("direction", "inbound")
           .is("read_at", null)
           .order("created_at", { ascending: false })
           .limit(10),
       ]);
       return {
-        submissions: (subs.data || []) as Submission[],
-        texts: (texts.data || []) as InboundText[],
+        submissions: (subs.data || []) as unknown as Submission[],
+        texts: (texts.data || []) as unknown as InboundText[],
       };
     },
   });
@@ -65,13 +65,13 @@ export default function NotificationBell() {
     if (submissions.length) {
       await supabase
         .from("booking_invitations")
-        .update({ seen_at: new Date().toISOString() })
+        .update({ seen_at: new Date().toISOString() } as any)
         .in("id", submissions.map((s) => s.id));
     }
     if (texts.length) {
       await supabase
         .from("work_item_replies")
-        .update({ read_at: new Date().toISOString() })
+        .update({ read_at: new Date().toISOString() } as any)
         .in("id", texts.map((t) => t.id));
     }
     queryClient.invalidateQueries({ queryKey: ["admin-notifications"] });
@@ -142,7 +142,7 @@ export default function NotificationBell() {
                     <span className="block text-sm font-medium">
                       Text received on {t.item_type} {t.phone ? `from ${t.phone}` : ""}
                     </span>
-                    <span className="block truncate text-xs text-muted-foreground">{t.body || "(photo)"}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{t.message || "(photo)"}</span>
                     <span className="block text-xs text-muted-foreground">
                       {format(new Date(t.created_at), "MMM d, h:mm a")}
                     </span>
