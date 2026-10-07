@@ -411,6 +411,29 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const isActive = (path: string) => currentPath === path;
 
+  const { data: unreadReplies } = useQuery({
+    queryKey: ["sidebar-unread-replies"],
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("work_item_replies")
+        .select("item_type")
+        .eq("direction", "inbound")
+        .is("read_at", null)
+        .limit(500);
+      const counts = { ticket: 0, task: 0 };
+      (data || []).forEach((r: any) => { if (r.item_type in counts) counts[r.item_type as "ticket" | "task"]++; });
+      return counts;
+    },
+  });
+  const unreadDot: Record<string, boolean> = {
+    "/admin/tickets/list": (unreadReplies?.ticket || 0) > 0,
+    "/admin/tasks/list": (unreadReplies?.task || 0) > 0,
+    "/admin/work-items/board": ((unreadReplies?.ticket || 0) + (unreadReplies?.task || 0)) > 0,
+  };
+  const groupHasDot = (item: MenuItem) => !!item.children?.some((c) => c.url && unreadDot[c.url]);
+  const Dot = () => <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" aria-label="New replies" />;
+
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
   };
@@ -451,6 +474,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             >
               <child.icon className="h-4 w-4 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
+              {child.url && unreadDot[child.url] && <Dot />}
               {child.url && appointmentBadges[child.url] !== undefined && appointmentBadges[child.url] > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs px-1.5 py-0 h-5 min-w-[1.25rem] flex items-center justify-center">{appointmentBadges[child.url]}</Badge>
               )}
@@ -490,6 +514,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                       >
                         <item.icon className="h-4 w-4 shrink-0" />
                         <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
+                        {groupHasDot(item) && <Dot />}
                         {item.title === "Page Builder" && companiesLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                         ) : (
