@@ -169,7 +169,7 @@ const COMPANY_ALERT_EMAILS: Record<string, string> = {
 async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
   const { data: subs, error } = await supabase
     .from("booking_invitations")
-    .select("id, invitation_type, recipient_phone, recipient_email, customer_name, completed_at, companies:company_id (name)")
+    .select("id, invitation_type, recipient_phone, recipient_email, completed_at, companies:company_id (name)")
     .eq("status", "completed")
     .is("staff_notified_at", null)
     .order("completed_at", { ascending: true })
@@ -188,7 +188,7 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
     const companyName = s.companies?.name || "Home Comfort Suppliers";
     const isBooking = s.invitation_type !== "registration";
     const kind = isBooking ? "booking" : "registration";
-    const name = s.customer_name || "A customer";
+    const name = s.recipient_email || s.recipient_phone || "A customer";
     const submittedAt = s.completed_at
       ? new Date(s.completed_at).toLocaleString("en-US", { timeZone: ZONE, dateStyle: "medium", timeStyle: "short" })
       : "";
@@ -214,7 +214,7 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
           method: "POST",
           headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            to,
+            recipientEmail: to,
             templateName: "booking-submission-alert",
             templateData: {
               customerName: name,
