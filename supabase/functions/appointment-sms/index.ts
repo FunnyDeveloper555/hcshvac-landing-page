@@ -22,12 +22,16 @@ function normalizePhone(raw?: string | null): string | null {
   return "+" + d;
 }
 
+// Accepts "09:00", "2:30 PM", and window strings like "4 PM to 6 PM" / "12 Noon to 2 PM"
+// (uses the window's start time).
 function parseTime(t: string): { h: number; m: number } {
-  const m = (t || "").trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  const start = (t || "").trim().split(/\s+to\s+|\s*-\s*/i)[0].trim();
+  if (/^noon$|^12\s*noon$/i.test(start)) return { h: 12, m: 0 };
+  const m = start.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp]\.?[Mm]\.?|noon)?$/i);
   if (!m) return { h: 9, m: 0 };
   let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
-  const suf = m[3]?.toUpperCase();
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const suf = m[3]?.replace(/\./g, "").toUpperCase();
   if (suf === "PM" && h < 12) h += 12;
   if (suf === "AM" && h === 12) h = 0;
   return { h, m: min };
@@ -85,7 +89,8 @@ function prettyWhen(date: string, time: string) {
   const clock = dt.toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit", timeZone: "UTC",
   });
-  return `${day} at ${clock}`;
+  const isWindow = /\s+to\s+/i.test(time || "");
+  return isWindow ? `${day}, ${time.trim()}` : `${day} at ${clock}`;
 }
 
 async function processAppointment(apt: any, kind: "booking" | "reminder") {
