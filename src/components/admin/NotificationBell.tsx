@@ -48,7 +48,7 @@ export default function NotificationBell() {
           .eq("direction", "inbound")
           .is("read_at", null)
           .order("created_at", { ascending: false })
-          .limit(10),
+          .limit(20),
       ]);
       return {
         submissions: (subs.data || []) as unknown as Submission[],
@@ -75,6 +75,7 @@ export default function NotificationBell() {
         .in("id", texts.map((t) => t.id));
     }
     queryClient.invalidateQueries({ queryKey: ["admin-notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["sidebar-unread-replies"] });
   };
 
   const go = (path: string) => {
@@ -140,7 +141,7 @@ export default function NotificationBell() {
                   <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span className="min-w-0">
                     <span className="block text-sm font-medium">
-                      Text received on {t.item_type} {t.phone ? `from ${t.phone}` : ""}
+                      New reply on {t.item_type} {t.phone ? `from ${t.phone}` : ""}
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">{t.message || "(photo)"}</span>
                     <span className="block text-xs text-muted-foreground">
