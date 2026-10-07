@@ -337,7 +337,11 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
     const unread = (replies || []).filter((r) => r.direction === "inbound" && !r.read_at).map((r) => r.id);
     if (unread.length) {
       supabase.from("work_item_replies").update({ read_at: new Date().toISOString() }).in("id", unread)
-        .then(() => qc.invalidateQueries({ queryKey: ["vendor-unread-count"] }));
+        .then(() => {
+          qc.invalidateQueries({ queryKey: ["vendor-unread-count"] });
+          qc.invalidateQueries({ queryKey: ["sidebar-unread-replies"] });
+          qc.invalidateQueries({ queryKey: ["admin-notifications"] });
+        });
     }
   }, [replies, qc]);
 
