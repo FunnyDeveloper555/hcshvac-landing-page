@@ -825,6 +825,7 @@ export type Database = {
           recipient_email: string | null
           recipient_phone: string | null
           sent_at: string | null
+          staff_notified_at: string | null
           status: string
           token: string
         }
@@ -843,6 +844,7 @@ export type Database = {
           recipient_email?: string | null
           recipient_phone?: string | null
           sent_at?: string | null
+          staff_notified_at?: string | null
           status?: string
           token?: string
         }
@@ -861,6 +863,7 @@ export type Database = {
           recipient_email?: string | null
           recipient_phone?: string | null
           sent_at?: string | null
+          staff_notified_at?: string | null
           status?: string
           token?: string
         }
@@ -6183,6 +6186,7 @@ export type Database = {
           recipient_email: string | null
           recipient_phone: string | null
           sent_at: string | null
+          staff_notified_at: string | null
           status: string
           token: string
         }[]
