@@ -196,7 +196,10 @@ Deno.serve(async (req) => {
 
       const out = [];
       for (const apt of due) out.push({ id: apt.id, results: await processAppointment(apt, "reminder") });
-      return json({ success: true, checked: rows?.length || 0, sent: out.length, details: out });
+
+      // Staff alerts: customers who finished a registration/booking link.
+      const alerted = await notifyStaffOfSubmissions(supabase);
+      return json({ success: true, checked: rows?.length || 0, sent: out.length, details: out, submissionAlerts: alerted });
     }
 
     // Explicit send (booking confirmation or manual reminder) — requires a signed-in admin.
