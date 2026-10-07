@@ -3,6 +3,7 @@ import { useNavigate, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import NotificationBell from "@/components/admin/NotificationBell";
 import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -171,6 +172,7 @@ const Admin = () => {
               </div>
               <div className="flex items-center gap-4">
                 <span className="hidden md:block text-sm text-muted-foreground truncate max-w-[200px]">{user.email}</span>
+                <NotificationBell />
                 <Button onClick={handleSignOut} variant="outline" size="sm">
                   Sign Out
                 </Button>
