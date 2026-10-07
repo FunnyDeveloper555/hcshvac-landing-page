@@ -77,6 +77,22 @@ export default function WorkItemsList({ kind }: { kind: WorkItemKind }) {
     staleTime: 30_000,
   });
 
+  // Tickets/tasks with unread inbound text replies — highlighted in the list.
+  const { data: unreadIds } = useQuery({
+    queryKey: ["workitem-unread-ids", kind],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("work_item_replies")
+        .select("item_id")
+        .eq("item_type", kind)
+        .eq("direction", "inbound")
+        .is("read_at", null);
+      if (error) throw error;
+      return new Set((data || []).map((r) => r.item_id as string));
+    },
+    refetchInterval: 5000,
+  });
+
   const assignees = useMemo(() => {
     const names = new Set<string>();
     (rows || []).forEach((r) => teamNames(r.assigned_team).forEach((n) => names.add(n)));
@@ -229,8 +245,15 @@ export default function WorkItemsList({ kind }: { kind: WorkItemKind }) {
                   </TableRow>
                 )}
                 {filtered.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.number}</TableCell>
+                  <TableRow key={r.id} className={unreadIds?.has(r.id) ? "bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50" : undefined}>
+                    <TableCell className="font-mono text-xs">
+                      <span className="flex items-center gap-1.5">
+                        {unreadIds?.has(r.id) && (
+                          <span className="h-2 w-2 flex-shrink-0 rounded-full bg-red-500" title="Unread reply" />
+                        )}
+                        {r.number}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       <div className="text-sm font-medium">{r.title}</div>
                       {r.scheduled_date && (
