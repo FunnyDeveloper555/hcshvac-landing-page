@@ -332,18 +332,26 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
     },
   });
 
-  // Mark vendor texts as read once someone opens the task.
+  // Mark texts read only on first open; replies arriving while the page is open stay unread
+  // so the sidebar dot and bell still alert staff.
+  const markedOnOpen = useRef(false);
+  const markRead = (ids: string[]) => {
+    if (!ids.length) return;
+    supabase.from("work_item_replies").update({ read_at: new Date().toISOString() }).in("id", ids)
+      .then(() => {
+        qc.invalidateQueries({ queryKey: ["vendor-unread-count"] });
+        qc.invalidateQueries({ queryKey: ["sidebar-unread-replies"] });
+        qc.invalidateQueries({ queryKey: ["admin-notifications"] });
+        qc.invalidateQueries({ queryKey: ["workitem-replies"] });
+      });
+  };
+  const unreadIds = (replies || []).filter((r) => r.direction === "inbound" && !r.read_at).map((r) => r.id);
   useEffect(() => {
-    const unread = (replies || []).filter((r) => r.direction === "inbound" && !r.read_at).map((r) => r.id);
-    if (unread.length) {
-      supabase.from("work_item_replies").update({ read_at: new Date().toISOString() }).in("id", unread)
-        .then(() => {
-          qc.invalidateQueries({ queryKey: ["vendor-unread-count"] });
-          qc.invalidateQueries({ queryKey: ["sidebar-unread-replies"] });
-          qc.invalidateQueries({ queryKey: ["admin-notifications"] });
-        });
-    }
-  }, [replies, qc]);
+    if (markedOnOpen.current || replies === undefined) return;
+    markedOnOpen.current = true;
+    markRead(unreadIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replies]);
 
   const send = async () => {
     if (!text.trim() || !user) return;
