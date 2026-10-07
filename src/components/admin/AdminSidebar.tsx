@@ -413,7 +413,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const { data: unreadReplies } = useQuery({
     queryKey: ["sidebar-unread-replies"],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data } = await supabase
         .from("work_item_replies")

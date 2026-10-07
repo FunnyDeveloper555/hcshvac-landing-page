@@ -32,7 +32,7 @@ export default function NotificationBell() {
 
   const { data } = useQuery({
     queryKey: ["admin-notifications"],
-    refetchInterval: 30000,
+    refetchInterval: 5000,
     queryFn: async () => {
       const [subs, texts] = await Promise.all([
         supabase

@@ -302,7 +302,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
 
   const { data: replies } = useQuery({
     queryKey: key,
-    refetchInterval: 20000,
+    refetchInterval: 5000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("work_item_replies")
