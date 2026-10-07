@@ -40,5 +40,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'work-item-assigned': workItemAssigned,
   'booking-received': bookingReceived,
   'vendor-rfq': vendorRfq,
+  'booking-submission-alert': bookingSubmissionAlert,
 }
 
