@@ -157,6 +157,87 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
 
 const SELECT = "id, assigned_team, appointment_number, customer_name, customer_phone, customer_address, scheduled_date, scheduled_time, status, notes, technician_phone, sms_reminders_enabled, booking_sms_sent_at, reminder_sms_sent_at, companies(name), calendars(phone)";
 
+const COMPANY_ALERT_EMAILS: Record<string, string> = {
+  "Best Comfort HVAC Joliet Office": "calendar@bestcomforthvac.com",
+  "Blue Flame Heating and Cooling": "calendar@blueflameheatingcooling.com",
+  "Jerry's Heating and Cooling": "calendar@jerrysheatingcooling.com",
+  "PozitiveHVAC": "calendar@pozitivehvac.com",
+};
+
+// Text and email staff when a customer finishes a registration/booking link,
+// so submissions are noticed even when nobody has the admin panel open.
+async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
+  const { data: subs, error } = await supabase
+    .from("booking_invitations")
+    .select("id, invitation_type, recipient_phone, recipient_email, customer_name, completed_at, companies:company_id (name)")
+    .eq("status", "completed")
+    .is("staff_notified_at", null)
+    .order("completed_at", { ascending: true })
+    .limit(20);
+  if (error) { console.error("submission alert query failed", error); return 0; }
+  if (!subs?.length) return 0;
+
+  const { data: staff } = await supabase
+    .from("employees")
+    .select("first_name, last_name, phone_number, email_address");
+  const phones = [...new Set((staff || []).map((e: any) => normalizePhone(e.phone_number)).filter(Boolean))] as string[];
+  const emails = [...new Set((staff || []).map((e: any) => (e.email_address || "").trim()).filter(Boolean))] as string[];
+
+  let count = 0;
+  for (const s of subs as any[]) {
+    const companyName = s.companies?.name || "Home Comfort Suppliers";
+    const isBooking = s.invitation_type !== "registration";
+    const kind = isBooking ? "booking" : "registration";
+    const name = s.customer_name || "A customer";
+    const submittedAt = s.completed_at
+      ? new Date(s.completed_at).toLocaleString("en-US", { timeZone: ZONE, dateStyle: "medium", timeStyle: "short" })
+      : "";
+    const adminUrl = "https://hcshvac.com/admin/screenpops/sms";
+
+    const smsBody = `New ${kind} submission: ${name}${s.recipient_phone ? ` ${s.recipient_phone}` : ""} (${companyName}). Review it in the admin panel: ${adminUrl}`;
+    for (const phone of phones) {
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
+      if (blocked) continue;
+      try {
+        await sendSms(phone, smsBody);
+      } catch (e) {
+        console.error(`submission alert SMS to ${phone} failed: ${(e as Error).message}`);
+      }
+    }
+
+    const toList = [...emails];
+    const companyEmail = COMPANY_ALERT_EMAILS[companyName];
+    if (companyEmail && !toList.includes(companyEmail)) toList.push(companyEmail);
+    for (const to of toList) {
+      try {
+        await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to,
+            templateName: "booking-submission-alert",
+            templateData: {
+              customerName: name,
+              customerPhone: s.recipient_phone || "",
+              customerEmail: s.recipient_email || "",
+              companyName,
+              isBooking,
+              submittedAt,
+              adminUrl,
+            },
+          }),
+        });
+      } catch (e) {
+        console.error(`submission alert email to ${to} failed: ${(e as Error).message}`);
+      }
+    }
+
+    await supabase.from("booking_invitations").update({ staff_notified_at: new Date().toISOString() }).eq("id", s.id);
+    count++;
+  }
+  return count;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
