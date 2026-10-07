@@ -23,6 +23,7 @@ import { template as installationSummary } from './installation-summary.tsx'
 import { template as workItemAssigned } from './work-item-assigned.tsx'
 import { template as bookingReceived } from './booking-received.tsx'
 import { template as vendorRfq } from './vendor-rfq.tsx'
+import { template as bookingSubmissionAlert } from './booking-submission-alert.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
@@ -39,5 +40,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'work-item-assigned': workItemAssigned,
   'booking-received': bookingReceived,
   'vendor-rfq': vendorRfq,
+  'booking-submission-alert': bookingSubmissionAlert,
 }
 
