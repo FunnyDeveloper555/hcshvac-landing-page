@@ -342,7 +342,7 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
         qc.invalidateQueries({ queryKey: ["vendor-unread-count"] });
         qc.invalidateQueries({ queryKey: ["sidebar-unread-replies"] });
         qc.invalidateQueries({ queryKey: ["admin-notifications"] });
-        qc.invalidateQueries({ queryKey: ["workitem-replies"] });
+        qc.invalidateQueries({ queryKey: key });
       });
   };
   const unreadIds = (replies || []).filter((r) => r.direction === "inbound" && !r.read_at).map((r) => r.id);
@@ -384,7 +384,8 @@ export function RepliesThread({ kind, itemId }: { kind: WorkItemKind; itemId: st
 
   return (
     <div className="space-y-3">
-      <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Notes Log</Label>
+      <Label className="flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Notes Log
+        {unreadIds.length > 0 && (<button type="button" onClick={() => markRead(unreadIds)} className="ml-2 rounded-full bg-destructive px-2 py-0.5 text-xs text-destructive-foreground">{unreadIds.length} new — mark read</button>)}</Label>
       <p className="text-xs text-muted-foreground">Each note is stamped with who wrote it and when. Customer and vendor text replies show up here automatically, and assigned staff get a text alert.</p>
       <div className="max-h-96 space-y-2 overflow-y-auto">
         {(replies || []).length === 0 && <p className="text-xs text-muted-foreground">No notes yet.</p>}
