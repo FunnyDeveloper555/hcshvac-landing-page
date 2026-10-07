@@ -824,6 +824,7 @@ export type Database = {
           opened_at: string | null
           recipient_email: string | null
           recipient_phone: string | null
+          seen_at: string | null
           sent_at: string | null
           staff_notified_at: string | null
           status: string
@@ -843,6 +844,7 @@ export type Database = {
           opened_at?: string | null
           recipient_email?: string | null
           recipient_phone?: string | null
+          seen_at?: string | null
           sent_at?: string | null
           staff_notified_at?: string | null
           status?: string
@@ -862,6 +864,7 @@ export type Database = {
           opened_at?: string | null
           recipient_email?: string | null
           recipient_phone?: string | null
+          seen_at?: string | null
           sent_at?: string | null
           staff_notified_at?: string | null
           status?: string
@@ -6185,6 +6188,7 @@ export type Database = {
           opened_at: string | null
           recipient_email: string | null
           recipient_phone: string | null
+          seen_at: string | null
           sent_at: string | null
           staff_notified_at: string | null
           status: string
