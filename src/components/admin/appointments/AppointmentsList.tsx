@@ -165,7 +165,7 @@ export default function AppointmentsList() {
 
       // SMS
       if (appt.customer_phone) {
-        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}.  Reply to reschedule.`;
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Reply to reschedule.`;
         const { error: smsErr } = await supabase.functions.invoke("send-sms", {
           body: { phoneNumber: appt.customer_phone, message: smsBody },
         });
