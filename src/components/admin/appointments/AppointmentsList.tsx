@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle, Clock, Calendar, Pencil, Send, Eye, ClipboardList, ListChecks, Ticket } from "lucide-react";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
-import { buildAppointmentIcs, buildMeetingUrl } from "@/lib/appointmentIcs";
+import { buildAppointmentIcs } from "@/lib/appointmentIcs";
 import { format, isToday, startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -159,13 +159,13 @@ export default function AppointmentsList() {
         ? format(parseISO(appt.scheduled_date), "EEE, MMM d, yyyy")
         : "";
       const timeStr = appt.scheduled_time || "";
-      const meetingUrl = buildMeetingUrl(appt.id);
+      const meetingUrl: string | undefined = undefined;
 
       const results: string[] = [];
 
       // SMS
       if (appt.customer_phone) {
-        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}. Video call link: ${meetingUrl}  Reply to reschedule.`;
+        const smsBody = `${companyName}: Your appointment is confirmed for ${dateStr}${timeStr ? ` at ${timeStr}` : ""}.  Reply to reschedule.`;
         const { error: smsErr } = await supabase.functions.invoke("send-sms", {
           body: { phoneNumber: appt.customer_phone, message: smsBody },
         });
