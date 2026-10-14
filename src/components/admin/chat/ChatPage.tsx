@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Building2, Hash, Loader2, MessageSquare, Paperclip, Phone, Plus, Send, User, X } from "lucide-react";
+import { Users, Building2, Hash, Loader2, MessageSquare, Paperclip, Phone, Plus, Send, User, X } from "lucide-react";
 
 type Kind = "direct" | "channel" | "company" | "external";
 interface Conv {
@@ -150,7 +150,7 @@ export default function ChatPage() {
           })}
         </Card>
         {active ? (
-          <ChatThread conv={active} title={title(active)} onBack={() => setParams({})} />
+          <ChatThread conv={active} title={title(active)} onBack={() => setParams({})} staff={staff} />
         ) : (
           <Card className="hidden min-h-[400px] items-center justify-center text-sm text-muted-foreground md:flex">
             Pick a conversation or start a new one.
@@ -163,7 +163,8 @@ export default function ChatPage() {
   );
 }
 
-function ChatThread({ conv, title, onBack }: { conv: Conv; title: string; onBack: () => void }) {
+function ChatThread({ conv, title, onBack, staff }: { conv: Conv; title: string; onBack: () => void; staff: Staff[] }) {
+  const [peopleOpen, setPeopleOpen] = useState(false);
   const { user } = useAuth();
   const qc = useQueryClient();
   const [text, setText] = useState("");
@@ -234,6 +235,12 @@ function ChatThread({ conv, title, onBack }: { conv: Conv; title: string; onBack
         <Button variant="ghost" size="sm" className="md:hidden" onClick={onBack}>←</Button>
         <span className="font-semibold">{title}</span>
         {conv.kind === "external" && <span className="text-xs text-muted-foreground">{conv.external_phone} · sent as text</span>}
+        {conv.kind !== "external" && (
+          <Button variant="outline" size="sm" className="ml-auto" onClick={() => setPeopleOpen(true)}>
+            <Users className="mr-1 h-3 w-3" />People
+          </Button>
+        )}
+        <MembersDialog open={peopleOpen} onClose={() => setPeopleOpen(false)} convId={conv.id} staff={staff} />
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
         {isLoading && <Loader2 className="mx-auto h-5 w-5 animate-spin" />}
@@ -405,6 +412,40 @@ function NewChatDialog({ mode, onClose, staff, convs, members, onOpen }: {
             <p className="text-xs text-muted-foreground">Messages go out as texts from your company number, and replies show up here.</p>
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MembersDialog({ open, onClose, convId, staff }: { open: boolean; onClose: () => void; convId: string; staff: Staff[] }) {
+  const qc = useQueryClient();
+  const { data: ids = [], refetch } = useQuery({
+    queryKey: ["chat-conv-members", convId],
+    enabled: open,
+    queryFn: async (): Promise<string[]> =>
+      ((await db.from("chat_members").select("user_id").eq("conversation_id", convId)).data || []).map((m: any) => m.user_id),
+  });
+  const add = async (userId: string) => {
+    const { error } = await db.from("chat_members").insert({ conversation_id: convId, user_id: userId, last_read_at: new Date(0).toISOString() });
+    if (error) return toast.error(error.message);
+    toast.success("Added to the chat");
+    refetch(); qc.invalidateQueries({ queryKey: ["chat-members"] });
+  };
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>People in this chat</DialogTitle></DialogHeader>
+        <p className="text-sm text-muted-foreground">Added people get unread alerts for this chat.</p>
+        <div className="max-h-72 space-y-1 overflow-y-auto">
+          {staff.map((s) => (
+            <div key={s.user_id} className="flex items-center justify-between rounded px-2 py-1 hover:bg-accent">
+              <span className="text-sm">{s.name}</span>
+              {ids.includes(s.user_id)
+                ? <span className="text-xs text-muted-foreground">Member</span>
+                : <Button size="sm" variant="outline" onClick={() => add(s.user_id)}><Plus className="mr-1 h-3 w-3" />Add</Button>}
+            </div>
+          ))}
+        </div>
       </DialogContent>
     </Dialog>
   );
