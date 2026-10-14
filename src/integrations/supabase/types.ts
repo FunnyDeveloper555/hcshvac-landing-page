@@ -1167,6 +1167,121 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          external_name: string | null
+          external_phone: string | null
+          external_type: string | null
+          id: string
+          kind: string
+          last_message_at: string
+          name: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          external_name?: string | null
+          external_phone?: string | null
+          external_type?: string | null
+          id?: string
+          kind: string
+          last_message_at?: string
+          name?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          external_name?: string | null
+          external_phone?: string | null
+          external_type?: string | null
+          id?: string
+          kind?: string
+          last_message_at?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
+      chat_members: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          last_alerted_at: string | null
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          last_alerted_at?: string | null
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          last_alerted_at?: string | null
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachments: Json
+          body: string | null
+          conversation_id: string
+          created_at: string
+          direction: string
+          id: string
+          phone: string | null
+          sender_id: string | null
+          sender_name: string | null
+        }
+        Insert: {
+          attachments?: Json
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          direction?: string
+          id?: string
+          phone?: string | null
+          sender_id?: string | null
+          sender_name?: string | null
+        }
+        Update: {
+          attachments?: Json
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          phone?: string | null
+          sender_id?: string | null
+          sender_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           area_code: string | null
@@ -6156,6 +6271,17 @@ export type Database = {
     }
     Functions: {
       auto_close_past_appointments: { Args: never; Returns: number }
+      can_access_chat: {
+        Args: { _conv: string; _uid: string }
+        Returns: boolean
+      }
+      chat_unread_counts: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          unread: number
+        }[]
+      }
       company_initials: { Args: { _name: string }; Returns: string }
       complete_booking_invitation: {
         Args: { _token: string }
@@ -6281,6 +6407,7 @@ export type Database = {
         Returns: boolean
       }
       is_phone_blocked: { Args: { _phone: string }; Returns: boolean }
+      is_staff: { Args: { _uid: string }; Returns: boolean }
       lookup_caller_by_phone:
         | { Args: { _phone: string }; Returns: Json }
         | { Args: { _phone: string; _to_number?: string }; Returns: Json }

@@ -78,6 +78,13 @@
       "when": 1791290788324,
       "tag": "0010_grant_auto_close_past_appointments",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791985825536,
+      "tag": "0011_admin_chat",
+      "breakpoints": true
     }
   ]
 }
