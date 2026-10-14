@@ -29,7 +29,7 @@ const SECTIONS: Array<{ kind: Kind; label: string; icon: typeof Hash }> = [
   { kind: "direct", label: "Direct messages", icon: User },
   { kind: "channel", label: "Group channels", icon: Hash },
   { kind: "company", label: "Company rooms", icon: Building2 },
-  { kind: "external", label: "Customers & vendors (text)", icon: Phone },
+  { kind: "external", label: "Customers, vendors & employees (text)", icon: Phone },
 ];
 
 function useStaff() {
@@ -309,14 +309,17 @@ function NewChatDialog({ mode, onClose, staff, convs, members, onOpen }: {
     enabled: mode === "external" && search.trim().length >= 2,
     queryFn: async () => {
       const q = `%${search.trim()}%`;
-      const [c, v] = await Promise.all([
+      const [c, v, e] = await Promise.all([
         db.from("customer_registrations").select("id, ship_to_first_name, ship_to_last_name, ship_to_business_name, phone")
           .or(`ship_to_first_name.ilike.${q},ship_to_last_name.ilike.${q},ship_to_business_name.ilike.${q},phone.ilike.${q}`).limit(10),
         db.from("vendors").select("id, vendor_name, phone, representative_phone").or(`vendor_name.ilike.${q},phone.ilike.${q}`).limit(10),
+        db.from("employees").select("id, first_name, last_name, phone_number")
+          .or(`first_name.ilike.${q},last_name.ilike.${q},phone_number.ilike.${q}`).limit(10),
       ]);
       return [
         ...(c.data || []).map((x: any) => ({ type: "customer", name: [x.ship_to_first_name, x.ship_to_last_name].filter(Boolean).join(" ") || x.ship_to_business_name, phone: x.phone })),
         ...(v.data || []).map((x: any) => ({ type: "vendor", name: x.vendor_name, phone: x.representative_phone || x.phone })),
+        ...(e.data || []).map((x: any) => ({ type: "employee", name: [x.first_name, x.last_name].filter(Boolean).join(" "), phone: x.phone_number })),
       ].filter((x) => x.phone);
     },
   });
@@ -360,12 +363,12 @@ function NewChatDialog({ mode, onClose, staff, convs, members, onOpen }: {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {mode === "direct" ? "New message" : mode === "channel" ? "New group channel" : "Text a customer or vendor"}
+            {mode === "direct" ? "New message" : mode === "channel" ? "New group channel" : "Text a customer, vendor or employee"}
           </DialogTitle>
         </DialogHeader>
         {mode === "direct" && (
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Pick one person for a private chat, or several for a small group.</p>
+            <p className="text-sm text-muted-foreground">Staff who log in to the admin panel. To reach customers, vendors or employees without a login, use the Text button.</p>
             <div className="max-h-64 space-y-1 overflow-y-auto">
               {staff.map((s) => (
                 <label key={s.user_id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-accent">
@@ -386,7 +389,7 @@ function NewChatDialog({ mode, onClose, staff, convs, members, onOpen }: {
         )}
         {mode === "external" && (
           <div className="space-y-3">
-            <Input placeholder="Search customers or vendors by name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input placeholder="Search customers, vendors or employees by name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className="max-h-48 space-y-1 overflow-y-auto">
               {contacts.map((c: any, i: number) => (
                 <button key={i} onClick={() => startExternal(c.phone, c.name, c.type)} className="flex w-full justify-between rounded px-2 py-1 text-left text-sm hover:bg-accent">
