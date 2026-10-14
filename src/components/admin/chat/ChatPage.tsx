@@ -29,7 +29,7 @@ const SECTIONS: Array<{ kind: Kind; label: string; icon: typeof Hash }> = [
   { kind: "direct", label: "Direct messages", icon: User },
   { kind: "channel", label: "Group channels", icon: Hash },
   { kind: "company", label: "Company rooms", icon: Building2 },
-  { kind: "external", label: "Customers & vendors (text)", icon: Phone },
+  { kind: "external", label: "Customers, vendors & employees (text)", icon: Phone },
 ];
 
 function useStaff() {
