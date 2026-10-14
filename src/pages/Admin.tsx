@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import NotificationBell from "@/components/admin/NotificationBell";
+import ChatPage from "@/components/admin/chat/ChatPage";
 import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -309,6 +310,7 @@ const Admin = () => {
               <Route path="/tasks/add" element={<TasksAdd />} />
               <Route path="/tasks/list" element={<WorkItemsList kind="task" />} />
               <Route path="/work-items/board" element={<WorkItemsBoard />} />
+              <Route path="/chat" element={<ChatPage />} />
               <Route path="/logs/tickets" element={<WorkItemsLogs kind="ticket" />} />
               <Route path="/logs/tasks" element={<WorkItemsLogs kind="task" />} />
             </Routes>

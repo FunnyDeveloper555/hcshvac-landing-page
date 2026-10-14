@@ -39,6 +39,29 @@ async function sendSms(to: string, body: string) {
   if (!res.ok) console.error(`alert SMS failed [${res.status}]: ${await res.text()}`);
 }
 
+async function postToChat(sb: any, convId: string, from: string, body: string, media: Array<{ url: string; type: string }>) {
+  const { data: conv } = await sb.from("chat_conversations").select("name, external_name").eq("id", convId).maybeSingle();
+  const who = conv?.external_name || conv?.name || from;
+  await sb.from("chat_messages").insert({
+    conversation_id: convId, sender_id: null, sender_name: who,
+    body: body || (media.length ? "[photo]" : "[empty message]"),
+    attachments: media.map((m) => ({ url: m.url, type: m.type, name: "photo" })),
+    direction: "inbound", phone: from,
+  });
+  // Alert staff who have joined this conversation (throttled to one text per 10 minutes).
+  const { data: members } = await sb.from("chat_members").select("user_id, last_alerted_at").eq("conversation_id", convId);
+  for (const m of members || []) {
+    if (m.last_alerted_at && Date.now() - new Date(m.last_alerted_at).getTime() < 10 * 60 * 1000) continue;
+    const { data: p } = await sb.from("profiles").select("email").eq("user_id", m.user_id).maybeSingle();
+    if (!p?.email) continue;
+    const { data: emp } = await sb.from("employees").select("phone_number").ilike("email_address", p.email).limit(1).maybeSingle();
+    const to = normalizePhone(emp?.phone_number);
+    if (!to || to === from) continue;
+    await sendSms(to, `New text from ${who}:\n"${body.slice(0, 160)}"\nReply: ${SITE}/admin/chat?c=${convId}`);
+    await sb.from("chat_members").update({ last_alerted_at: new Date().toISOString() }).eq("conversation_id", convId).eq("user_id", m.user_id);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   if (!SID || !TOKEN || !FROM) return new Response("Text messaging is not configured", { status: 500 });
@@ -80,9 +103,20 @@ Deno.serve(async (req) => {
 
   // 1) The ticket/task that most recently texted this number (customer or vendor).
   const { data: lastOut } = await sb.from("work_item_replies")
-    .select("item_type, item_id, author_name, vendor_id")
+    .select("item_type, item_id, author_name, vendor_id, created_at")
     .eq("direction", "outbound").eq("phone", from).gte("created_at", since)
     .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  // A chat-page conversation that texted this number more recently wins.
+  const { data: chatOut } = await sb.from("chat_messages")
+    .select("conversation_id, created_at")
+    .eq("direction", "outbound").eq("phone", from).gte("created_at", since)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const chatWins = chatOut && (!lastOut || chatOut.created_at > lastOut.created_at);
+  if (chatWins) {
+    await postToChat(sb, chatOut.conversation_id, from, body, media);
+    return twiml();
+  }
+
   if (lastOut) {
     itemType = lastOut.item_type as any;
     const { data: t } = await sb.from(itemType === "task" ? "tasks" : "tickets")
@@ -110,7 +144,18 @@ Deno.serve(async (req) => {
   }
 
   if (!match) {
-    console.log(`Inbound SMS from ${from} did not match any ticket or task`);
+    // Unknown thread: start (or reuse) a customer/vendor chat for this number.
+    let { data: conv } = await sb.from("chat_conversations").select("id").eq("kind", "external").eq("external_phone", from).maybeSingle();
+    if (!conv) {
+      const { data: who } = await sb.rpc("lookup_caller_by_phone", { _phone: from });
+      const name = (who as any)?.customer?.name || [(who as any)?.employee?.first_name, (who as any)?.employee?.last_name].filter(Boolean).join(" ") || null;
+      const { data: created } = await sb.from("chat_conversations").insert({
+        kind: "external", external_phone: from, external_name: name, name: name || from,
+        external_type: (who as any)?.match_type === "customer" ? "customer" : "other",
+      }).select("id").single();
+      conv = created;
+    }
+    if (conv) await postToChat(sb, conv.id, from, body, media);
     return twiml();
   }
 

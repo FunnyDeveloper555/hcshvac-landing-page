@@ -34,7 +34,7 @@ export default function NotificationBell() {
     queryKey: ["admin-notifications"],
     refetchInterval: 5000,
     queryFn: async () => {
-      const [subs, texts] = await Promise.all([
+      const [subs, texts, chats] = await Promise.all([
         supabase
           .from("booking_invitations")
           .select("id, invitation_type, recipient_phone, recipient_email, completed_at, companies:company_id (name)")
@@ -49,17 +49,21 @@ export default function NotificationBell() {
           .is("read_at", null)
           .order("created_at", { ascending: false })
           .limit(20),
+        (supabase as any).rpc("chat_unread_counts"),
       ]);
+      const chatRows = ((chats.data || []) as Array<{ conversation_id: string; unread: number }>).filter((r) => Number(r.unread) > 0);
       return {
         submissions: (subs.data || []) as unknown as Submission[],
         texts: (texts.data || []) as unknown as InboundText[],
+        chats: chatRows,
       };
     },
   });
 
   const submissions = data?.submissions || [];
   const texts = data?.texts || [];
-  const count = submissions.length + texts.length;
+  const chats = data?.chats || [];
+  const count = submissions.length + texts.length + chats.length;
 
   const markAllRead = async () => {
     if (submissions.length) {
@@ -129,6 +133,18 @@ export default function NotificationBell() {
                         {format(new Date(s.completed_at), "MMM d, h:mm a")}
                       </span>
                     )}
+                  </span>
+                </button>
+              ))}
+              {chats.map((c) => (
+                <button
+                  key={c.conversation_id}
+                  onClick={() => go(`/admin/chat?c=${c.conversation_id}`)}
+                  className="flex w-full items-start gap-2 border-b px-3 py-2 text-left hover:bg-accent"
+                >
+                  <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span className="block text-sm font-medium">
+                    {Number(c.unread)} new chat message{Number(c.unread) === 1 ? "" : "s"}
                   </span>
                 </button>
               ))}

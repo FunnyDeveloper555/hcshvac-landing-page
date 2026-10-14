@@ -14,6 +14,11 @@ interface MenuItem {
 }
 
 const staticMenuItems: MenuItem[] = [
+  {
+    title: "Chat",
+    icon: MessageSquare,
+    children: [{ title: "Messages", url: "/admin/chat", icon: MessageSquare }],
+  },
   { 
     title: "Hero Content", 
     icon: LayoutDashboard,
@@ -426,7 +431,16 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
       return counts;
     },
   });
+  const { data: chatUnread = 0 } = useQuery({
+    queryKey: ["sidebar-chat-unread"],
+    refetchInterval: 5000,
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc("chat_unread_counts");
+      return (data || []).reduce((n: number, r: any) => n + Number(r.unread || 0), 0);
+    },
+  });
   const unreadDot: Record<string, boolean> = {
+    "/admin/chat": chatUnread > 0,
     "/admin/tickets/list": (unreadReplies?.ticket || 0) > 0,
     "/admin/tasks/list": (unreadReplies?.task || 0) > 0,
     "/admin/work-items/board": ((unreadReplies?.ticket || 0) + (unreadReplies?.task || 0)) > 0,
