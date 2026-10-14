@@ -92,6 +92,13 @@
       "when": 1791985839027,
       "tag": "0012_chat_files_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791986084887,
+      "tag": "0013_chat_select_policy_fix",
+      "breakpoints": true
     }
   ]
 }
