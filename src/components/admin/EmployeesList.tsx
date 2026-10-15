@@ -95,7 +95,7 @@ export function EmployeesList() {
                 <TableCell>{employee.email_address}</TableCell>
                 <TableCell>{employee.phone_number}</TableCell>
                 <TableCell>{employee.city}, {employee.state}</TableCell>
-                <TableCell>{new Date(employee.date_of_birth).toLocaleDateString()}</TableCell>
+                <TableCell>{employee.date_of_birth ? new Date(employee.date_of_birth).toLocaleDateString() : "—"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
