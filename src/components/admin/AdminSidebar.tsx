@@ -77,6 +77,15 @@ const staticMenuItems: MenuItem[] = [
     ]
   },
   { 
+    title: "Employees", 
+    icon: Users,
+    children: [
+      { title: "Add", url: "/admin/employees/add", icon: Plus },
+      { title: "List", url: "/admin/employees/list", icon: List },
+    ]
+  },
+
+  { 
     title: "Appointments", 
     icon: CalendarDays,
     children: [
@@ -139,14 +148,6 @@ const staticMenuItems: MenuItem[] = [
     children: [
       { title: "Applicants", url: "/admin/new-hire/list", icon: UserPlus },
       { title: "Send Application Link", url: "/admin/new-hire/send", icon: Send },
-      { 
-        title: "Employee's", 
-        icon: Users,
-        children: [
-          { title: "Add", url: "/admin/employees/add", icon: Plus },
-          { title: "List", url: "/admin/employees/list", icon: List },
-        ]
-      },
       { 
         title: "Insurance Documents", 
         icon: FileStack,
