@@ -3127,6 +3127,7 @@ export type Database = {
       employees: {
         Row: {
           address: string
+          bio_notes: string | null
           birth_gender: string | null
           certificates_held: string | null
           city: string
@@ -3134,14 +3135,19 @@ export type Database = {
           comfort_assessment: Json | null
           company_id: string | null
           created_at: string
-          date_of_birth: string
+          date_of_birth: string | null
+          department: string | null
           drivers_license_number: string | null
           email_address: string
+          emergency_contacts: Json
           employee_code: string | null
+          employment_status: string | null
           first_name: string
           four_year_college: string | null
           high_school: string | null
+          hire_date: string | null
           id: string
+          job_title: string | null
           languages: Json | null
           last_name: string
           licenses_held: string | null
@@ -3172,6 +3178,8 @@ export type Database = {
           resume_certificates_file_url: string | null
           resume_skills: string | null
           resume_summary: string | null
+          sms_email_pager: string | null
+          sms_text_pager: string | null
           social_security_number: string | null
           state: string
           state_of_birth: string | null
@@ -3183,6 +3191,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          bio_notes?: string | null
           birth_gender?: string | null
           certificates_held?: string | null
           city: string
@@ -3190,14 +3199,19 @@ export type Database = {
           comfort_assessment?: Json | null
           company_id?: string | null
           created_at?: string
-          date_of_birth: string
+          date_of_birth?: string | null
+          department?: string | null
           drivers_license_number?: string | null
           email_address: string
+          emergency_contacts?: Json
           employee_code?: string | null
+          employment_status?: string | null
           first_name: string
           four_year_college?: string | null
           high_school?: string | null
+          hire_date?: string | null
           id?: string
+          job_title?: string | null
           languages?: Json | null
           last_name: string
           licenses_held?: string | null
@@ -3228,6 +3242,8 @@ export type Database = {
           resume_certificates_file_url?: string | null
           resume_skills?: string | null
           resume_summary?: string | null
+          sms_email_pager?: string | null
+          sms_text_pager?: string | null
           social_security_number?: string | null
           state: string
           state_of_birth?: string | null
@@ -3239,6 +3255,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          bio_notes?: string | null
           birth_gender?: string | null
           certificates_held?: string | null
           city?: string
@@ -3246,14 +3263,19 @@ export type Database = {
           comfort_assessment?: Json | null
           company_id?: string | null
           created_at?: string
-          date_of_birth?: string
+          date_of_birth?: string | null
+          department?: string | null
           drivers_license_number?: string | null
           email_address?: string
+          emergency_contacts?: Json
           employee_code?: string | null
+          employment_status?: string | null
           first_name?: string
           four_year_college?: string | null
           high_school?: string | null
+          hire_date?: string | null
           id?: string
+          job_title?: string | null
           languages?: Json | null
           last_name?: string
           licenses_held?: string | null
@@ -3284,6 +3306,8 @@ export type Database = {
           resume_certificates_file_url?: string | null
           resume_skills?: string | null
           resume_summary?: string | null
+          sms_email_pager?: string | null
+          sms_text_pager?: string | null
           social_security_number?: string | null
           state?: string
           state_of_birth?: string | null
