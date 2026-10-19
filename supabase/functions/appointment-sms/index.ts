@@ -224,7 +224,7 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
       ? new Date(s.completed_at).toLocaleString("en-US", { timeZone: ZONE, dateStyle: "medium", timeStyle: "short" })
       : "";
     const adminUrl = appt?.id
-      ? `https://hcshvac.com/admin/appointments/add?edit=${appt.id}`
+      ? `https://hcshvac.com/admin/appointments/add?id=${appt.id}`
       : "https://hcshvac.com/admin/screenpops/sms";
 
     const smsBody = isBooking

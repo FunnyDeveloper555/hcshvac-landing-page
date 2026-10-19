@@ -105,6 +105,6 @@ export const template: TemplateEntry = {
     suggestedDate: '01-01-2027', suggestedTime: '1 PM to 3 PM',
     appointmentType: 'Repairs Boilers', notes: 'Boiler making noise at night.',
     submittedAt: 'Oct 7, 2026 2:15 PM',
-    adminUrl: 'https://hcshvac.com/admin/appointments/add?edit=example',
+    adminUrl: 'https://hcshvac.com/admin/appointments/add?id=example',
   },
 }
