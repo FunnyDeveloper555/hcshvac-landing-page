@@ -174,7 +174,7 @@ const COMPANY_ALERT_EMAILS: Record<string, string> = {
 async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
   const { data: subs, error } = await supabase
     .from("booking_invitations")
-    .select("id, invitation_type, recipient_phone, recipient_email, completed_at, companies:company_id (name)")
+    .select("id, company_id, created_at, invitation_type, recipient_phone, recipient_email, completed_at, companies:company_id (name)")
     .eq("status", "completed")
     .is("staff_notified_at", null)
     .order("completed_at", { ascending: true })
@@ -193,13 +193,43 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
     const companyName = s.companies?.name || "Home Comfort Suppliers";
     const isBooking = s.invitation_type !== "registration";
     const kind = isBooking ? "booking" : "registration";
-    const name = s.recipient_email || s.recipient_phone || "A customer";
+
+    // Find the appointment the customer just requested through this link.
+    let appt: any = null;
+    if (isBooking) {
+      const last10 = (s.recipient_phone || "").replace(/\D/g, "").slice(-10);
+      let q = supabase.from("appointments")
+        .select("id, appointment_number, customer_name, customer_phone, customer_email, customer_address, appointment_type, visit_type, scheduled_date, scheduled_time, notes")
+        .gte("created_at", s.created_at)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (s.company_id) q = q.eq("company_id", s.company_id);
+      const { data: appts } = await q;
+      appt = (appts || []).find((a: any) => last10 && (a.customer_phone || "").replace(/\D/g, "").slice(-10) === last10)
+        || (appts || [])[0] || null;
+    }
+
+    const fullName = (appt?.customer_name || "").trim();
+    const [firstName, ...rest] = fullName ? fullName.split(/\s+/) : [""];
+    const lastName = rest.join(" ");
+    const phone = appt?.customer_phone || s.recipient_phone || "";
+    const email = appt?.customer_email || s.recipient_email || "";
+    const name = fullName || email || phone || "A customer";
+    let suggestedDate = "";
+    if (appt?.scheduled_date) {
+      const [y, m, d] = String(appt.scheduled_date).split("-");
+      suggestedDate = `${m}-${d}-${y}`;
+    }
     const submittedAt = s.completed_at
       ? new Date(s.completed_at).toLocaleString("en-US", { timeZone: ZONE, dateStyle: "medium", timeStyle: "short" })
       : "";
-    const adminUrl = "https://hcshvac.com/admin/screenpops/sms";
+    const adminUrl = appt?.id
+      ? `https://hcshvac.com/admin/appointments/add?edit=${appt.id}`
+      : "https://hcshvac.com/admin/screenpops/sms";
 
-    const smsBody = `New ${kind} submission: ${name}${s.recipient_phone ? ` ${s.recipient_phone}` : ""} (${companyName}). Review it in the admin panel: ${adminUrl}`;
+    const smsBody = isBooking
+      ? `Appointment requested: ${name} ${phone}${suggestedDate ? ` — ${suggestedDate} ${appt?.scheduled_time || ""}` : ""} (Attn: ${companyName}). Needs approval or modification: ${adminUrl}`
+      : `New ${kind} submission: ${name}${phone ? ` ${phone}` : ""} (${companyName}). Review it: ${adminUrl}`;
     for (const phone of phones) {
       const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
       if (blocked) continue;
@@ -221,12 +251,21 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
           body: JSON.stringify({
             recipientEmail: to,
             templateName: "booking-submission-alert",
+            idempotencyKey: `booking-submission-alert-${s.id}-${to}`,
             templateData: {
               customerName: name,
-              customerPhone: s.recipient_phone || "",
-              customerEmail: s.recipient_email || "",
+              firstName,
+              lastName,
+              customerAddress: appt?.customer_address || "",
+              customerPhone: phone,
+              customerEmail: email,
               companyName,
               isBooking,
+              suggestedDate,
+              suggestedTime: appt?.scheduled_time || "",
+              appointmentType: appt?.visit_type || appt?.appointment_type || "",
+              notes: appt?.notes || "",
+              appointmentNumber: appt?.appointment_number || "",
               submittedAt,
               adminUrl,
             },
