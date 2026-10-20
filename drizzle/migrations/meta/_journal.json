@@ -113,6 +113,13 @@
       "when": 1792502000683,
       "tag": "0015_employee_active_profile_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792502386883,
+      "tag": "0016_we_installed_maintenance",
+      "breakpoints": true
     }
   ]
 }

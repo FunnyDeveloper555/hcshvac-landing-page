@@ -11,14 +11,12 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, Send } from "lucide-react";
 import {
   CATEGORY_LABEL,
-  INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
   WARRANTY_YEARS,
   brandsFor,
   specFieldsFor,
 } from "./installationOptions";
-import PickupPhotoSlot from "./PickupPhotoSlot";
 
 interface CustomerOpt { id: string; first: string; last: string; business?: string | null; account?: string | null; }
 interface EmployeeOpt { id: string; first: string; last: string; }
@@ -38,7 +36,20 @@ interface Item {
   equipment_warranty_years: number;
   notes: string;
   spec: Record<string, string>;
+  maintenance_interval_months: number;
+  last_maintenance_date: string;
 }
+
+const QUICK_ADD: { label: string; category: InstallCategory; item_type: string }[] = [
+  { label: "Heating", category: "residential_hvac", item_type: "Furnace" },
+  { label: "Cooling", category: "residential_hvac", item_type: "Condenser" },
+  { label: "Boiler", category: "plumbing", item_type: "Boiler" },
+  { label: "RTU", category: "commercial_hvac", item_type: "Packed/RTU Unit" },
+  { label: "Coil", category: "residential_hvac", item_type: "Coil" },
+  { label: "Sump Pump", category: "plumbing", item_type: "Sump Pump" },
+  { label: "Ejector Pump", category: "plumbing", item_type: "Ejector Pump" },
+  { label: "Water Heater", category: "plumbing", item_type: "Tanked Water Heater" },
+];
 
 const emptyItem = (): Item => ({
   _new: true,
@@ -52,6 +63,8 @@ const emptyItem = (): Item => ({
   equipment_warranty_years: 0,
   notes: "",
   spec: {},
+  maintenance_interval_months: 12,
+  last_maintenance_date: "",
 });
 
 export default function InstallationsAdd() {
@@ -99,6 +112,24 @@ export default function InstallationsAdd() {
       setVendors((v.data || []).map((r: any) => ({ id: r.id, name: r.vendor_name })));
     })();
   }, []);
+
+  useEffect(() => {
+    if (!preselectAppointment || job.customer_id || !customers.length) return;
+    (async () => {
+      const { data: a } = await supabase.from("appointments")
+        .select("customer_name, customer_phone, scheduled_date").eq("id", preselectAppointment).maybeSingle();
+      if (!a) return;
+      const phone = (a.customer_phone || "").replace(/\D/g, "").slice(-10);
+      let match = customers.find((c) => `${c.first} ${c.last}`.trim().toLowerCase() === (a.customer_name || "").trim().toLowerCase());
+      if (!match && phone) {
+        const { data: cr } = await supabase.from("customer_registrations").select("id, phone, business_phone").limit(1000);
+        const hit = (cr || []).find((r: any) => [r.phone, r.business_phone].some((p: string) => (p || "").replace(/\D/g, "").slice(-10) === phone));
+        if (hit) match = customers.find((c) => c.id === (hit as any).id);
+      }
+      setJob((j) => ({ ...j, customer_id: match?.id || j.customer_id, appointment_id: preselectAppointment, install_date: a.scheduled_date || j.install_date }));
+      if (!match) toast({ title: `Pick the customer for ${a.customer_name}`, description: "No matching customer account was found automatically." });
+    })();
+  }, [preselectAppointment, customers]);
 
   useEffect(() => {
     if (!job.customer_id) { setAppointments([]); return; }
@@ -185,6 +216,8 @@ export default function InstallationsAdd() {
       supply_vendor_id: r.supply_vendor_id || "",
       notes: r.notes || "",
       spec: (r.spec && typeof r.spec === "object") ? r.spec : {},
+      maintenance_interval_months: r.maintenance_interval_months || 12,
+      last_maintenance_date: r.last_maintenance_date || "",
     };
   }
 
@@ -244,6 +277,8 @@ export default function InstallationsAdd() {
         equipment_warranty_years: it.equipment_warranty_years || null,
         notes: it.notes || null,
         spec: it.spec || {},
+        maintenance_interval_months: it.maintenance_interval_months || 12,
+        last_maintenance_date: it.last_maintenance_date || null,
       };
       if (it.id) {
         await supabase.from("installation_records").update(itemPayload).eq("id", it.id);
@@ -269,7 +304,7 @@ export default function InstallationsAdd() {
     setSaving(false);
     if (id) {
       toast({ title: editJobId ? "Installation updated" : "Installation saved" });
-      navigate("/admin/installations/list");
+      navigate(preselectAppointment ? "/admin/appointments/open" : "/admin/installations/list");
     }
   }
 
@@ -342,7 +377,7 @@ export default function InstallationsAdd() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold">{editJobId ? "Edit" : "Add"} Installation Job</h2>
+        <h2 className="text-2xl font-bold">{editJobId ? "Edit" : ""} We Installed</h2>
         <p className="text-sm text-muted-foreground">
           Log equipment picked up from a supply vendor and installed at a customer site.
         </p>
@@ -494,6 +529,16 @@ export default function InstallationsAdd() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Maintenance Every (months)</Label>
+              <Input type="number" min={1} value={it.maintenance_interval_months}
+                onChange={(e) => updateItem(i, { maintenance_interval_months: Number(e.target.value) || 12 })} />
+            </div>
+            <div>
+              <Label>Last Maintenance Date</Label>
+              <Input type="date" value={it.last_maintenance_date}
+                onChange={(e) => updateItem(i, { last_maintenance_date: e.target.value })} />
+            </div>
             <div className="md:col-span-2">
               <Label>Notes</Label>
               <Textarea rows={2} value={it.notes} onChange={(e) => updateItem(i, { notes: e.target.value })} />
@@ -535,40 +580,19 @@ export default function InstallationsAdd() {
               </div>
             </div>
 
-            {/* On-Location Install Photos */}
-            <div className="md:col-span-2 pt-3 border-t">
-              <div className="text-sm font-medium mb-2">On-Location Install Photos</div>
-              {!it.id && (
-                <p className="text-xs text-muted-foreground mb-2">
-                  Uploading a photo will save this installation automatically (a customer must be selected).
-                </p>
-              )}
-              <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
-                {INSTALL_PHOTO_SLOTS.map((s) => (
-                  <PickupPhotoSlot
-                    key={s.key}
-                    jobId={jobId}
-                    itemId={it.id}
-                    phase="install"
-                    slot={s.key}
-                    label={s.label}
-                    ensureIds={async () => {
-                      const id = await saveJob();
-                      if (!id) return null;
-                      return { jobId: id, itemId: items[i]?.id ?? it.id ?? null };
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
           </CardContent>
         </Card>
       ))}
 
-      <div className="flex justify-start">
-        <Button type="button" variant="outline" onClick={() => setItems([...items, emptyItem()])}>
-          <Plus className="w-4 h-4 mr-1" /> Add Another Item
+      <div className="flex flex-wrap gap-2">
+        {QUICK_ADD.map((q) => (
+          <Button key={q.label} type="button" variant="outline" size="sm"
+            onClick={() => setItems([...items, { ...emptyItem(), category: q.category, item_type: ITEM_TYPES[q.category].includes(q.item_type) ? q.item_type : ITEM_TYPES[q.category][0] }])}>
+            <Plus className="w-4 h-4 mr-1" /> {q.label}
+          </Button>
+        ))}
+        <Button type="button" variant="ghost" size="sm" onClick={() => setItems([...items, emptyItem()])}>
+          <Plus className="w-4 h-4 mr-1" /> Other Item
         </Button>
       </div>
 

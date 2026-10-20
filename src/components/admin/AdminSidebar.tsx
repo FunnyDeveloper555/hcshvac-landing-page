@@ -105,8 +105,8 @@ const staticMenuItems: MenuItem[] = [
     title: "Installations",
     icon: Wrench,
     children: [
-      { title: "Add", url: "/admin/installations/add", icon: Plus },
-      { title: "History", url: "/admin/installations/list", icon: List },
+      { title: "We Installed", url: "/admin/installations/add", icon: Plus },
+      { title: "We Installed History", url: "/admin/installations/list", icon: List },
     ]
   },
   {
