@@ -76,14 +76,6 @@ const staticMenuItems: MenuItem[] = [
       { title: "List", url: "/admin/customers/list", icon: List },
     ]
   },
-  { 
-    title: "Employees", 
-    icon: Users,
-    children: [
-      { title: "Add", url: "/admin/employees/add", icon: Plus },
-      { title: "List", url: "/admin/employees/list", icon: List },
-    ]
-  },
 
   { 
     title: "Appointments", 
@@ -146,8 +138,30 @@ const staticMenuItems: MenuItem[] = [
     title: "My Company", 
     icon: Building,
     children: [
-      { title: "Applicants", url: "/admin/new-hire/list", icon: UserPlus },
-      { title: "Send Application Link", url: "/admin/new-hire/send", icon: Send },
+      {
+        title: "Active Employees",
+        icon: Users,
+        children: [
+          { title: "Employee Bios", url: "/admin/employees/list", icon: List },
+          { title: "Add Employee", url: "/admin/employees/add", icon: Plus },
+        ]
+      },
+      {
+        title: "Employee Archive",
+        icon: Archive,
+        children: [
+          { title: "Non-Active Employees", url: "/admin/employees/archive", icon: List },
+        ]
+      },
+      {
+        title: "Applicants",
+        icon: UserPlus,
+        children: [
+          { title: "Applicant List", url: "/admin/new-hire/list", icon: List },
+          { title: "Application / Hiring File", url: "/admin/employees/application", icon: FileText },
+          { title: "Send Application Link", url: "/admin/new-hire/send", icon: Send },
+        ]
+      },
       { 
         title: "Insurance Documents", 
         icon: FileStack,

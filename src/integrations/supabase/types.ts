@@ -3126,7 +3126,9 @@ export type Database = {
       }
       employees: {
         Row: {
+          active_company_ids: string[]
           address: string
+          assigned_tools: string | null
           bio_notes: string | null
           birth_gender: string | null
           certificates_held: string | null
@@ -3141,6 +3143,7 @@ export type Database = {
           email_address: string
           emergency_contacts: Json
           employee_code: string | null
+          employee_id_number: string | null
           employment_status: string | null
           first_name: string
           four_year_college: string | null
@@ -3153,6 +3156,7 @@ export type Database = {
           licenses_held: string | null
           middle_name: string | null
           phone_number: string
+          photo_path: string | null
           prev_business_name: string | null
           prev_corporate_address: string | null
           prev_corporate_city: string | null
@@ -3184,13 +3188,16 @@ export type Database = {
           state: string
           state_of_birth: string | null
           trade_school: string | null
+          truck_number: string | null
           two_year_college: string | null
           updated_at: string
           us_citizen: boolean | null
           zip_code: string
         }
         Insert: {
+          active_company_ids?: string[]
           address: string
+          assigned_tools?: string | null
           bio_notes?: string | null
           birth_gender?: string | null
           certificates_held?: string | null
@@ -3205,6 +3212,7 @@ export type Database = {
           email_address: string
           emergency_contacts?: Json
           employee_code?: string | null
+          employee_id_number?: string | null
           employment_status?: string | null
           first_name: string
           four_year_college?: string | null
@@ -3217,6 +3225,7 @@ export type Database = {
           licenses_held?: string | null
           middle_name?: string | null
           phone_number: string
+          photo_path?: string | null
           prev_business_name?: string | null
           prev_corporate_address?: string | null
           prev_corporate_city?: string | null
@@ -3248,13 +3257,16 @@ export type Database = {
           state: string
           state_of_birth?: string | null
           trade_school?: string | null
+          truck_number?: string | null
           two_year_college?: string | null
           updated_at?: string
           us_citizen?: boolean | null
           zip_code: string
         }
         Update: {
+          active_company_ids?: string[]
           address?: string
+          assigned_tools?: string | null
           bio_notes?: string | null
           birth_gender?: string | null
           certificates_held?: string | null
@@ -3269,6 +3281,7 @@ export type Database = {
           email_address?: string
           emergency_contacts?: Json
           employee_code?: string | null
+          employee_id_number?: string | null
           employment_status?: string | null
           first_name?: string
           four_year_college?: string | null
@@ -3281,6 +3294,7 @@ export type Database = {
           licenses_held?: string | null
           middle_name?: string | null
           phone_number?: string
+          photo_path?: string | null
           prev_business_name?: string | null
           prev_corporate_address?: string | null
           prev_corporate_city?: string | null
@@ -3312,6 +3326,7 @@ export type Database = {
           state?: string
           state_of_birth?: string | null
           trade_school?: string | null
+          truck_number?: string | null
           two_year_college?: string | null
           updated_at?: string
           us_citizen?: boolean | null

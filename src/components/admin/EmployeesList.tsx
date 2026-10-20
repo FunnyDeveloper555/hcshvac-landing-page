@@ -8,17 +8,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 
-export function EmployeesList() {
+export function EmployeesList({ archived = false }: { archived?: boolean }) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { logAction } = useAdminLog();
 
   const { data: employees, isLoading, refetch } = useQuery({
-    queryKey: ["employees"],
+    queryKey: ["employees", archived],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employees")
         .select("*")
+        [archived ? "eq" : "neq"]("employment_status", "inactive")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -63,7 +64,7 @@ export function EmployeesList() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-center text-muted-foreground">No employees found</p>
+          <p className="text-center text-muted-foreground">{archived ? "No archived employees" : "No active employees found"}</p>
         </CardContent>
       </Card>
     );
@@ -72,7 +73,7 @@ export function EmployeesList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Employees List</CardTitle>
+        <CardTitle>{archived ? "Employee Archive — Non-Active Employees" : "Active Employees — Employee Bios"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -82,7 +83,8 @@ export function EmployeesList() {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>City</TableHead>
-              <TableHead>Date of Birth</TableHead>
+              <TableHead>Employee ID</TableHead>
+              <TableHead>Truck #</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -95,7 +97,8 @@ export function EmployeesList() {
                 <TableCell>{employee.email_address}</TableCell>
                 <TableCell>{employee.phone_number}</TableCell>
                 <TableCell>{employee.city}, {employee.state}</TableCell>
-                <TableCell>{employee.date_of_birth ? new Date(employee.date_of_birth).toLocaleDateString() : "—"}</TableCell>
+                <TableCell>{(employee as any).employee_id_number || "—"}</TableCell>
+                <TableCell>{(employee as any).truck_number || "—"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
