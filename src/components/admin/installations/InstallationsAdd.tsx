@@ -122,8 +122,8 @@ export default function InstallationsAdd() {
       const phone = (a.customer_phone || "").replace(/\D/g, "").slice(-10);
       let match = customers.find((c) => `${c.first} ${c.last}`.trim().toLowerCase() === (a.customer_name || "").trim().toLowerCase());
       if (!match && phone) {
-        const { data: cr } = await supabase.from("customer_registrations").select("id, ship_to_phone, phone").limit(1000);
-        const hit = (cr || []).find((r: any) => [r.ship_to_phone, r.phone].some((p: string) => (p || "").replace(/\D/g, "").slice(-10) === phone));
+        const { data: cr } = await supabase.from("customer_registrations").select("id, phone, business_phone").limit(1000);
+        const hit = (cr || []).find((r: any) => [r.phone, r.business_phone].some((p: string) => (p || "").replace(/\D/g, "").slice(-10) === phone));
         if (hit) match = customers.find((c) => c.id === (hit as any).id);
       }
       setJob((j) => ({ ...j, customer_id: match?.id || j.customer_id, appointment_id: preselectAppointment, install_date: a.scheduled_date || j.install_date }));
