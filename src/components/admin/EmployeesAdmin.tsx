@@ -10,6 +10,7 @@ export function EmployeesAdmin() {
       <Route path="/add" element={<EmployeeBioForm />} />
       <Route path="/application" element={<EmployeesAdd />} />
       <Route path="/list" element={<EmployeesList />} />
+      <Route path="/archive" element={<EmployeesList archived />} />
     </Routes>
   );
 }
