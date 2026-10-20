@@ -4048,6 +4048,8 @@ export type Database = {
           item_type: string
           job_id: string | null
           labor_warranty_years: number | null
+          last_maintenance_date: string | null
+          maintenance_interval_months: number
           model_number: string | null
           notes: string | null
           pickup_date: string | null
@@ -4072,6 +4074,8 @@ export type Database = {
           item_type: string
           job_id?: string | null
           labor_warranty_years?: number | null
+          last_maintenance_date?: string | null
+          maintenance_interval_months?: number
           model_number?: string | null
           notes?: string | null
           pickup_date?: string | null
@@ -4096,6 +4100,8 @@ export type Database = {
           item_type?: string
           job_id?: string | null
           labor_warranty_years?: number | null
+          last_maintenance_date?: string | null
+          maintenance_interval_months?: number
           model_number?: string | null
           notes?: string | null
           pickup_date?: string | null
