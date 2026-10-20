@@ -58,6 +58,7 @@ export const ITEM_TYPES: Record<InstallCategory, string[]> = {
   ],
   plumbing: [
     "Tanked Water Heater",
+    "Boiler",
     "Tankless Water Heater",
     "Sump Pump",
     "Ejector Pump",

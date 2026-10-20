@@ -11,14 +11,12 @@ import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, Send } from "lucide-react";
 import {
   CATEGORY_LABEL,
-  INSTALL_PHOTO_SLOTS,
   ITEM_TYPES,
   InstallCategory,
   WARRANTY_YEARS,
   brandsFor,
   specFieldsFor,
 } from "./installationOptions";
-import PickupPhotoSlot from "./PickupPhotoSlot";
 
 interface CustomerOpt { id: string; first: string; last: string; business?: string | null; account?: string | null; }
 interface EmployeeOpt { id: string; first: string; last: string; }
