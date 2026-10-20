@@ -105,16 +105,12 @@ export function EmployeeBioForm() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{id ? "Edit Employee" : "Add Employee"}</CardTitle>
-        <Button variant="outline" size="sm" onClick={() => navigate(`/admin/employees/application${id ? `?id=${id}` : ""}`)}>
-          Application / hiring file
-        </Button>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="bio">
           <TabsList className="flex-wrap h-auto">
-            <TabsTrigger value="bio">Bio & Contact</TabsTrigger>
+            <TabsTrigger value="bio">Bio & Emergency Contact</TabsTrigger>
             <TabsTrigger value="active">Active Employee</TabsTrigger>
-            <TabsTrigger value="emergency">Emergency Contact</TabsTrigger>
             <TabsTrigger value="certs">Certifications & Licenses</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
           </TabsList>
@@ -127,11 +123,34 @@ export function EmployeeBioForm() {
             <div className="grid grid-cols-2 gap-4">{field("state", "State", "text", true)}{field("zip_code", "Zip", "text", true)}</div>
             {field("email_address", "Email", "email", true)}
             {field("phone_number", "Phone", "tel", true)}
-            {field("sms_text_pager", "SMS Text Pager (number)", "tel")}
-            {field("sms_email_pager", "SMS Email Pager (address)", "email")}
+            <div className="sm:col-span-2 space-y-4 pt-2 border-t">
+              <div className="font-medium pt-2">Emergency Contact</div>
+            {ecs.map((ec, i) => (
+              <div key={i} className="grid gap-3 sm:grid-cols-2 rounded-md border p-4">
+                {(["first_name", "last_name", "relationship", "phone", "alt_phone", "email", "address"] as (keyof Emergency)[]).map((k) => (
+                  <div key={k} className="space-y-1">
+                    <Label className="capitalize">{k.replace("_", " ")}</Label>
+                    <Input value={ec[k]} onChange={(e) => setEcs(ecs.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))} />
+                  </div>
+                ))}
+                {ecs.length > 1 && (
+                  <Button variant="ghost" size="sm" className="self-end text-destructive" onClick={() => setEcs(ecs.filter((_, j) => j !== i))}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Remove
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => setEcs([...ecs, blankEc()])}><Plus className="h-4 w-4 mr-1" /> Add another</Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="active" className="space-y-6 pt-4">
+            <div className="flex items-center justify-between rounded-md border p-3">
+              <div className="text-sm"><div className="font-medium">Application / Hiring File</div><div className="text-muted-foreground">Pre-employment application, resume and screening</div></div>
+              <Button variant="outline" size="sm" onClick={() => navigate(`/admin/employees/application${id ? `?id=${id}` : ""}`)}>
+          Application / hiring file
+        </Button>
+            </div>
             <div className="flex items-center gap-4">
               <div className="h-24 w-24 rounded-md border bg-muted overflow-hidden flex items-center justify-center text-xs text-muted-foreground">
                 {photoUrl ? <img src={photoUrl} alt="Employee" className="h-full w-full object-cover" /> : "No photo"}
@@ -144,6 +163,8 @@ export function EmployeeBioForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               {field("employee_id_number", "Employee ID Number")}
               {field("truck_number", "Assigned Truck Number")}
+              {field("sms_text_pager", "SMS Text Pager (number)", "tel")}
+              {field("sms_email_pager", "SMS Email Pager (address)", "email")}
               {field("phone_number", "Contact Phone", "tel", true)}
               {field("email_address", "Employee Email Address", "email", true)}
             <div className="space-y-1">
@@ -182,24 +203,6 @@ export function EmployeeBioForm() {
             <div className="space-y-1"><Label>Assigned Tools</Label><Textarea rows={4} value={f.assigned_tools || ""} onChange={set("assigned_tools")} placeholder="One tool per line" /></div>
           </TabsContent>
 
-          <TabsContent value="emergency" className="space-y-4 pt-4">
-            {ecs.map((ec, i) => (
-              <div key={i} className="grid gap-3 sm:grid-cols-2 rounded-md border p-4">
-                {(["first_name", "last_name", "relationship", "phone", "alt_phone", "email", "address"] as (keyof Emergency)[]).map((k) => (
-                  <div key={k} className="space-y-1">
-                    <Label className="capitalize">{k.replace("_", " ")}</Label>
-                    <Input value={ec[k]} onChange={(e) => setEcs(ecs.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))} />
-                  </div>
-                ))}
-                {ecs.length > 1 && (
-                  <Button variant="ghost" size="sm" className="self-end text-destructive" onClick={() => setEcs(ecs.filter((_, j) => j !== i))}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Remove
-                  </Button>
-                )}
-              </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={() => setEcs([...ecs, blankEc()])}><Plus className="h-4 w-4 mr-1" /> Add another</Button>
-          </TabsContent>
 
 
           <TabsContent value="certs" className="grid gap-4 pt-4">
