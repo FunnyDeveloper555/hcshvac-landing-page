@@ -16,6 +16,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import SendInvitationDialog from "./SendInvitationDialog";
 import SubmissionDetailsDialog from "./SubmissionDetailsDialog";
 import { sortOpenAppointments } from "./appointmentOrder";
+import { warrantyStatus, isInstallationVisit, WARRANTY_CLASS, WarrantyColor } from "../installations/warrantyStatus";
+import { Wrench } from "lucide-react";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -34,6 +36,7 @@ interface Appointment {
   created_at: string;
   closed_at: string | null;
   confirmed_at: string | null;
+  visit_type?: string | null;
   company_id: string | null;
   companies?: { name: string } | null;
 }
@@ -85,6 +88,50 @@ export default function AppointmentsList() {
     },
     staleTime: 30000,
   });
+
+  const { data: installByAppt = {} } = useQuery({
+    queryKey: ["we-installed-by-appointment"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("installation_records")
+        .select("appointment_id, install_date, last_maintenance_date, maintenance_interval_months, labor_warranty_years, equipment_warranty_years")
+        .not("appointment_id", "is", null);
+      const today = new Date().toISOString().slice(0, 10);
+      const rank: Record<WarrantyColor, number> = { green: 0, yellow: 1, expired: 2, red: 3 };
+      const map: Record<string, WarrantyColor> = {};
+      (data || []).forEach((r: any) => {
+        const c = warrantyStatus(r, today).color;
+        if (!map[r.appointment_id] || rank[c] > rank[map[r.appointment_id]]) map[r.appointment_id] = c;
+      });
+      return map;
+    },
+    staleTime: 30000,
+  });
+
+  const WeInstalledButton = ({ appt, small }: { appt: Appointment; small?: boolean }) => {
+    const color = installByAppt[appt.id];
+    if (!color && !isInstallationVisit(appt.visit_type)) return null;
+    return (
+      <Button
+        size="sm"
+        variant={color ? "default" : "outline"}
+        className={color ? WARRANTY_CLASS[color] : "border-destructive text-destructive"}
+        title={color ? "We Installed record on file" : "Installation form required before closing"}
+        onClick={() => navigate(`/admin/installations/add?appointmentId=${appt.id}`)}
+      >
+        <Wrench className={small ? "h-3.5 w-3.5 mr-1" : "h-4 w-4 mr-1"} /> We Installed{color ? "" : " (required)"}
+      </Button>
+    );
+  };
+
+  const closeAppointment = (appt: Appointment) => {
+    if (isInstallationVisit(appt.visit_type) && !installByAppt[appt.id]) {
+      toast.error("Complete the We Installed form before closing this installation job.");
+      navigate(`/admin/installations/add?appointmentId=${appt.id}`);
+      return;
+    }
+    updateStatusMutation.mutate({ id: appt.id, status: "closed", customerName: appt.customer_name });
+  };
 
   const normalizePhone = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-10);
 
@@ -590,6 +637,7 @@ export default function AppointmentsList() {
                             <ClipboardList className="h-4 w-4 mr-1" />
                             Site Profile
                           </Button>
+                          <WeInstalledButton appt={appointment} />
                           {appointment.status === "open" && (
                             <>
                               <Button
@@ -605,7 +653,7 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "closed", customerName: appointment.customer_name })}
+                                onClick={() => closeAppointment(appointment)}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Close
@@ -717,6 +765,7 @@ export default function AppointmentsList() {
                   >
                     <ClipboardList className="h-3.5 w-3.5 mr-1" /> Profile
                   </Button>
+                  <WeInstalledButton appt={appointment} small />
                   {appointment.status === "open" && (
                     <>
                       <Button
@@ -732,9 +781,7 @@ export default function AppointmentsList() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() =>
-                          updateStatusMutation.mutate({ id: appointment.id, status: "closed", customerName: appointment.customer_name })
-                        }
+                        onClick={() => closeAppointment(appointment)}
                       >
                         <CheckCircle className="h-3.5 w-3.5 mr-1" /> Close
                       </Button>
