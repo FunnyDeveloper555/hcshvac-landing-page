@@ -6,6 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useState } from "react";
+import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
+import { submissionPath } from "@/lib/submissionAlerts";
 
 interface Submission {
   id: string;
@@ -29,6 +31,7 @@ export default function NotificationBell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const { data: pendingSubmissions = [] } = usePendingSubmissions();
 
   const { data } = useQuery({
     queryKey: ["admin-notifications"],
@@ -63,15 +66,9 @@ export default function NotificationBell() {
   const submissions = data?.submissions || [];
   const texts = data?.texts || [];
   const chats = data?.chats || [];
-  const count = submissions.length + texts.length + chats.length;
+  const count = pendingSubmissions.length + texts.length + chats.length;
 
   const markAllRead = async () => {
-    if (submissions.length) {
-      await supabase
-        .from("booking_invitations")
-        .update({ seen_at: new Date().toISOString() } as any)
-        .in("id", submissions.map((s) => s.id));
-    }
     if (texts.length) {
       await supabase
         .from("work_item_replies")
@@ -104,7 +101,7 @@ export default function NotificationBell() {
           <span className="text-sm font-semibold">Notifications</span>
           {count > 0 && (
             <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllRead}>
-              <CheckCheck className="h-3 w-3 mr-1" /> Mark all read
+              <CheckCheck className="h-3 w-3 mr-1" /> Mark messages read
             </Button>
           )}
         </div>
@@ -113,28 +110,30 @@ export default function NotificationBell() {
             <p className="px-3 py-6 text-center text-sm text-muted-foreground">You're all caught up.</p>
           ) : (
             <>
-              {submissions.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => go("/admin/screenpops/sms")}
-                  className="flex w-full items-start gap-2 border-b px-3 py-2 text-left hover:bg-accent"
+              {pendingSubmissions.map((s) => (
+                <Button
+                  variant="ghost"
+                  key={`${s.kind}-${s.id}`}
+                  onClick={() => go(submissionPath(s))}
+                  className="flex h-auto w-full justify-start items-start gap-2 rounded-none border-b px-3 py-2 text-left whitespace-normal"
                 >
                   <ClipboardCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span className="min-w-0">
                     <span className="block text-sm font-medium">
-                      New {s.invitation_type === "registration" ? "registration" : "booking"} submission
+                      {s.kind === "registration" ? "New Registration" : "Suggested Appointment"} — Incomplete
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {s.recipient_email || s.recipient_phone || "Customer"}
-                      {s.companies?.name ? ` — ${s.companies.name}` : ""}
+                      {s.customer_name || "Customer"}
+                      {s.company_name ? ` — ${s.company_name}` : ""}
                     </span>
-                    {s.completed_at && (
+                    {s.scheduled_date && <span className="block text-xs text-muted-foreground">Suggested {s.scheduled_date} · {s.scheduled_time}</span>}
+                    {s.submitted_at && (
                       <span className="block text-xs text-muted-foreground">
-                        {format(new Date(s.completed_at), "MMM d, h:mm a")}
+                        {format(new Date(s.submitted_at), "MMM d, h:mm a")}
                       </span>
                     )}
                   </span>
-                </button>
+                </Button>
               ))}
               {chats.map((c) => (
                 <button

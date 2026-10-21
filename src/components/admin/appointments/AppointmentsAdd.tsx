@@ -477,15 +477,17 @@ export default function AppointmentsAdd() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      if (!editId) throw new Error("Appointment not found");
       const { error } = await supabase.from("appointments").update(buildPayload(data)).eq("id", editId);
       if (error) throw error;
-      await syncCalendar(editId!);
+      await syncCalendar(editId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
       queryClient.invalidateQueries({ queryKey: ["appointments-calendar"] });
       toast.success("Appointment updated successfully");
-      logAction("update", "appointment", editId!, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
+      queryClient.invalidateQueries({ queryKey: ["crm-pending-submissions"] });
+      if (editId) logAction("update", "appointment", editId, { customer_name: `${formData.first_name} ${formData.last_name}`.trim() });
       navigate("/admin/appointments/list");
     },
     onError: (error) => {
