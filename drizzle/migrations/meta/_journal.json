@@ -134,6 +134,13 @@
       "when": 1792569271653,
       "tag": "0018_crm_submission_review_alerts",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792569376490,
+      "tag": "0019_allow_trusted_submission_review_backfill",
+      "breakpoints": true
     }
   ]
 }
