@@ -99,7 +99,7 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
   const when = prettyWhen(apt.scheduled_date, apt.scheduled_time);
   const results: any[] = [];
 
-  const targets: Array<{ type: "customer" | "technician"; phone: string | null; message: string }> = [
+  const targets: Array<{ type: "customer" | "technician" | "staff"; phone: string | null; message: string }> = [
     {
       type: "customer",
       phone: normalizePhone(apt.customer_phone),
@@ -126,6 +126,19 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
     if (!phone || seen.has(phone)) continue;
     seen.add(phone);
     targets.push({ type: "technician", phone, message: targets[1].message });
+  }
+
+  // Extra notification targets (pagers, office lines) get the technician message too.
+  const { data: extraTargets } = await supabase
+    .from("notification_targets")
+    .select("phone")
+    .eq("active", true)
+    .eq("notify_appointments", true);
+  for (const t of extraTargets || []) {
+    const phone = normalizePhone(t.phone);
+    if (!phone || seen.has(phone)) continue;
+    seen.add(phone);
+    targets.push({ type: "staff", phone, message: targets[1].message });
   }
 
   for (const t of targets) {
@@ -187,6 +200,19 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
     .select("first_name, last_name, phone_number, email_address");
   const phones = [...new Set((staff || []).map((e: any) => normalizePhone(e.phone_number)).filter(Boolean))] as string[];
   const emails = [...new Set((staff || []).map((e: any) => (e.email_address || "").trim()).filter(Boolean))] as string[];
+
+  // Extra notification targets (pagers, office lines) also get submission alerts.
+  const { data: extra } = await supabase
+    .from("notification_targets")
+    .select("phone, email")
+    .eq("active", true)
+    .eq("notify_submissions", true);
+  for (const t of extra || []) {
+    const p = normalizePhone(t.phone);
+    if (p && !phones.includes(p)) phones.push(p);
+    const e = (t.email || "").trim();
+    if (e && !emails.includes(e)) emails.push(e);
+  }
 
   let count = 0;
   for (const s of subs as any[]) {
