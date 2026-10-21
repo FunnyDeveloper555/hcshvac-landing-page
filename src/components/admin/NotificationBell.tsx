@@ -71,7 +71,7 @@ export default function NotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
-          {texts.length > 0 && (
+          {count > 0 && (
             <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
               {count > 99 ? "99+" : count}
             </span>
@@ -81,7 +81,7 @@ export default function NotificationBell() {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="text-sm font-semibold">Notifications</span>
-          {count > 0 && (
+          {texts.length > 0 && (
             <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAllRead}>
               <CheckCheck className="h-3 w-3 mr-1" /> Mark messages read
             </Button>
