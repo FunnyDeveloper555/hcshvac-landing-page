@@ -4339,6 +4339,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_targets: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string | null
+          id: string
+          label: string
+          notify_appointments: boolean
+          notify_events: boolean
+          notify_submissions: boolean
+          phone: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email?: string | null
+          id?: string
+          label?: string
+          notify_appointments?: boolean
+          notify_events?: boolean
+          notify_submissions?: boolean
+          phone?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string | null
+          id?: string
+          label?: string
+          notify_appointments?: boolean
+          notify_events?: boolean
+          notify_submissions?: boolean
+          phone?: string | null
+        }
+        Relationships: []
+      }
       page_campaigns: {
         Row: {
           audience_types: Json | null
