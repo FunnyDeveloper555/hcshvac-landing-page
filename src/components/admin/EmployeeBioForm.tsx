@@ -203,6 +203,87 @@ export function EmployeeBioForm() {
 
 
 
+          <TabsContent value="status" className="pt-4">
+            <div className="max-w-xl space-y-6">
+              {[
+                { title: null as string | null, options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => !o.group) },
+                { title: "Inactive", options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => o.group === "Inactive") },
+                { title: "Termination/Separation", options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => o.group === "Termination/Separation") },
+              ].map((section) => (
+                <div key={section.title ?? "main"} className="space-y-3">
+                  {section.title && <div className="font-medium border-b pb-1">{section.title}</div>}
+                  {section.options.map((o) => {
+                    const selected = f.employment_status === o.value;
+                    const tbd = f.status_tbd === "true";
+                    return (
+                      <div key={o.value} className="rounded-md border p-3 space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            className="accent-primary"
+                            checked={selected}
+                            onChange={() =>
+                              setF({
+                                ...f,
+                                employment_status: o.value,
+                                status_start_date: "",
+                                status_end_date: "",
+                                status_revisit_date: "",
+                                status_final_day: "",
+                                status_tbd: "",
+                              })
+                            }
+                          />
+                          {o.label}
+                        </label>
+                        {selected && (
+                          <div className="grid gap-3 sm:grid-cols-2 pl-6">
+                            {o.dates.includes("start") && (
+                              <div className="space-y-1">
+                                <Label>START Date</Label>
+                                <Input type="date" value={f.status_start_date} onChange={set("status_start_date")} />
+                              </div>
+                            )}
+                            {o.dates.includes("end") && !tbd && (
+                              <div className="space-y-1">
+                                <Label>End Date</Label>
+                                <Input type="date" value={f.status_end_date} onChange={set("status_end_date")} />
+                              </div>
+                            )}
+                            {o.tbd && (
+                              <label className="flex items-center gap-2 text-sm cursor-pointer self-end pb-2">
+                                <Checkbox
+                                  checked={tbd}
+                                  onCheckedChange={(v) =>
+                                    setF({ ...f, status_tbd: v ? "true" : "", status_end_date: "", status_revisit_date: "" })
+                                  }
+                                />
+                                TBD (end date unknown)
+                              </label>
+                            )}
+                            {o.tbd && tbd && (
+                              <div className="space-y-1">
+                                <Label>Revisit Date</Label>
+                                <Input type="date" value={f.status_revisit_date} onChange={set("status_revisit_date")} />
+                              </div>
+                            )}
+                            {o.dates.includes("final") && (
+                              <div className="space-y-1">
+                                <Label>Final Day</Label>
+                                <Input type="date" value={f.status_final_day} onChange={set("status_final_day")} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
           <TabsContent value="certs" className="grid gap-4 pt-4">
             <div className="space-y-1"><Label>Certifications</Label><Textarea rows={4} value={f.certificates_held || ""} onChange={set("certificates_held")} /></div>
             <div className="space-y-1"><Label>Licenses</Label><Textarea rows={4} value={f.licenses_held || ""} onChange={set("licenses_held")} /></div>
