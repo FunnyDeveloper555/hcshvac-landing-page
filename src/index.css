@@ -21,8 +21,8 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
-    --pending-submission: 50 100% 88%;
-    --pending-submission-hover: 50 100% 82%;
+    --pending-submission: 4 90% 97%;
+    --pending-submission-hover: 4 90% 94%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 165 100% 26%;
@@ -61,8 +61,8 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
-    --pending-submission: 48 65% 22%;
-    --pending-submission-hover: 48 65% 28%;
+    --pending-submission: 4 60% 15%;
+    --pending-submission-hover: 4 60% 19%;
     --border: 0 0% 24%;
     --input: 0 0% 24%;
     --ring: 165 100% 36%;
@@ -90,6 +90,16 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Pending customer/appointment rows: subtle tint + red accent bar on the left */
+  [data-pending-submission] {
+    box-shadow: inset 3px 0 0 0 hsl(var(--destructive));
+  }
+  td[data-pending-submission] {
+    box-shadow: inset 3px 0 0 0 hsl(var(--destructive));
   }
 }
 
