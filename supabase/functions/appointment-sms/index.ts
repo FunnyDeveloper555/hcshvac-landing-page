@@ -1,5 +1,6 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { formatPagerSms, isPagerRecipient } from "../_shared/pager-sms.ts";
 
 // Sends appointment text messages:
 //  - kind "booking"  : immediate confirmation right after booking
@@ -131,7 +132,7 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
   // Extra notification targets (pagers, office lines) get the technician message too.
   const { data: extraTargets } = await supabase
     .from("notification_targets")
-    .select("phone")
+    .select("phone, email")
     .eq("active", true)
     .eq("notify_appointments", true);
   for (const t of extraTargets || []) {
@@ -143,6 +144,7 @@ async function processAppointment(apt: any, kind: "booking" | "reminder") {
 
   for (const t of targets) {
     if (!t.phone) continue;
+    if (isPagerRecipient(t.phone, extraTargets || [])) t.message = formatPagerSms(t.message);
     const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: t.phone });
     if (blocked) continue;
     try {
@@ -260,7 +262,7 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
       const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: phone });
       if (blocked) continue;
       try {
-        await sendSms(phone, smsBody);
+        await sendSms(phone, isPagerRecipient(phone, extra || []) ? formatPagerSms(smsBody) : smsBody);
       } catch (e) {
         console.error(`submission alert SMS to ${phone} failed: ${(e as Error).message}`);
       }
