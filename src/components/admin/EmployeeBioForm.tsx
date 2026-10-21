@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EMPLOYMENT_STATUS_OPTIONS } from "./employmentStatus";
 
 type Emergency = { first_name: string; last_name: string; relationship: string; phone: string; alt_phone: string; email: string; address: string };
 const blankEc = (): Emergency => ({ first_name: "", last_name: "", relationship: "", phone: "", alt_phone: "", email: "", address: "" });
@@ -20,6 +21,7 @@ const empty = {
   first_name: "", last_name: "", address: "", city: "", state: "", zip_code: "",
   email_address: "", phone_number: "", sms_text_pager: "", sms_email_pager: "",
   job_title: "", department: "", hire_date: "", employment_status: "active",
+  status_start_date: "", status_end_date: "", status_revisit_date: "", status_final_day: "", status_tbd: "",
   certificates_held: "", licenses_held: "", bio_notes: "", company_id: "",
   employee_id_number: "", truck_number: "", assigned_tools: "", photo_path: "",
 };
@@ -60,6 +62,7 @@ export function EmployeeBioForm() {
         const d: any = data;
         const next: Record<string, string> = {};
         Object.keys(empty).forEach((k) => (next[k] = d[k] ?? (empty as any)[k]));
+        next.status_tbd = d.status_tbd ? "true" : "";
         setF(next);
         const list = Array.isArray(d.emergency_contacts) ? d.emergency_contacts : [];
         setActiveCos(Array.isArray(d.active_company_ids) ? d.active_company_ids : []);
@@ -86,6 +89,11 @@ export function EmployeeBioForm() {
       ...f,
       company_id: f.company_id || null,
       hire_date: f.hire_date || null,
+      status_start_date: f.status_start_date || null,
+      status_end_date: f.status_end_date || null,
+      status_revisit_date: f.status_revisit_date || null,
+      status_final_day: f.status_final_day || null,
+      status_tbd: f.status_tbd === "true",
       active_company_ids: activeCos,
       emergency_contacts: ecs.filter((e) => e.first_name || e.last_name || e.phone),
     };
@@ -111,6 +119,7 @@ export function EmployeeBioForm() {
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="bio">Bio & Emergency Contact</TabsTrigger>
             <TabsTrigger value="active">Active Employee</TabsTrigger>
+            <TabsTrigger value="status">Employment Status</TabsTrigger>
             <TabsTrigger value="certs">Certifications & Licenses</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
           </TabsList>
@@ -174,17 +183,6 @@ export function EmployeeBioForm() {
                 <SelectContent>{companies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select value={f.employment_status || "active"} onValueChange={(v) => setF({ ...f, employment_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="on_leave">On Leave</SelectItem>
-                  <SelectItem value="inactive">Inactive (Archive)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             {field("job_title", "Job Title")}
             {field("department", "Department")}
             {field("hire_date", "Hire Date", "date")}
@@ -204,6 +202,87 @@ export function EmployeeBioForm() {
           </TabsContent>
 
 
+
+          <TabsContent value="status" className="pt-4">
+            <div className="max-w-xl space-y-6">
+              {[
+                { title: null as string | null, options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => !o.group) },
+                { title: "Inactive", options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => o.group === "Inactive") },
+                { title: "Termination/Separation", options: EMPLOYMENT_STATUS_OPTIONS.filter((o) => o.group === "Termination/Separation") },
+              ].map((section) => (
+                <div key={section.title ?? "main"} className="space-y-3">
+                  {section.title && <div className="font-medium border-b pb-1">{section.title}</div>}
+                  {section.options.map((o) => {
+                    const selected = f.employment_status === o.value;
+                    const tbd = f.status_tbd === "true";
+                    return (
+                      <div key={o.value} className="rounded-md border p-3 space-y-3">
+                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                          <input
+                            type="radio"
+                            name="employment_status"
+                            className="accent-primary"
+                            checked={selected}
+                            onChange={() =>
+                              setF({
+                                ...f,
+                                employment_status: o.value,
+                                status_start_date: "",
+                                status_end_date: "",
+                                status_revisit_date: "",
+                                status_final_day: "",
+                                status_tbd: "",
+                              })
+                            }
+                          />
+                          {o.label}
+                        </label>
+                        {selected && (
+                          <div className="grid gap-3 sm:grid-cols-2 pl-6">
+                            {o.dates.includes("start") && (
+                              <div className="space-y-1">
+                                <Label>START Date</Label>
+                                <Input type="date" value={f.status_start_date} onChange={set("status_start_date")} />
+                              </div>
+                            )}
+                            {o.dates.includes("end") && !tbd && (
+                              <div className="space-y-1">
+                                <Label>End Date</Label>
+                                <Input type="date" value={f.status_end_date} onChange={set("status_end_date")} />
+                              </div>
+                            )}
+                            {o.tbd && (
+                              <label className="flex items-center gap-2 text-sm cursor-pointer self-end pb-2">
+                                <Checkbox
+                                  checked={tbd}
+                                  onCheckedChange={(v) =>
+                                    setF({ ...f, status_tbd: v ? "true" : "", status_end_date: "", status_revisit_date: "" })
+                                  }
+                                />
+                                TBD (end date unknown)
+                              </label>
+                            )}
+                            {o.tbd && tbd && (
+                              <div className="space-y-1">
+                                <Label>Revisit Date</Label>
+                                <Input type="date" value={f.status_revisit_date} onChange={set("status_revisit_date")} />
+                              </div>
+                            )}
+                            {o.dates.includes("final") && (
+                              <div className="space-y-1">
+                                <Label>Final Day</Label>
+                                <Input type="date" value={f.status_final_day} onChange={set("status_final_day")} />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="certs" className="grid gap-4 pt-4">
             <div className="space-y-1"><Label>Certifications</Label><Textarea rows={4} value={f.certificates_held || ""} onChange={set("certificates_held")} /></div>

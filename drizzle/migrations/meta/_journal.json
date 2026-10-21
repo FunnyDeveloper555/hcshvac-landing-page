@@ -120,6 +120,13 @@
       "when": 1792502386883,
       "tag": "0016_we_installed_maintenance",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792551801632,
+      "tag": "0017_employee_employment_status_detail",
+      "breakpoints": true
     }
   ]
 }

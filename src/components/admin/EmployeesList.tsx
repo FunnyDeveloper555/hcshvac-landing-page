@@ -7,6 +7,7 @@ import { Trash2, Loader2, Pencil } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { EMPLOYMENT_STATUS_LABEL } from "./employmentStatus";
 
 export function EmployeesList({ archived = false }: { archived?: boolean }) {
   const { toast } = useToast();
@@ -19,7 +20,7 @@ export function EmployeesList({ archived = false }: { archived?: boolean }) {
       const { data, error } = await supabase
         .from("employees")
         .select("*")
-        [archived ? "eq" : "neq"]("employment_status", "inactive")
+        [archived ? "neq" : "eq"]("employment_status", "active")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -83,6 +84,7 @@ export function EmployeesList({ archived = false }: { archived?: boolean }) {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>City</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Employee ID</TableHead>
               <TableHead>Truck #</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -97,6 +99,7 @@ export function EmployeesList({ archived = false }: { archived?: boolean }) {
                 <TableCell>{employee.email_address}</TableCell>
                 <TableCell>{employee.phone_number}</TableCell>
                 <TableCell>{employee.city}, {employee.state}</TableCell>
+                <TableCell>{EMPLOYMENT_STATUS_LABEL[(employee as any).employment_status] || (employee as any).employment_status || "—"}</TableCell>
                 <TableCell>{(employee as any).employee_id_number || "—"}</TableCell>
                 <TableCell>{(employee as any).truck_number || "—"}</TableCell>
                 <TableCell className="text-right">

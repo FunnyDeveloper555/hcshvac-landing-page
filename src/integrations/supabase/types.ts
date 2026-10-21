@@ -3187,6 +3187,11 @@ export type Database = {
           social_security_number: string | null
           state: string
           state_of_birth: string | null
+          status_end_date: string | null
+          status_final_day: string | null
+          status_revisit_date: string | null
+          status_start_date: string | null
+          status_tbd: boolean
           trade_school: string | null
           truck_number: string | null
           two_year_college: string | null
@@ -3256,6 +3261,11 @@ export type Database = {
           social_security_number?: string | null
           state: string
           state_of_birth?: string | null
+          status_end_date?: string | null
+          status_final_day?: string | null
+          status_revisit_date?: string | null
+          status_start_date?: string | null
+          status_tbd?: boolean
           trade_school?: string | null
           truck_number?: string | null
           two_year_college?: string | null
@@ -3325,6 +3335,11 @@ export type Database = {
           social_security_number?: string | null
           state?: string
           state_of_birth?: string | null
+          status_end_date?: string | null
+          status_final_day?: string | null
+          status_revisit_date?: string | null
+          status_start_date?: string | null
+          status_tbd?: boolean
           trade_school?: string | null
           truck_number?: string | null
           two_year_college?: string | null
