@@ -3,7 +3,7 @@ import CustomerWorkHistory from "@/components/admin/workitems/CustomerWorkHistor
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -321,6 +321,7 @@ const CustomersAdd = () => {
     setLoading(false);
   };
 
+  const queryClient = useQueryClient();
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     e?.preventDefault?.();
 
@@ -371,6 +372,7 @@ const CustomersAdd = () => {
         });
       }
 
+      queryClient.invalidateQueries({ queryKey: ["crm-pending-submissions"] });
       navigate("/admin/customers/list");
     } catch (error: any) {
       toast({
