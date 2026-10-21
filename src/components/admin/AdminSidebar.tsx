@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
+import { pendingSubmissionIds } from "@/lib/submissionAlerts";
 
 interface MenuItem {
   title: string;
@@ -353,6 +355,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const { data: pendingSubmissions = [] } = usePendingSubmissions();
 
   const { data: companies = [], isLoading: companiesLoading } = useQuery({
     queryKey: ["sidebar-companies"],
@@ -455,13 +458,15 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     },
   });
   const unreadDot: Record<string, boolean> = {
+    "/admin/customers/list": pendingSubmissionIds(pendingSubmissions, "registration").size > 0,
+    "/admin/appointments/open": pendingSubmissionIds(pendingSubmissions, "appointment").size > 0,
     "/admin/chat": chatUnread > 0,
     "/admin/tickets/list": (unreadReplies?.ticket || 0) > 0,
     "/admin/tasks/list": (unreadReplies?.task || 0) > 0,
     "/admin/work-items/board": ((unreadReplies?.ticket || 0) + (unreadReplies?.task || 0)) > 0,
   };
   const groupHasDot = (item: MenuItem) => !!item.children?.some((c) => c.url && unreadDot[c.url]);
-  const Dot = () => <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" aria-label="New replies" />;
+  const Dot = () => <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" role="img" aria-label="Pending alerts" />;
 
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
