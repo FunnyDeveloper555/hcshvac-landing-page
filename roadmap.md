@@ -8,5 +8,5 @@
 - [x] Test formatting, deploy, and verify a single-part pager test with the texting provider.
 
 # Pending submission list indicators
-- [ ] Add red sidebar/name dots and yellow customer/appointment list highlights from existing pending alerts.
-- [ ] Verify indicators against live pending records and preserve staff-completion dismissal.
+- [x] Add red sidebar/name dots and yellow customer/appointment list highlights from existing pending alerts.
+- [x] Verify indicators against live pending records and preserve staff-completion dismissal.
