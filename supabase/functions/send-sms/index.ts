@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { formatPagerSms, isPagerRecipient } from "../_shared/pager-sms.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,11 +43,20 @@ const handler = async (req: Request): Promise<Response> => {
     }
     if (!formattedPhone.startsWith("+")) formattedPhone = "+" + formattedPhone;
 
+    const backendUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!backendUrl || !serviceKey) throw new Error("Notification configuration unavailable");
+    const backend = createClient(backendUrl, serviceKey);
+    const { data: targets, error: targetError } = await backend
+      .from("notification_targets").select("phone, email").eq("active", true);
+    if (targetError) throw targetError;
+    const smsBody = isPagerRecipient(formattedPhone, targets || []) ? formatPagerSms(message) : message;
+
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
     const formData = new URLSearchParams();
     formData.append("To", formattedPhone);
     formData.append("From", TWILIO_PHONE_NUMBER);
-    formData.append("Body", message);
+    formData.append("Body", smsBody);
 
     const twilioResponse = await fetch(twilioUrl, {
       method: "POST",
