@@ -9,15 +9,6 @@ import { useState } from "react";
 import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
 import { submissionPath } from "@/lib/submissionAlerts";
 
-interface Submission {
-  id: string;
-  invitation_type: string;
-  recipient_phone: string | null;
-  recipient_email: string | null;
-  completed_at: string | null;
-  companies?: { name: string } | null;
-}
-
 interface InboundText {
   id: string;
   item_type: string;
@@ -37,14 +28,7 @@ export default function NotificationBell() {
     queryKey: ["admin-notifications"],
     refetchInterval: 5000,
     queryFn: async () => {
-      const [subs, texts, chats] = await Promise.all([
-        supabase
-          .from("booking_invitations")
-          .select("id, invitation_type, recipient_phone, recipient_email, completed_at, companies:company_id (name)")
-          .eq("status", "completed")
-          .is("seen_at", null)
-          .order("completed_at", { ascending: false })
-          .limit(10),
+      const [texts, chats] = await Promise.all([
         supabase
           .from("work_item_replies")
           .select("id, item_type, item_id, message, phone, created_at")
@@ -56,14 +40,12 @@ export default function NotificationBell() {
       ]);
       const chatRows = ((chats.data || []) as Array<{ conversation_id: string; unread: number }>).filter((r) => Number(r.unread) > 0);
       return {
-        submissions: (subs.data || []) as unknown as Submission[],
         texts: (texts.data || []) as unknown as InboundText[],
         chats: chatRows,
       };
     },
   });
 
-  const submissions = data?.submissions || [];
   const texts = data?.texts || [];
   const chats = data?.chats || [];
   const count = pendingSubmissions.length + texts.length + chats.length;
@@ -89,7 +71,7 @@ export default function NotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
-          {count > 0 && (
+          {texts.length > 0 && (
             <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
               {count > 99 ? "99+" : count}
             </span>

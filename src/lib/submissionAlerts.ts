@@ -9,4 +9,4 @@ export interface PendingSubmission {
 }
 
 export const submissionPath = (submission: Pick<PendingSubmission, "id" | "kind">) =>
-  `/admin/${submission.kind === "registration" ? "customers" : "appointments"}/add?${submission.kind === "registration" ? "edit" : "id"}=${encodeURIComponent(submission.id)}`;
+  `/admin/${submission.kind === "registration" ? "customers" : "appointments"}/add?id=${encodeURIComponent(submission.id)}`;
