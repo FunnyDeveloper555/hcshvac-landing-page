@@ -689,6 +689,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time: string
           sms_reminders_enabled: boolean
+          staff_review_required: boolean
           status: Database["public"]["Enums"]["appointment_status"]
           technician_phone: string | null
           updated_at: string
@@ -721,6 +722,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time: string
           sms_reminders_enabled?: boolean
+          staff_review_required?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
           updated_at?: string
@@ -753,6 +755,7 @@ export type Database = {
           scheduled_date?: string
           scheduled_time?: string
           sms_reminders_enabled?: boolean
+          staff_review_required?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
           updated_at?: string
@@ -2242,6 +2245,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number: string | null
           ship_to_zip_code: string
+          staff_review_required: boolean
           status: string
           title_to_location: string | null
           type_of_use: string | null
@@ -2296,6 +2300,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number?: string | null
           ship_to_zip_code: string
+          staff_review_required?: boolean
           status?: string
           title_to_location?: string | null
           type_of_use?: string | null
@@ -2350,6 +2355,7 @@ export type Database = {
           ship_to_state?: string
           ship_to_suite_number?: string | null
           ship_to_zip_code?: string
+          staff_review_required?: boolean
           status?: string
           title_to_location?: string | null
           type_of_use?: string | null
@@ -6348,6 +6354,18 @@ export type Database = {
         Returns: undefined
       }
       complete_hire_invitation: { Args: { _token: string }; Returns: undefined }
+      crm_pending_submissions: {
+        Args: never
+        Returns: {
+          company_name: string
+          customer_name: string
+          id: string
+          kind: string
+          scheduled_date: string
+          scheduled_time: string
+          submitted_at: string
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
