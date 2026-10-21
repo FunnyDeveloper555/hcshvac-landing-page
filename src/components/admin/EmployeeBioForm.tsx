@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EMPLOYMENT_STATUS_OPTIONS } from "./employmentStatus";
 
 type Emergency = { first_name: string; last_name: string; relationship: string; phone: string; alt_phone: string; email: string; address: string };
 const blankEc = (): Emergency => ({ first_name: "", last_name: "", relationship: "", phone: "", alt_phone: "", email: "", address: "" });
@@ -20,6 +21,7 @@ const empty = {
   first_name: "", last_name: "", address: "", city: "", state: "", zip_code: "",
   email_address: "", phone_number: "", sms_text_pager: "", sms_email_pager: "",
   job_title: "", department: "", hire_date: "", employment_status: "active",
+  status_start_date: "", status_end_date: "", status_revisit_date: "", status_final_day: "", status_tbd: "",
   certificates_held: "", licenses_held: "", bio_notes: "", company_id: "",
   employee_id_number: "", truck_number: "", assigned_tools: "", photo_path: "",
 };
@@ -60,6 +62,7 @@ export function EmployeeBioForm() {
         const d: any = data;
         const next: Record<string, string> = {};
         Object.keys(empty).forEach((k) => (next[k] = d[k] ?? (empty as any)[k]));
+        next.status_tbd = d.status_tbd ? "true" : "";
         setF(next);
         const list = Array.isArray(d.emergency_contacts) ? d.emergency_contacts : [];
         setActiveCos(Array.isArray(d.active_company_ids) ? d.active_company_ids : []);
@@ -86,6 +89,11 @@ export function EmployeeBioForm() {
       ...f,
       company_id: f.company_id || null,
       hire_date: f.hire_date || null,
+      status_start_date: f.status_start_date || null,
+      status_end_date: f.status_end_date || null,
+      status_revisit_date: f.status_revisit_date || null,
+      status_final_day: f.status_final_day || null,
+      status_tbd: f.status_tbd === "true",
       active_company_ids: activeCos,
       emergency_contacts: ecs.filter((e) => e.first_name || e.last_name || e.phone),
     };
@@ -111,6 +119,7 @@ export function EmployeeBioForm() {
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="bio">Bio & Emergency Contact</TabsTrigger>
             <TabsTrigger value="active">Active Employee</TabsTrigger>
+            <TabsTrigger value="status">Employment Status</TabsTrigger>
             <TabsTrigger value="certs">Certifications & Licenses</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
           </TabsList>
@@ -172,17 +181,6 @@ export function EmployeeBioForm() {
               <Select value={f.company_id || ""} onValueChange={(v) => setF({ ...f, company_id: v })}>
                 <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
                 <SelectContent>{companies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label>Status</Label>
-              <Select value={f.employment_status || "active"} onValueChange={(v) => setF({ ...f, employment_status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="on_leave">On Leave</SelectItem>
-                  <SelectItem value="inactive">Inactive (Archive)</SelectItem>
-                </SelectContent>
               </Select>
             </div>
             {field("job_title", "Job Title")}
