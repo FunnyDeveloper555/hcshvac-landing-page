@@ -18,6 +18,9 @@ import SubmissionDetailsDialog from "./SubmissionDetailsDialog";
 import { sortOpenAppointments } from "./appointmentOrder";
 import { warrantyStatus, isInstallationVisit, WARRANTY_CLASS, WarrantyColor } from "../installations/warrantyStatus";
 import { Wrench } from "lucide-react";
+import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
+import { pendingSubmissionIds } from "@/lib/submissionAlerts";
+import { PendingSubmissionDot } from "../PendingSubmissionDot";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -55,6 +58,8 @@ export default function AppointmentsList() {
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
+  const { data: pendingSubmissions = [] } = usePendingSubmissions();
+  const pendingAppointmentIds = pendingSubmissionIds(pendingSubmissions, "appointment");
 
   useEffect(() => {
     setFilter(routeFilter);
@@ -569,7 +574,7 @@ export default function AppointmentsList() {
                   </TableRow>
                 ) : (
                   paginatedAppointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
+                    <TableRow key={appointment.id} data-pending-submission={pendingAppointmentIds.has(appointment.id) || undefined} className={pendingAppointmentIds.has(appointment.id) ? "bg-pending-submission hover:bg-pending-submission-hover" : undefined}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -585,7 +590,10 @@ export default function AppointmentsList() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{appointment.customer_name}</div>
+                          <div className="font-medium flex items-center gap-2">
+                            {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot />}
+                            <span>{appointment.customer_name}</span>
+                          </div>
                           <div className="text-sm text-muted-foreground">{appointment.customer_phone}</div>
                           {appointment.customer_email && (
                             <div className="text-sm text-muted-foreground">{appointment.customer_email}</div>
@@ -699,11 +707,14 @@ export default function AppointmentsList() {
           </Card>
         ) : (
           paginatedAppointments.map((appointment) => (
-            <Card key={appointment.id} className="overflow-hidden">
+            <Card key={appointment.id} data-pending-submission={pendingAppointmentIds.has(appointment.id) || undefined} className={pendingAppointmentIds.has(appointment.id) ? "overflow-hidden bg-pending-submission" : "overflow-hidden"}>
               <CardContent className="p-3 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="font-semibold truncate">{appointment.customer_name}</div>
+                    <div className="font-semibold flex items-center gap-2">
+                      {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot />}
+                      <span className="truncate">{appointment.customer_name}</span>
+                    </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Calendar className="h-3 w-3" />
                       {format(parseISO(appointment.scheduled_date), "MMM d, yyyy")}

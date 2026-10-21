@@ -6,3 +6,7 @@
 # Blank pager notifications
 - [x] Apply pager-compatible text to appointment and manual notification sends without changing emails.
 - [x] Test formatting, deploy, and verify a single-part pager test with the texting provider.
+
+# Pending submission list indicators
+- [x] Add red sidebar/name dots and yellow customer/appointment list highlights from existing pending alerts.
+- [x] Verify indicators against live pending records and preserve staff-completion dismissal.

@@ -17,6 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import CustomersSearch, { SearchFilters } from "./CustomersSearch";
+import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
+import { pendingSubmissionIds } from "@/lib/submissionAlerts";
+import { PendingSubmissionDot } from "./PendingSubmissionDot";
 import {
   Table,
   TableBody,
@@ -39,6 +42,8 @@ const CustomersList = () => {
   const { logAction } = useAdminLog();
   const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const { data: pendingSubmissions = [] } = usePendingSubmissions();
+  const pendingCustomerIds = pendingSubmissionIds(pendingSubmissions, "registration");
 
   const { data: customers, isLoading, refetch } = useQuery({
     queryKey: ["customers-list"],
@@ -206,13 +211,14 @@ const CustomersList = () => {
           </TableHeader>
           <TableBody>
             {filteredCustomers.map((customer) => (
-              <TableRow key={customer.id} className="bg-card hover:bg-muted/40">
+              <TableRow key={customer.id} data-pending-submission={pendingCustomerIds.has(customer.id) || undefined} className={pendingCustomerIds.has(customer.id) ? "bg-pending-submission hover:bg-pending-submission-hover" : "bg-card hover:bg-muted/40"}>
                 <TableCell className="font-mono text-sm">
                   {customer.account_number || "—"}
                 </TableCell>
                 <TableCell>
-                  <div className="font-medium">
-                    {customer.ship_to_first_name} {customer.ship_to_last_name}
+                  <div className="font-medium flex items-center gap-2">
+                    {pendingCustomerIds.has(customer.id) && <PendingSubmissionDot />}
+                    <span>{customer.ship_to_first_name} {customer.ship_to_last_name}</span>
                   </div>
                   {customer.ship_to_business_name && (
                     <div className="text-sm text-muted-foreground">
