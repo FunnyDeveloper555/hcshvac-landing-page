@@ -21,6 +21,8 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
+    --pending-submission: 50 100% 88%;
+    --pending-submission-hover: 50 100% 82%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 165 100% 26%;
@@ -59,6 +61,8 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
+    --pending-submission: 48 65% 22%;
+    --pending-submission-hover: 48 65% 28%;
     --border: 0 0% 24%;
     --input: 0 0% 24%;
     --ring: 165 100% 36%;
