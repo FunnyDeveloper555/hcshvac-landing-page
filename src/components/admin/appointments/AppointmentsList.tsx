@@ -21,6 +21,7 @@ import { Wrench } from "lucide-react";
 import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
 import { pendingSubmissionIds } from "@/lib/submissionAlerts";
 import { PendingSubmissionDot } from "../PendingSubmissionDot";
+import { CloseAppointmentDialog, CancelAppointmentDialog } from "./CloseAppointmentDialog";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -42,6 +43,9 @@ interface Appointment {
   visit_type?: string | null;
   company_id: string | null;
   companies?: { name: string } | null;
+  visit_summary_notes?: string | null;
+  closure_photos?: string[] | null;
+  cancellation_reason?: string | null;
 }
 
 type FilterType = "all" | "open" | "closed" | "open_today" | "closed_today" | "closed_week" | "closed_month" | "closed_year";
