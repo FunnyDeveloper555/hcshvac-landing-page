@@ -169,6 +169,13 @@
       "when": 1792685178005,
       "tag": "0023_appointment_closeout_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792685734266,
+      "tag": "0024_booking_invitation_assigned_employee",
+      "breakpoints": true
     }
   ]
 }
