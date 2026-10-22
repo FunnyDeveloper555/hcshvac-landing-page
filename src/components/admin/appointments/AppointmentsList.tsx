@@ -59,6 +59,8 @@ export default function AppointmentsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [invitationTarget, setInvitationTarget] = useState<Appointment | null>(null);
   const [submissionTarget, setSubmissionTarget] = useState<Appointment | null>(null);
+  const [closeTarget, setCloseTarget] = useState<Appointment | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
@@ -139,7 +141,7 @@ export default function AppointmentsList() {
       navigate(`/admin/installations/add?appointmentId=${appt.id}`);
       return;
     }
-    updateStatusMutation.mutate({ id: appt.id, status: "closed", customerName: appt.customer_name });
+    setCloseTarget(appt);
   };
 
   const normalizePhone = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-10);
