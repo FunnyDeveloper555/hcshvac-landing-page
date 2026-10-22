@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Invitation {
   id: string;
@@ -28,6 +30,39 @@ interface Appointment {
   scheduled_time: string;
   notes: string | null;
   created_at: string;
+  visit_summary_notes?: string | null;
+  closure_photos?: string[] | null;
+  cancellation_reason?: string | null;
+}
+
+function ClosurePhotos({ paths }: { paths: string[] }) {
+  const { data: urls = [] } = useQuery({
+    queryKey: ["closure-photos", paths],
+    queryFn: async () => {
+      const out: { path: string; url: string }[] = [];
+      for (const path of paths) {
+        const { data } = await supabase.storage.from("appointment-files").createSignedUrl(path, 3600);
+        if (data?.signedUrl) out.push({ path, url: data.signedUrl });
+      }
+      return out;
+    },
+    enabled: paths.length > 0,
+    staleTime: 300000,
+  });
+  if (paths.length === 0) return null;
+  return (
+    <div className="col-span-2">
+      <div className="text-muted-foreground">Photos / videos</div>
+      <div className="flex flex-wrap gap-2 pt-1">
+        {urls.map((u) => (
+          <a key={u.path} href={u.url} target="_blank" rel="noreferrer" className="text-primary underline text-xs break-all">
+            {u.path.split("/").pop()}
+          </a>
+        ))}
+        {urls.length === 0 && <span className="text-xs text-muted-foreground">{paths.length} file(s)</span>}
+      </div>
+    </div>
+  );
 }
 
 interface Props {
@@ -161,6 +196,30 @@ export default function SubmissionDetailsDialog({ open, onOpenChange, appointmen
               </div>
             </div>
           </section>
+
+          {/* Close-out / cancellation */}
+          {(appointment.visit_summary_notes || appointment.cancellation_reason || (appointment.closure_photos?.length ?? 0) > 0) && (
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Close-out
+              </h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {appointment.visit_summary_notes && (
+                  <div className="col-span-2">
+                    <div className="text-muted-foreground">Visit summary notes</div>
+                    <div className="whitespace-pre-wrap">{appointment.visit_summary_notes}</div>
+                  </div>
+                )}
+                {appointment.cancellation_reason && (
+                  <div className="col-span-2">
+                    <div className="text-muted-foreground">Cancellation reason</div>
+                    <div className="whitespace-pre-wrap">{appointment.cancellation_reason}</div>
+                  </div>
+                )}
+                <ClosurePhotos paths={appointment.closure_photos || []} />
+              </div>
+            </section>
+          )}
         </div>
       </DialogContent>
     </Dialog>

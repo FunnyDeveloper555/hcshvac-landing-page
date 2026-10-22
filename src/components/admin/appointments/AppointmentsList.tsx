@@ -21,6 +21,7 @@ import { Wrench } from "lucide-react";
 import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
 import { pendingSubmissionIds } from "@/lib/submissionAlerts";
 import { PendingSubmissionDot } from "../PendingSubmissionDot";
+import { CloseAppointmentDialog, CancelAppointmentDialog } from "./CloseAppointmentDialog";
 
 type AppointmentStatus = "open" | "closed" | "cancelled";
 type AppointmentType = "residential" | "commercial" | "non_profit" | "church" | "school" | "government" | "other";
@@ -42,6 +43,9 @@ interface Appointment {
   visit_type?: string | null;
   company_id: string | null;
   companies?: { name: string } | null;
+  visit_summary_notes?: string | null;
+  closure_photos?: string[] | null;
+  cancellation_reason?: string | null;
 }
 
 type FilterType = "all" | "open" | "closed" | "open_today" | "closed_today" | "closed_week" | "closed_month" | "closed_year";
@@ -55,6 +59,8 @@ export default function AppointmentsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [invitationTarget, setInvitationTarget] = useState<Appointment | null>(null);
   const [submissionTarget, setSubmissionTarget] = useState<Appointment | null>(null);
+  const [closeTarget, setCloseTarget] = useState<Appointment | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const queryClient = useQueryClient();
   const { logAction } = useAdminLog();
   const navigate = useNavigate();
@@ -135,7 +141,7 @@ export default function AppointmentsList() {
       navigate(`/admin/installations/add?appointmentId=${appt.id}`);
       return;
     }
-    updateStatusMutation.mutate({ id: appt.id, status: "closed", customerName: appt.customer_name });
+    setCloseTarget(appt);
   };
 
   const normalizePhone = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-10);
@@ -669,7 +675,7 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })}
+                                onClick={() => setCancelTarget(appointment)}
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Cancel
@@ -799,9 +805,7 @@ export default function AppointmentsList() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() =>
-                          updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })
-                        }
+                        onClick={() => setCancelTarget(appointment)}
                       >
                         <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel
                       </Button>
@@ -885,6 +889,18 @@ export default function AppointmentsList() {
         onOpenChange={(v) => !v && setSubmissionTarget(null)}
         appointment={submissionTarget}
         invitation={submissionTarget ? getInvitationFor(submissionTarget) : null}
+      />
+
+      <CloseAppointmentDialog
+        open={!!closeTarget}
+        onOpenChange={(v) => !v && setCloseTarget(null)}
+        appointment={closeTarget}
+      />
+
+      <CancelAppointmentDialog
+        open={!!cancelTarget}
+        onOpenChange={(v) => !v && setCancelTarget(null)}
+        appointment={cancelTarget}
       />
     </div>
   );

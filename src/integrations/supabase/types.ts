@@ -669,7 +669,9 @@ export type Database = {
           assigned_team: Json
           booking_sms_sent_at: string | null
           calendar_id: string | null
+          cancellation_reason: string | null
           closed_at: string | null
+          closure_photos: Json
           company_id: string | null
           confirmed_at: string | null
           confirmed_by: string | null
@@ -694,6 +696,7 @@ export type Database = {
           status: Database["public"]["Enums"]["appointment_status"]
           technician_phone: string | null
           updated_at: string
+          visit_summary_notes: string | null
           visit_type: string | null
         }
         Insert: {
@@ -703,7 +706,9 @@ export type Database = {
           assigned_team?: Json
           booking_sms_sent_at?: string | null
           calendar_id?: string | null
+          cancellation_reason?: string | null
           closed_at?: string | null
+          closure_photos?: Json
           company_id?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
@@ -728,6 +733,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
           updated_at?: string
+          visit_summary_notes?: string | null
           visit_type?: string | null
         }
         Update: {
@@ -737,7 +743,9 @@ export type Database = {
           assigned_team?: Json
           booking_sms_sent_at?: string | null
           calendar_id?: string | null
+          cancellation_reason?: string | null
           closed_at?: string | null
+          closure_photos?: Json
           company_id?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
@@ -762,6 +770,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
           updated_at?: string
+          visit_summary_notes?: string | null
           visit_type?: string | null
         }
         Relationships: [
