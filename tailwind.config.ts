@@ -21,6 +21,7 @@ export default {
         foreground: "hsl(var(--foreground))",
         "pending-submission": "hsl(var(--pending-submission))",
         "pending-submission-hover": "hsl(var(--pending-submission-hover))",
+        "submission-warning": "hsl(var(--submission-warning))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",

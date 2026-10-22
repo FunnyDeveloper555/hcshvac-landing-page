@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
-import { pendingSubmissionIds } from "@/lib/submissionAlerts";
+import { pendingSubmissionIds, oldestPendingSubmission } from "@/lib/submissionAlerts";
+import { PendingSubmissionDot } from "./PendingSubmissionDot";
 
 interface MenuItem {
   title: string;
@@ -467,6 +468,20 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
   };
   const groupHasDot = (item: MenuItem) => !!item.children?.some((c) => c.url && unreadDot[c.url]);
   const Dot = () => <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" role="img" aria-label="Pending alerts" />;
+  const pendingMenuDates: Record<string, string | undefined> = {
+    "/admin/customers/list": oldestPendingSubmission(pendingSubmissions, "registration"),
+    "/admin/appointments/open": oldestPendingSubmission(pendingSubmissions, "appointment"),
+  };
+  const menuDot = (url: string) => {
+    const submittedAt = pendingMenuDates[url];
+    return submittedAt ? <PendingSubmissionDot submittedAt={submittedAt} /> : <Dot />;
+  };
+  const groupDot = (item: MenuItem) => {
+    const dates = (item.children || []).flatMap((child) => child.url && pendingMenuDates[child.url] ? [pendingMenuDates[child.url]] : [])
+      .filter((value): value is string => typeof value === "string")
+      .sort((a, b) => Date.parse(a) - Date.parse(b));
+    return dates[0] ? <PendingSubmissionDot submittedAt={dates[0]} /> : <Dot />;
+  };
 
   const toggleGroup = (title: string) => {
     setOpenGroups(prev => ({ ...prev, [title]: !prev[title] }));
@@ -508,7 +523,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
             >
               <child.icon className="h-4 w-4 shrink-0" />
               <span className="truncate flex-1 min-w-0 text-left">{child.title}</span>
-              {child.url && unreadDot[child.url] && <Dot />}
+              {child.url && unreadDot[child.url] && menuDot(child.url)}
               {child.url && appointmentBadges[child.url] !== undefined && appointmentBadges[child.url] > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs px-1.5 py-0 h-5 min-w-[1.25rem] flex items-center justify-center">{appointmentBadges[child.url]}</Badge>
               )}
@@ -548,7 +563,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
                       >
                         <item.icon className="h-4 w-4 shrink-0" />
                         <span className="truncate flex-1 min-w-0 text-left">{item.title}</span>
-                        {groupHasDot(item) && <Dot />}
+                        {groupHasDot(item) && groupDot(item)}
                         {item.title === "Page Builder" && companiesLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin shrink-0" />
                         ) : (

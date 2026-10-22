@@ -10,3 +10,8 @@
 # Pending submission list indicators
 - [x] Add red sidebar/name dots and yellow customer/appointment list highlights from existing pending alerts.
 - [x] Verify indicators against live pending records and preserve staff-completion dismissal.
+
+# Pending submission age escalation
+- [ ] Send a one-time 12-hour SMS to each admin belonging to the submission's company.
+- [ ] Apply yellow/one-red/two-red dots at 12/24/48 hours on menus and names.
+- [ ] Test timing, recipient scope, and live indicators.
