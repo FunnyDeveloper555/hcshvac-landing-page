@@ -196,6 +196,30 @@ export default function SubmissionDetailsDialog({ open, onOpenChange, appointmen
               </div>
             </div>
           </section>
+
+          {/* Close-out / cancellation */}
+          {(appointment.visit_summary_notes || appointment.cancellation_reason || (appointment.closure_photos?.length ?? 0) > 0) && (
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Close-out
+              </h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {appointment.visit_summary_notes && (
+                  <div className="col-span-2">
+                    <div className="text-muted-foreground">Visit summary notes</div>
+                    <div className="whitespace-pre-wrap">{appointment.visit_summary_notes}</div>
+                  </div>
+                )}
+                {appointment.cancellation_reason && (
+                  <div className="col-span-2">
+                    <div className="text-muted-foreground">Cancellation reason</div>
+                    <div className="whitespace-pre-wrap">{appointment.cancellation_reason}</div>
+                  </div>
+                )}
+                <ClosurePhotos paths={appointment.closure_photos || []} />
+              </div>
+            </section>
+          )}
         </div>
       </DialogContent>
     </Dialog>
