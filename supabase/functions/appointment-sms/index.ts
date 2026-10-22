@@ -310,6 +310,50 @@ async function notifyStaffOfSubmissions(supabase: ReturnType<typeof admin>) {
   return count;
 }
 
+// One-time text to clerical staff of the submission's company when a
+// customer registration or suggested appointment is still unfinished after 12 hours.
+async function escalateUnfinishedSubmissions(supabase: ReturnType<typeof admin>) {
+  const cutoff = new Date(Date.now() - 12 * 3600000).toISOString();
+  const [regs, appts, staffRes] = await Promise.all([
+    supabase.from("customer_registrations")
+      .select("id, company_id, created_at, ship_to_first_name, ship_to_last_name, phone, companies:company_id (name)")
+      .eq("staff_review_required", true).is("staff_escalation_sent_at", null).lte("created_at", cutoff).limit(50),
+    supabase.from("appointments")
+      .select("id, company_id, created_at, customer_name, customer_phone, appointment_number, companies:company_id (name)")
+      .eq("staff_review_required", true).is("staff_escalation_sent_at", null).lte("created_at", cutoff).limit(50),
+    supabase.from("employees")
+      .select("phone_number, job_title, department, company_id, active_company_ids, employment_status"),
+  ]);
+  const clerical = (staffRes.data || []).filter((e: any) =>
+    (e.employment_status || "active") === "active" &&
+    /clerical/i.test(`${e.job_title || ""} ${e.department || ""}`));
+
+  const items = [
+    ...(regs.data || []).map((r: any) => ({ table: "customer_registrations", id: r.id, company_id: r.company_id,
+      company: r.companies?.name, label: "New registration", name: `${r.ship_to_first_name || ""} ${r.ship_to_last_name || ""}`.trim(), phone: r.phone })),
+    ...(appts.data || []).map((a: any) => ({ table: "appointments", id: a.id, company_id: a.company_id,
+      company: a.companies?.name, label: "Suggested appointment", name: a.customer_name, phone: a.customer_phone })),
+  ];
+  let sent = 0;
+  for (const it of items) {
+    // Claim first so overlapping runs never double-text.
+    const { data: claimed } = await supabase.from(it.table)
+      .update({ staff_escalation_sent_at: new Date().toISOString() })
+      .eq("id", it.id).is("staff_escalation_sent_at", null).select("id");
+    if (!claimed?.length) continue;
+    const phones = [...new Set(clerical
+      .filter((e: any) => !it.company_id || e.company_id === it.company_id || (e.active_company_ids || []).includes(it.company_id))
+      .map((e: any) => normalizePhone(e.phone_number)).filter(Boolean))] as string[];
+    const body = formatPagerSms(`12 HOURS UNFINISHED: ${it.label} - ${it.name || "customer"} ${it.phone || ""} (${it.company || "HCS"}). Please complete it in the CRM.`);
+    for (const p of phones) {
+      const { data: blocked } = await supabase.rpc("is_phone_blocked", { _phone: p });
+      if (blocked) continue;
+      try { await sendSms(p, body); sent++; } catch (e) { console.error(`12h escalation SMS to ${p} failed: ${(e as Error).message}`); }
+    }
+  }
+  return sent;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -352,7 +396,8 @@ Deno.serve(async (req) => {
 
       // Staff alerts: customers who finished a registration/booking link.
       const alerted = await notifyStaffOfSubmissions(supabase);
-      return json({ success: true, checked: rows?.length || 0, sent: out.length, details: out, submissionAlerts: alerted });
+      const escalated = await escalateUnfinishedSubmissions(supabase);
+      return json({ success: true, checked: rows?.length || 0, sent: out.length, details: out, submissionAlerts: alerted, escalationTexts: escalated });
     }
 
     // Explicit send (booking confirmation or manual reminder) — requires a signed-in admin.
