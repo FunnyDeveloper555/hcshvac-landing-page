@@ -675,7 +675,7 @@ export default function AppointmentsList() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })}
+                                onClick={() => setCancelTarget(appointment)}
                               >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Cancel
@@ -805,9 +805,7 @@ export default function AppointmentsList() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() =>
-                          updateStatusMutation.mutate({ id: appointment.id, status: "cancelled", customerName: appointment.customer_name })
-                        }
+                        onClick={() => setCancelTarget(appointment)}
                       >
                         <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel
                       </Button>
@@ -891,6 +889,18 @@ export default function AppointmentsList() {
         onOpenChange={(v) => !v && setSubmissionTarget(null)}
         appointment={submissionTarget}
         invitation={submissionTarget ? getInvitationFor(submissionTarget) : null}
+      />
+
+      <CloseAppointmentDialog
+        open={!!closeTarget}
+        onOpenChange={(v) => !v && setCloseTarget(null)}
+        appointment={closeTarget}
+      />
+
+      <CancelAppointmentDialog
+        open={!!cancelTarget}
+        onOpenChange={(v) => !v && setCancelTarget(null)}
+        appointment={cancelTarget}
       />
     </div>
   );
