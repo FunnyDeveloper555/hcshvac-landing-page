@@ -24,6 +24,7 @@
     --pending-submission: 4 90% 97%;
     --pending-submission-hover: 4 90% 94%;
     --submission-warning: 43 96% 48%;
+    --submission-new: 150 62% 40%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 165 100% 26%;
@@ -65,6 +66,7 @@
     --pending-submission: 4 60% 15%;
     --pending-submission-hover: 4 60% 19%;
     --submission-warning: 43 96% 56%;
+    --submission-new: 150 55% 48%;
     --border: 0 0% 24%;
     --input: 0 0% 24%;
     --ring: 165 100% 36%;
