@@ -802,9 +802,9 @@ export default function AppointmentsAdd() {
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent>
-                      {timeSlots.map((time) => (
+                      {timeSlotsWith(formData.scheduled_time).map((time) => (
                         <SelectItem key={time} value={time}>
-                          {time}
+                          {timeSlots.includes(time) ? time : `${time} (customer requested)`}
                         </SelectItem>
                       ))}
                     </SelectContent>
