@@ -102,7 +102,88 @@ const statusBadge = (status?: string) => {
 };
 
 export default function SubmissionDetailsDialog({ open, onOpenChange, appointment, invitation }: Props) {
+  const queryClient = useQueryClient();
+  const { logAction } = useAdminLog();
+  const [editing, setEditing] = useState(false);
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [saving, setSaving] = useState<"save" | "notify" | null>(null);
+
   if (!appointment) return null;
+
+  const startEdit = () => {
+    setEditDate(appointment.scheduled_date || "");
+    setEditTime(appointment.scheduled_time || "");
+    setEditing(true);
+  };
+
+  const saveSchedule = async (notifyClient: boolean) => {
+    if (!editDate || !editTime) {
+      toast.error("Pick both a date and a time.");
+      return;
+    }
+    setSaving(notifyClient ? "notify" : "save");
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ scheduled_date: editDate, scheduled_time: editTime })
+        .eq("id", appointment.id);
+      if (error) throw error;
+
+      if (notifyClient) {
+        const companyName = appointment.companies?.name || "Our team";
+        const dateStr = format(parseISO(editDate), "EEE, MMM d, yyyy");
+        const results: string[] = [];
+        if (appointment.customer_phone) {
+          const { error: smsErr } = await supabase.functions.invoke("send-sms", {
+            body: {
+              phoneNumber: appointment.customer_phone,
+              message: `${companyName}: Your appointment has been updated to ${dateStr} at ${editTime}. Reply to reschedule.`,
+            },
+          });
+          if (!smsErr) results.push("SMS");
+        }
+        if (appointment.customer_email) {
+          const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "appointment-confirmation",
+              recipientEmail: appointment.customer_email,
+              idempotencyKey: `appt-modify-${appointment.id}-${Date.now()}`,
+              fromEmail: getCompanyInviterEmail(companyName),
+              fromName: companyName,
+              templateData: {
+                customerName: appointment.customer_name,
+                companyName,
+                scheduledDate: dateStr,
+                scheduledTime: editTime,
+                address: appointment.customer_address || undefined,
+                notes: appointment.notes || undefined,
+              },
+            },
+          });
+          if (!emailErr) results.push("email");
+        }
+        toast.success(results.length ? `Appointment updated — client notified by ${results.join(" and ")}` : "Appointment updated (client has no phone/email on file)");
+      } else {
+        toast.success("Appointment date/time saved");
+      }
+
+      logAction("modify_schedule", "appointment", appointment.id, {
+        customer_name: appointment.customer_name,
+        new_date: editDate,
+        new_time: editTime,
+        client_notified: notifyClient,
+      });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-pending-submissions"] });
+      setEditing(false);
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update the appointment");
+    } finally {
+      setSaving(null);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
