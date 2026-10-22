@@ -47,6 +47,26 @@ function useStaff() {
   });
 }
 
+interface ExternalName { resolved_name: string | null; match_type: string | null }
+
+// Text threads only store a phone number, so names come from the CRM records
+// (customers, vendors, employees, bookings) that carry that number.
+function useExternalNames() {
+  return useQuery({
+    queryKey: ["chat-external-names"],
+    refetchInterval: 15000,
+    staleTime: 15_000,
+    queryFn: async (): Promise<Record<string, ExternalName>> => {
+      const { data } = await db.rpc("chat_external_names");
+      const map: Record<string, ExternalName> = {};
+      (data || []).forEach((r: any) => {
+        map[r.conversation_id] = { resolved_name: r.resolved_name, match_type: r.match_type };
+      });
+      return map;
+    },
+  });
+}
+
 export default function ChatPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -54,6 +74,7 @@ export default function ChatPage() {
   const activeId = params.get("c");
   const { data: staff = [] } = useStaff();
   const [dialog, setDialog] = useState<null | "direct" | "channel" | "external">(null);
+  const { data: externalNames = {} } = useExternalNames();
 
   const { data: convs = [] } = useQuery({
     queryKey: ["chat-conversations"],
@@ -91,13 +112,14 @@ export default function ChatPage() {
       return other.map((m: any) => staffName(m.user_id)).join(", ") || "Just you";
     }
     if (c.kind === "company") return companies.find((x: any) => x.id === c.company_id)?.name || c.name || "Company";
-    if (c.kind === "external") return c.external_name || c.name || c.external_phone || "Contact";
+    if (c.kind === "external") return externalNames[c.id]?.resolved_name || c.external_name || c.name || c.external_phone || "Contact";
     return `# ${c.name}`;
   };
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["chat-conversations"] });
     qc.invalidateQueries({ queryKey: ["chat-members"] });
+    qc.invalidateQueries({ queryKey: ["chat-external-names"] });
   };
   const open = (id: string) => setParams({ c: id });
 
@@ -132,7 +154,12 @@ export default function ChatPage() {
                   <button key={c.id} onClick={() => open(c.id)}
                     className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent ${c.id === activeId ? "bg-accent" : ""}`}>
                     <s.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className={`flex-1 truncate ${unread[c.id] ? "font-semibold" : ""}`}>{title(c)}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate ${unread[c.id] ? "font-semibold" : ""}`}>{title(c)}</span>
+                      {s.kind === "external" && c.external_phone && title(c) !== c.external_phone && (
+                        <span className="block truncate text-[11px] text-muted-foreground">{c.external_phone}</span>
+                      )}
+                    </span>
                     {!!unread[c.id] && c.id !== activeId && (
                       <span className="rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{unread[c.id]}</span>
                     )}

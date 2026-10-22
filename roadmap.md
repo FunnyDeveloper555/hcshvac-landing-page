@@ -15,3 +15,6 @@
 - [x] Send a one-time 12-hour SMS to each admin belonging to the submission's company.
 - [x] Apply yellow/one-red/two-red dots at 12/24/48 hours on menus and names.
 - [x] Test timing, recipient scope, and live indicators.
+# Chat text-thread names
+- [x] Resolve customer/vendor/employee names for text threads from their phone number.
+- [x] Verify names and numbers show together in the chat sidebar.

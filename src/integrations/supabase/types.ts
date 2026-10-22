@@ -6383,6 +6383,15 @@ export type Database = {
         Args: { _conv: string; _uid: string }
         Returns: boolean
       }
+      chat_external_names: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          match_type: string
+          phone_number: string
+          resolved_name: string
+        }[]
+      }
       chat_unread_counts: {
         Args: never
         Returns: {
