@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Send, MessageSquare, Mail, Loader2 } from "lucide-react";
@@ -36,6 +37,21 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
   const [sendMethod, setSendMethod] = useState<"sms" | "email" | "both">("sms");
   const [invitationType, setInvitationType] = useState<"residential" | "commercial">("residential");
   const [notes, setNotes] = useState("");
+  const [assignedEmployeeId, setAssignedEmployeeId] = useState<string>("");
+
+  const { data: employees = [] } = useQuery({
+    queryKey: ["active-employees-for-invite"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, first_name, last_name")
+        .eq("employment_status", "active")
+        .order("last_name");
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 60000,
+  });
 
   useEffect(() => {
     if (appointment) {
@@ -44,6 +60,7 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
       setInvitationType(appointment.appointment_type === "commercial" ? "commercial" : "residential");
       setSendMethod(appointment.customer_phone ? "sms" : appointment.customer_email ? "email" : "sms");
       setNotes("");
+      setAssignedEmployeeId("");
     }
   }, [appointment]);
 
