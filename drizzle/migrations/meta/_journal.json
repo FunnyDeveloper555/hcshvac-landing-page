@@ -162,6 +162,13 @@
       "when": 1792684983755,
       "tag": "0022_chat_external_names",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792685178005,
+      "tag": "0023_appointment_closeout_fields",
+      "breakpoints": true
     }
   ]
 }
