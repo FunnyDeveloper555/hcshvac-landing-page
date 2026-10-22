@@ -689,6 +689,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time: string
           sms_reminders_enabled: boolean
+          staff_escalation_sent_at: string | null
           staff_review_required: boolean
           status: Database["public"]["Enums"]["appointment_status"]
           technician_phone: string | null
@@ -722,6 +723,7 @@ export type Database = {
           scheduled_date: string
           scheduled_time: string
           sms_reminders_enabled?: boolean
+          staff_escalation_sent_at?: string | null
           staff_review_required?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
@@ -755,6 +757,7 @@ export type Database = {
           scheduled_date?: string
           scheduled_time?: string
           sms_reminders_enabled?: boolean
+          staff_escalation_sent_at?: string | null
           staff_review_required?: boolean
           status?: Database["public"]["Enums"]["appointment_status"]
           technician_phone?: string | null
@@ -2245,6 +2248,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number: string | null
           ship_to_zip_code: string
+          staff_escalation_sent_at: string | null
           staff_review_required: boolean
           status: string
           title_to_location: string | null
@@ -2300,6 +2304,7 @@ export type Database = {
           ship_to_state: string
           ship_to_suite_number?: string | null
           ship_to_zip_code: string
+          staff_escalation_sent_at?: string | null
           staff_review_required?: boolean
           status?: string
           title_to_location?: string | null
@@ -2355,6 +2360,7 @@ export type Database = {
           ship_to_state?: string
           ship_to_suite_number?: string | null
           ship_to_zip_code?: string
+          staff_escalation_sent_at?: string | null
           staff_review_required?: boolean
           status?: string
           title_to_location?: string | null
