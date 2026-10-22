@@ -168,7 +168,7 @@ export default function SubmissionDetailsDialog({ open, onOpenChange, appointmen
         toast.success("Appointment date/time saved");
       }
 
-      logAction("modify_schedule", "appointment", appointment.id, {
+      logAction("update", "appointment", appointment.id, {
         customer_name: appointment.customer_name,
         new_date: editDate,
         new_time: editTime,
