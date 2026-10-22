@@ -276,11 +276,51 @@ export default function SubmissionDetailsDialog({ open, onOpenChange, appointmen
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className="text-muted-foreground">Scheduled date</div>
-                <div>{appointment.scheduled_date ? format(parseISO(appointment.scheduled_date), "MMM d, yyyy") : "—"}</div>
+                {editing ? (
+                  <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="mt-1" />
+                ) : (
+                  <div>{appointment.scheduled_date ? format(parseISO(appointment.scheduled_date), "MMM d, yyyy") : "—"}</div>
+                )}
               </div>
               <div>
                 <div className="text-muted-foreground">Scheduled time</div>
-                <div>{appointment.scheduled_time || "—"}</div>
+                {editing ? (
+                  <Select value={editTime || undefined} onValueChange={setEditTime}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeSlotsWith(editTime).map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {timeSlots.includes(t) ? t : `${t} (customer requested)`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div>{appointment.scheduled_time || "—"}</div>
+                )}
+              </div>
+              <div className="col-span-2">
+                {editing ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button size="sm" variant="outline" disabled={!!saving} onClick={() => saveSchedule(false)}>
+                      {saving === "save" && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
+                      Save
+                    </Button>
+                    <Button size="sm" disabled={!!saving} onClick={() => saveSchedule(true)}>
+                      {saving === "notify" && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
+                      Update client
+                    </Button>
+                    <Button size="sm" variant="ghost" disabled={!!saving} onClick={() => setEditing(false)}>
+                      Back
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={startEdit}>
+                    <Pencil className="h-3.5 w-3.5 mr-1" /> Modify
+                  </Button>
+                )}
               </div>
               <div className="col-span-2">
                 <div className="text-muted-foreground">Notes from customer</div>
