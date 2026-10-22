@@ -591,7 +591,7 @@ export default function AppointmentsList() {
                       <TableCell>
                         <div>
                           <div className="font-medium flex items-center gap-2">
-                            {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot />}
+                            {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot submittedAt={pendingSubmissions.find((s) => s.kind === "appointment" && s.id === appointment.id)?.submitted_at || appointment.created_at} />}
                             <span>{appointment.customer_name}</span>
                           </div>
                           <div className="text-sm text-muted-foreground">{appointment.customer_phone}</div>
@@ -712,7 +712,7 @@ export default function AppointmentsList() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-semibold flex items-center gap-2">
-                      {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot />}
+                      {pendingAppointmentIds.has(appointment.id) && <PendingSubmissionDot submittedAt={pendingSubmissions.find((s) => s.kind === "appointment" && s.id === appointment.id)?.submitted_at || appointment.created_at} />}
                       <span className="truncate">{appointment.customer_name}</span>
                     </div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">

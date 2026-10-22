@@ -217,7 +217,7 @@ const CustomersList = () => {
                 </TableCell>
                 <TableCell>
                   <div className="font-medium flex items-center gap-2">
-                    {pendingCustomerIds.has(customer.id) && <PendingSubmissionDot />}
+                    {pendingCustomerIds.has(customer.id) && <PendingSubmissionDot submittedAt={pendingSubmissions.find((s) => s.kind === "registration" && s.id === customer.id)?.submitted_at || customer.created_at} />}
                     <span>{customer.ship_to_first_name} {customer.ship_to_last_name}</span>
                   </div>
                   {customer.ship_to_business_name && (
