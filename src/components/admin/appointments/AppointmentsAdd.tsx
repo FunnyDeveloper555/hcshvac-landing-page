@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
 import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
+import { timeSlotsWith } from "@/lib/timeSlots";
 
 interface CustomerRecord {
   id: string;
@@ -126,17 +127,9 @@ const appointmentTypes: { value: AppointmentType; label: string }[] = [
 
 const visitTypes: string[] = VISIT_TYPES;
 
-const formatHour = (h: number): string => {
-  const hour24 = ((h % 24) + 24) % 24;
-  if (hour24 === 0) return "12 Midnight";
-  if (hour24 === 12) return "12 Noon";
-  const period = hour24 < 12 ? "AM" : "PM";
-  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
-  return `${hour12} ${period}`;
-};
-
-// 2-hour rolling windows starting every hour: 12 Midnight to 2 AM, 1 AM to 3 AM, ...
-const timeSlots = Array.from({ length: 24 }, (_, i) => `${formatHour(i)} to ${formatHour(i + 2)}`);
+// 2-hour rolling windows come from @/lib/timeSlots; timeSlotsWith keeps
+// customer-submitted times (e.g. "16:30") visible instead of blank.
+const timeSlots = timeSlotsWith();
 
 // Auto-format phone to 111-111-1111
 const formatPhone = (input: string): string => {
@@ -809,9 +802,9 @@ export default function AppointmentsAdd() {
                       <SelectValue placeholder="Select time" />
                     </SelectTrigger>
                     <SelectContent>
-                      {timeSlots.map((time) => (
+                      {timeSlotsWith(formData.scheduled_time).map((time) => (
                         <SelectItem key={time} value={time}>
-                          {time}
+                          {timeSlots.includes(time) ? time : `${time} (customer requested)`}
                         </SelectItem>
                       ))}
                     </SelectContent>

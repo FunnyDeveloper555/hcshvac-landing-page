@@ -1,8 +1,18 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, parseISO } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Loader2, Pencil } from "lucide-react";
+import { timeSlots, timeSlotsWith } from "@/lib/timeSlots";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 interface Invitation {
   id: string;
@@ -33,6 +43,7 @@ interface Appointment {
   visit_summary_notes?: string | null;
   closure_photos?: string[] | null;
   cancellation_reason?: string | null;
+  companies?: { name: string } | null;
 }
 
 function ClosurePhotos({ paths }: { paths: string[] }) {
@@ -91,7 +102,88 @@ const statusBadge = (status?: string) => {
 };
 
 export default function SubmissionDetailsDialog({ open, onOpenChange, appointment, invitation }: Props) {
+  const queryClient = useQueryClient();
+  const { logAction } = useAdminLog();
+  const [editing, setEditing] = useState(false);
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [saving, setSaving] = useState<"save" | "notify" | null>(null);
+
   if (!appointment) return null;
+
+  const startEdit = () => {
+    setEditDate(appointment.scheduled_date || "");
+    setEditTime(appointment.scheduled_time || "");
+    setEditing(true);
+  };
+
+  const saveSchedule = async (notifyClient: boolean) => {
+    if (!editDate || !editTime) {
+      toast.error("Pick both a date and a time.");
+      return;
+    }
+    setSaving(notifyClient ? "notify" : "save");
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ scheduled_date: editDate, scheduled_time: editTime })
+        .eq("id", appointment.id);
+      if (error) throw error;
+
+      if (notifyClient) {
+        const companyName = appointment.companies?.name || "Our team";
+        const dateStr = format(parseISO(editDate), "EEE, MMM d, yyyy");
+        const results: string[] = [];
+        if (appointment.customer_phone) {
+          const { error: smsErr } = await supabase.functions.invoke("send-sms", {
+            body: {
+              phoneNumber: appointment.customer_phone,
+              message: `${companyName}: Your appointment has been updated to ${dateStr} at ${editTime}. Reply to reschedule.`,
+            },
+          });
+          if (!smsErr) results.push("SMS");
+        }
+        if (appointment.customer_email) {
+          const { error: emailErr } = await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "appointment-confirmation",
+              recipientEmail: appointment.customer_email,
+              idempotencyKey: `appt-modify-${appointment.id}-${Date.now()}`,
+              fromEmail: getCompanyInviterEmail(companyName),
+              fromName: companyName,
+              templateData: {
+                customerName: appointment.customer_name,
+                companyName,
+                scheduledDate: dateStr,
+                scheduledTime: editTime,
+                address: appointment.customer_address || undefined,
+                notes: appointment.notes || undefined,
+              },
+            },
+          });
+          if (!emailErr) results.push("email");
+        }
+        toast.success(results.length ? `Appointment updated — client notified by ${results.join(" and ")}` : "Appointment updated (client has no phone/email on file)");
+      } else {
+        toast.success("Appointment date/time saved");
+      }
+
+      logAction("update", "appointment", appointment.id, {
+        customer_name: appointment.customer_name,
+        new_date: editDate,
+        new_time: editTime,
+        client_notified: notifyClient,
+      });
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["crm-pending-submissions"] });
+      setEditing(false);
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update the appointment");
+    } finally {
+      setSaving(null);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -184,11 +276,51 @@ export default function SubmissionDetailsDialog({ open, onOpenChange, appointmen
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className="text-muted-foreground">Scheduled date</div>
-                <div>{appointment.scheduled_date ? format(parseISO(appointment.scheduled_date), "MMM d, yyyy") : "—"}</div>
+                {editing ? (
+                  <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="mt-1" />
+                ) : (
+                  <div>{appointment.scheduled_date ? format(parseISO(appointment.scheduled_date), "MMM d, yyyy") : "—"}</div>
+                )}
               </div>
               <div>
                 <div className="text-muted-foreground">Scheduled time</div>
-                <div>{appointment.scheduled_time || "—"}</div>
+                {editing ? (
+                  <Select value={editTime || undefined} onValueChange={setEditTime}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeSlotsWith(editTime).map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {timeSlots.includes(t) ? t : `${t} (customer requested)`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div>{appointment.scheduled_time || "—"}</div>
+                )}
+              </div>
+              <div className="col-span-2">
+                {editing ? (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button size="sm" variant="outline" disabled={!!saving} onClick={() => saveSchedule(false)}>
+                      {saving === "save" && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
+                      Save
+                    </Button>
+                    <Button size="sm" disabled={!!saving} onClick={() => saveSchedule(true)}>
+                      {saving === "notify" && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
+                      Update client
+                    </Button>
+                    <Button size="sm" variant="ghost" disabled={!!saving} onClick={() => setEditing(false)}>
+                      Back
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={startEdit}>
+                    <Pencil className="h-3.5 w-3.5 mr-1" /> Modify
+                  </Button>
+                )}
               </div>
               <div className="col-span-2">
                 <div className="text-muted-foreground">Notes from customer</div>

@@ -826,6 +826,7 @@ export type Database = {
       }
       booking_invitations: {
         Row: {
+          assigned_employee_id: string | null
           company_id: string | null
           completed_at: string | null
           created_at: string
@@ -846,6 +847,7 @@ export type Database = {
           token: string
         }
         Insert: {
+          assigned_employee_id?: string | null
           company_id?: string | null
           completed_at?: string | null
           created_at?: string
@@ -866,6 +868,7 @@ export type Database = {
           token?: string
         }
         Update: {
+          assigned_employee_id?: string | null
           company_id?: string | null
           completed_at?: string | null
           created_at?: string
@@ -6439,6 +6442,7 @@ export type Database = {
       get_booking_invitation_by_token: {
         Args: { _token: string }
         Returns: {
+          assigned_employee_id: string | null
           company_id: string | null
           completed_at: string | null
           created_at: string
