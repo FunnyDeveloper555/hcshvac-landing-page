@@ -1,8 +1,18 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, parseISO } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Loader2, Pencil } from "lucide-react";
+import { timeSlots, timeSlotsWith } from "@/lib/timeSlots";
+import { getCompanyInviterEmail } from "@/lib/companyEmail";
+import { useAdminLog } from "@/hooks/useAdminLog";
 
 interface Invitation {
   id: string;
@@ -33,6 +43,7 @@ interface Appointment {
   visit_summary_notes?: string | null;
   closure_photos?: string[] | null;
   cancellation_reason?: string | null;
+  companies?: { name: string } | null;
 }
 
 function ClosurePhotos({ paths }: { paths: string[] }) {
