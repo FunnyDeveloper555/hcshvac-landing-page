@@ -82,6 +82,7 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
           recipient_phone: phone || null,
           recipient_email: email || null,
           notes: notes || null,
+          assigned_employee_id: assignedEmployeeId || null,
           created_by: user?.id,
         })
         .select()
@@ -223,6 +224,25 @@ export default function SendInvitationDialog({ appointment, open, onOpenChange }
               <Input id="inv-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label>Calendar (optional)</Label>
+            <Select value={assignedEmployeeId} onValueChange={setAssignedEmployeeId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Whose calendar should this go on?" />
+              </SelectTrigger>
+              <SelectContent>
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.first_name} {emp.last_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Optional — when the customer books, the appointment lands on this person's calendar.
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="inv-notes">Notes (optional)</Label>
