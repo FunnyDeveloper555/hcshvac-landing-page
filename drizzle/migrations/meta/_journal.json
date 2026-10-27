@@ -176,6 +176,13 @@
       "when": 1792685734266,
       "tag": "0024_booking_invitation_assigned_employee",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793113708372,
+      "tag": "0025_chat_unreplied_escalation",
+      "breakpoints": true
     }
   ]
 }
