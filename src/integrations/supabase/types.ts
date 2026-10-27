@@ -1263,6 +1263,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           direction: string
+          escalation_sent_at: string | null
           id: string
           phone: string | null
           sender_id: string | null
@@ -1274,6 +1275,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           direction?: string
+          escalation_sent_at?: string | null
           id?: string
           phone?: string | null
           sender_id?: string | null
@@ -1285,6 +1287,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           direction?: string
+          escalation_sent_at?: string | null
           id?: string
           phone?: string | null
           sender_id?: string | null
@@ -4365,6 +4368,7 @@ export type Database = {
           id: string
           label: string
           notify_appointments: boolean
+          notify_chat: boolean
           notify_events: boolean
           notify_submissions: boolean
           phone: string | null
@@ -4376,6 +4380,7 @@ export type Database = {
           id?: string
           label?: string
           notify_appointments?: boolean
+          notify_chat?: boolean
           notify_events?: boolean
           notify_submissions?: boolean
           phone?: string | null
@@ -4387,6 +4392,7 @@ export type Database = {
           id?: string
           label?: string
           notify_appointments?: boolean
+          notify_chat?: boolean
           notify_events?: boolean
           notify_submissions?: boolean
           phone?: string | null
