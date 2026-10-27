@@ -24,6 +24,7 @@ import { template as workItemAssigned } from './work-item-assigned.tsx'
 import { template as bookingReceived } from './booking-received.tsx'
 import { template as vendorRfq } from './vendor-rfq.tsx'
 import { template as bookingSubmissionAlert } from './booking-submission-alert.tsx'
+import { template as chatUnrepliedAlert } from './chat-unreplied-alert.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-received': applicationReceived,
@@ -41,5 +42,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'booking-received': bookingReceived,
   'vendor-rfq': vendorRfq,
   'booking-submission-alert': bookingSubmissionAlert,
+  'chat-unreplied-alert': chatUnrepliedAlert,
 }
 
