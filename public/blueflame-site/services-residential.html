@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Residential HVAC Heating &amp; AC Services | Best Comfort Chicago</title>
+  <meta name="description" content="24/7 emergency residential furnace repair, high-efficiency AC installation, heat pumps, and ductless comfort for single-family homes and condos across Greater Chicago.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <script src="assets/js/icons.js"></script>
+</head>
+<body>
+  <svg id="svgSpriteDefs" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="icon-fire" viewBox="0 0 24 24">
+      <path d="M12 23c-4.97 0-9-4.03-9-9 0-4.12 2.76-7.86 5.86-10.37.78-.63 1.93-.15 2.06.85.22 1.69 1.08 3.19 2.08 4.26.17-2.19 1.13-4.22 2.72-5.74.83-.8 2.2-.28 2.3.87.28 3.09 1.76 5.13 2.98 6.42C22.04 12.43 23 14.15 23 16c0 3.86-3.14 7-7 7h-4zm0-2c3.87 0 7-3.13 7-7 0-1.42-.72-2.77-1.63-3.73-1.47-1.56-2.58-3.69-2.84-6.32-1.07 1.34-1.78 3.03-1.87 4.88-.06 1.1-.92 1.98-2.02 2.03-1.22.06-2.29-.86-2.39-2.08-.03-.39-.12-.76-.24-1.12-2.13 2.03-4.01 4.79-4.01 7.34 0 3.87 3.13 7 7 7zm-1-3c-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83.55-.2 1.13.25 1.09.83-.07 1.07.78 1.98 1.86 2 .46.01.83.38.83.84 0 1.19-.88 2.16-2.04 2.16h-.74z"/>
+    </symbol>
+
+    <symbol id="icon-snowflake" viewBox="0 0 24 24">
+      <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93M12 6l2-2m-4 0l2 2m0 12l2 2m-4 0l2-2m-6-6l-2-2m0 4l2-2m12 0l2-2m0 4l-2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-bolt" viewBox="0 0 24 24">
+      <path d="M11 21h-1l1-7H7.5c-.88 0-1.33-1.06-.71-1.69L14.5 3h1l-1 7h3.5c.88 0 1.33 1.06.71 1.69L11 21z"/>
+    </symbol>
+
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-1.25 14.25l-3.75-3.75 1.41-1.41 2.34 2.34 5.34-5.34 1.41 1.41-6.75 6.75z"/>
+    </symbol>
+
+    <symbol id="icon-droplet" viewBox="0 0 24 24">
+      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69zm0 3.83L8.05 10.46a5.5 5.5 0 1 0 7.78 0L12 6.52z"/>
+    </symbol>
+
+    <symbol id="icon-sparkles" viewBox="0 0 24 24">
+      <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4zm7 13l1.2 2.8L23 19l-2.8 1.2L19 23l-1.2-2.8L15 19l2.8-1.2zM5 16l1 2.5L8.5 19.5 6 20.5 5 23l-1-2.5L1.5 19.5 4 18.5z"/>
+    </symbol>
+
+    <symbol id="icon-tools" viewBox="0 0 24 24">
+      <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+    </symbol>
+
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.35 8.5 5.16 8.5 3.93 8.5 3.42 8.08 3 7.57 3H4.06C3.55 3 3 3.42 3 3.93 3 13.36 10.64 21 20.01 21c.51 0 .99-.55.99-1.06v-3.56c0-.51-.42-.99-.99-.99z"/>
+    </symbol>
+
+    <symbol id="icon-map-pin" viewBox="0 0 24 24">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+    </symbol>
+
+    <symbol id="icon-star" viewBox="0 0 24 24">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </symbol>
+
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="12,7 12,12 15.5,14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <path d="M12 2L1 21h22L12 2zm0 3.5L20.25 19H3.75L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+    </symbol>
+
+    <symbol id="icon-home" viewBox="0 0 24 24">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </symbol>
+
+    <symbol id="icon-package" viewBox="0 0 24 24">
+      <path d="M21 16.5l-9 5.2-9-5.2V7.5l9-5.2 9 5.2v9z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="3.27,6.96 12,12.01 20.73,6.96" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+    </symbol>
+
+    <symbol id="icon-smartphone" viewBox="0 0 24 24">
+      <rect x="5" y="2" width="14" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="10" y1="5" x2="14" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="18" r="1" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-dollar" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 6v12M15 9.5c0-1.38-1.34-2.5-3-2.5s-3 1.12-3 2.5 1.34 2.5 3 2.5 3 1.12 3 2.5-1.34 2.5-3 2.5-3-1.12-3-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-award" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="8.21,13.89 7,22 12,19 17,22 15.79,13.88" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-volume" viewBox="0 0 24 24">
+      <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="currentColor"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-refresh" viewBox="0 0 24 24">
+      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6.73-5.19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-leaf" viewBox="0 0 24 24">
+      <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-13 4 5.24 3.73 7 7 7 7s-3-1-6-1c-1 0-2 .1-3 .3C3.5 12 6.5 8 17 8z"/>
+    </symbol>
+
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" fill="currentColor"/>
+      <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-wind" viewBox="0 0 24 24">
+      <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-plug" viewBox="0 0 24 24">
+      <path d="M9 2v6m6-6v6M6 8h12v5a6 6 0 0 1-12 0V8zm6 11v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-ruler" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="6" y1="7" x2="6" y2="12" stroke="currentColor" stroke-width="2"/>
+      <line x1="10" y1="7" x2="10" y2="10" stroke="currentColor" stroke-width="2"/>
+      <line x1="14" y1="7" x2="14" y2="12" stroke="currentColor" stroke-width="2"/>
+      <line x1="18" y1="7" x2="18" y2="10" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+      <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+    </symbol>
+
+    <symbol id="icon-check-circle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="8,12 11,15 16,9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-brand-flame-ice" viewBox="0 0 32 32">
+      <path d="M12 4c-.3 1.2-1 2.2-1.7 3.2C9.3 8.7 8.6 10.2 8.6 12.1c0 3.5 2.9 6.4 6.4 6.4s6.4-2.9 6.4-6.4c0-2.6-1.3-4.6-2.8-6.1-.2 1-.7 2-1.4 2.7-.9.9-1.5 2.5-1.5 4.1 0 2.2-1.8 4-4 4s-4-1.8-4-4c0-1.4.6-2.6 1.6-3.6.5-.6 1-1.2 1.4-1.9.5-1.1.6-2.2.3-3.3z" fill="#ff6550"/>
+      <path d="M22 12v12m-6-6h12m-9-4l6 8m-6 0l6-8" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-mail" viewBox="0 0 24 24">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="22,6 12,13 2,6" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-diamond" viewBox="0 0 24 24">
+      <polygon points="12,2 22,12 12,22 2,12" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="2" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-users" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+    <aside class="top-bar" aria-label="Emergency Announcement">
+    <div class="container top-bar-inner">
+      <div class="top-bar-info">
+        <div class="top-bar-item">
+          <span class="emergency-pulse"></span>
+          <strong>24/7 Chicago HVAC Emergency Dispatch</strong>
+        </div>
+        <div class="top-bar-item">
+          <span><svg class="svg-icon" style="color:var(--rich-blue-electric);"><use href="#icon-map-pin"></use></svg> Serving Joliet, Naperville, Plainfield &amp; Greater Chicago Metro</span>
+        </div>
+      </div>
+      <div class="top-bar-item">
+        <span>Need Urgent Heat or AC?</span>
+        <a href="tel:8155560660" class="top-phone-link" id="topEmergencyCall">
+          <svg class="svg-icon"><use href="#icon-phone"></use></svg> (815) 556-0660
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo-brand">
+        <div class="logo-icon">
+          <svg class="svg-icon"><use href="#icon-brand-flame-ice"></use></svg>
+        </div>
+        <div class="logo-text">
+          <h1>BEST COMFORT</h1>
+          <span>HEATING &amp; COOLING • CHICAGO</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="index.html" class="nav-link" id="navHome">Home</a>
+        <a href="about.html" class="nav-link" id="navAbout">About Us</a>
+        <a href="financing.html" class="nav-link" id="navFinancing">Financing</a>
+
+        <div class="nav-item-dropdown" id="navServicesDropdown">
+          <a href="services.html" class="nav-link dropdown-toggle active" id="navServices">
+            Services
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" width="14" height="14"><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>
+          </a>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <span class="dropdown-title">HVAC Solutions by Sector</span>
+              <a href="services.html" class="dropdown-view-all">All Services &rarr;</a>
+            </div>
+            <div class="dropdown-grid">
+              <a href="services-residential.html" class="dropdown-link active">
+                <div class="dropdown-link-icon icon-residential"><svg class="svg-icon"><use href="#icon-home"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Residential</span>
+                  <span class="dropdown-link-desc">Single-family homes &amp; condos</span>
+                </div>
+              </a>
+              <a href="services-commercial.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-commercial"><svg class="svg-icon"><use href="#icon-tools"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Commercial</span>
+                  <span class="dropdown-link-desc">Offices, retail &amp; plazas</span>
+                </div>
+              </a>
+              <a href="services-light-industrial.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-light-ind"><svg class="svg-icon"><use href="#icon-bolt"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Light Industrial</span>
+                  <span class="dropdown-link-desc">Workshops &amp; auto bays</span>
+                </div>
+              </a>
+              <a href="services-industrial.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-industrial"><svg class="svg-icon"><use href="#icon-target"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Industrial</span>
+                  <span class="dropdown-link-desc">Plants, factories &amp; chillers</span>
+                </div>
+              </a>
+              <a href="services-churches.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-churches"><svg class="svg-icon"><use href="#icon-award"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Churches</span>
+                  <span class="dropdown-link-desc">Places of worship &amp; halls</span>
+                </div>
+              </a>
+              <a href="services-medical.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-medical"><svg class="svg-icon"><use href="#icon-shield"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Medical Facilities</span>
+                  <span class="dropdown-link-desc">Clinics, labs &amp; cleanrooms</span>
+                </div>
+              </a>
+              <a href="services-educational.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-educational"><svg class="svg-icon"><use href="#icon-star"></use></svg></div>
+                <div class="dropdown-link-info">
+                  <span class="dropdown-link-title">Educational Facilities</span>
+                  <span class="dropdown-link-desc">K-12 schools &amp; universities</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="products.html" class="nav-link" id="navProducts">Products</a>
+        <a href="air-quality.html" class="nav-link" id="navAirQuality">Air Quality</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-salmon btn-sm" id="navBookOnline">Book Online</a>
+        <button class="mobile-toggle" aria-label="Toggle Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-backdrop"></div>
+  <div class="mobile-nav-drawer">
+    <div class="mobile-drawer-header">
+      <div class="logo-text">
+        <h2 style="font-size:1.15rem; color:#fff; font-weight:800;">BEST COMFORT</h2>
+        <span style="color:var(--rich-blue-electric); font-size:0.75rem;">HVAC SPECIALISTS</span>
+      </div>
+      <button class="mobile-close-btn">&times;</button>
+    </div>
+    <div class="mobile-menu-list">
+      <a href="index.html" class="nav-link"><svg class="svg-icon"><use href="#icon-home"></use></svg> Home</a>
+      <a href="about.html" class="nav-link"><svg class="svg-icon"><use href="#icon-star"></use></svg> About Us</a>
+      <a href="financing.html" class="nav-link"><svg class="svg-icon"><use href="#icon-dollar"></use></svg> Financing (0% APR)</a>
+      
+      <div class="mobile-dropdown-item">
+        <div class="mobile-dropdown-trigger">
+          <a href="services.html" class="nav-link active"><svg class="svg-icon"><use href="#icon-tools"></use></svg> Services</a>
+          <button type="button" class="mobile-sub-toggle active" aria-label="Toggle Services Submenu">&#9662;</button>
+        </div>
+        <div class="mobile-sub-menu open">
+          <a href="services-residential.html" class="mobile-sub-link active">&bull; Residential</a>
+          <a href="services-commercial.html" class="mobile-sub-link">&bull; Commercial</a>
+          <a href="services-light-industrial.html" class="mobile-sub-link">&bull; Light Industrial</a>
+          <a href="services-industrial.html" class="mobile-sub-link">&bull; Industrial</a>
+          <a href="services-churches.html" class="mobile-sub-link">&bull; Churches</a>
+          <a href="services-medical.html" class="mobile-sub-link">&bull; Medical Facilities</a>
+          <a href="services-educational.html" class="mobile-sub-link">&bull; Educational Facilities</a>
+        </div>
+      </div>
+
+      <a href="products.html" class="nav-link"><svg class="svg-icon"><use href="#icon-package"></use></svg> Products</a>
+      <a href="air-quality.html" class="nav-link"><svg class="svg-icon"><use href="#icon-wind"></use></svg> Air Quality</a>
+      <a href="contact.html" class="nav-link"><svg class="svg-icon"><use href="#icon-calendar"></use></svg> Book Online / Contact</a>
+    </div>
+    <div style="margin-top:auto;">
+      <a href="tel:8155560660" class="btn btn-pink" style="width:100%; text-align:center;">
+        <svg class="svg-icon"><use href="#icon-phone"></use></svg> Call (815) 556-0660
+      </a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="container page-hero-inner">
+      <div class="sector-hero-badge badge-salmon">
+        <svg class="svg-icon" style="width:18px; height:18px;"><use href="#icon-home"></use></svg>
+        <span>Residential HVAC Services</span>
+      </div>
+      <h1>Complete Home Climate Comfort Built for Chicago Winters &amp; Summers</h1>
+      <p>
+        From single-family homes in Naperville and Joliet to historic brick bungalows in Chicago, we deliver rapid emergency repairs, ultra-high-efficiency replacements, and customized whole-home zoning engineered for sub-zero wind chills.
+      </p>
+      <div style="margin-top:24px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <a href="contact.html" class="btn btn-salmon">Schedule In-Home Diagnostic</a>
+        <a href="tel:8155560660" class="btn btn-outline"><svg class="svg-icon"><use href="#icon-phone"></use></svg> Call (815) 556-0660</a>
+      </div>
+
+      <div class="sector-trust-strip">
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-shield"></use></svg>
+          <span>NATE &amp; EPA Certified Technicians</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-clock"></use></svg>
+          <span>24/7 Priority Emergency Dispatch</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-dollar"></use></svg>
+          <span>0% APR Financing for up to 60 Mos</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-award"></use></svg>
+          <span>Up to $2,000+ ComEd &amp; Nicor Rebates</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="section section-navy">
+    <div class="container">
+      
+      <div class="sector-stats-bar">
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--electric-salmon);">24/7</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Emergency Dispatch</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--rich-blue-electric);">98.7%</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Peak AFUE Furnaces</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--vibrant-pink);">$2,000+</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Instant Rebates</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:#34d399;">10-Year</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Parts &amp; Labor Guarantee</p>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:70px;">
+        <div class="badge-pill badge-salmon">Complete Capabilities</div>
+        <h2 class="section-title">Residential Heating, Cooling &amp; Air Solutions</h2>
+        <p class="section-subtitle">
+          Engineered specifically for Northern Illinois weather swings, from -20°F arctic blasts to 95°F humid lakefront heatwaves.
+        </p>
+      </div>
+
+      <div class="sector-cap-grid">
+        
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon salmon">
+            <svg class="svg-icon"><use href="#icon-fire"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Furnace Repair &amp; Installation</h3>
+          <p class="sector-cap-desc">
+            Emergency diagnosis and installation of high-efficiency gas furnaces up to 98.7% AFUE with modulating gas valves and variable-speed ECM blower motors for whisper-quiet even warmth.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Cracked heat exchanger safety inspection</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Modulating &amp; two-stage gas burner tuning</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Fully stocked emergency repair vans</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Schedule Furnace Repair &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon">
+            <svg class="svg-icon"><use href="#icon-snowflake"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">AC &amp; Hybrid Heat Pumps</h3>
+          <p class="sector-cap-desc">
+            Ultra-efficient inverter air conditioners and cold-climate dual-fuel heat pumps up to 21+ SEER2 that maintain heating capacity down to -13°F while reducing summer electric bills by up to 45%.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Inverter variable-speed scroll compressors</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Dual-fuel auto fuel-switch intelligence</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Sound levels as whisper-quiet as 54 dBA</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="products.html">Explore Heat Pumps &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon pink">
+            <svg class="svg-icon"><use href="#icon-sun"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Ductless Mini-Split Zoning</h3>
+          <p class="sector-cap-desc">
+            Perfect for sunrooms, historic brick homes, room additions, or attics without ductwork. Independent multi-zone climate control gives every family member customized comfort.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Multi-zone wall, floor, or ceiling cassettes</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> No messy demolition or sheet metal routing</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Hyper-heating down to sub-zero freeze</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Get Mini-Split Estimate &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon salmon">
+            <svg class="svg-icon"><use href="#icon-droplet"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Hydronic Boilers &amp; Radiators</h3>
+          <p class="sector-cap-desc">
+            Chicago's architectural heritage includes historic cast iron radiator heat. We service vintage steam boilers and install modern 95%+ wall-hung combi boilers that heat your home and water.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Hydronic air bleeding &amp; circulator pumps</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> High-efficiency condensing combi units</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Radiant in-floor heating loop balancing</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Schedule Boiler Check &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon emerald">
+            <svg class="svg-icon"><use href="#icon-wind"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Whole-Home Air Quality &amp; Humidifiers</h3>
+          <p class="sector-cap-desc">
+            Winter heating dries out indoor air, causing irritated sinuses and static shock. We integrate whole-home steam humidifiers, MERV 16 filtration, and UV-C germicidal coils directly into your duct system.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> AprilAire steam &amp; bypass humidifiers</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Hospital-grade MERV 16 HEPA scrubbers</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> UV-C pathogen &amp; mold eradication</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="air-quality.html">View Air Quality Solutions &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon">
+            <svg class="svg-icon"><use href="#icon-tools"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">VIP Maintenance &amp; Smart Zoning</h3>
+          <p class="sector-cap-desc">
+            Solve hot upstairs bedrooms with motorized bypass dampers and smart thermostats (Ecobee/Nest). Our 26-point annual maintenance club ensures peak seasonal efficiency with zero emergency surcharges.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Spring AC &amp; Fall Furnace 26-point tune-up</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> 15% discount on all repairs &amp; parts</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Guaranteed VIP queue priority booking</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Join VIP Club &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-blue">Expert Diagnosis</div>
+        <h2 class="section-title">Common Home HVAC Problems We Solve Same-Day</h2>
+        <p class="section-subtitle">
+          Every Best Comfort service van is stocked with universal igniters, inducer motors, capacitors, and digital refrigerant analyzers for first-visit resolution.
+        </p>
+      </div>
+
+      <div class="sector-challenges-grid">
+        <div class="sector-challenge-card salmon">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Sub-Zero Furnace Lockouts</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            When wind chills dip below -20°F in Will and DuPage counties, cracked silicon nitride igniters or clogged flame sensors can leave your family without heat. We provide 2-hour priority emergency dispatch.
+          </p>
+        </div>
+        <div class="sector-challenge-card">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Hot Second Floors &amp; Uneven Rooms</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            Two-story Chicago homes frequently suffer from 10-degree temperature imbalances. We design electronic motorized zone dampers and ductless mini-split boosters to balance upstairs bedrooms.
+          </p>
+        </div>
+        <div class="sector-challenge-card pink">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Vintage Boilers in Historic Homes</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            We specialize in vintage hydronic radiator maintenance, bleeding air-bound lines, replacing seized circulator pumps, and upgrading inefficient boilers to 95.5% condensing wall-hung units.
+          </p>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-salmon">Transparent Journey</div>
+        <h2 class="section-title">Our 4-Step Home Comfort Process</h2>
+        <p class="section-subtitle">
+          No hidden fees, no high-pressure sales. Just transparent engineering diagnostics and red-carpet home protection.
+        </p>
+      </div>
+
+      <div class="sector-process-grid">
+        <div class="sector-process-card">
+          <div class="process-step-num">01</div>
+          <h3 class="process-step-title">Diagnostic &amp; Load Audit</h3>
+          <p class="process-step-desc">
+            We measure airflow CFM, static duct pressure, and heat loss to diagnose the root cause rather than just treating symptoms.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">02</div>
+          <h3 class="process-step-title">Upfront Fixed Quote</h3>
+          <p class="process-step-desc">
+            You receive transparent, tiered options with exact ComEd/Nicor instant rebates and 0% financing payments clearly broken down.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">03</div>
+          <h3 class="process-step-title">Red-Carpet Installation</h3>
+          <p class="process-step-desc">
+            Shoe covers, protective floor runners, and spotless cleanup. Installed strictly to national ACCA Manual S and J specifications.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">04</div>
+          <h3 class="process-step-title">Commissioning &amp; Warranty</h3>
+          <p class="process-step-desc">
+            Full digital combustion analysis, safety shut-off test, and signed 10-year parts &amp; labor guarantee certificates issued on site.
+          </p>
+        </div>
+      </div>
+
+      <div class="sector-case-study">
+        <div class="case-study-badge">
+          <svg class="svg-icon" style="width:14px; height:14px;"><use href="#icon-star"></use></svg>
+          <span>Real Chicagoland Home Spotlight</span>
+        </div>
+        <div class="sector-case-study-grid">
+          <div>
+            <h3 style="font-size:1.6rem; color:#fff; font-weight:800; margin-bottom:12px;">
+              Dual-Fuel Hybrid Heat Pump Retrofit in Naperville, IL
+            </h3>
+            <p style="color:var(--text-light); font-size:0.95rem; line-height:1.65; margin-bottom:16px;">
+              <strong>The Challenge:</strong> A 3,200 sq. ft. 2-story home with a 19-year-old furnace had staggering $620 monthly winter gas bills and a top floor that was 8°F hotter than the main floor in July.
+            </p>
+            <p style="color:var(--text-light); font-size:0.95rem; line-height:1.65;">
+              <strong>Our Solution:</strong> Replaced the system with a 20 SEER2 Inverter Heat Pump paired with a 97% AFUE modulating gas furnace and motorized bypass dual-zone dampers. Handled all ComEd &amp; Nicor rebate paperwork on behalf of the homeowner.
+            </p>
+          </div>
+          <div class="case-study-stats">
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">-38%</div>
+              <div class="case-study-stat-lbl">Winter Energy Bills</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">$2,450</div>
+              <div class="case-study-stat-lbl">Instant Utility Rebates</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">&plusmn;1&deg;F</div>
+              <div class="case-study-stat-lbl">2nd Floor Balance</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">10-Yr</div>
+              <div class="case-study-stat-lbl">Full Parts &amp; Labor</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-blue">Engineering Specs</div>
+        <h2 class="section-title">Home Heating &amp; AC Efficiency Comparison</h2>
+        <p class="section-subtitle">
+          Select the right tier for your family's budget, expected length of homeownership, and comfort preferences.
+        </p>
+      </div>
+
+      <div class="sector-spec-table-wrap">
+        <table class="sector-spec-table">
+          <thead>
+            <tr>
+              <th>System Class</th>
+              <th>Efficiency Rating</th>
+              <th>Sound Level</th>
+              <th>Comfort Technology</th>
+              <th>Utility Rebate Eligibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Standard Baseline</strong></td>
+              <td><span class="spec-badge blue">80% AFUE / 14 SEER2</span></td>
+              <td>72 - 76 dBA</td>
+              <td>Single-Stage ON/OFF Operation</td>
+              <td>Standard manufacturer warranty</td>
+            </tr>
+            <tr>
+              <td><strong>High-Efficiency Choice</strong></td>
+              <td><span class="spec-badge salmon">96% AFUE / 16 SEER2</span></td>
+              <td>64 - 68 dBA</td>
+              <td>Two-Stage Heat &amp; Constant ECM Fan</td>
+              <td>$600 - $1,100 ComEd / Nicor rebate</td>
+            </tr>
+            <tr>
+              <td><strong>Flagship Hybrid Inverter</strong></td>
+              <td><span class="spec-badge green">98.7% AFUE / 21+ SEER2</span></td>
+              <td>54 - 58 dBA (Whisper)</td>
+              <td>Modulating Inverter &amp; Intelligent Zoning</td>
+              <td>$2,000+ Max Rebate + Federal Tax Credit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-salmon">Got Questions?</div>
+        <h2 class="section-title">Frequently Asked Residential HVAC Questions</h2>
+      </div>
+
+      <div class="accordion-wrapper" data-single-open="true" style="max-width:850px; margin:30px auto 0 auto;">
+        <div class="accordion-item active">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="true">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-home"></use></svg></span>
+              When should I repair vs replace an aging furnace or AC?
+            </span>
+            <span class="accordion-icon">&minus;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              As a standard rule of thumb (the $5,000 Rule): Multiply the age of your equipment by the repair cost estimate. If the total exceeds $5,000, or if your furnace is over 15 years old with cracked heat exchangers, replacing it with a 96%+ AFUE system is substantially more cost-effective due to utility savings and avoiding cascading part failures.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-snowflake"></use></svg></span>
+              Can cold-climate heat pumps really heat during sub-zero Chicago freezes?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              Yes! Modern inverter heat pumps with hyper-heating vapor injection produce 100% rated heat output down to -5°F and operate efficiently down to -13°F. In our dual-fuel configurations, the heat pump handles mild winter days (30°F - 55°F) at 300% thermodynamic efficiency, and switches seamlessly to the high-efficiency gas furnace when arctic vortexes strike.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-dollar"></use></svg></span>
+              How do the ComEd and Nicor Gas rebates work?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              As certified ComEd Energy Efficiency Service Providers and Nicor Gas Trade Allies, Best Comfort applies your rebates directly as an instant discount on your invoice. You don't have to wait months for mail-in rebate checks—we handle all program filings, AHRI certificates, and compliance paperwork for you.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-tools"></use></svg></span>
+              What is included in your 26-point home tune-up?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              Our comprehensive tune-up includes: testing carbon monoxide levels and combustion safety, checking heat exchanger integrity with digital camera scopes, cleaning flame sensors and burners, measuring motor amp draw and capacitor microfarads, chemical condenser coil cleaning, testing static duct pressures, calibrating thermostats, and verifying subcooling/superheat refrigerant levels.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="calc-box" style="margin-top:70px; text-align:center;">
+        <div class="badge-pill badge-salmon" style="margin-bottom:12px;">Immediate Home Assistance</div>
+        <h2 style="font-size:1.8rem; color:#fff; font-weight:800; margin-bottom:10px;">Need Home Heating or AC Service Today?</h2>
+        <p style="color:var(--text-light); max-width:600px; margin:0 auto 24px auto;">
+          Contact our licensed technicians for upfront quotes, $50 off first-time service, 0% financing options, and guaranteed on-time arrivals.
+        </p>
+        <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+          <a href="contact.html" class="btn btn-salmon">Schedule In-Home Diagnostic</a>
+          <a href="tel:8155560660" class="btn btn-outline"><svg class="svg-icon"><use href="#icon-phone"></use></svg> Call (815) 556-0660</a>
+        </div>
+      </section>
+
+      <div style="margin-top:80px;">
+        <div class="section-header" style="margin-bottom:24px;">
+          <div class="badge-pill badge-blue">Complete HVAC Portfolio</div>
+          <h2 class="section-title">Explore Solutions for Other Sectors</h2>
+        </div>
+        <div class="other-sectors-grid">
+          <a href="services-commercial.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-tools"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Commercial</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Offices, retail &amp; plazas</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-light-industrial.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-bolt"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Light Industrial</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Workshops &amp; auto bays</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-industrial.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-target"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Industrial</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Plants, factories &amp; chillers</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-churches.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-award"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Churches</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Places of worship &amp; halls</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-medical.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-shield"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Medical Facilities</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Clinics, labs &amp; cleanrooms</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-educational.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-star"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Educational Facilities</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">K-12 schools &amp; universities</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  
+      <section class="section" id="sectorRelatedProducts" style="padding: 70px 0; background: rgba(14, 30, 64, 0.4); border-top: 1px solid rgba(255,255,255,0.06);" aria-label="Related Equipment">
+        <div class="container">
+
+        <div class="section-header" style="margin-bottom: 30px;">
+          <div class="badge-pill badge-salmon">
+            <svg class="svg-icon"><use href="#icon-package"></use></svg> Certified Systems &amp; OEM Parts
+          </div>
+          <h2 class="section-title">Certified Residential HVAC Equipment & Smart Controls</h2>
+          <p class="section-subtitle">Explore factory-tested systems and smart controls engineered for single-family homes and townhomes.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+          
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-blue" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">16-20 SEER</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/aebad167-23f3-4ff5-94d8-ee65c72da825.jpeg" alt="Ameristar Central AC Condenser" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Ameristar</span>
+              <span style="font-weight: 800; color: #fff;">From $2,499.99</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Ameristar Central AC Condenser</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              High efficiency residential outdoor unit. Quiet operation, R-410A refrigerant with 10-year parts warranty.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=9ff1077b-2ec5-48ab-81a8-d42a05c231b8" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Ameristar%20Central%20AC%20Condenser" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-salmon" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">95% AFUE</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/ee9299f5-12bd-41d7-86ae-b58d684d97c4.png" alt="Rheem Condensing Hot Water Boiler" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Rheem</span>
+              <span style="font-weight: 800; color: #fff;">Gas / Hydronic</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Rheem Condensing Hot Water Boiler</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Rugged cast iron heat exchanger design for historic Chicago radiator homes and modern radiant floors.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=cf17e5e6-e80f-444b-82a8-c7ee014f59c6" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Rheem%20Condensing%20Hot%20Water%20Boiler" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-pink" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">15% Off Spring Sale</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/a3631a77-d946-498e-8a6d-139c484d6e6a.jpg" alt="Durastar WiFi Digital Thermostat" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Durastar</span>
+              <span style="font-weight: 800; color: #fff;">From $149.99</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Durastar WiFi Digital Thermostat</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Smart 7-day programming with remote phone access. Energy Star certified with ComEd instant utility rebates.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=7c8c9d8b-642e-4010-a9c8-2e39fda3dbfa" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Durastar%20WiFi%20Digital%20Thermostat" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-salmon" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">Buy 4 Get 1 Free</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/4842fef4-a7e0-4cb8-a65a-ac83e98d726e.jpg" alt="14x25x1 MERV 13 Premium Filter" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Ameristar</span>
+              <span style="font-weight: 800; color: #fff;">High Efficiency</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">14x25x1 MERV 13 Premium Filter</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Captures 98% of airborne dust, pollen, and pet dander. Lasts up to 90 days in residential furnace systems.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=a45938e7-76b6-4ef1-be4a-9409f55fcd5f" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=14x25x1%20MERV%2013%20Premium%20Filter" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="products.html" class="btn btn-blue btn-sm">
+            <svg class="svg-icon"><use href="#icon-package"></use></svg> Explore Complete 20-Product Catalog &amp; Technical Specs &rarr;
+          </a>
+        </div>
+      
+        </div>
+      </section>
+  
+    </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="logo-brand">
+            <div class="logo-icon">
+              <svg class="svg-icon"><use href="#icon-brand-flame-ice"></use></svg>
+            </div>
+            <div class="logo-text">
+              <h2 style="font-size:1.25rem; font-weight:800; color:#fff;">BEST COMFORT</h2>
+              <span>HEATING &amp; COOLING</span>
+            </div>
+          </div>
+          <p>
+            Licensed residential HVAC experts serving Joliet, Will County, and Greater Chicago with flexible financing and 24/7 emergency repair.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h3>Services by Sector</h3>
+          <div class="footer-links">
+            <a href="services-residential.html">Residential Homes</a>
+            <a href="services-commercial.html">Commercial &amp; Retail</a>
+            <a href="services-medical.html">Medical Facilities</a>
+            <a href="services-educational.html">Educational Facilities</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Quick Links</h3>
+          <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="financing.html">0% Financing</a>
+            <a href="air-quality.html">Air Quality</a>
+            <a href="contact.html">Book Online</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Best Comfort Heating &amp; Cooling. Hand-built Vanilla HTML, CSS &amp; JS.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
