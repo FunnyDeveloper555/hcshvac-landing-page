@@ -1405,6 +1405,7 @@ export type Database = {
           gas_pipe_repair: Json
           gas_pipe_service: Json
           header_pages: Json | null
+          hero: Json
           hero_image_url: string | null
           hvac_brands_install: Json | null
           hvac_brands_repair: Json | null
@@ -1486,6 +1487,7 @@ export type Database = {
           gas_pipe_repair?: Json
           gas_pipe_service?: Json
           header_pages?: Json | null
+          hero?: Json
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
           hvac_brands_repair?: Json | null
@@ -1567,6 +1569,7 @@ export type Database = {
           gas_pipe_repair?: Json
           gas_pipe_service?: Json
           header_pages?: Json | null
+          hero?: Json
           hero_image_url?: string | null
           hvac_brands_install?: Json | null
           hvac_brands_repair?: Json | null

@@ -190,6 +190,13 @@
       "when": 1793209286708,
       "tag": "0026_company_top_bar",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793210165919,
+      "tag": "0027_company_hero",
+      "breakpoints": true
     }
   ]
 }
