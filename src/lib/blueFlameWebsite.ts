@@ -81,6 +81,7 @@ export interface WebsiteHero {
 /** Apply Page Builder "Hero" settings to the home page hero. Blank fields keep the template content. */
 export function applyHero(html: string, hero: WebsiteHero | null | undefined): string {
   if (!hero || typeof hero !== "object" || typeof DOMParser === "undefined") return html;
+  if (!JSON.stringify(hero).match(/:"[^"]*\S/)) return html;
   const doc = new DOMParser().parseFromString(html, "text/html");
   const root = doc.querySelector(".hero-home .hero-content");
   if (!root) return html;
