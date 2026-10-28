@@ -183,6 +183,13 @@
       "when": 1793113708372,
       "tag": "0025_chat_unreplied_escalation",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793209286708,
+      "tag": "0026_company_top_bar",
+      "breakpoints": true
     }
   ]
 }
