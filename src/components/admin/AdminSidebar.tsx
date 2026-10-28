@@ -316,6 +316,7 @@ const staticMenuItems: MenuItem[] = [
 // Simplified company submenus - cascading items merged into single tabbed entries
 const companySubmenus: MenuItem[] = [
   { title: "Website Preview", url: "/admin/page-builder/profile", icon: Eye },
+  { title: "General", url: "/admin/page-builder/general", icon: Cog },
   { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
   { title: "Banner", url: "/admin/page-builder/banner", icon: Layout },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
