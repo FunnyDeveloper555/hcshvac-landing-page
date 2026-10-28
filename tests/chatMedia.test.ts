@@ -19,7 +19,7 @@ test("photo downloads authenticate with Twilio but never forward credentials to 
   globalThis.fetch = async (input, init) => {
     calls.push({ url: String(input), auth: new Headers(init?.headers).get("Authorization") });
     return calls.length === 1
-      ? new Response(null, { status: 302, headers: { location: "https://media.twilio.com/photo" } })
+      ? new Response(null, { status: 302, headers: { location: "https://mms.twiliocdn.com/photo" } })
       : new Response(new Uint8Array([1, 2, 3]), { headers: { "content-type": "image/jpeg" } });
   };
   try {
