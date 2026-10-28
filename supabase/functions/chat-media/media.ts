@@ -19,6 +19,7 @@ export async function downloadMedia(raw: string, account: string, token: string)
       const next = new URL(location, url);
       if (next.protocol !== "https:" || next.username || next.password ||
         !(next.hostname.endsWith(".twilio.com") || next.hostname.endsWith(".amazonaws.com"))) {
+        console.warn("chat-media redirect host", next.hostname);
         throw new Error("Invalid photo redirect");
       }
       // Credentials are only ever sent to the original, validated API resource.
