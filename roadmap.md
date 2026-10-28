@@ -20,6 +20,6 @@
 - [x] Verify names and numbers show together in the chat sidebar.
 
 # Blue Flame uploaded website
-- [ ] Inspect and preserve the uploaded HTML/CSS/JS website for Blue Flame only.
-- [ ] Verify pages, navigation, images, and isolation from the CRM and other companies.
-- [ ] Publish the website to both requested Blue Flame addresses.
+- [x] Inspect and preserve the uploaded HTML/CSS/JS website for Blue Flame only.
+- [x] Verify pages, navigation, images, and isolation from the CRM and other companies (five original external images unavailable).
+- [x] Request publishing to both connected Blue Flame addresses; deployment completion remains unverified.

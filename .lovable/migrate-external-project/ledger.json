@@ -40,9 +40,9 @@
     {
       "capability": "cutover and verification",
       "source": "Both requested connected domains",
-      "outcome": "Replace Blue Flame website only and publish",
-      "status": "pending",
-      "next_action": "Verify pages and navigation, then publish"
+      "outcome": "Both domains connected; local 15-page/navigation checks passed; publishing requested",
+      "status": "publish_requested",
+      "next_action": "Deployment completion remains unverified"
     }
   ]
 }
