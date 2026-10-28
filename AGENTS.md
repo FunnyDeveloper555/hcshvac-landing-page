@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Blue Flame's uploaded website is served as original static documents in public/blueflame-site via the exact-host redirect helper; this preserves its HTML/CSS/JS without leaking styles or scripts into the CRM or other companies.
+
 - Customer submission action alerts read actual pending customer/appointment records through the staff-only crm_pending_submissions RPC; staff saves clear review markers, while reading messages never dismisses unfinished work.
 - Sidebar and customer/appointment list pending indicators derive record IDs from the same usePendingSubmissions query as the alert list, so they remain synchronized without independent read/dismissal state.
 - Pending submission dot age is calculated by submissionAgeStage from the alert's submitted_at; menu dots use the oldest unfinished submission of the corresponding kind so escalation stays consistent across views.

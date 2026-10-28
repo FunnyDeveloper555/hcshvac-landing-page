@@ -21,10 +21,15 @@ import ApplicantPortal from "./pages/ApplicantPortal";
 import ApplicantSetPassword from "./pages/ApplicantSetPassword";
 
 import { getSubdomainSlug } from "./hooks/useSubdomainSlug";
+import { blueFlameWebsiteDestination } from "./lib/blueFlameWebsite";
 
 const queryClient = new QueryClient();
 
 const subdomainSlug = getSubdomainSlug();
+const blueFlameDestination = blueFlameWebsiteDestination(window.location.hostname, window.location.pathname);
+if (blueFlameDestination) {
+  window.location.replace(blueFlameDestination + window.location.search + window.location.hash);
+}
 
 /**
  * template.hcshvac.com serves the original Amerce HTML demo, which lives as
