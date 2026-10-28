@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Blue Flame's uploaded website is served as original static documents in public/blueflame-site via the exact-host redirect helper; this preserves its HTML/CSS/JS without leaking styles or scripts into the CRM or other companies.
+- Blue Flame's uploaded website lives as original static documents in public/blueflame-site; on its exact hosts main.tsx writes the page in place at the clean URL (/, /about.html) before React loads, so its HTML/CSS/JS never mixes with the CRM or other companies.
 
 - Customer submission action alerts read actual pending customer/appointment records through the staff-only crm_pending_submissions RPC; staff saves clear review markers, while reading messages never dismisses unfinished work.
 - Sidebar and customer/appointment list pending indicators derive record IDs from the same usePendingSubmissions query as the alert list, so they remain synchronized without independent read/dismissal state.
