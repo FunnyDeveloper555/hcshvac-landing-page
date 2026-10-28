@@ -282,7 +282,7 @@ function ChatThread({ conv, title, onBack, staff }: { conv: Conv; title: string;
                   {m.direction === "inbound" && " · text received"}{m.direction === "outbound" && " · text sent"}
                 </p>
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
-                {(m.attachments || []).map((a, i) => <Attachment key={i} a={a} />)}
+                <MessageAttachments message={m} />
               </div>
             </div>
           );
@@ -313,15 +313,51 @@ function ChatThread({ conv, title, onBack, staff }: { conv: Conv; title: string;
   );
 }
 
+function MessageAttachments({ message }: { message: Msg }) {
+  const attachments = message.attachments || [];
+  const needsRecovery = attachments.some((a) => !a.path && a.url?.startsWith("https://api.twilio.com/"));
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["chat-media", message.id],
+    enabled: needsRecovery,
+    staleTime: 30 * 60 * 1000,
+    refetchInterval: needsRecovery ? 30 * 60 * 1000 : false,
+    retry: 1,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("chat-media", { body: { message_id: message.id } });
+      if (error || data?.error) throw new Error("Unable to load photos");
+      return data.attachments as Array<Msg["attachments"][number] & { error?: string }>;
+    },
+  });
+  if (!attachments.length) return null;
+  if (needsRecovery && isLoading) return <Loader2 className="mt-2 h-4 w-4 animate-spin" aria-label="Loading photos" />;
+  if (needsRecovery && isError) return <Button size="sm" variant="outline" onClick={() => refetch()}>Retry photos</Button>;
+  return <>{(needsRecovery ? data || [] : attachments).map((a, i) => (
+    "error" in a && a.error
+      ? <Button key={i} size="sm" variant="outline" onClick={() => refetch()}>Retry photo</Button>
+      : <Attachment key={i} a={a} />
+  ))}</>;
+}
+
 function Attachment({ a }: { a: Msg["attachments"][number] }) {
   const [url, setUrl] = useState<string | null>(a.url || null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    if (a.path && !a.url) supabase.storage.from("chat-files").createSignedUrl(a.path, 3600).then(({ data }) => setUrl(data?.signedUrl || null));
+    let active = true;
+    setFailed(false);
+    setUrl(a.url || null);
+    const sign = () => supabase.storage.from("chat-files").createSignedUrl(a.path || "", 3600).then(({ data }) => {
+      if (active) { setUrl(data?.signedUrl || null); setFailed(!data?.signedUrl); }
+    });
+    if (!a.path) return;
+    if (!a.url) sign();
+    const timer = window.setInterval(sign, 30 * 60 * 1000);
+    return () => { active = false; window.clearInterval(timer); };
   }, [a.path, a.url]);
+  if (failed) return <p className="mt-1 text-xs">Photo unavailable</p>;
   if (!url) return null;
-  const isImage = (a.type || "").startsWith("image/") || a.name === "photo";
+  const isImage = (a.type || "").startsWith("image/") || (!a.type && a.name === "photo");
   return isImage ? (
-    <a href={url} target="_blank" rel="noreferrer"><img src={url} alt={a.name || "photo"} className="mt-1 max-h-48 rounded" /></a>
+    <a href={url} target="_blank" rel="noreferrer"><img src={url} alt={a.name || "photo"} className="mt-1 max-h-48 max-w-full rounded" onError={() => setFailed(true)} /></a>
   ) : (
     <a href={url} target="_blank" rel="noreferrer" className="mt-1 block underline">📎 {a.name || "file"}</a>
   );
