@@ -65,3 +65,56 @@ export function applyTopBar(html: string, bar: WebsiteTopBar | null | undefined)
   }
   return out;
 }
+
+export interface WebsiteHero {
+  badge?: string;
+  headline?: string;
+  highlight?: string;
+  lead?: string;
+  cta1_text?: string;
+  cta1_link?: string;
+  cta2_text?: string;
+  cta2_link?: string;
+  stats?: { value?: string; label?: string }[];
+}
+
+/** Apply Page Builder "Hero" settings to the home page hero. Blank fields keep the template content. */
+export function applyHero(html: string, hero: WebsiteHero | null | undefined): string {
+  if (!hero || typeof hero !== "object" || typeof DOMParser === "undefined") return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const root = doc.querySelector(".hero-home .hero-content");
+  if (!root) return html;
+  const v = (s?: string) => (s && s.trim() ? s.trim() : null);
+  const badge = root.querySelector(".badge-pill > span");
+  if (badge && v(hero.badge)) badge.textContent = v(hero.badge);
+  const h1 = root.querySelector("h1");
+  if (h1 && (v(hero.headline) || v(hero.highlight))) {
+    const span = h1.querySelector(".gradient-text");
+    const hl = v(hero.highlight) ?? span?.textContent ?? "";
+    const head = v(hero.headline) ?? (h1.textContent || "").replace(span?.textContent || "", "").trim();
+    h1.textContent = head + " ";
+    const s = doc.createElement("span");
+    s.className = "gradient-text";
+    s.textContent = hl;
+    h1.appendChild(s);
+  }
+  const lead = root.querySelector(".hero-lead");
+  if (lead && v(hero.lead)) lead.textContent = v(hero.lead);
+  const ctas = root.querySelectorAll<HTMLAnchorElement>(".hero-cta-group a");
+  ([[hero.cta1_text, hero.cta1_link], [hero.cta2_text, hero.cta2_link]] as const).forEach(([t, l], i) => {
+    const a = ctas[i];
+    if (!a) return;
+    if (v(t)) a.textContent = v(t);
+    if (v(l)) a.setAttribute("href", v(l)!);
+  });
+  const items = root.querySelectorAll(".hero-stat-item");
+  (hero.stats || []).forEach((st, i) => {
+    const it = items[i];
+    if (!it || !st) return;
+    const h3 = it.querySelector("h3");
+    const p = it.querySelector("p");
+    if (h3 && v(st.value)) h3.textContent = v(st.value);
+    if (p && v(st.label)) p.textContent = v(st.label);
+  });
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}
