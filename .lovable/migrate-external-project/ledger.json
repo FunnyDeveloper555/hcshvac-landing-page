@@ -1,0 +1,12 @@
+{
+  "source": "Custom-Multipage-Website-for-HVAC-Company.zip",
+  "scope": "Blue Flame static company website only",
+  "capabilities": [
+    {"capability":"code and static pages","source":"HTML/CSS/JS archive","outcome":"preserve without redesign","status":"inspected","next_action":"Load isolated static site for Blue Flame"},
+    {"capability":"schema, records, auth identities and authorization","source":"Static mock catalog; no database or authentication","outcome":"not applicable to this static upload; existing CRM unchanged","status":"not_applicable","next_action":null},
+    {"capability":"assets and uploaded file bytes","source":"Bundled SVG/PNG and external image URLs","outcome":"preserve images through project asset flow","status":"pending","next_action":"Check and import referenced media"},
+    {"capability":"forms, reviews and ordering","source":"Archive README and main.js","outcome":"preserve archive demo behavior; no real dispatch or persistence claimed","status":"source_demo","next_action":"Inform user of unchanged demo forms"},
+    {"capability":"external providers, endpoints, callbacks, webhooks, schedules and secrets","source":"No package or environment variables detected","outcome":"Audit script call sites before final verification","status":"pending","next_action":"Complete source behavior audit"},
+    {"capability":"cutover and verification","source":"Both requested connected domains","outcome":"Replace Blue Flame website only and publish","status":"pending","next_action":"Verify pages and navigation, then publish"}
+  ]
+}
