@@ -52,7 +52,10 @@ Deno.serve(async (req) => {
         } else {
           resolved.push({ ...a, error: "Photo unavailable" });
         }
-      } catch {
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "Storage operation failed";
+        // Only our fixed downloader messages may be logged; never provider responses.
+        console.warn("chat-media attachment failed", index, /^(Invalid photo|Missing photo|Photo retrieval failed|Photo exceeds|Photo is empty|Too many photo)/.test(reason) ? reason : "Storage operation failed");
         // Do not expose provider URLs or credentials in an error response.
         resolved.push({ name: a.name, type: a.type, error: "Photo unavailable" });
       }
