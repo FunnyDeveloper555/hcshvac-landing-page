@@ -1,0 +1,48 @@
+{
+  "source": "Custom-Multipage-Website-for-HVAC-Company.zip",
+  "scope": "Blue Flame static company website only",
+  "capabilities": [
+    {
+      "capability": "code and static pages",
+      "source": "HTML/CSS/JS archive",
+      "outcome": "15 original pages and 7 CSS/JS files preserved; verified normalized source equality, navigation and desktop/mobile rendering",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "schema, records, auth identities and authorization",
+      "source": "Static mock catalog; no database or authentication",
+      "outcome": "not applicable to this static upload; existing CRM unchanged",
+      "status": "not_applicable",
+      "next_action": null
+    },
+    {
+      "capability": "assets and uploaded file bytes",
+      "source": "Bundled SVG/PNG and external image URLs",
+      "outcome": "22 bundled media assets stored through asset pointers; external media references unchanged; 32 available and 5 unavailable at source",
+      "status": "source_limitation",
+      "next_action": "Supply replacement files for five unavailable original external images if desired"
+    },
+    {
+      "capability": "forms, reviews and ordering",
+      "source": "Archive README and main.js",
+      "outcome": "preserve archive demo behavior; no real dispatch or persistence claimed",
+      "status": "source_demo",
+      "next_action": "Real form delivery requires a separate requested integration; user informed archive behavior is unchanged"
+    },
+    {
+      "capability": "external providers, endpoints, callbacks, webhooks, schedules and secrets",
+      "source": "No package or environment variables detected",
+      "outcome": "No submission API/auth/webhooks/schedules/secrets; original FTL financing, Google Maps and supplier outbound links retained",
+      "status": "verified",
+      "next_action": null
+    },
+    {
+      "capability": "cutover and verification",
+      "source": "Both requested connected domains",
+      "outcome": "Replace Blue Flame website only and publish",
+      "status": "pending",
+      "next_action": "Verify pages and navigation, then publish"
+    }
+  ]
+}

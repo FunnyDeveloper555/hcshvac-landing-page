@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light Industrial HVAC Services &amp; Unit Heaters | Best Comfort Chicago</title>
+  <meta name="description" content="Specialized heating and ventilation for auto repair bays, light assembly, fabrication shops, and fulfillment warehouses throughout Chicagoland.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/pages.css">
+  <script src="assets/js/icons.js"></script>
+</head>
+<body>
+  <svg id="svgSpriteDefs" style="display:none;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="icon-fire" viewBox="0 0 24 24">
+      <path d="M12 23c-4.97 0-9-4.03-9-9 0-4.12 2.76-7.86 5.86-10.37.78-.63 1.93-.15 2.06.85.22 1.69 1.08 3.19 2.08 4.26.17-2.19 1.13-4.22 2.72-5.74.83-.8 2.2-.28 2.3.87.28 3.09 1.76 5.13 2.98 6.42C22.04 12.43 23 14.15 23 16c0 3.86-3.14 7-7 7h-4zm0-2c3.87 0 7-3.13 7-7 0-1.42-.72-2.77-1.63-3.73-1.47-1.56-2.58-3.69-2.84-6.32-1.07 1.34-1.78 3.03-1.87 4.88-.06 1.1-.92 1.98-2.02 2.03-1.22.06-2.29-.86-2.39-2.08-.03-.39-.12-.76-.24-1.12-2.13 2.03-4.01 4.79-4.01 7.34 0 3.87 3.13 7 7 7zm-1-3c-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83.55-.2 1.13.25 1.09.83-.07 1.07.78 1.98 1.86 2 .46.01.83.38.83.84 0 1.19-.88 2.16-2.04 2.16h-.74z"/>
+    </symbol>
+
+    <symbol id="icon-snowflake" viewBox="0 0 24 24">
+      <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93M12 6l2-2m-4 0l2 2m0 12l2 2m-4 0l2-2m-6-6l-2-2m0 4l2-2m12 0l2-2m0 4l-2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-bolt" viewBox="0 0 24 24">
+      <path d="M11 21h-1l1-7H7.5c-.88 0-1.33-1.06-.71-1.69L14.5 3h1l-1 7h3.5c.88 0 1.33 1.06.71 1.69L11 21z"/>
+    </symbol>
+
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm-1.25 14.25l-3.75-3.75 1.41-1.41 2.34 2.34 5.34-5.34 1.41 1.41-6.75 6.75z"/>
+    </symbol>
+
+    <symbol id="icon-droplet" viewBox="0 0 24 24">
+      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0L12 2.69zm0 3.83L8.05 10.46a5.5 5.5 0 1 0 7.78 0L12 6.52z"/>
+    </symbol>
+
+    <symbol id="icon-sparkles" viewBox="0 0 24 24">
+      <path d="M12 2l2.4 5.6L20 10l-5.6 2.4L12 18l-2.4-5.6L4 10l5.6-2.4zm7 13l1.2 2.8L23 19l-2.8 1.2L19 23l-1.2-2.8L15 19l2.8-1.2zM5 16l1 2.5L8.5 19.5 6 20.5 5 23l-1-2.5L1.5 19.5 4 18.5z"/>
+    </symbol>
+
+    <symbol id="icon-tools" viewBox="0 0 24 24">
+      <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.5 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
+    </symbol>
+
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.21c.28-.26.36-.65.25-1C8.7 6.35 8.5 5.16 8.5 3.93 8.5 3.42 8.08 3 7.57 3H4.06C3.55 3 3 3.42 3 3.93 3 13.36 10.64 21 20.01 21c.51 0 .99-.55.99-1.06v-3.56c0-.51-.42-.99-.99-.99z"/>
+    </symbol>
+
+    <symbol id="icon-map-pin" viewBox="0 0 24 24">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+    </symbol>
+
+    <symbol id="icon-star" viewBox="0 0 24 24">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </symbol>
+
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="12,7 12,12 15.5,14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <path d="M12 2L1 21h22L12 2zm0 3.5L20.25 19H3.75L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+    </symbol>
+
+    <symbol id="icon-home" viewBox="0 0 24 24">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </symbol>
+
+    <symbol id="icon-package" viewBox="0 0 24 24">
+      <path d="M21 16.5l-9 5.2-9-5.2V7.5l9-5.2 9 5.2v9z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="3.27,6.96 12,12.01 20.73,6.96" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+    </symbol>
+
+    <symbol id="icon-smartphone" viewBox="0 0 24 24">
+      <rect x="5" y="2" width="14" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="10" y1="5" x2="14" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="18" r="1" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-dollar" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 6v12M15 9.5c0-1.38-1.34-2.5-3-2.5s-3 1.12-3 2.5 1.34 2.5 3 2.5 3 1.12 3 2.5-1.34 2.5-3 2.5-3-1.12-3-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-award" viewBox="0 0 24 24">
+      <circle cx="12" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="8.21,13.89 7,22 12,19 17,22 15.79,13.88" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-volume" viewBox="0 0 24 24">
+      <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="currentColor"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-refresh" viewBox="0 0 24 24">
+      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6.73-5.19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-leaf" viewBox="0 0 24 24">
+      <path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-13 4 5.24 3.73 7 7 7 7s-3-1-6-1c-1 0-2 .1-3 .3C3.5 12 6.5 8 17 8z"/>
+    </symbol>
+
+    <symbol id="icon-sun" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" fill="currentColor"/>
+      <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-wind" viewBox="0 0 24 24">
+      <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-plug" viewBox="0 0 24 24">
+      <path d="M9 2v6m6-6v6M6 8h12v5a6 6 0 0 1-12 0V8zm6 11v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-ruler" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="6" y1="7" x2="6" y2="12" stroke="currentColor" stroke-width="2"/>
+      <line x1="10" y1="7" x2="10" y2="10" stroke="currentColor" stroke-width="2"/>
+      <line x1="14" y1="7" x2="14" y2="12" stroke="currentColor" stroke-width="2"/>
+      <line x1="18" y1="7" x2="18" y2="10" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+      <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-eye" viewBox="0 0 24 24">
+      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+    </symbol>
+
+    <symbol id="icon-check-circle" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="8,12 11,15 16,9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-brand-flame-ice" viewBox="0 0 32 32">
+      <path d="M12 4c-.3 1.2-1 2.2-1.7 3.2C9.3 8.7 8.6 10.2 8.6 12.1c0 3.5 2.9 6.4 6.4 6.4s6.4-2.9 6.4-6.4c0-2.6-1.3-4.6-2.8-6.1-.2 1-.7 2-1.4 2.7-.9.9-1.5 2.5-1.5 4.1 0 2.2-1.8 4-4 4s-4-1.8-4-4c0-1.4.6-2.6 1.6-3.6.5-.6 1-1.2 1.4-1.9.5-1.1.6-2.2.3-3.3z" fill="#ff6550"/>
+      <path d="M22 12v12m-6-6h12m-9-4l6 8m-6 0l6-8" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-mail" viewBox="0 0 24 24">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <polyline points="22,6 12,13 2,6" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+
+    <symbol id="icon-diamond" viewBox="0 0 24 24">
+      <polygon points="12,2 22,12 12,22 2,12" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-target" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="12" cy="12" r="2" fill="currentColor"/>
+    </symbol>
+
+    <symbol id="icon-users" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+    <aside class="top-bar" aria-label="Emergency Announcement">
+    <div class="container top-bar-inner">
+      <div class="top-bar-info">
+        <div class="top-bar-item">
+          <span class="emergency-pulse"></span>
+          <strong>24/7 Chicago HVAC Emergency Dispatch</strong>
+        </div>
+        <div class="top-bar-item">
+          <span><svg class="svg-icon" style="color:var(--rich-blue-electric);"><use href="#icon-map-pin"></use></svg> Serving Joliet, Naperville, Plainfield &amp; Greater Chicago Metro</span>
+        </div>
+      </div>
+      <div class="top-bar-item">
+        <span>Need Urgent Heat or AC?</span>
+        <a href="tel:8155560660" class="top-phone-link" id="topEmergencyCall">
+          <svg class="svg-icon"><use href="#icon-phone"></use></svg> (815) 556-0660
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo-brand">
+        <div class="logo-icon"><svg class="svg-icon"><use href="#icon-brand-flame-ice"></use></svg></div>
+        <div class="logo-text">
+          <h1>BEST COMFORT</h1>
+          <span>HEATING &amp; COOLING • CHICAGO</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="index.html" class="nav-link" id="navHome">Home</a>
+        <a href="about.html" class="nav-link" id="navAbout">About Us</a>
+        <a href="financing.html" class="nav-link" id="navFinancing">Financing</a>
+
+        <div class="nav-item-dropdown" id="navServicesDropdown">
+          <a href="services.html" class="nav-link dropdown-toggle active" id="navServices">
+            Services
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" width="14" height="14"><path d="M7 10l5 5 5-5z" fill="currentColor"/></svg>
+          </a>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <span class="dropdown-title">HVAC Solutions by Sector</span>
+              <a href="services.html" class="dropdown-view-all">All Services &rarr;</a>
+            </div>
+            <div class="dropdown-grid">
+              <a href="services-residential.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-residential"><svg class="svg-icon"><use href="#icon-home"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Residential</span><span class="dropdown-link-desc">Single-family homes &amp; condos</span></div>
+              </a>
+              <a href="services-commercial.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-commercial"><svg class="svg-icon"><use href="#icon-tools"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Commercial</span><span class="dropdown-link-desc">Offices, retail &amp; plazas</span></div>
+              </a>
+              <a href="services-light-industrial.html" class="dropdown-link active">
+                <div class="dropdown-link-icon icon-light-ind"><svg class="svg-icon"><use href="#icon-bolt"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Light Industrial</span><span class="dropdown-link-desc">Workshops &amp; auto bays</span></div>
+              </a>
+              <a href="services-industrial.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-industrial"><svg class="svg-icon"><use href="#icon-target"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Industrial</span><span class="dropdown-link-desc">Plants, factories &amp; chillers</span></div>
+              </a>
+              <a href="services-churches.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-churches"><svg class="svg-icon"><use href="#icon-award"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Churches</span><span class="dropdown-link-desc">Places of worship &amp; halls</span></div>
+              </a>
+              <a href="services-medical.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-medical"><svg class="svg-icon"><use href="#icon-shield"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Medical Facilities</span><span class="dropdown-link-desc">Clinics, labs &amp; cleanrooms</span></div>
+              </a>
+              <a href="services-educational.html" class="dropdown-link">
+                <div class="dropdown-link-icon icon-educational"><svg class="svg-icon"><use href="#icon-star"></use></svg></div>
+                <div class="dropdown-link-info"><span class="dropdown-link-title">Educational Facilities</span><span class="dropdown-link-desc">K-12 schools &amp; universities</span></div>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <a href="products.html" class="nav-link" id="navProducts">Products</a>
+        <a href="air-quality.html" class="nav-link" id="navAirQuality">Air Quality</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="contact.html" class="btn btn-salmon btn-sm" id="navBookOnline">Book Online</a>
+        <button class="mobile-toggle" aria-label="Toggle Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-backdrop"></div>
+  <div class="mobile-nav-drawer">
+    <div class="mobile-drawer-header">
+      <div class="logo-text"><h2 style="font-size:1.15rem; color:#fff; font-weight:800;">BEST COMFORT</h2></div>
+      <button class="mobile-close-btn">&times;</button>
+    </div>
+    <div class="mobile-menu-list">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="about.html" class="nav-link">About Us</a>
+      <a href="financing.html" class="nav-link">Financing (0% APR)</a>
+      <div class="mobile-dropdown-item">
+        <div class="mobile-dropdown-trigger">
+          <a href="services.html" class="nav-link active">Services</a>
+          <button type="button" class="mobile-sub-toggle active">&#9662;</button>
+        </div>
+        <div class="mobile-sub-menu open">
+          <a href="services-residential.html" class="mobile-sub-link">&bull; Residential</a>
+          <a href="services-commercial.html" class="mobile-sub-link">&bull; Commercial</a>
+          <a href="services-light-industrial.html" class="mobile-sub-link active">&bull; Light Industrial</a>
+          <a href="services-industrial.html" class="mobile-sub-link">&bull; Industrial</a>
+          <a href="services-churches.html" class="mobile-sub-link">&bull; Churches</a>
+          <a href="services-medical.html" class="mobile-sub-link">&bull; Medical Facilities</a>
+          <a href="services-educational.html" class="mobile-sub-link">&bull; Educational Facilities</a>
+        </div>
+      </div>
+      <a href="products.html" class="nav-link">Products</a>
+      <a href="air-quality.html" class="nav-link">Air Quality</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="container page-hero-inner">
+      <div class="sector-hero-badge badge-pink">
+        <svg class="svg-icon" style="width:18px; height:18px;"><use href="#icon-bolt"></use></svg>
+        <span>Light Industrial HVAC Solutions</span>
+      </div>
+      <h1>Heavy Heating, Ventilation &amp; Exhaust for Workshops &amp; Warehouses</h1>
+      <p>
+        Auto service bays, metal fabrication shops, and distribution warehouses face intense temperature drops from overhead garage doors and hazardous exhaust demands. We engineer high-recovery heating and OSHA-certified ventilation.
+      </p>
+      <div style="margin-top:24px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <a href="contact.html" class="btn btn-salmon">Schedule Workshop Assessment</a>
+        <a href="tel:8155560660" class="btn btn-outline"><svg class="svg-icon"><use href="#icon-phone"></use></svg> Call (815) 556-0660</a>
+      </div>
+
+      <div class="sector-trust-strip">
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-shield"></use></svg>
+          <span>OSHA 1910 &amp; NFPA Compliance Certified</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-fire"></use></svg>
+          <span>High-Pressure Gas Piping Specialists</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-tools"></use></svg>
+          <span>Rapid Sub-Zero Thermal Recovery</span>
+        </div>
+        <div class="sector-trust-pill">
+          <svg class="svg-icon"><use href="#icon-dollar"></use></svg>
+          <span>ComEd Industrial Energy Grant Support</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="section section-navy">
+    <div class="container">
+
+      <div class="sector-stats-bar">
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--vibrant-pink);">45K - 250K</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">BTU Radiant Heaters</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--electric-salmon);">&lt; 3 Mins</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Bay Door Re-Heat Cycle</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:#34d399;">-40%</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Gas Usage vs Unit Heaters</p>
+        </div>
+        <div style="text-align:center;">
+          <h3 style="font-size:2rem; font-weight:800; color:var(--rich-blue-electric);">100%</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">OSHA CO/NO2 Compliant</p>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:70px;">
+        <div class="badge-pill badge-pink">Heavy Capabilities</div>
+        <h2 class="section-title">Engineered Workshop &amp; Warehouse Climate Systems</h2>
+        <p class="section-subtitle">
+          Designed for harsh industrial environments with dusty atmospheres, open roll-up doors, and combustible vapors.
+        </p>
+      </div>
+
+      <div class="sector-cap-grid">
+        
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon pink">
+            <svg class="svg-icon"><use href="#icon-fire"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Infrared Radiant Tube Heaters</h3>
+          <p class="sector-cap-desc">
+            Low-intensity gas infrared tubes warm concrete slabs, metal tools, and technicians directly instead of heating the empty ceiling air. When garage doors open, the heat stays locked in the floor.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> 20 to 70-foot straight and U-tube configs</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Modine, Reznor &amp; Superior Radiant lines</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Slashes shop heating gas bills by 30-50%</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Get Radiant Sizing &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon salmon">
+            <svg class="svg-icon"><use href="#icon-wind"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Vehicle Exhaust &amp; CO/NO2 Systems</h3>
+          <p class="sector-cap-desc">
+            Overhead retractable hose reels and underfloor exhaust drops for automotive dealerships, diesel fleet bays, and equipment repair shops, coupled with automated toxic gas sensor interlocks.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> High-temperature 600°F diesel exhaust hoses</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Automated CO and NO2 sensor ventilation relays</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Continuous compliance with OSHA 1910.1000</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Schedule Exhaust Inspection &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon">
+            <svg class="svg-icon"><use href="#icon-bolt"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">High-Bay Separated Combustion Heaters</h3>
+          <p class="sector-cap-desc">
+            For woodshops, body shops, and fabrication facilities where airborne dust or chemical fumes make standard burners hazardous. Separated combustion pulls 100% clean outdoor air for the flame.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Sealed combustion chamber prevents flash fire</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Power-vented through roof or sidewall</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Directional air-deflection louvers</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Explore Unit Heaters &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon emerald">
+            <svg class="svg-icon"><use href="#icon-refresh"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Thermal Destratification &amp; HVLS Fans</h3>
+          <p class="sector-cap-desc">
+            In 20-30 ft ceiling warehouses, heated air rises, leaving the ceiling 15°F warmer than the floor. Our high-volume low-speed (HVLS) fans continuously circulate hot ceiling air back to ground level.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> 8 to 24-foot diameter industrial blades</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Slashes heater run-time by up to 25%</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Summer evaporative cooling breeze for staff</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Request Destratification Plan &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon salmon">
+            <svg class="svg-icon"><use href="#icon-sparkles"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Spray Booth &amp; Welding Fume Exhaust</h3>
+          <p class="sector-cap-desc">
+            Custom engineered direct-fired make-up air systems specifically designed to supply filtered, precisely tempered 70°F air to paint curing booths while exhausting VOC overspray and welding fumes.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Meets NFPA 33 Spray Application Standards</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Integrated bake/cure temperature cycle controls</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Multi-stage particulate arrestor filters</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Consult on Spray Booths &rarr;</a>
+          </div>
+        </div>
+
+        <div class="sector-cap-card">
+          <div class="sector-cap-icon">
+            <svg class="svg-icon"><use href="#icon-tools"></use></svg>
+          </div>
+          <h3 class="sector-cap-title">Industrial Gas Piping &amp; Regulators</h3>
+          <p class="sector-cap-desc">
+            Licensed threaded and welded steel natural gas distribution lines from 2 PSI to high-pressure 5 PSI systems with precision lock-up regulators, drip legs, and emergency slam-shut safety valves.
+          </p>
+          <ul class="sector-cap-features">
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Municipal pressure testing &amp; permit signoff</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> Certified schedule 40 black iron gas piping</li>
+            <li><svg class="svg-icon"><use href="#icon-check-circle"></use></svg> High-capacity commercial meter manifolds</li>
+          </ul>
+          <div class="sector-cap-footer">
+            <a href="contact.html">Schedule Gas Line Audit &rarr;</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-salmon">Industrial Field Prowess</div>
+        <h2 class="section-title">Solving Chicago Industrial Climate Obstacles</h2>
+        <p class="section-subtitle">
+          How Best Comfort engineering eliminates the common headaches of workshop and warehouse operations.
+        </p>
+      </div>
+
+      <div class="sector-challenges-grid">
+        <div class="sector-challenge-card pink">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Rapid Sub-Zero Dock Infiltration</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            When 14-foot overhead roll-up doors open 30 times a day in -10°F wind chills, hot air rushes out instantly. We install high-velocity gas air curtains above door headers and radiant infrared tube arrays that keep work areas warm regardless of open doors.
+          </p>
+        </div>
+        <div class="sector-challenge-card">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Dangerous CO/NO2 Gas Accumulation</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            Vehicle repair bays require OSHA-compliant high-velocity exhaust removal. We design automated electrochemical CO/NO2 detection arrays that modulate exhaust fans and supply dampers in real-time, safeguarding technician health while conserving heated air.
+          </p>
+        </div>
+        <div class="sector-challenge-card salmon">
+          <h3 style="font-size:1.25rem; color:#fff; font-weight:800; margin-bottom:10px;">Dust &amp; Combustible Particulates</h3>
+          <p style="color:var(--text-light); font-size:0.92rem; line-height:1.6;">
+            Woodworking sawdust and solvent vapors gum up standard open burners and risk flash ignition. We install hermetically sealed, separated-combustion unit heaters that pipe clean outside combustion air straight to the burner box.
+          </p>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-pink">Our Engineering Standard</div>
+        <h2 class="section-title">Light Industrial Project Implementation</h2>
+        <p class="section-subtitle">
+          From thermal loss heat modeling through certified gas pressure testing and air turnover calibration.
+        </p>
+      </div>
+
+      <div class="sector-process-grid">
+        <div class="sector-process-card">
+          <div class="process-step-num">01</div>
+          <h3 class="process-step-title">Infiltration &amp; CFM Audit</h3>
+          <p class="process-step-desc">
+            We compute door-open infiltration heat loss, bar-joist structural load ratings, and chemical exhaust CFM requirements.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">02</div>
+          <h3 class="process-step-title">Layout &amp; Gas Hydraulic Sizing</h3>
+          <p class="process-step-desc">
+            Engineered piping diagrams with BTU loads, radiant pattern floor coverage, and ComEd grant incentive filings.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">03</div>
+          <h3 class="process-step-title">Rigging &amp; Code Installation</h3>
+          <p class="process-step-desc">
+            Certified pipefitters hang radiant tubes, mount safety cables, assemble venting penetrations, and plumb certified gas feeds.
+          </p>
+        </div>
+        <div class="sector-process-card">
+          <div class="process-step-num">04</div>
+          <h3 class="process-step-title">Safety Burn &amp; OSHA Signoff</h3>
+          <p class="process-step-desc">
+            Flue gas combustion test, gas manifold pressure lock-up test, CO detector relay trip verification, and staff operation training.
+          </p>
+        </div>
+      </div>
+
+      <div class="sector-case-study">
+        <div class="case-study-badge">
+          <svg class="svg-icon" style="width:14px; height:14px;"><use href="#icon-star"></use></svg>
+          <span>Fleet Workshop Project Spotlight</span>
+        </div>
+        <div class="sector-case-study-grid">
+          <div>
+            <h3 style="font-size:1.6rem; color:#fff; font-weight:800; margin-bottom:12px;">
+              16-Bay Commercial Truck Repair Facility in Joliet, IL
+            </h3>
+            <p style="color:var(--text-light); font-size:0.95rem; line-height:1.65; margin-bottom:16px;">
+              <strong>The Challenge:</strong> A high-volume semi-truck service facility had massive $4,800 monthly winter gas bills from 10 aging forced-air blowers. Mechanics constantly suffered cold feet on freezing concrete, and diesel exhaust lingered under the ceiling.
+            </p>
+            <p style="color:var(--text-light); font-size:0.95rem; line-height:1.65;">
+              <strong>Our Solution:</strong> Replaced the noisy blowers with 8 Modine low-intensity infrared radiant tube heaters suspended over bays, installed 2 high-volume destratification fans, and hooked up automated CO/NO2 sensor-driven exhaust ventilation.
+            </p>
+          </div>
+          <div class="case-study-stats">
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">-41%</div>
+              <div class="case-study-stat-lbl">Winter Gas Consumption</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">68&deg;F</div>
+              <div class="case-study-stat-lbl">Concrete Slab Temp</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">$8,200</div>
+              <div class="case-study-stat-lbl">ComEd Rebates Secured</div>
+            </div>
+            <div class="case-study-stat-box">
+              <div class="case-study-stat-val">100%</div>
+              <div class="case-study-stat-lbl">OSHA Fume Compliance</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-pink">Engineering Specs</div>
+        <h2 class="section-title">Industrial Workshop Heating Technology Comparison</h2>
+        <p class="section-subtitle">
+          Choosing the optimal heating architecture based on building height and door open frequency.
+        </p>
+      </div>
+
+      <div class="sector-spec-table-wrap">
+        <table class="sector-spec-table">
+          <thead>
+            <tr>
+              <th>Heating Technology</th>
+              <th>Ideal Ceiling Height</th>
+              <th>Thermal Distribution</th>
+              <th>Fuel Efficiency</th>
+              <th>Dust &amp; Fume Tolerance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Infrared Radiant Tubes</strong></td>
+              <td><span class="spec-badge green">14 - 35 ft</span></td>
+              <td>Direct infrared heating of slabs &amp; machinery</td>
+              <td>High (Saves 30-50% gas)</td>
+              <td>Excellent (No air blowing)</td>
+            </tr>
+            <tr>
+              <td><strong>Separated-Combustion Unit</strong></td>
+              <td><span class="spec-badge blue">10 - 20 ft</span></td>
+              <td>Forced-air convection with louvers</td>
+              <td>Moderate (82-84% thermal)</td>
+              <td>Superior (Sealed burner box)</td>
+            </tr>
+            <tr>
+              <td><strong>Direct-Fired Make-Up Air</strong></td>
+              <td><span class="spec-badge salmon">Any (Roof or Pad)</span></td>
+              <td>100% outside air pressurization</td>
+              <td>100% Thermal efficiency</td>
+              <td>Mandatory for spray &amp; exhaust bays</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header" style="margin-top:80px;">
+        <div class="badge-pill badge-salmon">Industrial FAQs</div>
+        <h2 class="section-title">Frequently Asked Workshop HVAC Questions</h2>
+      </div>
+
+      <div class="accordion-wrapper" data-single-open="true" style="max-width:850px; margin:30px auto 0 auto;">
+        <div class="accordion-item active">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="true">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-fire"></use></svg></span>
+              Why are radiant tube heaters so much more efficient for service bays?
+            </span>
+            <span class="accordion-icon">&minus;</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              Forced-air unit heaters warm the air, which immediately rises to the ceiling where nobody works. When overhead bay doors open, that expensive hot air escapes in seconds. Infrared radiant heaters work like the sun—they emit infrared rays that warm the concrete floor, toolboxes, vehicles, and technicians directly. Even when the garage door opens, the concrete slab acts as a giant thermal battery, radiating warmth continuously.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-shield"></use></svg></span>
+              What are the OSHA requirements for garage and workshop exhaust ventilation?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              OSHA standard 1910.1000 sets strict 8-hour Time-Weighted Average (TWA) limits for Carbon Monoxide (50 PPM) and Nitrogen Dioxide (5 PPM). In vehicle service facilities, local mechanical codes require a minimum continuous mechanical exhaust of 0.75 CFM per square foot or automated sensor-controlled ventilation that cycles on whenever CO levels hit 25 PPM.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-bolt"></use></svg></span>
+              Can suspended gas heaters be installed in woodworking or auto paint shops?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              Standard open-flame unit heaters cannot be used in areas where combustible dust or flammable vapors are present due to NFPA safety regulations. However, we install "Separated Combustion" models that draw 100% of their combustion air through a sealed intake pipe from outside the building, keeping the flame completely isolated from combustible indoor particles.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <div class="accordion-header" role="button" tabindex="0" aria-expanded="false">
+            <span class="accordion-header-title">
+              <span class="icon-tag"><svg class="svg-icon"><use href="#icon-dollar"></use></svg></span>
+              What incentives does ComEd offer for industrial radiant heaters and destratification?
+            </span>
+            <span class="accordion-icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="accordion-inner">
+              ComEd and Nicor Gas offer custom and prescriptive incentives for upgrading from standard unit heaters to low-intensity radiant infrared heaters (often $1.50 to $3.00 per MBH) and up to $500 per industrial destratification fan. As a registered Trade Ally, we calculate and submit all required documentation for instant project credits.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="calc-box" style="margin-top:70px; text-align:center;">
+        <div class="badge-pill badge-pink" style="margin-bottom:12px;">Heavy-Duty Assessment</div>
+        <h2 style="font-size:1.8rem; color:#fff; font-weight:800; margin-bottom:10px;">Optimize Your Workshop Heating &amp; Safety Today</h2>
+        <p style="color:var(--text-light); max-width:600px; margin:0 auto 24px auto;">
+          Contact our industrial mechanical engineers for complimentary bay heat load calculations, gas piping design, and OSHA exhaust compliance surveys.
+        </p>
+        <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+          <a href="contact.html" class="btn btn-salmon">Request Facility Heating Sizing</a>
+          <a href="tel:8155560660" class="btn btn-outline"><svg class="svg-icon"><use href="#icon-phone"></use></svg> Call (815) 556-0660</a>
+        </div>
+      </section>
+
+      <div style="margin-top:80px;">
+        <div class="section-header" style="margin-bottom:24px;">
+          <div class="badge-pill badge-blue">Complete HVAC Portfolio</div>
+          <h2 class="section-title">Explore Solutions for Other Sectors</h2>
+        </div>
+        <div class="other-sectors-grid">
+          <a href="services-residential.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-home"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Residential</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Single-family homes &amp; condos</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-commercial.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-tools"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Commercial</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Offices, retail &amp; plazas</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-industrial.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-target"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Industrial</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Plants, factories &amp; chillers</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-churches.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-award"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Churches</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Places of worship &amp; halls</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-medical.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-shield"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Medical Facilities</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">Clinics, labs &amp; cleanrooms</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+          <a href="services-educational.html" class="other-sector-card">
+            <div class="other-sector-icon"><svg class="svg-icon"><use href="#icon-star"></use></svg></div>
+            <div>
+              <div style="font-weight:700; font-size:1rem;">Educational Facilities</div>
+              <div style="font-size:0.8rem; color:var(--text-muted);">K-12 schools &amp; universities</div>
+            </div>
+            <div class="other-sector-arrow">&rarr;</div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  
+      <section class="section" id="sectorRelatedProducts" style="padding: 70px 0; background: rgba(14, 30, 64, 0.4); border-top: 1px solid rgba(255,255,255,0.06);" aria-label="Related Equipment">
+        <div class="container">
+
+        <div class="section-header" style="margin-bottom: 30px;">
+          <div class="badge-pill badge-salmon">
+            <svg class="svg-icon"><use href="#icon-package"></use></svg> Certified Systems &amp; OEM Parts
+          </div>
+          <h2 class="section-title">Light Industrial Workshop & Auto Bay HVAC Supplies</h2>
+          <p class="section-subtitle">Direct-replacement flame sensors, hot-surface ignitors, pre-insulated line sets, and commercial blowers.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+          
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-salmon" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">Pre-Insulated</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/97825b59-9945-420a-86fe-6f34380eb9a0.jpg" alt="Line Set 3/8 x 3/4 x 25ft" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Durastar</span>
+              <span style="font-weight: 800; color: #fff;">From $89.99</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Line Set 3/8 x 3/4 x 25ft</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Heavy copper tubing for overhead unit heaters, mini-split additions, and garage workshop climate lines.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=8fb08049-39ee-4d77-b72c-a69f0b77c62e" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Line%20Set%203%2F8%20x%203%2F4%20x%2025ft" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-salmon" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">Universal 2-Yr</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/0b4578e8-971c-4382-b7e5-ebfd5f33f208.jpg" alt="Ignitor Hot Surface Silicon Nitride" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Rheem</span>
+              <span style="font-weight: 800; color: #fff;">Fast Ignition</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Ignitor Hot Surface Silicon Nitride</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Rugged silicon nitride ignitor engineered to withstand vibration in warehouse hanging unit heaters.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=226bfe91-7e4f-4c95-9eee-eba5e06cd9eb" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Ignitor%20Hot%20Surface%20Silicon%20Nitride" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-blue" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">Stainless Steel</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/ceff2c4e-1ddb-4d76-97ec-d80f6a080ebc.jpg" alt="Flame Sensor Universal" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Durastar</span>
+              <span style="font-weight: 800; color: #fff;">OEM Fit</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Flame Sensor Universal</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              High-temperature stainless steel flame rod to eliminate false lockouts caused by warehouse dust and fumes.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=845d7efc-5302-4c99-bb34-8422adb9e01c" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Flame%20Sensor%20Universal" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        <article class="card card-interactive" style="display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          <div class="product-card-thumb" style="background: #ffffff; height: 210px; padding: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span class="card-tag tag-pink" style="position: absolute; top: 12px; left: 12px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.18); font-size: 0.72rem; padding: 4px 10px;">Auto Shut-Off</span>
+            <img src="https://ozsvufpqeuvklrqzqpuk.supabase.co/storage/v1/object/public/file-manager/adf01c9a-af28-44f1-8e69-7b0ac8cab919.png" alt="Condensate Pump Universal" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; transition: transform 0.35s ease;" onerror="this.src='/__l5e/assets-v1/c7ae305d-1ec2-4d0f-adad-7b658902247c/blueflame-ac-main.svg';" />
+          </div>
+          <div style="padding: 20px; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--rich-blue-electric); font-weight: 700;">Rheem</span>
+              <span style="font-weight: 800; color: #fff;">Universal Fit</span>
+            </div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">Condensate Pump Universal</h3>
+            <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;">
+              Quiet automatic condensate removal pump with safety overflow switch for shop heaters and AC coils.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: auto;">
+              <a href="product-detail.html?id=183e04f6-f9ec-4752-b867-5ab4facafd93" class="btn btn-outline btn-sm" style="flex: 1; text-align: center;">
+                <svg class="svg-icon"><use href="#icon-search"></use></svg> Inspect Specs
+              </a>
+              <a href="contact.html?product=Condensate%20Pump%20Universal" class="btn btn-salmon btn-sm">Quote</a>
+            </div>
+          </div>
+        </article>
+  
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="products.html" class="btn btn-blue btn-sm">
+            <svg class="svg-icon"><use href="#icon-package"></use></svg> Explore Complete 20-Product Catalog &amp; Technical Specs &rarr;
+          </a>
+        </div>
+      
+        </div>
+      </section>
+  
+    </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="logo-brand">
+            <div class="logo-icon">
+              <svg class="svg-icon"><use href="#icon-brand-flame-ice"></use></svg>
+            </div>
+            <div class="logo-text">
+              <h2 style="font-size:1.25rem; font-weight:800; color:#fff;">BEST COMFORT</h2>
+              <span>HEATING &amp; COOLING</span>
+            </div>
+          </div>
+          <p>
+            Licensed mechanical contractor serving Greater Chicago, Will, and DuPage counties with commercial, industrial, and residential HVAC engineering.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h3>Services by Sector</h3>
+          <div class="footer-links">
+            <a href="services-residential.html">Residential Homes</a>
+            <a href="services-commercial.html">Commercial &amp; Retail</a>
+            <a href="services-light-industrial.html">Light Industrial</a>
+            <a href="services-industrial.html">Industrial &amp; Chillers</a>
+            <a href="services-medical.html">Medical Facilities</a>
+            <a href="services-educational.html">Educational Facilities</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h3>Quick Links</h3>
+          <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="financing.html">Financing</a>
+            <a href="air-quality.html">Air Quality</a>
+            <a href="contact.html">Book Online</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Best Comfort Heating &amp; Cooling. Hand-built Vanilla HTML, CSS &amp; JS.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

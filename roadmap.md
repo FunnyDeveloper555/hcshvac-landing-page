@@ -18,3 +18,8 @@
 # Chat text-thread names
 - [x] Resolve customer/vendor/employee names for text threads from their phone number.
 - [x] Verify names and numbers show together in the chat sidebar.
+
+# Blue Flame uploaded website
+- [ ] Inspect and preserve the uploaded HTML/CSS/JS website for Blue Flame only.
+- [ ] Verify pages, navigation, images, and isolation from the CRM and other companies.
+- [ ] Publish the website to both requested Blue Flame addresses.
