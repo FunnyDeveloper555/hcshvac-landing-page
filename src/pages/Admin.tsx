@@ -71,6 +71,7 @@ import CalendarAdd from "@/components/admin/calendar/CalendarAdd";
 import CalendarList from "@/components/admin/calendar/CalendarList";
 import CompanyWebsiteMockup from "@/components/admin/CompanyWebsiteMockup";
 import TopHeaderPreview from "@/components/admin/pagebuilder/TopHeaderPreview";
+import GeneralSettings from "@/components/admin/pagebuilder/GeneralSettings";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
@@ -241,6 +242,7 @@ const Admin = () => {
               {/* Company-specific page builder routes */}
               <Route path="/page-builder/company/:companyId" element={<CompanyDashboard />} />
               <Route path="/page-builder/company/:companyId/profile" element={<CompanyWebsiteMockup />} />
+              <Route path="/page-builder/company/:companyId/general" element={<GeneralSettings />} />
               <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
               <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
               {/* Consolidated tabbed routes */}
