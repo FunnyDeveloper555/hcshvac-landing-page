@@ -1440,6 +1440,7 @@ export type Database = {
           site_template: string | null
           slug: string | null
           theme_style: string | null
+          top_bar: Json
           water_heaters_install: Json
           water_heaters_repair: Json
           water_heaters_service: Json
@@ -1520,6 +1521,7 @@ export type Database = {
           site_template?: string | null
           slug?: string | null
           theme_style?: string | null
+          top_bar?: Json
           water_heaters_install?: Json
           water_heaters_repair?: Json
           water_heaters_service?: Json
@@ -1600,6 +1602,7 @@ export type Database = {
           site_template?: string | null
           slug?: string | null
           theme_style?: string | null
+          top_bar?: Json
           water_heaters_install?: Json
           water_heaters_repair?: Json
           water_heaters_service?: Json
