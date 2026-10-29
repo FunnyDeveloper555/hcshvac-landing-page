@@ -320,6 +320,7 @@ const companySubmenus: MenuItem[] = [
   { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
   { title: "Hero", url: "/admin/page-builder/hero", icon: Layout },
   { title: "Trust Bar", url: "/admin/page-builder/trust-bar", icon: Layout },
+  { title: "Core Services", url: "/admin/page-builder/core-services", icon: Layout },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
   { title: "Plumbing", url: "/admin/page-builder/plumbing", icon: Droplet },

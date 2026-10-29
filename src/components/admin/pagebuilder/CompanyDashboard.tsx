@@ -98,6 +98,7 @@ export default function CompanyDashboard() {
     { label: "Top Header", icon: Layout, path: `${basePath}/top-header`, color: "bg-accent/50 text-accent-foreground" },
     { label: "Hero", icon: Layout, path: `${basePath}/hero`, color: "bg-accent/50 text-accent-foreground" },
     { label: "Trust Bar", icon: Layout, path: `${basePath}/trust-bar`, color: "bg-accent/50 text-accent-foreground" },
+    { label: "Core Services", icon: Layout, path: `${basePath}/core-services`, color: "bg-accent/50 text-accent-foreground" },
     { label: "Header Menus", icon: FileText, path: `${basePath}/header-menus`, color: "bg-primary/10 text-primary" },
     { label: "HVAC", icon: Wrench, path: `${basePath}/hvac`, color: "bg-accent/50 text-accent-foreground" },
     { label: "Plumbing", icon: Droplet, path: `${basePath}/plumbing`, color: "bg-secondary/50 text-secondary-foreground" },

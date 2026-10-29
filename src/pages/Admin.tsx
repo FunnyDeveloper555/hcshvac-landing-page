@@ -74,6 +74,7 @@ import TopHeaderPreview from "@/components/admin/pagebuilder/TopHeaderPreview";
 import GeneralSettings from "@/components/admin/pagebuilder/GeneralSettings";
 import HeroSettings from "@/components/admin/pagebuilder/HeroSettings";
 import TrustBarSettings from "@/components/admin/pagebuilder/TrustBarSettings";
+import CoreServicesSettings from "@/components/admin/pagebuilder/CoreServicesSettings";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
@@ -248,6 +249,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/top-header" element={<TopHeaderPreview />} />
               <Route path="/page-builder/company/:companyId/hero" element={<HeroSettings />} />
               <Route path="/page-builder/company/:companyId/trust-bar" element={<TrustBarSettings />} />
+              <Route path="/page-builder/company/:companyId/core-services" element={<CoreServicesSettings />} />
               <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
               {/* Consolidated tabbed routes */}
               <Route path="/page-builder/company/:companyId/header-menus" element={<HeaderMenusTabbed />} />
