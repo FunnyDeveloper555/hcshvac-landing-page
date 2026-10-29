@@ -23,7 +23,7 @@ const PH = {
   badge: "Sub-Zero Winters • Humid Heatwaves",
   headline: "Defeat the Extreme Chicago Weather with",
   highlight: "Unmatched Comfort.",
-  lead: "From blizzard-grade furnace emergencies to high-efficiency whisper inverter AC installations...",
+  lead: "From blizzard-grade furnace emergencies to high-efficiency whisper inverter AC installations, Best Comfort delivers 24/7 authentic, licensed craftsmanship across Chicagoland.",
   cta1_text: "Explore High-Efficiency Systems →", cta1_link: "products.html",
   cta2_text: "Schedule 24/7 Dispatch", cta2_link: "contact.html",
   stats: [["24/7", "Emergency Response"], ["98.7%", "AFUE High Efficiency"], ["100%", "NATE-Certified Techs"]],
@@ -42,11 +42,15 @@ const HeroSettings = () => {
       if (data) {
         setName(data.name || "");
         const h = (data.hero && typeof data.hero === "object" ? data.hero : {}) as WebsiteHero;
+        const pick = (k: keyof Omit<Hero, "stats">) => ((h as Record<string, string>)[k] || "").trim() || (PH[k] as string);
         setHero({
-          ...EMPTY,
-          ...h,
-          stats: EMPTY.stats.map((s, i) => ({ value: h.stats?.[i]?.value || "", label: h.stats?.[i]?.label || "" })),
-        } as Hero);
+          badge: pick("badge"), headline: pick("headline"), highlight: pick("highlight"), lead: pick("lead"),
+          cta1_text: pick("cta1_text"), cta1_link: pick("cta1_link"), cta2_text: pick("cta2_text"), cta2_link: pick("cta2_link"),
+          stats: EMPTY.stats.map((_, i) => ({
+            value: h.stats?.[i]?.value?.trim() || PH.stats[i][0],
+            label: h.stats?.[i]?.label?.trim() || PH.stats[i][1],
+          })),
+        });
       }
       setLoading(false);
     });

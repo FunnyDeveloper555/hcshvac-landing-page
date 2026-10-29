@@ -36,7 +36,7 @@ const TrustBarSettings = () => {
         setName(data.name || "");
         const b = (data.trust_bar && typeof data.trust_bar === "object" ? data.trust_bar : {}) as WebsiteTrustBar;
         setEnabled(b.enabled !== false);
-        setItems(PH.map((_, i) => ({ title: b.items?.[i]?.title || "", text: b.items?.[i]?.text || "", icon: b.items?.[i]?.icon || "" })));
+        setItems(PH.map((p, i) => ({ title: b.items?.[i]?.title?.trim() || p[0], text: b.items?.[i]?.text?.trim() || p[1], icon: b.items?.[i]?.icon || "" })));
       }
       setLoading(false);
     });
