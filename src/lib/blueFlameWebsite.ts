@@ -165,6 +165,47 @@ export interface WebsiteCoreServiceCard {
   button_text?: string;
   button_link?: string;
 }
+
+export interface WebsiteServiceDirectory {
+  enabled?: boolean;
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  items?: { title?: string; subtitle?: string; icon?: string }[];
+}
+
+/** Update directory headings while preserving the template's expandable content and scripts. */
+export function applyServiceDirectory(html: string, settings: WebsiteServiceDirectory | null | undefined): string {
+  if (!settings || typeof settings !== "object" || typeof DOMParser === "undefined") return html;
+  if (!Object.keys(settings).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const section = doc.getElementById("serviceDirectoryMaster");
+  if (!section) return html;
+  if (settings.enabled === false) section.remove();
+  else {
+    const setText = (element: Element | null, value: unknown) => {
+      if (element && typeof value === "string" && value.trim()) element.textContent = value.trim();
+    };
+    setText(section.querySelector(".section-header .badge-pill"), settings.badge);
+    setText(section.querySelector(".section-title"), settings.title);
+    setText(section.querySelector(".section-subtitle"), settings.subtitle);
+    const headers = section.querySelectorAll(".master-accordion-header");
+    if (Array.isArray(settings.items)) settings.items.forEach((item, i) => {
+      const header = headers[i];
+      if (!header || !item) return;
+      setText(header.querySelector(".master-header-title span"), item.title);
+      setText(header.querySelector(".master-header-subtitle"), item.subtitle);
+      const original = header.querySelector(".master-header-title svg");
+      if (original && typeof item.icon === "string" && /^https?:\/\//i.test(item.icon.trim())) {
+        const image = doc.createElement("img");
+        image.src = item.icon.trim(); image.alt = ""; image.width = 22; image.height = 22;
+        image.style.objectFit = "contain";
+        original.replaceWith(image);
+      }
+    });
+  }
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}
 export interface WebsiteCoreServices {
   enabled?: boolean;
   badge?: string;

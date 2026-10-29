@@ -1,4 +1,6 @@
 # CRM submission alerts
+- [x] Add Service Directory after Core Services with template-filled settings and website updates.
+- [x] Verify the signed-in Service Directory save and template rendering.
 - [x] Recover Sue’s protected chat photos and verify all six display in her conversation.
 - [x] Identify submitted registration and suggested appointment records requiring staff action.
 - [x] Show customer-specific CRM alerts and direct links to complete each record.
