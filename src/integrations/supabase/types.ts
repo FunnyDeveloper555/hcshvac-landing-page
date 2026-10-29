@@ -1438,6 +1438,7 @@ export type Database = {
           secondary_poc_phone: string | null
           secondary_poc_title: string | null
           service_areas: Json | null
+          service_directory: Json
           services_provided: Json | null
           site_template: string | null
           slug: string | null
@@ -1522,6 +1523,7 @@ export type Database = {
           secondary_poc_phone?: string | null
           secondary_poc_title?: string | null
           service_areas?: Json | null
+          service_directory?: Json
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null
@@ -1606,6 +1608,7 @@ export type Database = {
           secondary_poc_phone?: string | null
           secondary_poc_title?: string | null
           service_areas?: Json | null
+          service_directory?: Json
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null

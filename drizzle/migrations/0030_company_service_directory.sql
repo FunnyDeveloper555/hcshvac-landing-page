@@ -1,0 +1,2 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS service_directory jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.companies.service_directory IS 'Page Builder settings for the uploaded template service accordion directory.';
