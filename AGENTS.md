@@ -3,6 +3,7 @@
 - Legacy inbound Twilio chat media is recovered by the staff-authenticated chat-media function into private chat-files storage, with conversation access checks and signed URLs; never expose provider credentials or require public photos.
 
 - Blue Flame's uploaded website lives as original static documents in public/blueflame-site; on its exact hosts main.tsx writes the page in place at the clean URL (/, /about.html) before React loads, so its HTML/CSS/JS never mixes with the CRM or other companies.
+- Service Directory settings are company-scoped JSONB applied only to the uploaded template's directory headings and icons; preserve its nested content and accordion scripts to keep the original website intact.
 
 - Customer submission action alerts read actual pending customer/appointment records through the staff-only crm_pending_submissions RPC; staff saves clear review markers, while reading messages never dismisses unfinished work.
 - Sidebar and customer/appointment list pending indicators derive record IDs from the same usePendingSubmissions query as the alert list, so they remain synchronized without independent read/dismissal state.
