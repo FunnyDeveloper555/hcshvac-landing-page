@@ -122,13 +122,13 @@ export function applyHero(html: string, hero: WebsiteHero | null | undefined): s
 
 export interface WebsiteTrustBar {
   enabled?: boolean;
-  items?: { title?: string; text?: string }[];
+  items?: { title?: string; text?: string; icon?: string }[];
 }
 
 /** Replaces the home page trust bar (4 badges under the hero). Blank fields keep template text. */
 export function applyTrustBar(html: string, bar: WebsiteTrustBar | null | undefined): string {
   if (!bar || typeof bar !== "object" || typeof DOMParser === "undefined") return html;
-  const hasText = (bar.items || []).some((i) => i?.title?.trim() || i?.text?.trim());
+  const hasText = (bar.items || []).some((i) => i?.title?.trim() || i?.text?.trim() || i?.icon?.trim());
   if (bar.enabled !== false && !hasText) return html;
   const doc = new DOMParser().parseFromString(html, "text/html");
   const grid = doc.querySelector(".trust-bar-grid");
@@ -144,6 +144,14 @@ export function applyTrustBar(html: string, bar: WebsiteTrustBar | null | undefi
       const p = el.querySelector("p");
       if (h4 && it.title?.trim()) h4.textContent = it.title.trim();
       if (p && it.text?.trim()) p.textContent = it.text.trim();
+      const box = el.querySelector(".trust-item-icon");
+      if (box && it.icon?.trim() && /^https?:\/\//i.test(it.icon.trim())) {
+        const img = doc.createElement("img");
+        img.src = it.icon.trim();
+        img.alt = "";
+        img.setAttribute("style", "width:60%;height:60%;object-fit:contain;");
+        box.replaceChildren(img);
+      }
     });
   }
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
