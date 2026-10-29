@@ -1,11 +1,11 @@
 import { createRoot } from "react-dom/client";
-import { applyHero, applyTopBar, applyTrustBar, type WebsiteTrustBar, blueFlameInPlacePage, rewriteBlueFlameAssets, type WebsiteTopBar, type WebsiteHero } from "./lib/blueFlameWebsite";
+import { applyHero, applyTopBar, applyTrustBar, type WebsiteTrustBar, applyCoreServices, type WebsiteCoreServices, blueFlameInPlacePage, rewriteBlueFlameAssets, type WebsiteTopBar, type WebsiteHero } from "./lib/blueFlameWebsite";
 
 const blueFlamePage = blueFlameInPlacePage(window.location.hostname, window.location.pathname);
 
-async function loadSettings(): Promise<{ top_bar?: WebsiteTopBar; hero?: WebsiteHero; trust_bar?: WebsiteTrustBar } | null> {
+async function loadSettings(): Promise<{ top_bar?: WebsiteTopBar; hero?: WebsiteHero; trust_bar?: WebsiteTrustBar; core_services?: WebsiteCoreServices } | null> {
   try {
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/companies?slug=eq.blueflameheatingcooling&select=top_bar,hero,trust_bar`;
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/companies?slug=eq.blueflameheatingcooling&select=top_bar,hero,trust_bar,core_services`;
     const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
     const r = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
     const rows = await r.json();
@@ -20,7 +20,7 @@ if (blueFlamePage) {
   // with the Page Builder settings applied.
   Promise.all([fetch(blueFlamePage).then((r) => r.text()), loadSettings()]).then(([html, cfg]) => {
     document.open();
-    document.write(applyTrustBar(applyHero(applyTopBar(rewriteBlueFlameAssets(html), cfg?.top_bar), cfg?.hero), cfg?.trust_bar));
+    document.write(applyCoreServices(applyTrustBar(applyHero(applyTopBar(rewriteBlueFlameAssets(html), cfg?.top_bar), cfg?.hero), cfg?.trust_bar), cfg?.core_services));
     document.close();
   });
 } else {

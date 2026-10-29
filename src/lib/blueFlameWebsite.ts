@@ -156,3 +156,65 @@ export function applyTrustBar(html: string, bar: WebsiteTrustBar | null | undefi
   }
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteCoreServiceCard {
+  icon?: string;
+  title?: string;
+  text?: string;
+  bullets?: string[];
+  button_text?: string;
+  button_link?: string;
+}
+export interface WebsiteCoreServices {
+  enabled?: boolean;
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  cards?: WebsiteCoreServiceCard[];
+}
+
+/** Replaces the home page "Complete Climate Solutions" section (#coreServices). Blank fields keep template content. */
+export function applyCoreServices(html: string, cs: WebsiteCoreServices | null | undefined): string {
+  if (!cs || typeof cs !== "object" || typeof DOMParser === "undefined") return html;
+  if (cs.enabled !== false && !JSON.stringify(cs).match(/:"[^"]*\S/)) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const sec = doc.getElementById("coreServices");
+  if (!sec) return html;
+  if (cs.enabled === false) {
+    sec.remove();
+    return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  }
+  const v = (s?: string) => (s && s.trim() ? s.trim() : null);
+  const set = (el: Element | null, s?: string) => { if (el && v(s)) el.textContent = v(s); };
+  set(sec.querySelector(".section-header .badge-pill"), cs.badge);
+  set(sec.querySelector(".section-header .section-title"), cs.title);
+  set(sec.querySelector(".section-header .section-subtitle"), cs.subtitle);
+  const cards = sec.querySelectorAll("article.card");
+  (cs.cards || []).forEach((c, i) => {
+    const el = cards[i];
+    if (!el || !c) return;
+    const icon = el.querySelector(".service-icon-box");
+    if (icon && v(c.icon) && /^https?:\/\//i.test(v(c.icon)!)) {
+      const img = doc.createElement("img");
+      img.src = v(c.icon)!;
+      img.alt = "";
+      img.setAttribute("style", "width:60%;height:60%;object-fit:contain;");
+      icon.replaceChildren(img);
+    }
+    set(el.querySelector("h3"), c.title);
+    set(el.querySelector("p"), c.text);
+    const lis = el.querySelectorAll("li.bullet-item");
+    (c.bullets || []).forEach((b, j) => {
+      const li = lis[j];
+      if (!li || !v(b)) return;
+      const ic = li.querySelector(".bullet-icon");
+      li.replaceChildren(...(ic ? [ic, doc.createTextNode(" ")] : []), doc.createTextNode(v(b)!));
+    });
+    const a = el.querySelector("a.btn");
+    if (a) {
+      set(a, c.button_text);
+      if (v(c.button_link)) a.setAttribute("href", v(c.button_link)!);
+    }
+  });
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}

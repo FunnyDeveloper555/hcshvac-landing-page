@@ -1386,6 +1386,7 @@ export type Database = {
           company_state: string | null
           company_support_email: string | null
           company_zip_code: string | null
+          core_services: Json
           coupon_1_code: string | null
           coupon_1_description: string | null
           coupon_1_title: string | null
@@ -1469,6 +1470,7 @@ export type Database = {
           company_state?: string | null
           company_support_email?: string | null
           company_zip_code?: string | null
+          core_services?: Json
           coupon_1_code?: string | null
           coupon_1_description?: string | null
           coupon_1_title?: string | null
@@ -1552,6 +1554,7 @@ export type Database = {
           company_state?: string | null
           company_support_email?: string | null
           company_zip_code?: string | null
+          core_services?: Json
           coupon_1_code?: string | null
           coupon_1_description?: string | null
           coupon_1_title?: string | null
