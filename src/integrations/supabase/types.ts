@@ -1442,6 +1442,7 @@ export type Database = {
           slug: string | null
           theme_style: string | null
           top_bar: Json
+          trust_bar: Json
           water_heaters_install: Json
           water_heaters_repair: Json
           water_heaters_service: Json
@@ -1524,6 +1525,7 @@ export type Database = {
           slug?: string | null
           theme_style?: string | null
           top_bar?: Json
+          trust_bar?: Json
           water_heaters_install?: Json
           water_heaters_repair?: Json
           water_heaters_service?: Json
@@ -1606,6 +1608,7 @@ export type Database = {
           slug?: string | null
           theme_style?: string | null
           top_bar?: Json
+          trust_bar?: Json
           water_heaters_install?: Json
           water_heaters_repair?: Json
           water_heaters_service?: Json

@@ -119,3 +119,32 @@ export function applyHero(html: string, hero: WebsiteHero | null | undefined): s
   });
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteTrustBar {
+  enabled?: boolean;
+  items?: { title?: string; text?: string }[];
+}
+
+/** Replaces the home page trust bar (4 badges under the hero). Blank fields keep template text. */
+export function applyTrustBar(html: string, bar: WebsiteTrustBar | null | undefined): string {
+  if (!bar || typeof bar !== "object" || typeof DOMParser === "undefined") return html;
+  const hasText = (bar.items || []).some((i) => i?.title?.trim() || i?.text?.trim());
+  if (bar.enabled !== false && !hasText) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const grid = doc.querySelector(".trust-bar-grid");
+  if (!grid) return html;
+  if (bar.enabled === false) {
+    (grid.closest("section") || grid.parentElement || grid).remove();
+  } else {
+    const items = grid.querySelectorAll(".trust-item");
+    (bar.items || []).forEach((it, i) => {
+      const el = items[i];
+      if (!el || !it) return;
+      const h4 = el.querySelector("h4");
+      const p = el.querySelector("p");
+      if (h4 && it.title?.trim()) h4.textContent = it.title.trim();
+      if (p && it.text?.trim()) p.textContent = it.text.trim();
+    });
+  }
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}
