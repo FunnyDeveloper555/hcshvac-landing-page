@@ -171,7 +171,71 @@ export interface WebsiteServiceDirectory {
   badge?: string;
   title?: string;
   subtitle?: string;
-  items?: { title?: string; subtitle?: string; icon?: string }[];
+  items?: { title?: string; subtitle?: string; icon?: string; cards?: WebsiteDirectoryCard[] }[];
+}
+
+/** Sub-content card inside one Service Directory accordion panel. */
+export interface WebsiteDirectoryCard {
+  tag?: string;
+  title?: string;
+  text?: string;
+  bullets?: string[];
+  cities?: string[];
+  meta?: { label?: string; value?: string }[];
+}
+
+const DIRECTORY_CARD = ".partner-info-card, .area-coverage-card";
+const clean = (s: string | null | undefined) => (s || "").replace(/\s+/g, " ").trim();
+
+/** Reads each accordion panel's sub-content cards from the template, so the editor starts from the real website. */
+export function readServiceDirectoryCards(html: string): WebsiteDirectoryCard[][] {
+  if (typeof DOMParser === "undefined") return [];
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const items = doc.querySelectorAll("#serviceDirectoryMaster .master-accordion-item");
+  return Array.from(items).map(item => Array.from(item.querySelectorAll(DIRECTORY_CARD)).map(card => {
+    const out: WebsiteDirectoryCard = {
+      tag: clean(card.querySelector(".tag-label")?.textContent),
+      title: clean(card.querySelector(".card-title, .area-coverage-title")?.textContent),
+      text: clean(card.querySelector(".partner-card-desc, .area-coverage-desc")?.textContent),
+    };
+    const bullets = card.querySelectorAll(".partner-check-item");
+    if (bullets.length) out.bullets = Array.from(bullets).map(li => clean(Array.from(li.childNodes).filter(n => !(n as Element).classList?.contains("partner-check-circle")).map(n => n.textContent).join("")));
+    const cities = card.querySelectorAll(".area-city-pill");
+    if (cities.length) out.cities = Array.from(cities).map(c => clean(c.textContent));
+    const meta = card.querySelectorAll(".area-coverage-meta > span");
+    if (meta.length) out.meta = Array.from(meta).map(m => ({ label: clean(Array.from(m.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join("")).replace(/:$/, ""), value: clean(m.querySelector("strong")?.textContent) }));
+    return out;
+  }));
+}
+
+function applyDirectoryCard(doc: Document, card: Element, c: WebsiteDirectoryCard) {
+  const set = (el: Element | null, s?: string) => { if (el && typeof s === "string" && s.trim()) el.textContent = s.trim(); };
+  set(card.querySelector(".tag-label"), c.tag);
+  set(card.querySelector(".card-title, .area-coverage-title"), c.title);
+  set(card.querySelector(".partner-card-desc, .area-coverage-desc"), c.text);
+  const list = card.querySelector(".partner-checklist");
+  const bullets = (c.bullets || []).map(b => b.trim()).filter(Boolean);
+  if (list && bullets.length) {
+    list.innerHTML = "";
+    bullets.forEach(b => {
+      const li = doc.createElement("li"); li.className = "partner-check-item";
+      const circle = doc.createElement("span"); circle.className = "partner-check-circle"; circle.textContent = "\u2713";
+      li.append(circle, doc.createTextNode(" " + b)); list.appendChild(li);
+    });
+  }
+  const pills = card.querySelector(".area-coverage-cities");
+  const cities = (c.cities || []).map(b => b.trim()).filter(Boolean);
+  if (pills && cities.length) {
+    pills.innerHTML = "";
+    cities.forEach(city => { const s = doc.createElement("span"); s.className = "area-city-pill"; s.textContent = city; pills.appendChild(s); });
+  }
+  const metas = card.querySelectorAll(".area-coverage-meta > span");
+  (c.meta || []).forEach((m, i) => {
+    const el = metas[i]; if (!el || !m) return;
+    const strong = el.querySelector("strong");
+    if (m.label?.trim()) { Array.from(el.childNodes).filter(n => n.nodeType === 3).forEach(n => n.remove()); el.insertBefore(doc.createTextNode(m.label.trim() + ": "), el.firstChild); }
+    if (strong && m.value?.trim()) strong.textContent = m.value.trim();
+  });
 }
 
 /** Update directory headings while preserving the template's expandable content and scripts. */
@@ -202,6 +266,9 @@ export function applyServiceDirectory(html: string, settings: WebsiteServiceDire
         image.style.objectFit = "contain";
         original.replaceWith(image);
       }
+      const panel = header.closest(".master-accordion-item");
+      const cards = panel ? panel.querySelectorAll(DIRECTORY_CARD) : [];
+      (item.cards || []).forEach((c, j) => { if (cards[j] && c) applyDirectoryCard(doc, cards[j], c); });
     });
   }
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
