@@ -79,7 +79,7 @@ export default function ServiceGuidesSettings() {
     if (!companyId || !data) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("companies").update({ service_guides: data }).eq("id", companyId).select("id").single();
+      const { error } = await supabase.from("companies").update({ service_guides: JSON.parse(JSON.stringify(data)) }).eq("id", companyId).select("id").single();
       if (error) throw error;
       await client.invalidateQueries({ queryKey: ["company-service-guides", companyId] });
       toast.success("Service guides saved");
