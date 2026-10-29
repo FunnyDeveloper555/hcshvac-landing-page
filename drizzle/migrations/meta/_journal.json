@@ -197,6 +197,13 @@
       "when": 1793210165919,
       "tag": "0027_company_hero",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793279794965,
+      "tag": "0028_migration",
+      "breakpoints": true
     }
   ]
 }
