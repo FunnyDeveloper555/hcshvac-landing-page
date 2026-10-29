@@ -322,6 +322,7 @@ const companySubmenus: MenuItem[] = [
   { title: "Trust Bar", url: "/admin/page-builder/trust-bar", icon: Layout },
   { title: "Core Services", url: "/admin/page-builder/core-services", icon: Layout },
   { title: "Service Directory", url: "/admin/page-builder/service-directory", icon: List },
+  { title: "Service Guides", url: "/admin/page-builder/service-guides", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
   { title: "Plumbing", url: "/admin/page-builder/plumbing", icon: Droplet },
