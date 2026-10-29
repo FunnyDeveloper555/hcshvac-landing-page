@@ -1,0 +1,2 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS service_guides jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.companies.service_guides IS 'Page Builder settings for the uploaded template seasonal accordion guides.';

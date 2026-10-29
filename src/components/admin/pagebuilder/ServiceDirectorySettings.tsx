@@ -78,7 +78,7 @@ export default function ServiceDirectorySettings() {
     if (!companyId) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("companies").update({ service_directory: data }).eq("id", companyId).select("id").single();
+      const { error } = await supabase.from("companies").update({ service_directory: JSON.parse(JSON.stringify(data)) }).eq("id", companyId).select("id").single();
       if (error) throw error;
       await client.invalidateQueries({ queryKey: ["company-service-directory", companyId] });
       toast.success("Service directory saved");

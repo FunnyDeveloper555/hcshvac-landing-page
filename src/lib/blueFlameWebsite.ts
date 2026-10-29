@@ -326,3 +326,70 @@ export function applyCoreServices(html: string, cs: WebsiteCoreServices | null |
   });
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteGuideItem { title?: string; text?: string; icon?: string }
+export interface WebsiteServiceGuides {
+  enabled?: boolean;
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  columns?: { title?: string; icon?: string; items?: WebsiteGuideItem[] }[];
+}
+
+const guideClean = (s: string | null | undefined) => (s || "").replace(/\s+/g, " ").trim();
+
+/** Reads the "Interactive Guides" accordion section (#serviceAccordions) from the template for editor defaults. */
+export function readServiceGuides(html: string): WebsiteServiceGuides | null {
+  if (typeof DOMParser === "undefined") return null;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const sec = doc.getElementById("serviceAccordions");
+  if (!sec) return null;
+  return {
+    enabled: true,
+    badge: guideClean(sec.querySelector(".section-header .badge-pill")?.textContent),
+    title: guideClean(sec.querySelector(".section-header .section-title")?.textContent),
+    subtitle: guideClean(sec.querySelector(".section-header .section-subtitle")?.textContent),
+    columns: Array.from(sec.querySelectorAll(".grid-2 > div")).map(col => ({
+      title: guideClean(col.querySelector("h3 span")?.textContent),
+      icon: "",
+      items: Array.from(col.querySelectorAll(".accordion-item")).map(item => ({
+        title: guideClean(item.querySelector(".accordion-header-title > span:last-child")?.textContent),
+        text: guideClean(item.querySelector(".accordion-inner")?.textContent),
+        icon: "",
+      })),
+    })),
+  };
+}
+
+/** Applies guide text and chosen icons inside the existing accordion markup; blank fields keep template content. */
+export function applyServiceGuides(html: string, g: WebsiteServiceGuides | null | undefined): string {
+  if (!g || typeof g !== "object" || typeof DOMParser === "undefined" || !Object.keys(g).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const sec = doc.getElementById("serviceAccordions");
+  if (!sec) return html;
+  if (g.enabled === false) { sec.remove(); return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML; }
+  const set = (el: Element | null, s?: string) => { if (el && typeof s === "string" && s.trim()) el.textContent = s.trim(); };
+  const icon = (svg: Element | null, url?: string, size = 20) => {
+    if (!svg || typeof url !== "string" || !/^https?:\/\//i.test(url.trim())) return;
+    const img = doc.createElement("img");
+    img.src = url.trim(); img.alt = ""; img.width = size; img.height = size; img.style.objectFit = "contain";
+    svg.replaceWith(img);
+  };
+  set(sec.querySelector(".section-header .badge-pill"), g.badge);
+  set(sec.querySelector(".section-header .section-title"), g.title);
+  set(sec.querySelector(".section-header .section-subtitle"), g.subtitle);
+  const cols = sec.querySelectorAll(".grid-2 > div");
+  (g.columns || []).forEach((c, i) => {
+    const col = cols[i]; if (!col || !c) return;
+    set(col.querySelector("h3 span"), c.title);
+    icon(col.querySelector("h3 svg"), c.icon, 24);
+    const items = col.querySelectorAll(".accordion-item");
+    (c.items || []).forEach((it, j) => {
+      const el = items[j]; if (!el || !it) return;
+      set(el.querySelector(".accordion-header-title > span:last-child"), it.title);
+      set(el.querySelector(".accordion-inner"), it.text);
+      icon(el.querySelector(".icon-tag svg"), it.icon, 18);
+    });
+  });
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}
