@@ -1404,6 +1404,7 @@ export type Database = {
           financing_provider: string | null
           financing_url: string | null
           flagship: Json
+          footer: Json
           gas_pipe_install: Json
           gas_pipe_repair: Json
           gas_pipe_service: Json
@@ -1492,6 +1493,7 @@ export type Database = {
           financing_provider?: string | null
           financing_url?: string | null
           flagship?: Json
+          footer?: Json
           gas_pipe_install?: Json
           gas_pipe_repair?: Json
           gas_pipe_service?: Json
@@ -1580,6 +1582,7 @@ export type Database = {
           financing_provider?: string | null
           financing_url?: string | null
           flagship?: Json
+          footer?: Json
           gas_pipe_install?: Json
           gas_pipe_repair?: Json
           gas_pipe_service?: Json

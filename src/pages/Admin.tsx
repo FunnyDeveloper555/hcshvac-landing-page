@@ -79,6 +79,7 @@ import ServiceDirectorySettings from "@/components/admin/pagebuilder/ServiceDire
 import ServiceGuidesSettings from "@/components/admin/pagebuilder/ServiceGuidesSettings";
 import FlagshipSettings from "@/components/admin/pagebuilder/FlagshipSettings";
 import FaqSettings from "@/components/admin/pagebuilder/FaqSettings";
+import FooterSettings from "@/components/admin/pagebuilder/FooterSettings";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
@@ -258,6 +259,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/service-guides" element={<ServiceGuidesSettings />} />
               <Route path="/page-builder/company/:companyId/flagship" element={<FlagshipSettings />} />
               <Route path="/page-builder/company/:companyId/faq" element={<FaqSettings />} />
+              <Route path="/page-builder/company/:companyId/footer" element={<FooterSettings />} />
               <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
               {/* Consolidated tabbed routes */}
               <Route path="/page-builder/company/:companyId/header-menus" element={<HeaderMenusTabbed />} />

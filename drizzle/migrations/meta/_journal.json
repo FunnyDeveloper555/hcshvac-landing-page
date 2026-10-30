@@ -239,6 +239,13 @@
       "when": 1793367222710,
       "tag": "0033_company_faq",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793367776695,
+      "tag": "0034_company_footer",
+      "breakpoints": true
     }
   ]
 }
