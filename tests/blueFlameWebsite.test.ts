@@ -29,7 +29,7 @@ test("FAQ question count follows the saved list: blank rows dropped, order kept"
     { answer: "Answer only" },
   ]);
   assert.equal(kept.length, 3);
-  assert.deepEqual(kept.map(i => i.question), ["First?", undefined, "Second?"]);
+  assert.deepEqual(kept.map(i => i.question), ["First?", "Second?", undefined]);
   assert.equal(faqWanted([]).length, 0);
   assert.equal(faqWanted([{ question: " ", answer: "\n" }]).length, 0);
 });
