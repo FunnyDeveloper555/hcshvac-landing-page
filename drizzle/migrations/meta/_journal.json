@@ -225,6 +225,13 @@
       "when": 1793282515388,
       "tag": "0031_company_service_guides",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793366757444,
+      "tag": "0032_company_flagship",
+      "breakpoints": true
     }
   ]
 }
