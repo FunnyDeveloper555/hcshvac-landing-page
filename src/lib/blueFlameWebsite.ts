@@ -467,6 +467,11 @@ export interface WebsiteFaq {
   items?: { question?: string; answer?: string; icon?: string }[];
 }
 
+/** Keeps only FAQ rows that actually say something, so the website's question count follows the saved list. */
+export function faqWanted(items?: WebsiteFaq["items"]): NonNullable<WebsiteFaq["items"]> {
+  return (items || []).filter(it => it && (String(it.question || "").trim() || String(it.answer || "").trim()));
+}
+
 /** Reads the FAQ section (#homeFaq) from the template for editor defaults. */
 export function readFaq(html: string): WebsiteFaq | null {
   if (typeof DOMParser === "undefined") return null;
@@ -496,9 +501,23 @@ export function applyFaq(html: string, f: WebsiteFaq | null | undefined): string
   set(sec.querySelector(".section-header .badge-pill"), f.badge);
   set(sec.querySelector(".section-header .section-title"), f.title);
   set(sec.querySelector(".section-header .section-subtitle"), f.subtitle);
-  const items = sec.querySelectorAll(".accordion-item");
-  (f.items || []).forEach((it, i) => {
-    const el = items[i]; if (!el || !it) return;
+  const wrapper = sec.querySelector(".accordion-wrapper");
+  const found = Array.from(sec.querySelectorAll(".accordion-item"));
+  const pattern = found[0] ? found[0].outerHTML : "";
+  const wanted = Array.isArray(f.items) ? faqWanted(f.items) : null;
+  if (wrapper && pattern && wanted) {
+    found.slice(wanted.length).forEach(el => el.remove());
+    while (wrapper.querySelectorAll(":scope > .accordion-item").length < wanted.length) wrapper.insertAdjacentHTML("beforeend", pattern);
+  }
+  const live = Array.from(sec.querySelectorAll(".accordion-item"));
+  const rows: NonNullable<WebsiteFaq["items"]> = wanted ?? Array.from({ length: live.length }, () => ({}));
+  rows.forEach((it, i) => {
+    const el = live[i]; if (!el) return;
+    const header = el.querySelector(".accordion-header");
+    if (wanted) {
+      el.classList.toggle("active", i === 0);
+      if (header) header.id = `faq${i + 1}`;
+    }
     set(el.querySelector(".accordion-header-title > span:last-child"), it.question);
     set(el.querySelector(".accordion-inner"), it.answer);
     const svg = el.querySelector(".icon-tag svg");
