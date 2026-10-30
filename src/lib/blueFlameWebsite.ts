@@ -461,3 +461,52 @@ export function applyFlagship(html: string, f: WebsiteFlagship | null | undefine
   set(sec.querySelector(".primary-image-box + p"), f.caption);
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteFaq {
+  enabled?: boolean; badge?: string; title?: string; subtitle?: string;
+  items?: { question?: string; answer?: string; icon?: string }[];
+}
+
+/** Reads the FAQ section (#homeFaq) from the template for editor defaults. */
+export function readFaq(html: string): WebsiteFaq | null {
+  if (typeof DOMParser === "undefined") return null;
+  const sec = new DOMParser().parseFromString(html, "text/html").getElementById("homeFaq");
+  if (!sec) return null;
+  const c = guideClean;
+  return {
+    enabled: true,
+    badge: c(sec.querySelector(".section-header .badge-pill")?.textContent),
+    title: c(sec.querySelector(".section-header .section-title")?.textContent),
+    subtitle: c(sec.querySelector(".section-header .section-subtitle")?.textContent),
+    items: Array.from(sec.querySelectorAll(".accordion-item")).map(el => ({
+      question: c(el.querySelector(".accordion-header-title > span:last-child")?.textContent),
+      answer: c(el.querySelector(".accordion-inner")?.textContent), icon: "",
+    })),
+  };
+}
+
+/** Applies FAQ settings inside the existing accordion markup; blank fields keep template content. */
+export function applyFaq(html: string, f: WebsiteFaq | null | undefined): string {
+  if (!f || typeof f !== "object" || typeof DOMParser === "undefined" || !Object.keys(f).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const sec = doc.getElementById("homeFaq");
+  if (!sec) return html;
+  if (f.enabled === false) { sec.remove(); return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML; }
+  const set = (el: Element | null, s?: string) => { if (el && typeof s === "string" && s.trim()) el.textContent = s.trim(); };
+  set(sec.querySelector(".section-header .badge-pill"), f.badge);
+  set(sec.querySelector(".section-header .section-title"), f.title);
+  set(sec.querySelector(".section-header .section-subtitle"), f.subtitle);
+  const items = sec.querySelectorAll(".accordion-item");
+  (f.items || []).forEach((it, i) => {
+    const el = items[i]; if (!el || !it) return;
+    set(el.querySelector(".accordion-header-title > span:last-child"), it.question);
+    set(el.querySelector(".accordion-inner"), it.answer);
+    const svg = el.querySelector(".icon-tag svg");
+    if (svg && typeof it.icon === "string" && /^https?:\/\//i.test(it.icon.trim())) {
+      const img = doc.createElement("img");
+      img.src = it.icon.trim(); img.alt = ""; img.width = 18; img.height = 18; img.style.objectFit = "contain";
+      svg.replaceWith(img);
+    }
+  });
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}

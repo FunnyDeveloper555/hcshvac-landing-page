@@ -232,6 +232,13 @@
       "when": 1793366757444,
       "tag": "0032_company_flagship",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793367222710,
+      "tag": "0033_company_faq",
+      "breakpoints": true
     }
   ]
 }
