@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
-import { ImageIcon, Loader2, Save, X } from "lucide-react";
+import { ChevronDown, ChevronUp, ImageIcon, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { readFaq, type WebsiteFaq } from "@/lib/blueFlameWebsite";
+import { faqWanted, readFaq, type WebsiteFaq } from "@/lib/blueFlameWebsite";
 
 type Item = { question: string; answer: string; icon: string };
 type F = { enabled: boolean; badge: string; title: string; subtitle: string; items: Item[] };
@@ -41,23 +41,41 @@ export default function FaqSettings() {
     const raw = company.data.faq;
     const s = (raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {}) as WebsiteFaq;
     const t = template.data;
+    const saved = Array.isArray(s.items) ? s.items : [];
+    const count = Math.max(saved.length, (t.items || []).length);
     setData({
       enabled: s.enabled !== false,
       badge: str(s.badge, t.badge), title: str(s.title, t.title), subtitle: str(s.subtitle, t.subtitle),
-      items: (t.items || []).map((it, i) => ({ question: str(s.items?.[i]?.question, it.question), answer: str(s.items?.[i]?.answer, it.answer), icon: str(s.items?.[i]?.icon) })),
+      items: Array.from({ length: count }, (_, i) => ({
+        question: str(saved[i]?.question, t.items?.[i]?.question),
+        answer: str(saved[i]?.answer, t.items?.[i]?.answer),
+        icon: str(saved[i]?.icon),
+      })),
     });
   }, [company.data, template.data]);
 
   const setItem = (i: number, p: Partial<Item>) => setData(d => d && ({ ...d, items: d.items.map((x, j) => j === i ? { ...x, ...p } : x) }));
+  const addItem = () => setData(d => d && ({ ...d, items: [...d.items, { question: "", answer: "", icon: "" }] }));
+  const removeItem = (i: number) => setData(d => d && ({ ...d, items: d.items.filter((_, j) => j !== i) }));
+  const moveItem = (i: number, dir: -1 | 1) => setData(d => {
+    if (!d) return d;
+    const j = i + dir;
+    if (j < 0 || j >= d.items.length) return d;
+    const items = [...d.items];
+    [items[i], items[j]] = [items[j], items[i]];
+    return { ...d, items };
+  });
 
   const save = async () => {
     if (!companyId || !data) return;
+    const kept = faqWanted(data.items) as Item[];
     setSaving(true);
     try {
-      const { error } = await supabase.from("companies").update({ faq: JSON.parse(JSON.stringify(data)) } as never).eq("id", companyId).select("id").single();
+      const { error } = await supabase.from("companies").update({ faq: JSON.parse(JSON.stringify({ ...data, items: kept })) } as never).eq("id", companyId).select("id").single();
       if (error) throw error;
+      setData({ ...data, items: kept });
       await client.invalidateQueries({ queryKey: ["company-faq", companyId] });
-      toast.success("FAQ saved");
+      toast.success(`FAQ saved with ${kept.length} question${kept.length === 1 ? "" : "s"}`);
     } catch { toast.error("Could not save FAQ"); }
     finally { setSaving(false); }
   };
@@ -78,19 +96,31 @@ export default function FaqSettings() {
       </div>)}
     </section>
     <section className="space-y-4">
-      <h2 className="font-semibold">Questions</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">Questions <span className="text-sm font-normal text-muted-foreground">({data.items.length})</span></h2>
+        <Button type="button" variant="outline" size="sm" onClick={addItem}><Plus className="mr-2 h-4 w-4" />Add question</Button>
+      </div>
+      {data.items.length === 0 && <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">No questions yet. Use "Add question" to create one.</p>}
       {data.items.map((it, i) => <div key={i} className="space-y-3 rounded-md border p-4">
-        <p className="text-sm font-medium">Question {i + 1}</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium">Question {i + 1}</p>
+          <div className="flex items-center gap-1">
+            <Button type="button" variant="ghost" size="icon" aria-label={`Move question ${i + 1} up`} title="Move up" disabled={i === 0} onClick={() => moveItem(i, -1)}><ChevronUp className="h-4 w-4" /></Button>
+            <Button type="button" variant="ghost" size="icon" aria-label={`Move question ${i + 1} down`} title="Move down" disabled={i === data.items.length - 1} onClick={() => moveItem(i, 1)}><ChevronDown className="h-4 w-4" /></Button>
+            <Button type="button" variant="ghost" size="icon" aria-label={`Remove question ${i + 1}`} title="Remove" className="text-destructive" onClick={() => removeItem(i)}><Trash2 className="h-4 w-4" /></Button>
+          </div>
+        </div>
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border bg-muted">
             {it.icon ? <img src={it.icon} alt="Icon" className="h-full w-full object-contain" /> : <ImageIcon className="h-4 w-4 text-muted-foreground" />}
           </div>
-          <Button variant="outline" size="sm" onClick={() => setPick(i)}>{it.icon ? "Change icon" : "Choose icon"}</Button>
-          {it.icon && <Button variant="ghost" size="icon" aria-label="Remove icon" onClick={() => setItem(i, { icon: "" })}><X className="h-4 w-4" /></Button>}
+          <Button type="button" variant="outline" size="sm" onClick={() => setPick(i)}>{it.icon ? "Change icon" : "Choose icon"}</Button>
+          {it.icon && <Button type="button" variant="ghost" size="icon" aria-label="Remove icon" onClick={() => setItem(i, { icon: "" })}><X className="h-4 w-4" /></Button>}
         </div>
-        <Input aria-label={`Question ${i + 1}`} value={it.question} onChange={e => setItem(i, { question: e.target.value })} />
-        <Textarea aria-label={`Answer ${i + 1}`} rows={3} value={it.answer} onChange={e => setItem(i, { answer: e.target.value })} />
+        <Input aria-label={`Question ${i + 1}`} placeholder="Type a question" value={it.question} onChange={e => setItem(i, { question: e.target.value })} />
+        <Textarea aria-label={`Answer ${i + 1}`} rows={3} placeholder="Type the answer visitors will see" value={it.answer} onChange={e => setItem(i, { answer: e.target.value })} />
       </div>)}
+      {data.items.length > 0 && <Button type="button" variant="outline" className="w-full" onClick={addItem}><Plus className="mr-2 h-4 w-4" />Add another question</Button>}
     </section>
     <FileManagerPicker open={pick !== null} onOpenChange={o => { if (!o) setPick(null); }} accept="image/*" title="Select Question Icon"
       onSelect={url => { if (pick !== null) setItem(pick, { icon: url }); setPick(null); }} />

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blueFlameWebsiteDestination, blueFlameInPlacePage, rewriteBlueFlameAssets } from "../src/lib/blueFlameWebsite";
+import { blueFlameWebsiteDestination, blueFlameInPlacePage, faqWanted, rewriteBlueFlameAssets } from "../src/lib/blueFlameWebsite";
 
 test("Blue Flame domains show index.html at the root without redirecting", () => {
   for (const h of ["blueflameheatingcooling.com", "www.blueflameheatingcooling.com", "blueflameheatingcooling.hcshvac.com"]) {
@@ -19,4 +19,17 @@ test("other companies and CRM paths are untouched", () => {
 test("asset paths resolve from the domain root", () => {
   assert.equal(rewriteBlueFlameAssets('<link href="assets/css/style.css"><a href="about.html">'),
     '<link href="/blueflame-site/assets/css/style.css"><a href="about.html">');
+});
+
+test("FAQ question count follows the saved list: blank rows dropped, order kept", () => {
+  const kept = faqWanted([
+    { question: "First?", answer: "One" },
+    { question: "  ", answer: "" },
+    { question: "Second?", answer: "Two", icon: "https://cdn.example/icon.png" },
+    { answer: "Answer only" },
+  ]);
+  assert.equal(kept.length, 3);
+  assert.deepEqual(kept.map(i => i.question), ["First?", "Second?", undefined]);
+  assert.equal(faqWanted([]).length, 0);
+  assert.equal(faqWanted([{ question: " ", answer: "\n" }]).length, 0);
 });
