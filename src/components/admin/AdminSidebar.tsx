@@ -325,6 +325,7 @@ const companySubmenus: MenuItem[] = [
   { title: "Service Guides", url: "/admin/page-builder/service-guides", icon: List },
   { title: "Flagship Product", url: "/admin/page-builder/flagship", icon: List },
   { title: "FAQ", url: "/admin/page-builder/faq", icon: List },
+  { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
   { title: "Plumbing", url: "/admin/page-builder/plumbing", icon: Droplet },

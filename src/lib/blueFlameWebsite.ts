@@ -529,3 +529,111 @@ export function applyFaq(html: string, f: WebsiteFaq | null | undefined): string
   });
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteFooterLink { text?: string; link?: string }
+export interface WebsiteFooter {
+  enabled?: boolean; logo?: string; brand_name?: string; brand_tagline?: string; description?: string;
+  services_title?: string; services?: WebsiteFooterLink[];
+  quick_title?: string; quick_links?: WebsiteFooterLink[];
+  contact_title?: string; hq_label?: string; hq_text?: string; phone_label?: string; phone?: string;
+  hours_label?: string; hours_text?: string; emergency_text?: string;
+  copyright?: string; reference?: string;
+}
+
+const footClean = (s?: string | null) => (s || "").replace(/\s+/g, " ").trim();
+
+/** Keeps only footer links that have text. */
+export function footerLinksWanted(links?: WebsiteFooterLink[]): WebsiteFooterLink[] {
+  return (links || []).filter(l => l && String(l.text || "").trim());
+}
+
+function footerCols(root: ParentNode) {
+  const cols = Array.from(root.querySelectorAll(".footer-top > .footer-col"));
+  return { services: cols[0] || null, quick: cols[1] || null, contact: cols[2] || null };
+}
+
+/** Reads the site footer from the template for editor defaults. */
+export function readFooter(html: string): WebsiteFooter | null {
+  if (typeof DOMParser === "undefined") return null;
+  const f = new DOMParser().parseFromString(html, "text/html").querySelector("footer.site-footer");
+  if (!f) return null;
+  const c = footClean;
+  const { services, quick, contact } = footerCols(f);
+  const links = (col: Element | null) => Array.from(col?.querySelectorAll(".footer-links > a") || []).map(a => ({ text: c(a.textContent), link: a.getAttribute("href") || "" }));
+  const items = Array.from(contact?.querySelectorAll(".footer-contact-item") || []);
+  const body = (i: number) => items[i]?.querySelector(":scope > div");
+  const afterStrong = (i: number) => { const d = body(i); if (!d) return ""; const cl = d.cloneNode(true) as Element; cl.querySelector("strong")?.remove(); cl.querySelectorAll("span,a").forEach(x => x.remove()); return c(cl.textContent); };
+  const bottom = Array.from(f.querySelectorAll(".footer-bottom p"));
+  return {
+    enabled: true, logo: "",
+    brand_name: c(f.querySelector(".footer-brand .logo-text h2")?.textContent),
+    brand_tagline: c(f.querySelector(".footer-brand .logo-text span")?.textContent),
+    description: c(f.querySelector(".footer-brand > p")?.textContent),
+    services_title: c(services?.querySelector("h3")?.textContent), services: links(services),
+    quick_title: c(quick?.querySelector("h3")?.textContent), quick_links: links(quick),
+    contact_title: c(contact?.querySelector("h3")?.textContent),
+    hq_label: c(body(0)?.querySelector("strong")?.textContent), hq_text: afterStrong(0),
+    phone_label: c(body(1)?.querySelector("strong")?.textContent), phone: c(body(1)?.querySelector("a")?.textContent),
+    hours_label: c(body(2)?.querySelector("strong")?.textContent), hours_text: afterStrong(2),
+    emergency_text: c(body(2)?.querySelector("span")?.textContent),
+    copyright: c(bottom[0]?.textContent), reference: c(bottom[1]?.textContent),
+  };
+}
+
+/** Applies footer settings inside the existing footer markup on every page; blank fields keep template content. */
+export function applyFooter(html: string, s: WebsiteFooter | null | undefined): string {
+  if (!s || typeof s !== "object" || typeof DOMParser === "undefined" || !Object.keys(s).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const f = doc.querySelector("footer.site-footer");
+  if (!f) return html;
+  const out = () => "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  if (s.enabled === false) { f.remove(); return out(); }
+  const ok = (v?: string): v is string => typeof v === "string" && !!v.trim();
+  const set = (el: Element | null | undefined, v?: string) => { if (el && ok(v)) el.textContent = v.trim(); };
+  set(f.querySelector(".footer-brand .logo-text h2"), s.brand_name);
+  set(f.querySelector(".footer-brand .logo-text span"), s.brand_tagline);
+  set(f.querySelector(".footer-brand > p"), s.description);
+  const icon = f.querySelector(".footer-brand .logo-icon");
+  if (icon && ok(s.logo) && /^https?:\/\//i.test(s.logo.trim())) {
+    icon.innerHTML = ""; const img = doc.createElement("img");
+    img.src = s.logo.trim(); img.alt = ""; img.style.cssText = "width:100%;height:100%;object-fit:contain;"; icon.appendChild(img);
+  }
+  const { services, quick, contact } = footerCols(f);
+  const applyLinks = (col: Element | null, title?: string, list?: WebsiteFooterLink[]) => {
+    if (!col) return;
+    set(col.querySelector("h3"), title);
+    const box = col.querySelector(".footer-links");
+    if (!box || !Array.isArray(list)) return;
+    const orig = Array.from(box.querySelectorAll(":scope > a"));
+    const icons = orig.map(a => a.querySelector("svg")?.outerHTML || "");
+    box.innerHTML = "";
+    footerLinksWanted(list).forEach((l, i) => {
+      const a = doc.createElement("a");
+      a.setAttribute("href", ok(l.link) ? l.link.trim() : "#");
+      a.innerHTML = (icons[i] || icons[0] || "") + " ";
+      a.appendChild(doc.createTextNode(String(l.text).trim()));
+      box.appendChild(a);
+    });
+  };
+  applyLinks(services, s.services_title, s.services);
+  applyLinks(quick, s.quick_title, s.quick_links);
+  if (contact) {
+    set(contact.querySelector("h3"), s.contact_title);
+    const items = Array.from(contact.querySelectorAll(".footer-contact-item > div"));
+    const setLine = (d: Element | undefined, v?: string) => {
+      if (!d || !ok(v)) return;
+      const br = d.querySelector("br"); if (!br) return;
+      let n = br.nextSibling; while (n && n.nodeType === 3) { const nx = n.nextSibling; n.remove(); n = nx; }
+      br.after(doc.createTextNode("\n" + v.trim() + (d.querySelector("span") ? "" : "\n")));
+    };
+    set(items[0]?.querySelector("strong"), s.hq_label); setLine(items[0], s.hq_text);
+    set(items[1]?.querySelector("strong"), s.phone_label);
+    const pa = items[1]?.querySelector("a");
+    if (pa && ok(s.phone)) { pa.textContent = s.phone.trim(); pa.setAttribute("href", "tel:" + s.phone.replace(/\D/g, "")); }
+    set(items[2]?.querySelector("strong"), s.hours_label); setLine(items[2], s.hours_text);
+    set(items[2]?.querySelector("span"), s.emergency_text);
+  }
+  const bottom = Array.from(f.querySelectorAll(".footer-bottom p"));
+  set(bottom[0], s.copyright); set(bottom[1], s.reference);
+  return out();
+}
