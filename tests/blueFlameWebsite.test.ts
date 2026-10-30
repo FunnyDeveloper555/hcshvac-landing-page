@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { blueFlameWebsiteDestination, blueFlameInPlacePage, rewriteBlueFlameAssets } from "../src/lib/blueFlameWebsite";
+import { blueFlameWebsiteDestination, blueFlameInPlacePage, faqWanted, rewriteBlueFlameAssets } from "../src/lib/blueFlameWebsite";
 
 test("Blue Flame domains show index.html at the root without redirecting", () => {
   for (const h of ["blueflameheatingcooling.com", "www.blueflameheatingcooling.com", "blueflameheatingcooling.hcshvac.com"]) {
