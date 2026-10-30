@@ -20,3 +20,16 @@ test("asset paths resolve from the domain root", () => {
   assert.equal(rewriteBlueFlameAssets('<link href="assets/css/style.css"><a href="about.html">'),
     '<link href="/blueflame-site/assets/css/style.css"><a href="about.html">');
 });
+
+test("FAQ question count follows the saved list: blank rows dropped, order kept", () => {
+  const kept = faqWanted([
+    { question: "First?", answer: "One" },
+    { question: "  ", answer: "" },
+    { question: "Second?", answer: "Two", icon: "https://cdn.example/icon.png" },
+    { answer: "Answer only" },
+  ]);
+  assert.equal(kept.length, 3);
+  assert.deepEqual(kept.map(i => i.question), ["First?", undefined, "Second?"]);
+  assert.equal(faqWanted([]).length, 0);
+  assert.equal(faqWanted([{ question: " ", answer: "\n" }]).length, 0);
+});
