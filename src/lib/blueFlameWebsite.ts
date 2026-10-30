@@ -393,3 +393,71 @@ export function applyServiceGuides(html: string, g: WebsiteServiceGuides | null 
   });
   return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
 }
+
+export interface WebsiteFlagship {
+  enabled?: boolean; badge?: string; title?: string; intro?: string;
+  bullets?: { label?: string; text?: string; icon?: string }[];
+  button_text?: string; button_link?: string;
+  image?: string; preview_label?: string; efficiency?: string; caption?: string;
+}
+
+/** Reads the flagship product teaser (#homeProductTeaser) from the template for editor defaults. */
+export function readFlagship(html: string): WebsiteFlagship | null {
+  if (typeof DOMParser === "undefined") return null;
+  const sec = new DOMParser().parseFromString(html, "text/html").getElementById("homeProductTeaser");
+  if (!sec) return null;
+  const c = guideClean;
+  return {
+    enabled: true,
+    badge: c(sec.querySelector(".badge-pill")?.textContent),
+    title: c(sec.querySelector("h2")?.textContent),
+    intro: c(sec.querySelector(".showcase-grid > div p")?.textContent),
+    bullets: Array.from(sec.querySelectorAll(".bullet-item")).map(li => {
+      const label = c(li.querySelector("strong")?.textContent).replace(/:$/, "");
+      const full = c(li.textContent);
+      return { label, text: c(full.slice(full.indexOf(":") + 1)), icon: "" };
+    }),
+    button_text: c(sec.querySelector("a.btn")?.textContent),
+    button_link: sec.querySelector("a.btn")?.getAttribute("href") || "",
+    image: "",
+    preview_label: c(sec.querySelector(".badge-view-status")?.textContent),
+    efficiency: c(sec.querySelector(".efficiency-badge")?.textContent),
+    caption: c(sec.querySelector(".primary-image-box + p")?.textContent),
+  };
+}
+
+/** Applies flagship settings inside the existing markup; blank fields keep template content. */
+export function applyFlagship(html: string, f: WebsiteFlagship | null | undefined): string {
+  if (!f || typeof f !== "object" || typeof DOMParser === "undefined" || !Object.keys(f).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const sec = doc.getElementById("homeProductTeaser");
+  if (!sec) return html;
+  if (f.enabled === false) { sec.remove(); return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML; }
+  const ok = (s?: string) => typeof s === "string" && s.trim() ? s.trim() : null;
+  const set = (el: Element | null, s?: string) => { const v = ok(s); if (el && v) el.textContent = v; };
+  const keepIcon = (el: Element | null, s?: string) => {
+    const v = ok(s); if (!el || !v) return;
+    const svg = el.querySelector("svg"); el.textContent = " " + v; if (svg) el.prepend(svg);
+  };
+  const isUrl = (s?: string) => !!ok(s) && /^https?:\/\//i.test(s!.trim());
+  keepIcon(sec.querySelector(".badge-pill"), f.badge);
+  set(sec.querySelector("h2"), f.title);
+  set(sec.querySelector(".showcase-grid > div p"), f.intro);
+  const items = sec.querySelectorAll(".bullet-item");
+  (f.bullets || []).forEach((b, i) => {
+    const li = items[i]; if (!li || !b) return;
+    const strong = li.querySelector("strong");
+    if (strong && ok(b.label)) strong.textContent = ok(b.label)!.replace(/:?$/, ":");
+    if (strong && ok(b.text)) { while (strong.nextSibling) strong.nextSibling.remove(); strong.after(doc.createTextNode(" " + ok(b.text))); }
+    const svg = li.querySelector(".bullet-icon svg");
+    if (svg && isUrl(b.icon)) { const img = doc.createElement("img"); img.src = b.icon!.trim(); img.alt = ""; img.width = 18; img.height = 18; img.style.objectFit = "contain"; svg.replaceWith(img); }
+  });
+  const btn = sec.querySelector("a.btn");
+  if (btn) { set(btn, f.button_text); if (ok(f.button_link)) btn.setAttribute("href", ok(f.button_link)!); }
+  const img = sec.querySelector(".primary-image-box img");
+  if (img && isUrl(f.image)) img.setAttribute("src", f.image!.trim());
+  keepIcon(sec.querySelector(".badge-view-status"), f.preview_label);
+  set(sec.querySelector(".efficiency-badge"), f.efficiency);
+  set(sec.querySelector(".primary-image-box + p"), f.caption);
+  return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+}
