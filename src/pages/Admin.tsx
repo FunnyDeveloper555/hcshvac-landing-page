@@ -263,6 +263,8 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/faq" element={<FaqSettings />} />
               <Route path="/page-builder/company/:companyId/about-us" element={<AboutUsSettings />} />
               <Route path="/page-builder/company/:companyId/about-us/:section" element={<AboutUsSettings />} />
+              <Route path="/page-builder/company/:companyId/financing" element={<FinancingSettings />} />
+              <Route path="/page-builder/company/:companyId/financing/:section" element={<FinancingSettings />} />
               <Route path="/page-builder/company/:companyId/footer" element={<FooterSettings />} />
               <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
               {/* Consolidated tabbed routes */}
