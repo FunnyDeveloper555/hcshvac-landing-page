@@ -104,6 +104,7 @@ export default function CompanyDashboard() {
     { label: "Flagship Product", icon: Layout, path: `${basePath}/flagship`, color: "bg-accent/50 text-accent-foreground" },
     { label: "FAQ", icon: Layout, path: `${basePath}/faq`, color: "bg-accent/50 text-accent-foreground" },
     { label: "About Us", icon: Layout, path: `${basePath}/about-us`, color: "bg-accent/50 text-accent-foreground" },
+    { label: "Financing", icon: Layout, path: `${basePath}/financing`, color: "bg-primary/10 text-primary" },
     { label: "Footer", icon: Layout, path: `${basePath}/footer`, color: "bg-accent/50 text-accent-foreground" },
     { label: "Header Menus", icon: FileText, path: `${basePath}/header-menus`, color: "bg-primary/10 text-primary" },
     { label: "HVAC", icon: Wrench, path: `${basePath}/hvac`, color: "bg-accent/50 text-accent-foreground" },

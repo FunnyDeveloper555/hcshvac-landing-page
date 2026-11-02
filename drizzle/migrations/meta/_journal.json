@@ -253,6 +253,13 @@
       "when": 1793587278787,
       "tag": "0035_company_about_us",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793588713618,
+      "tag": "0036_company_financing",
+      "breakpoints": true
     }
   ]
 }

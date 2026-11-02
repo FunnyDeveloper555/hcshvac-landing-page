@@ -758,3 +758,203 @@ export function applyAboutUs(html: string, a: WebsiteAboutUs | null | undefined)
   }
   return out();
 }
+
+export interface WebsiteFinancingPlan { badge?: string; title?: string; apr?: string; apr_unit?: string; text?: string; bullets?: string[]; button_text?: string }
+export interface WebsiteFinancingStep { title?: string; text?: string; icon?: string }
+export interface WebsiteFinancingFaq { question?: string; answer?: string; icon?: string }
+export interface WebsiteFinancing {
+  enabled?: boolean;
+  hero_badge?: string; hero_title?: string; hero_intro?: string;
+  hero_button1?: string; hero_button2?: string;
+  plans_badge?: string; plans_title?: string; plans_subtitle?: string;
+  plans?: WebsiteFinancingPlan[];
+  calc_badge?: string; calc_title?: string; calc_subtitle?: string;
+  calc_min?: string; calc_max?: string; calc_default?: string; calc_rebate?: string;
+  steps_badge?: string; steps_title?: string; steps_subtitle?: string;
+  steps?: WebsiteFinancingStep[];
+  form_badge?: string; form_title?: string; form_subtitle?: string; form_button?: string;
+  faq_badge?: string; faq_title?: string;
+  faqs?: WebsiteFinancingFaq[];
+}
+
+/** Reads the Financing page (financing.html) sections from the template for editor defaults. */
+export function readFinancing(html: string): WebsiteFinancing | null {
+  if (typeof DOMParser === "undefined") return null;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return null;
+  const c = guideClean;
+  const headers = main ? Array.from(main.querySelectorAll(".section-header")) : [];
+  const heroBtns = hero ? Array.from(hero.querySelectorAll("a.btn")) : [];
+  const calc = main?.querySelector("#paymentCalculator");
+  const slider = calc?.querySelector("#loanAmountSlider");
+  const form = main?.querySelector("#preQualForm");
+  return {
+    enabled: true,
+    hero_badge: c(hero?.querySelector(".badge-pill")?.textContent),
+    hero_title: c(hero?.querySelector("h1")?.textContent),
+    hero_intro: c(hero?.querySelector("p")?.textContent),
+    hero_button1: c(heroBtns[0]?.textContent),
+    hero_button2: c(heroBtns[1]?.textContent),
+    plans_badge: c(headers[0]?.querySelector(".badge-pill")?.textContent),
+    plans_title: c(headers[0]?.querySelector(".section-title")?.textContent),
+    plans_subtitle: c(headers[0]?.querySelector(".section-subtitle")?.textContent),
+    plans: main ? Array.from(main.querySelectorAll(".financing-card")).map(card => ({
+      badge: c(card.querySelector(".badge-pill")?.textContent),
+      title: c(card.querySelector("h3")?.textContent),
+      apr: c(card.querySelector(".financing-apr")?.childNodes[0]?.textContent),
+      apr_unit: c(card.querySelector(".financing-apr span")?.textContent),
+      text: c(card.querySelector("p")?.textContent),
+      bullets: Array.from(card.querySelectorAll(".bullet-item")).map(li => c(li.textContent)),
+      button_text: c(card.querySelector("a.btn")?.textContent),
+    })) : [],
+    calc_badge: c(calc?.querySelector(".badge-pill")?.textContent),
+    calc_title: c(calc?.querySelector("h2")?.textContent),
+    calc_subtitle: c(calc?.querySelector("h2 + p")?.textContent),
+    calc_min: slider?.getAttribute("min") || "",
+    calc_max: slider?.getAttribute("max") || "",
+    calc_default: slider?.getAttribute("value") || "",
+    calc_rebate: c(calc?.querySelectorAll(".calc-result-val")[2]?.textContent),
+    steps_badge: c(headers[1]?.querySelector(".badge-pill")?.textContent),
+    steps_title: c(headers[1]?.querySelector(".section-title")?.textContent),
+    steps_subtitle: c(headers[1]?.querySelector(".section-subtitle")?.textContent),
+    steps: main ? Array.from(main.querySelectorAll(".step-card")).map(card => ({
+      title: c(card.querySelector("h3")?.textContent),
+      text: c(card.querySelector("p")?.textContent),
+      icon: "",
+    })) : [],
+    form_badge: c(form?.querySelector(".badge-pill")?.textContent),
+    form_title: c(form?.querySelector("h2")?.textContent),
+    form_subtitle: c(form?.querySelector("h2 + p")?.textContent),
+    form_button: c(form?.querySelector("button[type=submit]")?.textContent),
+    faq_badge: c(headers[2]?.querySelector(".badge-pill")?.textContent),
+    faq_title: c(headers[2]?.querySelector(".section-title")?.textContent),
+    faqs: main ? Array.from(main.querySelectorAll(".accordion-item")).map(el => ({
+      question: c(el.querySelector(".accordion-header-title > span:last-child")?.textContent),
+      answer: c(el.querySelector(".accordion-inner")?.textContent),
+      icon: "",
+    })) : [],
+  };
+}
+
+/** Applies Financing page settings inside the existing financing.html markup; blank fields keep template content. */
+export function applyFinancing(html: string, f: WebsiteFinancing | null | undefined): string {
+  if (!f || typeof f !== "object" || typeof DOMParser === "undefined" || !Object.keys(f).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return html;
+  const out = () => "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  if (f.enabled === false) { main?.remove(); return out(); }
+  const ok = (s?: string) => (typeof s === "string" && s.trim() ? s.trim() : null);
+  const set = (el: Element | null | undefined, s?: string) => { const v = ok(s); if (el && v) el.textContent = v; };
+  const icon = (svg: Element | null | undefined, url?: string, size = 18) => {
+    const v = ok(url);
+    if (!svg || !v || !/^https?:\/\//i.test(v)) return;
+    const img = doc.createElement("img");
+    img.src = v; img.alt = ""; img.width = size; img.height = size; img.style.objectFit = "contain";
+    svg.replaceWith(img);
+  };
+  if (hero) {
+    set(hero.querySelector(".badge-pill"), f.hero_badge);
+    set(hero.querySelector("h1"), f.hero_title);
+    set(hero.querySelector("p"), f.hero_intro);
+    const btns = hero.querySelectorAll("a.btn");
+    set(btns[0], f.hero_button1);
+    set(btns[1], f.hero_button2);
+  }
+  if (!main) return out();
+  const headers = Array.from(main.querySelectorAll(".section-header"));
+  const setHeader = (h: Element | undefined, badge?: string, title?: string, subtitle?: string) => {
+    if (!h) return;
+    set(h.querySelector(".badge-pill"), badge);
+    set(h.querySelector(".section-title"), title);
+    set(h.querySelector(".section-subtitle"), subtitle);
+  };
+  setHeader(headers[0], f.plans_badge, f.plans_title, f.plans_subtitle);
+  const cards = main.querySelectorAll(".financing-card");
+  (f.plans || []).forEach((p, i) => {
+    const card = cards[i]; if (!card || !p) return;
+    set(card.querySelector(".badge-pill"), p.badge);
+    set(card.querySelector("h3"), p.title);
+    const apr = card.querySelector(".financing-apr");
+    if (apr && ok(p.apr)) {
+      const first = apr.childNodes[0];
+      if (first && first.nodeType === 3) first.textContent = ok(p.apr) + " ";
+      else apr.prepend(doc.createTextNode(ok(p.apr)! + " "));
+    }
+    set(apr?.querySelector("span"), p.apr_unit);
+    set(card.querySelector("p"), p.text);
+    const bullets = card.querySelectorAll(".bullet-item");
+    (p.bullets || []).forEach((b, j) => {
+      const li = bullets[j]; if (!li || !ok(b)) return;
+      const iconEl = li.querySelector(".bullet-icon");
+      li.innerHTML = "";
+      if (iconEl) li.appendChild(iconEl);
+      li.appendChild(doc.createTextNode(" " + ok(b)));
+    });
+    set(card.querySelector("a.btn"), p.button_text);
+  });
+  const calc = main.querySelector("#paymentCalculator");
+  if (calc) {
+    set(calc.querySelector(".badge-pill"), f.calc_badge);
+    set(calc.querySelector("h2"), f.calc_title);
+    set(calc.querySelector("h2 + p"), f.calc_subtitle);
+    const slider = calc.querySelector("#loanAmountSlider");
+    const num = (s?: string) => { const v = ok(s); return v && /^\d+$/.test(v) ? v : null; };
+    if (slider) {
+      const min = num(f.calc_min), max = num(f.calc_max), def = num(f.calc_default);
+      if (min) slider.setAttribute("min", min);
+      if (max) slider.setAttribute("max", max);
+      if (def) slider.setAttribute("value", def);
+      const display = calc.querySelector("#loanAmountDisplay");
+      if (display && def) display.textContent = "$" + Number(def).toLocaleString("en-US");
+      const rangeLabel = calc.querySelector(".calc-range-wrapper span[style*='text-muted'], .calc-range-wrapper span:last-child");
+      if (rangeLabel && (min || max)) {
+        const curMin = min || slider.getAttribute("min") || "";
+        const curMax = max || slider.getAttribute("max") || "";
+        rangeLabel.textContent = `Range: $${Number(curMin).toLocaleString("en-US")} - $${Number(curMax).toLocaleString("en-US")}`;
+      }
+    }
+    set(calc.querySelectorAll(".calc-result-val")[2], f.calc_rebate);
+  }
+  setHeader(headers[1], f.steps_badge, f.steps_title, f.steps_subtitle);
+  const stepCards = main.querySelectorAll(".step-card");
+  (f.steps || []).forEach((s, i) => {
+    const card = stepCards[i]; if (!card || !s) return;
+    set(card.querySelector("h3"), s.title);
+    set(card.querySelector("p"), s.text);
+    icon(card.querySelector(".step-number + div svg"), s.icon, 20);
+  });
+  const form = main.querySelector("#preQualForm");
+  if (form) {
+    set(form.querySelector(".badge-pill"), f.form_badge);
+    set(form.querySelector("h2"), f.form_title);
+    set(form.querySelector("h2 + p"), f.form_subtitle);
+    set(form.querySelector("button[type=submit]"), f.form_button);
+  }
+  setHeader(headers[2], f.faq_badge, f.faq_title, undefined);
+  const wanted = Array.isArray(f.faqs) ? f.faqs.filter(it => it && (String(it.question || "").trim() || String(it.answer || "").trim())) : null;
+  const wrapper = main.querySelector(".accordion-wrapper");
+  const found = Array.from(main.querySelectorAll(".accordion-item"));
+  const pattern = found[0] ? found[0].outerHTML : "";
+  if (wrapper && pattern && wanted) {
+    found.slice(wanted.length).forEach(el => el.remove());
+    while (wrapper.querySelectorAll(":scope > .accordion-item").length < wanted.length) wrapper.insertAdjacentHTML("beforeend", pattern);
+  }
+  const live = Array.from(main.querySelectorAll(".accordion-item"));
+  const rows: WebsiteFinancingFaq[] = wanted ?? Array.from({ length: live.length }, () => ({}));
+  rows.forEach((it, i) => {
+    const el = live[i]; if (!el) return;
+    if (wanted) {
+      el.classList.toggle("active", i === 0);
+      const header = el.querySelector(".accordion-header");
+      if (header) header.id = `finfaq${i + 1}`;
+    }
+    set(el.querySelector(".accordion-header-title > span:last-child"), it.question);
+    set(el.querySelector(".accordion-inner"), it.answer);
+    icon(el.querySelector(".icon-tag svg"), it.icon);
+  });
+  return out();
+}

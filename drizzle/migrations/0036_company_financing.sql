@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ADD COLUMN financing jsonb NOT NULL DEFAULT '{}'::jsonb;
