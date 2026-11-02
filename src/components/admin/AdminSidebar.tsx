@@ -317,14 +317,20 @@ const staticMenuItems: MenuItem[] = [
 const companySubmenus: MenuItem[] = [
   { title: "Website Preview", url: "/admin/page-builder/profile", icon: Eye },
   { title: "General", url: "/admin/page-builder/general", icon: Cog },
-  { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
-  { title: "Hero", url: "/admin/page-builder/hero", icon: Layout },
-  { title: "Trust Bar", url: "/admin/page-builder/trust-bar", icon: Layout },
-  { title: "Core Services", url: "/admin/page-builder/core-services", icon: Layout },
-  { title: "Service Directory", url: "/admin/page-builder/service-directory", icon: List },
-  { title: "Service Guides", url: "/admin/page-builder/service-guides", icon: List },
-  { title: "Flagship Product", url: "/admin/page-builder/flagship", icon: List },
-  { title: "FAQ", url: "/admin/page-builder/faq", icon: List },
+  {
+    title: "Home Page",
+    icon: Layout,
+    children: [
+      { title: "Top Header", url: "/admin/page-builder/top-header", icon: Layout },
+      { title: "Hero", url: "/admin/page-builder/hero", icon: Layout },
+      { title: "Trust Bar", url: "/admin/page-builder/trust-bar", icon: Layout },
+      { title: "Core Services", url: "/admin/page-builder/core-services", icon: Layout },
+      { title: "Service Directory", url: "/admin/page-builder/service-directory", icon: List },
+      { title: "Service Guides", url: "/admin/page-builder/service-guides", icon: List },
+      { title: "Flagship Product", url: "/admin/page-builder/flagship", icon: List },
+      { title: "FAQ", url: "/admin/page-builder/faq", icon: List },
+    ],
+  },
   { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
@@ -499,11 +505,14 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     setOpenSubGroups(prev => ({ ...prev, [title]: !prev[title] }));
   };
 
+  const containsPath = (items: MenuItem[] = []): boolean =>
+    items.some((i) => (i.url && currentPath.startsWith(i.url)) || containsPath(i.children));
+
   const renderMenuChildren = (children: MenuItem[], depth = 0) => {
     return children.map((child) => {
       const hasChildren = child.children && child.children.length > 0;
       const isSubGroupOpen = openSubGroups[child.title] ?? 
-        (hasChildren && child.children?.some(subChild => subChild.url && currentPath.startsWith(subChild.url)));
+        (hasChildren && containsPath(child.children));
 
       return (
         <div key={child.url || child.title} className="w-full min-w-0">
