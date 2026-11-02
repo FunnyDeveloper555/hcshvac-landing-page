@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,16 @@ type F = {
   pledges: Pledge[];
 };
 const str = (v: unknown, d = "") => (typeof v === "string" && v.trim() ? v : d);
+const sections: Record<string, { title: string; fields: (keyof F)[] }> = {
+  "page-heading": { title: "Page Heading", fields: ["enabled", "hero_badge", "hero_title", "hero_intro"] },
+  "our-story": { title: "Our Story", fields: ["story_badge", "story_title", "story_p1", "story_p2", "story_bullets"] },
+  "why-we-outperform": { title: "Why We Outperform", fields: ["card_title", "card_items"] },
+  "pledges-ethics": { title: "Pledges & Ethics", fields: ["pledges_badge", "pledges_title", "pledges_subtitle", "pledges"] },
+};
 
 export default function AboutUsSettings() {
-  const { companyId } = useParams<{ companyId: string }>();
+  const { companyId, section } = useParams<{ companyId: string; section: string }>();
+  const currentSection = section ? sections[section] : undefined;
   const client = useQueryClient();
   const [data, setData] = useState<F | null>(null);
   const [saving, setSaving] = useState(false);
@@ -37,7 +44,8 @@ export default function AboutUsSettings() {
   const company = useQuery({
     queryKey: ["company-about-us", companyId], enabled: Boolean(companyId), staleTime: 30_000,
     queryFn: async () => {
-      const { data: row, error } = await supabase.from("companies").select("*").eq("id", companyId!).single();
+      if (!companyId) throw new Error("Company required");
+      const { data: row, error } = await supabase.from("companies").select("*").eq("id", companyId).single();
       if (error) throw error;
       return row as { name: string; about_us?: unknown };
     },
@@ -78,7 +86,8 @@ export default function AboutUsSettings() {
         icon: str(pledges[i]?.icon),
       })),
     });
-  }, [company.data, template.data]);
+    setPick(null);
+  }, [company.data, template.data, section]);
 
   const setBullet = (i: number, p: Partial<Bullet>) => setData(d => d && ({ ...d, story_bullets: d.story_bullets.map((x, j) => j === i ? { ...x, ...p } : x) }));
   const setCard = (i: number, p: Partial<CardItem>) => setData(d => d && ({ ...d, card_items: d.card_items.map((x, j) => j === i ? { ...x, ...p } : x) }));
@@ -95,17 +104,23 @@ export default function AboutUsSettings() {
   };
 
   const save = async () => {
-    if (!companyId || !data) return;
+    if (!companyId || !data || !currentSection) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("companies").update({ about_us: JSON.parse(JSON.stringify(data)) } as never).eq("id", companyId).select("id").single();
+      const { data: latest, error: readError } = await supabase.from("companies").select("about_us").eq("id", companyId).single();
+      if (readError) throw readError;
+      const raw = latest.about_us;
+      const existing = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+      const changes = Object.fromEntries(currentSection.fields.map(field => [field, data[field]]));
+      const { error } = await supabase.from("companies").update({ about_us: JSON.parse(JSON.stringify({ ...existing, ...changes })) } as never).eq("id", companyId).select("id").single();
       if (error) throw error;
       await client.invalidateQueries({ queryKey: ["company-about-us", companyId] });
-      toast.success("About Us saved");
+      toast.success(`${currentSection.title} saved`);
     } catch { toast.error("Could not save About Us"); }
     finally { setSaving(false); }
   };
 
+  if (!currentSection && companyId) return <Navigate to={`/admin/page-builder/company/${companyId}/about-us/page-heading`} replace />;
   if (company.isError || template.isError) return <div className="space-y-4"><p className="text-destructive">Could not load this section.</p><Button variant="outline" onClick={() => { company.refetch(); template.refetch(); }}>Retry</Button></div>;
   if (!data) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
@@ -121,18 +136,18 @@ export default function AboutUsSettings() {
 
   return <div className="space-y-8">
     <header className="flex flex-wrap items-center justify-between gap-4">
-      <div><h1 className="text-2xl font-bold">About Us</h1><p className="text-muted-foreground">{company.data?.name}</p></div>
-      <div className="flex items-center gap-2"><Label htmlFor="about-enabled">Show on website</Label><Switch id="about-enabled" checked={data.enabled} onCheckedChange={enabled => setData(d => d && ({ ...d, enabled }))} /></div>
+      <div><p className="text-sm text-muted-foreground">About Us</p><h1 className="text-2xl font-bold">{currentSection?.title}</h1><p className="text-muted-foreground">{company.data?.name}</p></div>
+      {section === "page-heading" && <div className="flex items-center gap-2"><Label htmlFor="about-enabled">Show on website</Label><Switch id="about-enabled" checked={data.enabled} onCheckedChange={enabled => setData(d => d && ({ ...d, enabled }))} /></div>}
     </header>
 
-    <section className="space-y-4 rounded-md border p-5">
+    {section === "page-heading" && <section className="space-y-4">
       <h2 className="font-semibold">Page heading</h2>
       <div className="space-y-2"><Label htmlFor="about-hero-badge">Badge text</Label><Input id="about-hero-badge" value={data.hero_badge} onChange={e => setData(d => d && ({ ...d, hero_badge: e.target.value }))} /></div>
       <div className="space-y-2"><Label htmlFor="about-hero-title">Title</Label><Input id="about-hero-title" value={data.hero_title} onChange={e => setData(d => d && ({ ...d, hero_title: e.target.value }))} /></div>
       <div className="space-y-2"><Label htmlFor="about-hero-intro">Intro paragraph</Label><Textarea id="about-hero-intro" rows={3} value={data.hero_intro} onChange={e => setData(d => d && ({ ...d, hero_intro: e.target.value }))} /></div>
-    </section>
+    </section>}
 
-    <section className="space-y-4 rounded-md border p-5">
+    {section === "our-story" && <section className="space-y-4">
       <h2 className="font-semibold">Our story</h2>
       <div className="space-y-2"><Label htmlFor="about-story-badge">Badge text</Label><Input id="about-story-badge" value={data.story_badge} onChange={e => setData(d => d && ({ ...d, story_badge: e.target.value }))} /></div>
       <div className="space-y-2"><Label htmlFor="about-story-title">Title</Label><Input id="about-story-title" value={data.story_title} onChange={e => setData(d => d && ({ ...d, story_title: e.target.value }))} /></div>
@@ -147,9 +162,9 @@ export default function AboutUsSettings() {
           <Input aria-label={`Bullet ${i + 1} text`} placeholder="Text" value={b.text} onChange={e => setBullet(i, { text: e.target.value })} />
         </div>)}
       </div>
-    </section>
+    </section>}
 
-    <section className="space-y-4 rounded-md border p-5">
+    {section === "why-we-outperform" && <section className="space-y-4">
       <h2 className="font-semibold">Why we outperform card</h2>
       <div className="space-y-2"><Label htmlFor="about-card-title">Card title</Label><Input id="about-card-title" value={data.card_title} onChange={e => setData(d => d && ({ ...d, card_title: e.target.value }))} /></div>
       {data.card_items.map((it, i) => <div key={i} className="space-y-3 rounded-md border p-4">
@@ -158,9 +173,9 @@ export default function AboutUsSettings() {
         <Input aria-label={`Card item ${i + 1} title`} placeholder="Title" value={it.title} onChange={e => setCard(i, { title: e.target.value })} />
         <Textarea aria-label={`Card item ${i + 1} text`} rows={2} placeholder="Text" value={it.text} onChange={e => setCard(i, { text: e.target.value })} />
       </div>)}
-    </section>
+    </section>}
 
-    <section className="space-y-4 rounded-md border p-5">
+    {section === "pledges-ethics" && <section className="space-y-4">
       <h2 className="font-semibold">Pledges &amp; ethics</h2>
       <div className="space-y-2"><Label htmlFor="about-pledges-badge">Badge text</Label><Input id="about-pledges-badge" value={data.pledges_badge} onChange={e => setData(d => d && ({ ...d, pledges_badge: e.target.value }))} /></div>
       <div className="space-y-2"><Label htmlFor="about-pledges-title">Title</Label><Input id="about-pledges-title" value={data.pledges_title} onChange={e => setData(d => d && ({ ...d, pledges_title: e.target.value }))} /></div>
@@ -171,9 +186,9 @@ export default function AboutUsSettings() {
         <Input aria-label={`Pledge ${i + 1} title`} placeholder="Title" value={p.title} onChange={e => setPledge(i, { title: e.target.value })} />
         <Textarea aria-label={`Pledge ${i + 1} text`} rows={3} placeholder="Text" value={p.text} onChange={e => setPledge(i, { text: e.target.value })} />
       </div>)}
-    </section>
+    </section>}
 
     <FileManagerPicker open={pick !== null} onOpenChange={o => { if (!o) setPick(null); }} accept="image/*" title="Select Icon" onSelect={onPick} />
-    <div className="flex justify-end"><Button onClick={save} disabled={saving}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save About Us</Button></div>
+    <div className="flex justify-end"><Button onClick={save} disabled={saving}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save {currentSection?.title}</Button></div>
   </div>;
 }

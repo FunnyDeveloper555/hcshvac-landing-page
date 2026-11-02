@@ -331,7 +331,16 @@ const companySubmenus: MenuItem[] = [
       { title: "FAQ", url: "/admin/page-builder/faq", icon: List },
     ],
   },
-  { title: "About Us", url: "/admin/page-builder/about-us", icon: Layout },
+  {
+    title: "About Us",
+    icon: Layout,
+    children: [
+      { title: "Page Heading", url: "/admin/page-builder/about-us/page-heading", icon: Layout },
+      { title: "Our Story", url: "/admin/page-builder/about-us/our-story", icon: FileText },
+      { title: "Why We Outperform", url: "/admin/page-builder/about-us/why-we-outperform", icon: List },
+      { title: "Pledges & Ethics", url: "/admin/page-builder/about-us/pledges-ethics", icon: List },
+    ],
+  },
   { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
