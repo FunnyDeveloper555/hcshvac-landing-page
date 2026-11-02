@@ -341,6 +341,18 @@ const companySubmenus: MenuItem[] = [
       { title: "Pledges & Ethics", url: "/admin/page-builder/about-us/pledges-ethics", icon: List },
     ],
   },
+  {
+    title: "Financing",
+    icon: Layout,
+    children: [
+      { title: "Page Heading", url: "/admin/page-builder/financing/page-heading", icon: Layout },
+      { title: "Payment Plans", url: "/admin/page-builder/financing/payment-plans", icon: List },
+      { title: "Payment Calculator", url: "/admin/page-builder/financing/payment-calculator", icon: List },
+      { title: "How It Works", url: "/admin/page-builder/financing/how-it-works", icon: List },
+      { title: "Pre-Qualify Form", url: "/admin/page-builder/financing/pre-qualify-form", icon: FileText },
+      { title: "Financing FAQs", url: "/admin/page-builder/financing/financing-faqs", icon: List },
+    ],
+  },
   { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },
