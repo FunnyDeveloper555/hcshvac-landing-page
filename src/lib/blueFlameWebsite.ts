@@ -637,3 +637,124 @@ export function applyFooter(html: string, s: WebsiteFooter | null | undefined): 
   set(bottom[0], s.copyright); set(bottom[1], s.reference);
   return out();
 }
+
+export interface WebsiteAboutBullet { label?: string; text?: string; icon?: string }
+export interface WebsiteAboutCardItem { title?: string; text?: string; icon?: string }
+export interface WebsiteAboutPledge { title?: string; text?: string; icon?: string }
+export interface WebsiteAboutUs {
+  enabled?: boolean;
+  hero_badge?: string; hero_title?: string; hero_intro?: string;
+  story_badge?: string; story_title?: string; story_p1?: string; story_p2?: string;
+  story_bullets?: WebsiteAboutBullet[];
+  card_title?: string;
+  card_items?: WebsiteAboutCardItem[];
+  pledges_badge?: string; pledges_title?: string; pledges_subtitle?: string;
+  pledges?: WebsiteAboutPledge[];
+}
+
+/** Reads the About page (about.html) hero, story and pledges sections from the template for editor defaults. */
+export function readAboutUs(html: string): WebsiteAboutUs | null {
+  if (typeof DOMParser === "undefined") return null;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return null;
+  const c = guideClean;
+  const story = main?.querySelector(".grid-2 > div:first-child");
+  const card = main?.querySelector(".card-glowing-salmon");
+  const paras = story ? Array.from(story.querySelectorAll(":scope > p")) : [];
+  return {
+    enabled: true,
+    hero_badge: c(hero?.querySelector(".badge-pill")?.textContent),
+    hero_title: c(hero?.querySelector("h1")?.textContent),
+    hero_intro: c(hero?.querySelector("p")?.textContent),
+    story_badge: c(story?.querySelector(".badge-pill")?.textContent),
+    story_title: c(story?.querySelector("h2")?.textContent),
+    story_p1: c(paras[0]?.textContent),
+    story_p2: c(paras[1]?.textContent),
+    story_bullets: story ? Array.from(story.querySelectorAll(".bullet-item")).map(li => {
+      const label = c(li.querySelector("strong")?.textContent).replace(/:$/, "");
+      const full = c(li.textContent);
+      return { label, text: c(full.slice(full.indexOf(":") + 1)), icon: "" };
+    }) : [],
+    card_title: c(card?.querySelector("h3")?.textContent),
+    card_items: card ? Array.from(card.querySelectorAll("h4")).map(h => ({
+      title: c(h.textContent),
+      text: c(h.parentElement?.querySelector("p")?.textContent),
+      icon: "",
+    })) : [],
+    pledges_badge: c(main?.querySelector(".section-header .badge-pill")?.textContent),
+    pledges_title: c(main?.querySelector(".section-header .section-title")?.textContent),
+    pledges_subtitle: c(main?.querySelector(".section-header .section-subtitle")?.textContent),
+    pledges: main ? Array.from(main.querySelectorAll(".accordion-item")).map(el => ({
+      title: c(el.querySelector(".accordion-header-title > span:last-child")?.textContent),
+      text: c(el.querySelector(".accordion-inner")?.textContent),
+      icon: "",
+    })) : [],
+  };
+}
+
+/** Applies About page settings inside the existing about.html markup; blank fields keep template content. */
+export function applyAboutUs(html: string, a: WebsiteAboutUs | null | undefined): string {
+  if (!a || typeof a !== "object" || typeof DOMParser === "undefined" || !Object.keys(a).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return html;
+  const out = () => "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  if (a.enabled === false) { main?.remove(); return out(); }
+  const ok = (s?: string) => (typeof s === "string" && s.trim() ? s.trim() : null);
+  const set = (el: Element | null | undefined, s?: string) => { const v = ok(s); if (el && v) el.textContent = v; };
+  const icon = (svg: Element | null | undefined, url?: string, size = 18) => {
+    const v = ok(url);
+    if (!svg || !v || !/^https?:\/\//i.test(v)) return;
+    const img = doc.createElement("img");
+    img.src = v; img.alt = ""; img.width = size; img.height = size; img.style.objectFit = "contain";
+    svg.replaceWith(img);
+  };
+  if (hero) {
+    set(hero.querySelector(".badge-pill"), a.hero_badge);
+    set(hero.querySelector("h1"), a.hero_title);
+    set(hero.querySelector("p"), a.hero_intro);
+  }
+  if (main) {
+    const story = main.querySelector(".grid-2 > div:first-child");
+    if (story) {
+      set(story.querySelector(".badge-pill"), a.story_badge);
+      set(story.querySelector("h2"), a.story_title);
+      const paras = story.querySelectorAll(":scope > p");
+      set(paras[0], a.story_p1);
+      set(paras[1], a.story_p2);
+      const items = story.querySelectorAll(".bullet-item");
+      (a.story_bullets || []).forEach((b, i) => {
+        const li = items[i]; if (!li || !b) return;
+        const strong = li.querySelector("strong");
+        if (strong && ok(b.label)) strong.textContent = ok(b.label)!.replace(/:?$/, ":");
+        if (strong && ok(b.text)) { while (strong.nextSibling) strong.nextSibling.remove(); strong.after(doc.createTextNode(" " + ok(b.text))); }
+        icon(li.querySelector(".bullet-icon svg"), b.icon);
+      });
+    }
+    const card = main.querySelector(".card-glowing-salmon");
+    if (card) {
+      set(card.querySelector("h3"), a.card_title);
+      const heads = card.querySelectorAll("h4");
+      (a.card_items || []).forEach((it, i) => {
+        const h = heads[i]; if (!h || !it) return;
+        set(h, it.title);
+        set(h.parentElement?.querySelector("p"), it.text);
+        icon(h.parentElement?.parentElement?.querySelector(".trust-item-icon svg"), it.icon, 20);
+      });
+    }
+    set(main.querySelector(".section-header .badge-pill"), a.pledges_badge);
+    set(main.querySelector(".section-header .section-title"), a.pledges_title);
+    set(main.querySelector(".section-header .section-subtitle"), a.pledges_subtitle);
+    const acc = main.querySelectorAll(".accordion-item");
+    (a.pledges || []).forEach((p, i) => {
+      const el = acc[i]; if (!el || !p) return;
+      set(el.querySelector(".accordion-header-title > span:last-child"), p.title);
+      set(el.querySelector(".accordion-inner"), p.text);
+      icon(el.querySelector(".icon-tag svg"), p.icon);
+    });
+  }
+  return out();
+}

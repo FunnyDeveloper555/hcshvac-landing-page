@@ -1368,6 +1368,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          about_us: Json
           affiliations: Json | null
           banner_image_ids: string[]
           boilers_install: Json
@@ -1457,6 +1458,7 @@ export type Database = {
           website_title: string | null
         }
         Insert: {
+          about_us?: Json
           affiliations?: Json | null
           banner_image_ids?: string[]
           boilers_install?: Json
@@ -1546,6 +1548,7 @@ export type Database = {
           website_title?: string | null
         }
         Update: {
+          about_us?: Json
           affiliations?: Json | null
           banner_image_ids?: string[]
           boilers_install?: Json

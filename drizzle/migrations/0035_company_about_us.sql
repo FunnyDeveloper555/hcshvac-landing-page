@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS about_us jsonb NOT NULL DEFAULT '{}'::jsonb;
