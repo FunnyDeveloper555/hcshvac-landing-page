@@ -260,6 +260,13 @@
       "when": 1793588713618,
       "tag": "0036_company_financing",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793589712176,
+      "tag": "0037_company_air_quality",
+      "breakpoints": true
     }
   ]
 }

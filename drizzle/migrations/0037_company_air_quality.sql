@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS air_quality jsonb NOT NULL DEFAULT '{}'::jsonb;
