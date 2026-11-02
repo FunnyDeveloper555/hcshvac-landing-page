@@ -86,7 +86,7 @@ function timeToMinutes(t: string): number {
   const first = raw.split(/\s+(?:to|-|–|—|through|until)\s+/i)[0]?.trim() || raw;
   if (/noon/i.test(first)) return 12 * 60;
   if (/midnight/i.test(first)) return 0;
-  const m = first.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?/);
+  const m = first.match(/^(\d{1,2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]?\.?)?/);
   if (!m) return 9 * 60;
   let h = parseInt(m[1], 10);
   const min = m[2] ? parseInt(m[2], 10) : 0;

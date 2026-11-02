@@ -8,7 +8,7 @@ function parseClock(t: string): { h: number; m: number } | null {
   const s = (t || "").trim();
   if (/noon/i.test(s)) return { h: 12, m: 0 };
   if (/midnight/i.test(s)) return { h: 0, m: 0 };
-  const m = s.match(/^(\d{1,2})(?::(\d{2}))?\s*([AaPp])\.?[Mm]?\.?/);
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]?\.?)?/);
   if (!m) return null;
   let h = parseInt(m[1], 10);
   const min = m[2] ? parseInt(m[2], 10) : 0;

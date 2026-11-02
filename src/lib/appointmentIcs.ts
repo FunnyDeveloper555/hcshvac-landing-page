@@ -32,18 +32,25 @@ function toIcsUtc(d: Date): string {
   );
 }
 
-// Parse "10:00 AM", "10:00", "13:30" -> {h,m}
-function parseTime(t: string): { h: number; m: number } | null {
-  if (!t) return null;
-  const m = t.trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+// Parse "10:00 AM", "10:00", "13:30", "6 PM", "Noon" and ranges like "6 PM to 8 PM"
+function parseClock(t: string): { h: number; m: number } | null {
+  const s = (t || "").trim();
+  if (/noon/i.test(s)) return { h: 12, m: 0 };
+  if (/midnight/i.test(s)) return { h: 0, m: 0 };
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?(?:\s*([AaPp])\.?[Mm]?\.?)?/);
   if (!m) return null;
   let h = parseInt(m[1], 10);
-  const min = parseInt(m[2], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
   const suf = m[3]?.toUpperCase();
-  if (suf === "PM" && h < 12) h += 12;
-  if (suf === "AM" && h === 12) h = 0;
+  if (suf === "P" && h < 12) h += 12;
+  if (suf === "A" && h === 12) h = 0;
   if (h > 23 || min > 59) return null;
   return { h, m: min };
+}
+
+export function parseTimeRange(t: string): { start: { h: number; m: number } | null; end: { h: number; m: number } | null } {
+  const parts = (t || "").split(/\s*(?:\bto\b|-|–|—|\bthrough\b|\buntil\b)\s*/i);
+  return { start: parseClock(parts[0] || ""), end: parts[1] ? parseClock(parts[1]) : null };
 }
 
 function esc(s: string): string {
@@ -90,9 +97,14 @@ export function buildAppointmentIcs(input: BuildIcsInput): {
   const [yy, mm, dd] = input.scheduledDate.split("-").map((v) => parseInt(v, 10));
   if (!yy || !mm || !dd) return null;
 
-  const t = input.scheduledTime ? parseTime(input.scheduledTime) : null;
+  const r = input.scheduledTime ? parseTimeRange(input.scheduledTime) : { start: null, end: null };
+  const t = r.start;
   const start = new Date(yy, mm - 1, dd, t?.h ?? 9, t?.m ?? 0, 0);
-  const end = new Date(start.getTime() + (input.durationMinutes ?? 60) * 60000);
+  let end = new Date(start.getTime() + (input.durationMinutes ?? 60) * 60000);
+  if (r.end && !input.durationMinutes) {
+    const e = new Date(yy, mm - 1, dd, r.end.h, r.end.m, 0);
+    if (e > start) end = e;
+  }
   const dtstamp = toIcsUtc(new Date());
 
   const lines = [
