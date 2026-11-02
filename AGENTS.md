@@ -1,5 +1,7 @@
 # Architecture rules
 
+- About Us uses section-specific child routes backed by the existing company JSONB settings; each editor saves only its own fields merged with the latest settings to preserve other sections.
+
 - Legacy inbound Twilio chat media is recovered by the staff-authenticated chat-media function into private chat-files storage, with conversation access checks and signed URLs; never expose provider credentials or require public photos.
 
 - Blue Flame's uploaded website lives as original static documents in public/blueflame-site; on its exact hosts main.tsx writes the page in place at the clean URL (/, /about.html) before React loads, so its HTML/CSS/JS never mixes with the CRM or other companies.
