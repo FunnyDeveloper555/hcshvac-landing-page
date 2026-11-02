@@ -1401,6 +1401,7 @@ export type Database = {
           created_at: string
           display_order: number
           faq: Json
+          financing: Json
           financing_enabled: boolean | null
           financing_provider: string | null
           financing_url: string | null
@@ -1491,6 +1492,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           faq?: Json
+          financing?: Json
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
@@ -1581,6 +1583,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           faq?: Json
+          financing?: Json
           financing_enabled?: boolean | null
           financing_provider?: string | null
           financing_url?: string | null
