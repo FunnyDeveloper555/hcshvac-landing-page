@@ -353,6 +353,15 @@ const companySubmenus: MenuItem[] = [
       { title: "Financing FAQs", url: "/admin/page-builder/financing/financing-faqs", icon: List },
     ],
   },
+  {
+    title: "Air Quality",
+    icon: Layout,
+    children: [
+      { title: "Page Heading", url: "/admin/page-builder/air-quality/page-heading", icon: Layout },
+      { title: "IAQ Pillars", url: "/admin/page-builder/air-quality/iaq-pillars", icon: List },
+      { title: "Audit Offer", url: "/admin/page-builder/air-quality/audit-offer", icon: FileText },
+    ],
+  },
   { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },

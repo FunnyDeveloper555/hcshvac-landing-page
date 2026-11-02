@@ -958,3 +958,116 @@ export function applyFinancing(html: string, f: WebsiteFinancing | null | undefi
   });
   return out();
 }
+
+export interface WebsiteAirQualityPillar { icon?: string; pollutant?: string; title?: string; text?: string; bullets?: string[] }
+export interface WebsiteAirQuality {
+  enabled?: boolean;
+  hero_badge?: string; hero_title?: string; hero_intro?: string;
+  hero_button1?: string; hero_button2?: string;
+  pillars_badge?: string; pillars_title?: string; pillars_subtitle?: string;
+  pillars?: WebsiteAirQualityPillar[];
+  audit_badge?: string; audit_title?: string; audit_text?: string;
+  audit_bullets?: string[];
+  audit_form_title?: string; audit_form_button?: string;
+}
+
+/** Reads the Air Quality page (air-quality.html) sections from the template for editor defaults. */
+export function readAirQuality(html: string): WebsiteAirQuality | null {
+  if (typeof DOMParser === "undefined") return null;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return null;
+  const c = guideClean;
+  const heroBtns = hero ? Array.from(hero.querySelectorAll("a.btn")) : [];
+  const audit = main?.querySelector("#auditOffer");
+  return {
+    enabled: true,
+    hero_badge: c(hero?.querySelector(".badge-pill")?.textContent),
+    hero_title: c(hero?.querySelector("h1")?.textContent),
+    hero_intro: c(hero?.querySelector("p")?.textContent),
+    hero_button1: c(heroBtns[0]?.textContent),
+    hero_button2: c(heroBtns[1]?.textContent),
+    pillars_badge: c(main?.querySelector(".section-header .badge-pill")?.textContent),
+    pillars_title: c(main?.querySelector(".section-header .section-title")?.textContent),
+    pillars_subtitle: c(main?.querySelector(".section-header .section-subtitle")?.textContent),
+    pillars: main ? Array.from(main.querySelectorAll(".iaq-card")).map(card => ({
+      icon: "",
+      pollutant: c(card.querySelector(".iaq-badge-pollutant")?.textContent),
+      title: c(card.querySelector("h3")?.textContent),
+      text: c(card.querySelector("p")?.textContent),
+      bullets: Array.from(card.querySelectorAll(".bullet-item")).map(li => c(li.textContent)),
+    })) : [],
+    audit_badge: c(audit?.querySelector(".badge-pill")?.textContent),
+    audit_title: c(audit?.querySelector("h2")?.textContent),
+    audit_text: c(audit?.querySelector("h2 + p")?.textContent),
+    audit_bullets: audit ? Array.from(audit.querySelectorAll(".grid-2 > div:first-child .bullet-item")).map(li => c(li.textContent)) : [],
+    audit_form_title: c(audit?.querySelector("form")?.parentElement?.querySelector("h3")?.textContent),
+    audit_form_button: c(audit?.querySelector("button[type=submit]")?.textContent),
+  };
+}
+
+/** Applies Air Quality page settings inside the existing air-quality.html markup; blank fields keep template content. */
+export function applyAirQuality(html: string, a: WebsiteAirQuality | null | undefined): string {
+  if (!a || typeof a !== "object" || typeof DOMParser === "undefined" || !Object.keys(a).length) return html;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const hero = doc.querySelector("section.page-hero");
+  const main = doc.querySelector("main.section-navy");
+  if (!hero && !main) return html;
+  const out = () => "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+  if (a.enabled === false) { main?.remove(); return out(); }
+  const ok = (s?: string) => (typeof s === "string" && s.trim() ? s.trim() : null);
+  const set = (el: Element | null | undefined, s?: string) => { const v = ok(s); if (el && v) el.textContent = v; };
+  const icon = (svg: Element | null | undefined, url?: string, size = 20) => {
+    const v = ok(url);
+    if (!svg || !v || !/^https?:\/\//i.test(v)) return;
+    const img = doc.createElement("img");
+    img.src = v; img.alt = ""; img.width = size; img.height = size; img.style.objectFit = "contain";
+    svg.replaceWith(img);
+  };
+  if (hero) {
+    set(hero.querySelector(".badge-pill"), a.hero_badge);
+    set(hero.querySelector("h1"), a.hero_title);
+    set(hero.querySelector("p"), a.hero_intro);
+    const btns = hero.querySelectorAll("a.btn");
+    set(btns[0], a.hero_button1);
+    set(btns[1], a.hero_button2);
+  }
+  if (!main) return out();
+  set(main.querySelector(".section-header .badge-pill"), a.pillars_badge);
+  set(main.querySelector(".section-header .section-title"), a.pillars_title);
+  set(main.querySelector(".section-header .section-subtitle"), a.pillars_subtitle);
+  const cards = main.querySelectorAll(".iaq-card");
+  (a.pillars || []).forEach((p, i) => {
+    const card = cards[i]; if (!card || !p) return;
+    set(card.querySelector(".iaq-badge-pollutant"), p.pollutant);
+    set(card.querySelector("h3"), p.title);
+    set(card.querySelector("p"), p.text);
+    const bullets = card.querySelectorAll(".bullet-item");
+    (p.bullets || []).forEach((b, j) => {
+      const li = bullets[j]; if (!li || !ok(b)) return;
+      const iconEl = li.querySelector(".bullet-icon");
+      li.innerHTML = "";
+      if (iconEl) li.appendChild(iconEl);
+      li.appendChild(doc.createTextNode(" " + ok(b)));
+    });
+    icon(card.querySelector(":scope > div svg"), p.icon, 20);
+  });
+  const audit = main.querySelector("#auditOffer");
+  if (audit) {
+    set(audit.querySelector(".badge-pill"), a.audit_badge);
+    set(audit.querySelector("h2"), a.audit_title);
+    set(audit.querySelector("h2 + p"), a.audit_text);
+    const bullets = audit.querySelectorAll(".grid-2 > div:first-child .bullet-item");
+    (a.audit_bullets || []).forEach((b, j) => {
+      const li = bullets[j]; if (!li || !ok(b)) return;
+      const iconEl = li.querySelector(".bullet-icon");
+      li.innerHTML = "";
+      if (iconEl) li.appendChild(iconEl);
+      li.appendChild(doc.createTextNode(" " + ok(b)));
+    });
+    set(audit.querySelector("form")?.parentElement?.querySelector("h3"), a.audit_form_title);
+    set(audit.querySelector("button[type=submit]"), a.audit_form_button);
+  }
+  return out();
+}

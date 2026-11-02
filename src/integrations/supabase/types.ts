@@ -1370,6 +1370,7 @@ export type Database = {
         Row: {
           about_us: Json
           affiliations: Json | null
+          air_quality: Json
           banner_image_ids: string[]
           boilers_install: Json
           boilers_repair: Json
@@ -1461,6 +1462,7 @@ export type Database = {
         Insert: {
           about_us?: Json
           affiliations?: Json | null
+          air_quality?: Json
           banner_image_ids?: string[]
           boilers_install?: Json
           boilers_repair?: Json
@@ -1552,6 +1554,7 @@ export type Database = {
         Update: {
           about_us?: Json
           affiliations?: Json | null
+          air_quality?: Json
           banner_image_ids?: string[]
           boilers_install?: Json
           boilers_repair?: Json
