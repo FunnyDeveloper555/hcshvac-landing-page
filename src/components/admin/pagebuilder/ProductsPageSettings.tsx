@@ -56,7 +56,7 @@ export default function ProductsPageSettings() {
                   </div>
                   {p.status === "discontinued_showing" && <Badge variant="secondary">Discontinued</Badge>}
                   <Button asChild size="sm" variant="ghost">
-                    <Link to={`/admin/products/add?edit=${p.id}`}><ExternalLink className="h-4 w-4" /></Link>
+                    <Link to={`/admin/products/add?id=${p.id}`}><ExternalLink className="h-4 w-4" /></Link>
                   </Button>
                 </li>
               );
