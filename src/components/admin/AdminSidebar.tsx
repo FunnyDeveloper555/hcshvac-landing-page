@@ -362,6 +362,7 @@ const companySubmenus: MenuItem[] = [
       { title: "Audit Offer", url: "/admin/page-builder/air-quality/audit-offer", icon: FileText },
     ],
   },
+  { title: "Products", url: "/admin/page-builder/products-page", icon: List },
   { title: "Footer", url: "/admin/page-builder/footer", icon: List },
   { title: "Header Menus", url: "/admin/page-builder/header-menus", icon: FileText },
   { title: "HVAC", url: "/admin/page-builder/hvac", icon: Cog },

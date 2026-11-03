@@ -83,6 +83,7 @@ import FooterSettings from "@/components/admin/pagebuilder/FooterSettings";
 import AboutUsSettings from "@/components/admin/pagebuilder/AboutUsSettings";
 import FinancingSettings from "@/components/admin/pagebuilder/FinancingSettings";
 import AirQualitySettings from "@/components/admin/pagebuilder/AirQualitySettings";
+import ProductsPageSettings from "@/components/admin/pagebuilder/ProductsPageSettings";
 import BannerPreview from "@/components/admin/pagebuilder/BannerPreview";
 import CouponList from "@/components/admin/pagebuilder/CouponList";
 import PartnerListingsList from "@/components/admin/pagebuilder/PartnerListingsList";
@@ -268,6 +269,7 @@ const Admin = () => {
               <Route path="/page-builder/company/:companyId/financing/:section" element={<FinancingSettings />} />
               <Route path="/page-builder/company/:companyId/air-quality" element={<AirQualitySettings />} />
               <Route path="/page-builder/company/:companyId/air-quality/:section" element={<AirQualitySettings />} />
+              <Route path="/page-builder/company/:companyId/products-page" element={<ProductsPageSettings />} />
               <Route path="/page-builder/company/:companyId/footer" element={<FooterSettings />} />
               <Route path="/page-builder/company/:companyId/banner" element={<BannerPreview />} />
               {/* Consolidated tabbed routes */}
