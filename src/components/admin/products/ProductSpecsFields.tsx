@@ -14,9 +14,10 @@ interface Props {
   onSpecTypeChange: (v: string) => void;
   specs: Specs;
   onSpecsChange: (s: Specs) => void;
+  children?: React.ReactNode;
 }
 
-export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsChange }: Props) {
+export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsChange, children }: Props) {
   const cat = specCategory(specType);
   const { data: vendors = [] } = useQuery({
     queryKey: ["spec-vendors"],
@@ -83,8 +84,10 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
   return (
     <div className="border rounded-lg p-4 space-y-4">
       <h3 className="text-lg font-semibold">Product Filter Category</h3>
-      <div className="space-y-2 max-w-sm">
-        <Label>Product Type</Label>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {children}
+      <div className="space-y-2">
+        <Label>Product Type *</Label>
         <Select value={specType || "__none"} onValueChange={(x) => onSpecTypeChange(x === "__none" ? "" : x)}>
           <SelectTrigger><SelectValue placeholder="Select product type" /></SelectTrigger>
           <SelectContent>
@@ -92,6 +95,7 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
             {PRODUCT_SPEC_CATEGORIES.map((c) => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
+      </div>
       </div>
       {cat && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
