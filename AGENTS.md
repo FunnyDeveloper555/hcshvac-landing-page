@@ -1,4 +1,5 @@
 # Architecture rules
+- Bulk product parsing preserves original descriptions, extracts explicit labeled measurements, stores diameter and unmatched details in specifications (including Other products), and maps height/width/depth/weight to the existing page-level columns so review and saved products retain them.
 
 - About Us uses section-specific child routes backed by the existing company JSONB settings; each editor saves only its own fields merged with the latest settings to preserve other sections.
 
