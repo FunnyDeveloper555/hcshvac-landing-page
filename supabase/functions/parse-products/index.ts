@@ -35,7 +35,7 @@ ${catText}`;
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "openai/gpt-6-astra",
         messages: [{ role: "system", content: sys }, { role: "user", content: `Sheet: ${sheet || "(none)"}\nRows (JSON arrays):\n${rows.map((x: unknown) => JSON.stringify(x)).join("\n")}` }],
         tools: [{ type: "function", function: { name: "products", description: "Parsed products", parameters: {
           type: "object", properties: { products: { type: "array", items: { type: "object", properties: {
