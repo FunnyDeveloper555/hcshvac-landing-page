@@ -1,4 +1,4 @@
-import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive, Globe, FolderClosed, UserPlus, Bell, Phone, History as HistoryIcon } from "lucide-react";
+import { LayoutDashboard, Image, Briefcase, Building2, Store, Users, ChevronDown, Plus, List, MapPin, Search, XCircle, CheckCircle, Wrench, Package, Droplet, Map, ImageIcon, Layout, MapPinned, Database, CalendarDays, Calendar, FileText, UserCheck, MessageSquare, Send, Building, FileCheck, Car, MapPinned as GpsIcon, Camera, ClipboardList, Archive, BookOpen, Stethoscope, FileStack, Award, Warehouse, CalendarPlus, ServerCog, Cog, Layers, FileStack as PageStack, Loader2, MousePointer, Library, Settings, Shield, Eye, FolderOpen, HardDrive, Globe, FolderClosed, UserPlus, Bell, Phone, History as HistoryIcon, Upload } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -286,6 +286,7 @@ const staticMenuItems: MenuItem[] = [
     icon: Package,
     children: [
       { title: "Add", url: "/admin/products/add", icon: Plus },
+      { title: "Bulk Add", url: "/admin/products/bulk", icon: Upload },
       { title: "List", url: "/admin/products/list", icon: List },
       { title: "Categories", url: "/admin/products/categories", icon: FolderOpen },
     ],
