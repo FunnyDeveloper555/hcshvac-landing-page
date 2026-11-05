@@ -17,8 +17,14 @@ interface Props {
   children?: React.ReactNode;
 }
 
+// Height / width / depth / weight already have their own boxes in the page's
+// "Model & Dimensions" card, which writes the real product columns the website
+// reads, so the sheet's copies of those four are not rendered again here.
+const PAGE_LEVEL_SPEC_KEYS = new Set(["height", "width", "depth", "weight"]);
+
 export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsChange, children }: Props) {
   const cat = specCategory(specType);
+  const fields = (cat?.fields || []).filter((f) => !PAGE_LEVEL_SPEC_KEYS.has(f.key));
   const { data: vendors = [] } = useQuery({
     queryKey: ["spec-vendors"],
     staleTime: 30000,
