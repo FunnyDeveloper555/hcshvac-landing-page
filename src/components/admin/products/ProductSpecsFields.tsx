@@ -103,9 +103,9 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
         </Select>
       </div>
       </div>
-      {cat && (
+      {fields.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cat.fields.map((f) => (
+          {fields.map((f) => (
             <div key={f.key} className={`space-y-2 ${f.kind === "multi" || f.kind === "textarea" ? "md:col-span-2 lg:col-span-3" : ""}`}>
               <Label>{f.label}</Label>
               {render(f)}
