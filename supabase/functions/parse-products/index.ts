@@ -21,13 +21,14 @@ Deno.serve(async (req) => {
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) throw new Error("LOVABLE_API_KEY missing");
 
-    const catText = (categories || []).map((c: any) => `- ${c.name}: ${c.fields.map((f: any) => f.options ? `${f.key} (one of: ${f.options.slice(0, 25).join(" | ")})` : f.key).join(", ")}`).join("\n");
+    const catText = (categories || []).map((c: any) => `- ${c.name}: ${c.fields.map((f: any) => f.options ? `${f.key}${f.kind === "multi" ? " [multi]" : ""} (one of: ${f.options.join(" | ")})` : f.key).join(", ")}`).join("\n");
     const sys = `You convert supplier price-list rows (any layout) into HVAC products.
 Rows are in original order; rows without an item/model are section headers (e.g. "13 SEER A2L", "40 GALLON POWER VENTED", "RHEEM TANKLESS") that give context to the rows below them. Sheet/tab name often is the brand.
 Return one product per real item row only (skip headers, separators, totals, addresses).
 Decode abbreviations: T=tons, SEER2, R-454/R454B=refrigerant, AC=air conditioner (Condenser), HP=heat pump, ODU=outdoor unit, MBH=thousand BTU, NAT/NG=natural gas, LP=propane, PV=power vented, WHTR=water heater, TKLS=tankless, COND=condensing, CCY=supplier prefix (ignore).
 spec_type must be exactly one of: ${(categories || []).map((c: any) => c.name).join(", ")} or "" when none fits (e.g. mini-splits, tankless, parts).
-Only fill specs keys from that category's list; for option fields use an exact option text. Put the price number in price. Never invent values that aren't implied by the row.
+Product filter fields: for the chosen category, go through EVERY field key listed below and fill it whenever the row, its section header, the sheet name, the model code, or well-known HVAC facts about that product line imply a value. Examples: R-454B/R-32 => refrigerant + a2l_compliant "Yes"; NAT/NG => energy_supply_type "Gas"; "1.5T" => tonnage "1.5" and btu_s "18,000 (1.5 Ton)"; "13 SEER2" => seer_rating "13 Seer"; 40G => gallons size; MBH => BTU input; PV => power vented venting; residential split AC/HP => location_type ["Residential"], application_type "Outside Ground", voltage "208/230"; vendor_sku_item_number = the item code; our_cost = the price.
+For fields with options you MUST use the exact option text (fields marked multi take an array of option texts). Leave a field out only when nothing implies it. Put the price number in price.
 Categories and spec keys:
 ${catText}`;
 
