@@ -30,6 +30,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { ProductSpecsFields } from "@/components/admin/products/ProductSpecsFields";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import RelatedProductsTab from "@/components/admin/RelatedProductsTab";
 import ProductVariantsTab from "@/components/admin/ProductVariantsTab";
@@ -113,6 +114,8 @@ const ProductsAdd = () => {
   const [lengthDepth, setLengthDepth] = useState("");
   const [weight, setWeight] = useState("");
   const [stickCount, setStickCount] = useState("");
+  const [specType, setSpecType] = useState("");
+  const [specs, setSpecs] = useState<Record<string, any>>({});
   const [productStatus, setProductStatus] = useState<string>("active_not_showing");
   const [spotImages, setSpotImages] = useState<string[]>([]);
 
@@ -245,6 +248,8 @@ const ProductsAdd = () => {
       setSpotText(data.spot_text || "");
       setBrandId(data.brand_id || "");
       setBrandName((data as any).brand_name || "");
+      setSpecType((data as any).spec_type || "");
+      setSpecs(((data as any).specifications as Record<string, any>) || {});
       setPoise((data as any).poise || "");
       setAfue((data as any).afue || "");
       setWidthSize((data as any).width_size || "");
@@ -302,6 +307,8 @@ const ProductsAdd = () => {
         spot_images: spotImages,
         brand_id: brandId || null,
         brand_name: brandName || null,
+        spec_type: specType || null,
+        specifications: specType ? specs : {},
         poise: poise || null,
         afue: afue || null,
         width_size: widthSize || null,
@@ -585,6 +592,8 @@ const ProductsAdd = () => {
                 </div>
               </div>
             </div>
+
+            <ProductSpecsFields specType={specType} onSpecTypeChange={setSpecType} specs={specs} onSpecsChange={setSpecs} />
 
             {/* Generate Product Name */}
             <div className="border rounded-lg p-4 space-y-4">
