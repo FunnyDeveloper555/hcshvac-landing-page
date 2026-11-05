@@ -204,7 +204,7 @@ const ProductsAdd = () => {
       const cat = allCategories.find((c: any) => c.id === catId);
       return cat?.name || "";
     })();
-    const parts = [brandName, modelNumber, resComLabel, tonsBtu, refrigerantType, seerRating, equipType].filter(Boolean);
+    const parts = [brandName, modelNumber, resComLabel || (Array.isArray(specs.location_type) ? specs.location_type[0] : ""), tonsBtu || specs.btu_s || specs.input_btu_s || specs.tonnage || specs.gallons_capacity_size || "", refrigerantType || (Array.isArray(specs.refrigerant) ? specs.refrigerant[0] : specs.refrigerant_type || ""), seerRating || specs.seer_rating || "", equipType || specType].filter(Boolean);
     return parts.join(" ");
   };
 
@@ -288,7 +288,7 @@ const ProductsAdd = () => {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!companyId) { toast({ title: "Error", description: "Company is required", variant: "destructive" }); return; }
-    if (!categoryLevel0) { toast({ title: "Error", description: "Equipment type is required", variant: "destructive" }); return; }
+    if (!specType) { toast({ title: "Error", description: "Product type is required", variant: "destructive" }); return; }
     if (!productName) { toast({ title: "Error", description: "Product name is required", variant: "destructive" }); return; }
 
     const finalCategoryId = categoryLevel2 || categoryLevel1 || categoryLevel0;
@@ -301,7 +301,7 @@ const ProductsAdd = () => {
       const payload: Record<string, any> = {
         company_id: companyId || null,
         category_id: finalCategoryId || null,
-        category: catNames.join(" - "),
+        category: catNames.length ? catNames.join(" - ") : specType,
         product_name: productName,
         spot_text: spotText || null,
         spot_images: spotImages,
@@ -433,10 +433,7 @@ const ProductsAdd = () => {
               </Select>
             </div>
 
-            {/* HVAC Category */}
-            <div className="border rounded-lg p-4 space-y-4">
-              <h3 className="text-lg font-semibold">HVAC Category</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <ProductSpecsFields specType={specType} onSpecTypeChange={setSpecType} specs={specs} onSpecsChange={setSpecs}>
                 <div className="space-y-2">
                   <Label>Company *</Label>
                   <Select value={companyId} onValueChange={setCompanyId}>
@@ -449,49 +446,6 @@ const ProductsAdd = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Equipment Type *</Label>
-                  <Select value={categoryLevel0 || "placeholder"} onValueChange={(val) => { setCategoryLevel0(val === "placeholder" ? "" : val); setCategoryLevel1(""); setCategoryLevel2(""); }}>
-                    <SelectTrigger><SelectValue placeholder="Select equipment type" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select equipment type</SelectItem>
-                      {level0Categories.map((cat: any) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {level1Categories.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Select value={categoryLevel1 || "placeholder"} onValueChange={(val) => { setCategoryLevel1(val === "placeholder" ? "" : val); setCategoryLevel2(""); }}>
-                      <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="placeholder" disabled className="hidden">Select category</SelectItem>
-                        {level1Categories.map((cat: any) => (
-                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                {level2Categories.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Sub Category</Label>
-                    <Select value={categoryLevel2 || "placeholder"} onValueChange={(val) => setCategoryLevel2(val === "placeholder" ? "" : val)}>
-                      <SelectTrigger><SelectValue placeholder="Select sub category" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="placeholder" disabled className="hidden">Select sub category</SelectItem>
-                        {level2Categories.map((cat: any) => (
-                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
                   <Label>Brand</Label>
                   <Select value={brandName || "placeholder"} onValueChange={(val) => setBrandName(val === "placeholder" ? "" : val)}>
                     <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
@@ -503,97 +457,7 @@ const ProductsAdd = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>Tons / BTU</Label>
-                  <Select value={tonsBtu || "placeholder"} onValueChange={(val) => setTonsBtu(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select tons/BTU" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select tons/BTU</SelectItem>
-                      {TONS_BTU_OPTIONS.map((t) => (
-                        <SelectItem key={t} value={t}>{t}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Refrigerant Type</Label>
-                  <Select value={refrigerantType || "placeholder"} onValueChange={(val) => setRefrigerantType(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select refrigerant" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select refrigerant</SelectItem>
-                      {REFRIGERANT_OPTIONS.map((r) => (
-                        <SelectItem key={r} value={r}>{r}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Voltage</Label>
-                  <Select value={voltage || "placeholder"} onValueChange={(val) => setVoltage(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select voltage" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select voltage</SelectItem>
-                      {VOLTAGE_OPTIONS.map((v) => (
-                        <SelectItem key={v} value={v}>{v}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>SEER Rating</Label>
-                  <Select value={seerRating || "placeholder"} onValueChange={(val) => setSeerRating(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select SEER rating" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select SEER rating</SelectItem>
-                      {SEER_RATING_OPTIONS.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Poise</Label>
-                  <Select value={poise || "placeholder"} onValueChange={(val) => setPoise(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select poise" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select poise</SelectItem>
-                      {POISE_OPTIONS.map((p) => (
-                        <SelectItem key={p} value={p}>{p}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>AFUE</Label>
-                  <Select value={afue || "placeholder"} onValueChange={(val) => setAfue(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select AFUE" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select AFUE</SelectItem>
-                      {AFUE_OPTIONS.map((a) => (
-                        <SelectItem key={a} value={a}>{a}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Stages</Label>
-                  <Select value={stages || "placeholder"} onValueChange={(val) => setStages(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select stages" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select stages</SelectItem>
-                      {STAGES_OPTIONS.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            <ProductSpecsFields specType={specType} onSpecTypeChange={setSpecType} specs={specs} onSpecsChange={setSpecs} />
+            </ProductSpecsFields>
 
             {/* Generate Product Name */}
             <div className="border rounded-lg p-4 space-y-4">
@@ -602,7 +466,7 @@ const ProductsAdd = () => {
                 <div className="flex-1 space-y-2">
                   <Label>Product Name *</Label>
                   <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
-                  <p className="text-xs text-muted-foreground">Pattern: {"{Brand} {Model} {Res/Com} {Tons} {Refrigerant} {SEER} {Equipment Type}"}</p>
+                  <p className="text-xs text-muted-foreground">Pattern: {"{Brand} {Model} {Location} {Tons/BTU} {Refrigerant} {SEER} {Product Type}"}</p>
                 </div>
                 <Button type="button" variant="outline" onClick={handleAutoGenerate}>
                   Auto-Generate
