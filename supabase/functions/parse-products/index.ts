@@ -38,7 +38,7 @@ ${catText}`;
         model: "openai/gpt-6-astra",
         instructions: sys,
         input: [{ role: "user", content: `Sheet: ${sheet || "(none)"}\nRows (JSON arrays):\n${rows.map((x: unknown) => JSON.stringify(x)).join("\n")}` }],
-        tools: [{ type: "function", name: "products", description: "Parsed products", parameters: {
+        tools: [{ type: "function", name: "products", description: "Parsed products", strict: false, parameters: {
           type: "object", properties: { products: { type: "array", items: { type: "object", properties: {
             model_number: { type: "string" }, product_name: { type: "string", description: "Readable name, e.g. 'Rheem 1.5 Ton 13 SEER2 Air Conditioner R-454B'" },
             brand_name: { type: "string" }, spec_type: { type: "string" }, description: { type: "string" },
