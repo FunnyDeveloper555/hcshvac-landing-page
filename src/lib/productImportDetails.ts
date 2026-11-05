@@ -2,7 +2,8 @@ import { enrichDescription, type DescriptionProduct } from "../../supabase/funct
 import type { Json } from "@/integrations/supabase/types";
 
 function jsonValue(value: unknown): Json {
-  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (value === null) return null;
+  if (typeof value === "string" || typeof value === "boolean") return value;
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (Array.isArray(value)) return value.map(jsonValue);
   if (typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, v]) => [key, jsonValue(v)]));
