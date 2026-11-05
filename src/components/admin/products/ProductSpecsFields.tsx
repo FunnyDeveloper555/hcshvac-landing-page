@@ -22,8 +22,8 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
     queryKey: ["spec-vendors"],
     staleTime: 30000,
     queryFn: async () => {
-      const { data } = await supabase.from("vendors").select("id, name").order("name");
-      return (data || []) as { id: string; name: string }[];
+      const { data } = await supabase.from("vendors").select("id, vendor_name").order("vendor_name");
+      return (data || []) .map((v: any) => ({ id: v.id, name: v.vendor_name })) as { id: string; name: string }[];
     },
   });
   const set = (k: string, v: any) => onSpecsChange({ ...specs, [k]: v });
