@@ -286,6 +286,7 @@ const staticMenuItems: MenuItem[] = [
     icon: Package,
     children: [
       { title: "Add", url: "/admin/products/add", icon: Plus },
+      { title: "Bulk Add", url: "/admin/products/bulk", icon: Upload },
       { title: "List", url: "/admin/products/list", icon: List },
       { title: "Categories", url: "/admin/products/categories", icon: FolderOpen },
     ],
