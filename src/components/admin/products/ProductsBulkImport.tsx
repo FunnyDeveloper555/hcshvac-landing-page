@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { PRODUCT_SPEC_CATEGORIES, specCategory } from "@/lib/productSpecs";
 import { normalizeSpecs } from "@/lib/normalizeSpecs";
+import { productImportDetails } from "@/lib/productImportDetails";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Sparkles, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Parsed {
   include: boolean; model_number: string; product_name: string; brand_name: string; spec_type: string;
   description?: string; price?: number; tons_btu?: string; seer_rating?: string; refrigerant_type?: string;
+  height?: string; width_size?: string; length_depth?: string; weight?: number;
   voltage?: string; afue?: string; stages?: string; specs?: Record<string, unknown>; rawSpecs?: Record<string, unknown>; sheet: string; exists?: boolean;
 }
 
@@ -71,7 +74,7 @@ export default function ProductsBulkImport() {
             const cat = specCategory(p.spec_type);
             const raw = { ...(p.specs && typeof p.specs === "object" ? p.specs : {}), vendor_sku_item_number: p.model_number, ...(p.price != null ? { our_cost: String(p.price) } : {}) };
             let specs = {};
-            try { specs = cat ? normalizeSpecs(cat, raw) : {}; } catch { specs = {}; }
+            try { specs = { ...raw, ...(cat ? normalizeSpecs(cat, raw) : {}) }; } catch { specs = raw; }
             return { ...p, model_number: String(p.model_number || ""), product_name: String(p.product_name || ""), sheet: j.sheet, include: true, brand_name: p.brand_name || "", spec_type: cat ? cat.name : "", rawSpecs: raw, specs };
           }));
           lastErr = "";
@@ -111,11 +114,11 @@ export default function ProductsBulkImport() {
     setBusy("save");
     const rows = chosen.map((p) => {
       const cat = PRODUCT_SPEC_CATEGORIES.find((c) => c.name === p.spec_type);
-      const specs: Record<string, unknown> = {};
+      const specs: Record<string, unknown> = { ...(p.rawSpecs || {}), ...(p.specs || {}) };
       if (cat) Object.assign(specs, normalizeSpecs(cat, { ...(p.rawSpecs || {}), ...(p.specs || {}), vendor_sku_item_number: p.model_number, ...(p.price != null ? { our_cost: String(p.price) } : {}) }));
       return {
         company_id: companyId || null, product_name: p.product_name, model_number: p.model_number || null,
-        brand_name: p.brand_name || null, spec_type: p.spec_type || null, specifications: specs as any,
+        brand_name: p.brand_name || null, spec_type: p.spec_type || null, ...productImportDetails(p, specs),
         category: p.spec_type || null, spot_text: p.description || null,
         tons_btu: p.tons_btu || null, seer_rating: p.seer_rating || null, refrigerant_type: p.refrigerant_type || null,
         voltage: p.voltage || null, afue: p.afue || null, stages: p.stages || null,
@@ -189,7 +192,7 @@ export default function ProductsBulkImport() {
               <thead><tr className="border-b text-left text-muted-foreground">
                 <th className="p-2"><Checkbox checked={chosenCount === items.length} onCheckedChange={(v) => setItems((a) => a.map((p) => ({ ...p, include: !!v })))} /></th>
                 <th className="p-2">Model</th><th className="p-2">Product name</th><th className="p-2">Brand</th>
-                <th className="p-2">Product Type</th><th className="p-2">Price</th><th className="p-2">Product filter fields</th>
+                <th className="p-2">Product Type</th><th className="p-2">Price</th><th className="p-2">Description</th><th className="p-2">Product details</th>
               </tr></thead>
               <tbody>
                 {items.map((p, i) => (
@@ -200,7 +203,7 @@ export default function ProductsBulkImport() {
                     <td className="p-2 min-w-72"><Input value={p.product_name} onChange={(e) => upd(i, { product_name: e.target.value })} /></td>
                     <td className="p-2 min-w-32"><Input value={p.brand_name} onChange={(e) => upd(i, { brand_name: e.target.value })} /></td>
                     <td className="p-2 min-w-40">
-                      <Select value={p.spec_type || NONE} onValueChange={(v) => { const c = specCategory(v); upd(i, { spec_type: c ? c.name : "", specs: c ? normalizeSpecs(c, { ...(p.rawSpecs || {}), ...(p.specs || {}) }) : {} }); }}>
+                      <Select value={p.spec_type || NONE} onValueChange={(v) => { const c = specCategory(v); const raw = { ...(p.rawSpecs || {}), ...(p.specs || {}) }; upd(i, { spec_type: c ? c.name : "", specs: { ...raw, ...(c ? normalizeSpecs(c, raw) : {}) } }); }}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value={NONE}>Other</SelectItem>
@@ -209,11 +212,13 @@ export default function ProductsBulkImport() {
                       </Select>
                     </td>
                     <td className="p-2 min-w-24"><Input type="number" value={p.price ?? ""} onChange={(e) => upd(i, { price: e.target.value === "" ? undefined : Number(e.target.value) })} /></td>
+                    <td className="p-2 min-w-80"><Textarea aria-label={`Description for ${p.model_number}`} value={p.description || ""} onChange={(e) => upd(i, { description: e.target.value })} /></td>
                     <td className="p-2 min-w-80 text-xs">
-                      {(() => { const c = specCategory(p.spec_type); if (!c) return <span className="text-muted-foreground">No filter fields for Other</span>;
-                        const filled = c.fields.filter((f) => p.specs?.[f.key] != null);
-                        return <><p className="mb-1 font-medium">{filled.length} of {c.fields.length} filter fields filled</p>
-                          {filled.map((f) => { const v = p.specs![f.key]; return <div key={f.key}><span className="text-muted-foreground">{f.label}:</span> {Array.isArray(v) ? v.join(", ") : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v)}</div>; })}</>; })()}
+                      {(() => { const c = specCategory(p.spec_type); const fields = c?.fields || [];
+                        const details = productImportDetails(p, { ...(p.rawSpecs || {}), ...(p.specs || {}) });
+                        const filled = fields.filter((f) => details.specifications?.[f.key] != null);
+                        return <>{c && <p className="mb-1 font-medium">{filled.length} of {fields.length} filter fields filled</p>}
+                          {Object.entries(details.specifications || {}).filter(([, v]) => v != null && v !== "").map(([key, v]) => <div key={key}><span className="text-muted-foreground">{fields.find((f) => f.key === key)?.label || key.replace(/_/g, " ")}:</span> {Array.isArray(v) ? v.join(", ") : typeof v === "boolean" ? (v ? "Yes" : "No") : String(v)}</div>)}</>; })()}
                     </td>
                   </tr>
                 ))}
