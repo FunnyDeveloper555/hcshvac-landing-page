@@ -20,7 +20,7 @@ interface Parsed {
   voltage?: string; afue?: string; stages?: string; specs?: Record<string, unknown>; rawSpecs?: Record<string, unknown>; sheet: string; exists?: boolean;
 }
 
-const CHUNK = 50;
+const CHUNK = 25;
 const NONE = "__none";
 
 export default function ProductsBulkImport() {
@@ -62,15 +62,29 @@ export default function ProductsBulkImport() {
     let done = 0, failed = 0;
     const categories = PRODUCT_SPEC_CATEGORIES.map((c) => ({ name: c.name, fields: c.fields.filter((f) => f.kind !== "vendor") }));
     const run = async (j: (typeof jobs)[number]) => {
-      const { data, error } = await supabase.functions.invoke("parse-products", { body: { ...j, categories } });
-      if (error || data?.error) { failed++; toast({ title: `Couldn't read part of "${j.sheet}"`, description: data?.error || error?.message, variant: "destructive" }); }
-      else out.push(...(data.products || []).map((p: any) => {
-        const cat = specCategory(p.spec_type);
-        const raw = { ...(p.specs || {}), vendor_sku_item_number: p.model_number, ...(p.price != null ? { our_cost: String(p.price) } : {}) };
-        return { ...p, sheet: j.sheet, include: true, brand_name: p.brand_name || "", spec_type: cat ? cat.name : "", rawSpecs: raw, specs: cat ? normalizeSpecs(cat, raw) : {} };
-      }));
+      let lastErr = "";
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const { data, error } = await supabase.functions.invoke("parse-products", { body: { ...j, categories } });
+          if (error || data?.error) throw new Error(data?.error || error?.message || "Unknown error");
+          out.push(...((data?.products || []) as any[]).map((p: any) => {
+            const cat = specCategory(p.spec_type);
+            const raw = { ...(p.specs && typeof p.specs === "object" ? p.specs : {}), vendor_sku_item_number: p.model_number, ...(p.price != null ? { our_cost: String(p.price) } : {}) };
+            let specs = {};
+            try { specs = cat ? normalizeSpecs(cat, raw) : {}; } catch { specs = {}; }
+            return { ...p, model_number: String(p.model_number || ""), product_name: String(p.product_name || ""), sheet: j.sheet, include: true, brand_name: p.brand_name || "", spec_type: cat ? cat.name : "", rawSpecs: raw, specs };
+          }));
+          lastErr = "";
+          break;
+        } catch (e) {
+          lastErr = e instanceof Error ? e.message : String(e);
+          await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
+        }
+      }
+      if (lastErr) { failed++; toast({ title: `Couldn't read part of "${j.sheet}"`, description: lastErr, variant: "destructive" }); }
       setProgress(Math.round((++done / jobs.length) * 100));
     };
+    try {
     for (let i = 0; i < jobs.length; i += 4) await Promise.all(jobs.slice(i, i + 4).map(run));
     // flag models already in Products
     const models = [...new Set(out.map((p) => p.model_number).filter(Boolean))];
@@ -82,6 +96,11 @@ export default function ProductsBulkImport() {
     setItems(out.map((p) => ({ ...p, exists: existing.has(p.model_number), include: !existing.has(p.model_number) })));
     setBusy("");
     toast({ title: `Found ${out.length} products`, description: failed ? `${failed} part(s) failed — try again for those.` : "Review below, then import." });
+    } catch (e) {
+      setItems(out);
+      setBusy("");
+      toast({ title: "Reading stopped", description: `${e instanceof Error ? e.message : String(e)} — ${out.length} products kept.`, variant: "destructive" });
+    }
   };
 
   const upd = (i: number, patch: Partial<Parsed>) => setItems((a) => a.map((p, k) => (k === i ? { ...p, ...patch } : p)));
