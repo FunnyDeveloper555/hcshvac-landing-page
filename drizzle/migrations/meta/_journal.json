@@ -267,6 +267,13 @@
       "when": 1793589712176,
       "tag": "0037_company_air_quality",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793887421463,
+      "tag": "0038_product_specifications",
+      "breakpoints": true
     }
   ]
 }

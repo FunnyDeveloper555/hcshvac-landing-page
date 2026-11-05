@@ -5268,6 +5268,8 @@ export type Database = {
           refrigerant_type: string | null
           repair_tags: string[]
           seer_rating: string | null
+          spec_type: string | null
+          specifications: Json
           spot_images: Json | null
           spot_text: string | null
           stages: string | null
@@ -5325,6 +5327,8 @@ export type Database = {
           refrigerant_type?: string | null
           repair_tags?: string[]
           seer_rating?: string | null
+          spec_type?: string | null
+          specifications?: Json
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
@@ -5382,6 +5386,8 @@ export type Database = {
           refrigerant_type?: string | null
           repair_tags?: string[]
           seer_rating?: string | null
+          spec_type?: string | null
+          specifications?: Json
           spot_images?: Json | null
           spot_text?: string | null
           stages?: string | null
