@@ -1489,3 +1489,14 @@ export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
 ];
 
 export const specCategory = (name?: string | null) => PRODUCT_SPEC_CATEGORIES.find((c) => c.name === name);
+
+// Height / width / depth / weight already have their own boxes in the product
+// page's "Model & Dimensions" card, which writes the real product columns the
+// website reads, so a category sheet's copies of those four are never rendered
+// a second time.
+export const PAGE_LEVEL_SPEC_KEYS: readonly string[] = ["height", "width", "depth", "weight"];
+
+export function visibleSpecFields(cat: SpecCategory | undefined): SpecField[] {
+  if (!cat) return [];
+  return cat.fields.filter((f) => !PAGE_LEVEL_SPEC_KEYS.includes(f.key));
+}
