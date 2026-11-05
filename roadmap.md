@@ -1,4 +1,5 @@
 # CRM submission alerts
+- [ ] Extract description dimensions and useful specifications during bulk product parsing, and verify review/save mapping.
 - [x] Add Service Directory after Core Services with template-filled settings and website updates.
 - [x] Verify the signed-in Service Directory save and template rendering.
 - [x] Recover Sue’s protected chat photos and verify all six display in her conversation.
