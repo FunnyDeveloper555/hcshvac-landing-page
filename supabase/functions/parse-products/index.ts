@@ -31,13 +31,14 @@ Only fill specs keys from that category's list; for option fields use an exact o
 Categories and spec keys:
 ${catText}`;
 
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/responses", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
-        messages: [{ role: "system", content: sys }, { role: "user", content: `Sheet: ${sheet || "(none)"}\nRows (JSON arrays):\n${rows.map((x: unknown) => JSON.stringify(x)).join("\n")}` }],
-        tools: [{ type: "function", function: { name: "products", description: "Parsed products", parameters: {
+        instructions: sys,
+        input: [{ role: "user", content: `Sheet: ${sheet || "(none)"}\nRows (JSON arrays):\n${rows.map((x: unknown) => JSON.stringify(x)).join("\n")}` }],
+        tools: [{ type: "function", name: "products", description: "Parsed products", parameters: {
           type: "object", properties: { products: { type: "array", items: { type: "object", properties: {
             model_number: { type: "string" }, product_name: { type: "string", description: "Readable name, e.g. 'Rheem 1.5 Ton 13 SEER2 Air Conditioner R-454B'" },
             brand_name: { type: "string" }, spec_type: { type: "string" }, description: { type: "string" },
@@ -45,15 +46,15 @@ ${catText}`;
             voltage: { type: "string" }, afue: { type: "string" }, stages: { type: "string" },
             specs: { type: "object", additionalProperties: true },
           }, required: ["model_number", "product_name", "spec_type"] } } }, required: ["products"],
-        } } }],
-        tool_choice: { type: "function", function: { name: "products" } },
+        } }],
+        tool_choice: { type: "function", name: "products" },
       }),
     });
     if (r.status === 429) return json({ error: "AI is busy, try again shortly." }, 429);
     if (r.status === 402) return json({ error: "AI credits are used up. Add credits in workspace settings." }, 402);
     if (!r.ok) throw new Error(`AI error ${r.status}: ${await r.text()}`);
     const d = await r.json();
-    const args = d.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    const args = (d.output || []).find((o: any) => o.type === "function_call")?.arguments;
     const parsed = args ? JSON.parse(args) : { products: [] };
     return json({ products: parsed.products || [] });
   } catch (e) {
