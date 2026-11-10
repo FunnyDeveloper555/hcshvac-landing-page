@@ -16,6 +16,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
+import BulkPricingDialog from "./products/BulkPricingDialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calculator } from "lucide-react";
 
 type SortField = "product_name" | "model_number" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "tons_btu" | "seer_rating" | "status";
 type SortDirection = "asc" | "desc" | null;
@@ -33,6 +36,8 @@ const ProductsList = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pricingOpen, setPricingOpen] = useState(false);
 
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ["products-list"],
@@ -390,11 +395,34 @@ const ProductsList = () => {
             {products && processedProducts.length !== products.length && ` (${products.length} total)`}
           </div>
 
+          {/* Bulk actions */}
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 p-3">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={processedProducts.length > 0 && processedProducts.every((p: any) => selectedIds.has(p.id))}
+                onCheckedChange={(c) => setSelectedIds(c ? new Set(processedProducts.map((p: any) => p.id)) : new Set())}
+              />
+              Select all {processedProducts.length} filtered products
+            </label>
+            {selectedIds.size > 0 && <span className="text-sm text-muted-foreground">{selectedIds.size} selected</span>}
+            {selectedIds.size > 0 && <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>Clear selection</Button>}
+            <Button size="sm" className="ml-auto" disabled={selectedIds.size === 0} onClick={() => setPricingOpen(true)}>
+              <Calculator className="h-4 w-4 mr-2" /> Set Pricing Rule
+            </Button>
+          </div>
+          <BulkPricingDialog
+            open={pricingOpen}
+            onOpenChange={setPricingOpen}
+            products={(products || []).filter((p: any) => selectedIds.has(p.id))}
+            onApplied={() => { setSelectedIds(new Set()); refetch(); }}
+          />
+
           {/* Table */}
           <div className="border rounded-lg">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]" />
                   <TableHead className="w-[60px]">Image</TableHead>
                   <SortableHead field="product_name">Product Name</SortableHead>
                   <SortableHead field="model_number">Model #</SortableHead>
@@ -408,6 +436,7 @@ const ProductsList = () => {
                   <SortableHead field="refrigerant">Refrigerant</SortableHead>
                   <SortableHead field="tons_btu">Tons/BTU</SortableHead>
                   <SortableHead field="seer_rating">SEER</SortableHead>
+                  <TableHead className="text-right">Selling Price</TableHead>
                   <SortableHead field="status">Status</SortableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -415,6 +444,12 @@ const ProductsList = () => {
               <TableBody>
                 {paginatedProducts.map((product: any) => (
                   <TableRow key={product.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(product.id)}
+                        onCheckedChange={(c) => setSelectedIds((prev) => { const n = new Set(prev); c ? n.add(product.id) : n.delete(product.id); return n; })}
+                      />
+                    </TableCell>
                     <TableCell>
                       {(product.spot_images as string[] | null)?.length ? (
                         <img src={(product.spot_images as string[])[0]} alt={product.product_name} className="h-10 w-10 rounded object-cover" />
@@ -434,6 +469,7 @@ const ProductsList = () => {
                     <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
                     <TableCell>{(product as any).tons_btu || "—"}</TableCell>
                     <TableCell>{(product as any).seer_rating || "—"}</TableCell>
+                    <TableCell className="text-right">{product.selling_price != null ? `$${Number(product.selling_price).toFixed(2)}` : "—"}</TableCell>
                     <TableCell>
                       {(() => {
                         const s = (product as any).status;
@@ -452,7 +488,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={15} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>
