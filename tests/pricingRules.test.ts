@@ -20,3 +20,20 @@ describe("pricing rules", () => {
     expect(pickRule([{ name: "X", markup: 2, labor_cost: 0, round_to: 0, is_active: false }], "Furnace")).toBeUndefined();
   });
 });
+
+import { evaluateTerms } from "../src/lib/pricingRules";
+describe("custom formula lines", () => {
+  it("evaluates enabled lines top to bottom and skips unchecked ones", () => {
+    const terms = [
+      { enabled: true, title: "OC", value: 0, op: "*" as const, isCost: true },
+      { enabled: true, title: "MU", value: 2, op: "+" as const },
+      { enabled: false, title: "Skip", value: 999, op: "+" as const },
+      { enabled: true, title: "Labor", value: 300, op: "-" as const },
+      { enabled: true, title: "Discount", value: 50, op: "+" as const },
+    ];
+    expect(evaluateTerms(terms, 100)).toBe(450);
+  });
+  it("divides", () => {
+    expect(evaluateTerms([{ enabled: true, title: "OC", value: 0, op: "/", isCost: true }, { enabled: true, title: "Margin", value: 0.5, op: "+" }], 100)).toBe(200);
+  });
+});
