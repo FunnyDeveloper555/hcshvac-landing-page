@@ -281,6 +281,13 @@
       "when": 1794319214025,
       "tag": "0039_pricing_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794319524632,
+      "tag": "0040_pricing_rule_terms",
+      "breakpoints": true
     }
   ]
 }
