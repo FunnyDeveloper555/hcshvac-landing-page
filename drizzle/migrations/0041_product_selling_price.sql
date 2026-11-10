@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS selling_price numeric, ADD COLUMN IF NOT EXISTS pricing_rule_id uuid REFERENCES public.pricing_rules(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS price_updated_at timestamptz;

@@ -5307,6 +5307,8 @@ export type Database = {
           part_subcategory: string | null
           parts_warranty: string | null
           poise: string | null
+          price_updated_at: string | null
+          pricing_rule_id: string | null
           product_name: string
           promo_description: string | null
           promo_end_date: string | null
@@ -5316,6 +5318,7 @@ export type Database = {
           refrigerant_type: string | null
           repair_tags: string[]
           seer_rating: string | null
+          selling_price: number | null
           spec_type: string | null
           specifications: Json
           spot_images: Json | null
@@ -5366,6 +5369,8 @@ export type Database = {
           part_subcategory?: string | null
           parts_warranty?: string | null
           poise?: string | null
+          price_updated_at?: string | null
+          pricing_rule_id?: string | null
           product_name: string
           promo_description?: string | null
           promo_end_date?: string | null
@@ -5375,6 +5380,7 @@ export type Database = {
           refrigerant_type?: string | null
           repair_tags?: string[]
           seer_rating?: string | null
+          selling_price?: number | null
           spec_type?: string | null
           specifications?: Json
           spot_images?: Json | null
@@ -5425,6 +5431,8 @@ export type Database = {
           part_subcategory?: string | null
           parts_warranty?: string | null
           poise?: string | null
+          price_updated_at?: string | null
+          pricing_rule_id?: string | null
           product_name?: string
           promo_description?: string | null
           promo_end_date?: string | null
@@ -5434,6 +5442,7 @@ export type Database = {
           refrigerant_type?: string | null
           repair_tags?: string[]
           seer_rating?: string | null
+          selling_price?: number | null
           spec_type?: string | null
           specifications?: Json
           spot_images?: Json | null
@@ -5467,6 +5476,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_pricing_rule_id_fkey"
+            columns: ["pricing_rule_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rules"
             referencedColumns: ["id"]
           },
         ]

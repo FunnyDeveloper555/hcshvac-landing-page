@@ -288,6 +288,13 @@
       "when": 1794319524632,
       "tag": "0040_pricing_rule_terms",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794325960083,
+      "tag": "0041_product_selling_price",
+      "breakpoints": true
     }
   ]
 }
