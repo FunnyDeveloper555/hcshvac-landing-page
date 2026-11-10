@@ -71,3 +71,13 @@ export function pickRule(rules: PricingRule[], productType?: string | null, comp
   };
   return active.map((r) => ({ r, s: score(r) })).filter((x) => x.s >= 0).sort((a, b) => b.s - a.s)[0]?.r;
 }
+
+/** Our Cost for a product: specifications.our_cost first, then the imported invoice unit price. Null when unknown. */
+export function productOurCost(p: { specifications?: unknown; invoice_unit_price_text?: string | null }): number | null {
+  const specs = (p.specifications && typeof p.specifications === "object" ? p.specifications : {}) as Record<string, unknown>;
+  for (const raw of [specs.our_cost, p.invoice_unit_price_text]) {
+    const n = Number(String(raw ?? "").replace(/[$,\s]/g, ""));
+    if (raw != null && String(raw).trim() !== "" && Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
+}
