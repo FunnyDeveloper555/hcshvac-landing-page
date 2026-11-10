@@ -274,6 +274,13 @@
       "when": 1793887421463,
       "tag": "0038_product_specifications",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794319214025,
+      "tag": "0039_pricing_rules",
+      "breakpoints": true
     }
   ]
 }
