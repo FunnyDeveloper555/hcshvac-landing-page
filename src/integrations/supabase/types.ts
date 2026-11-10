@@ -1446,6 +1446,7 @@ export type Database = {
           service_areas: Json | null
           service_directory: Json
           service_guides: Json
+          services_page: Json | null
           services_provided: Json | null
           site_template: string | null
           slug: string | null
@@ -1538,6 +1539,7 @@ export type Database = {
           service_areas?: Json | null
           service_directory?: Json
           service_guides?: Json
+          services_page?: Json | null
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null
@@ -1630,6 +1632,7 @@ export type Database = {
           service_areas?: Json | null
           service_directory?: Json
           service_guides?: Json
+          services_page?: Json | null
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null
@@ -4715,6 +4718,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_rules: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          labor_cost: number
+          markup: number
+          name: string
+          notes: string | null
+          product_type: string | null
+          round_to: number
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          labor_cost?: number
+          markup?: number
+          name: string
+          notes?: string | null
+          product_type?: string | null
+          round_to?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          labor_cost?: number
+          markup?: number
+          name?: string
+          notes?: string | null
+          product_type?: string | null
+          round_to?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       product_activity_history: {
         Row: {

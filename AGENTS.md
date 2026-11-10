@@ -24,3 +24,4 @@
 - Blue Flame products.html/product-detail.html replace the bundled products-data.js with live "showing" Products module rows (src/lib/blueFlameProducts.ts maps them to the template HVAC_PRODUCTS shape), so the catalog is managed only in the Products module.
 - Add New Product keeps Product Type required and renders each type's sheet fields through visibleSpecFields() in src/lib/productSpecs.ts, which hides the height/width/depth/weight copies because the page's Model & Dimensions card owns those columns the website reads.
 - Blue Flame services.html editing is config-driven by SERVICES_SECTIONS in src/lib/blueFlameServicesPage.ts (stored in companies.services_page per section key), so the editor, defaults and website stay aligned from one definition.
+- Pricing rules live in public.pricing_rules; selling price math and rule matching (company+type > type > company > default) are only in src/lib/pricingRules.ts so every screen prices the same way.

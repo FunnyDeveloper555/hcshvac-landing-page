@@ -3,6 +3,7 @@ import ProductsList from "./ProductsList";
 import ProductsAdd from "./ProductsAdd";
 import ProductsBulkImport from "./products/ProductsBulkImport";
 import ProductCategoriesAdmin from "./ProductCategoriesAdmin";
+import PricingRulesAdmin from "./products/PricingRulesAdmin";
 
 const ProductsAdmin = () => {
   return (
@@ -12,6 +13,7 @@ const ProductsAdmin = () => {
         <Route path="/add" element={<ProductsAdd />} />
         <Route path="/bulk" element={<ProductsBulkImport />} />
         <Route path="/list" element={<ProductsList />} />
+        <Route path="/pricing-rules" element={<PricingRulesAdmin />} />
         <Route path="/categories" element={<ProductCategoriesAdmin />} />
       </Routes>
     </div>
