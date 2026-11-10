@@ -4731,6 +4731,7 @@ export type Database = {
           notes: string | null
           product_type: string | null
           round_to: number
+          terms: Json
           updated_at: string
         }
         Insert: {
@@ -4744,6 +4745,7 @@ export type Database = {
           notes?: string | null
           product_type?: string | null
           round_to?: number
+          terms?: Json
           updated_at?: string
         }
         Update: {
@@ -4757,6 +4759,7 @@ export type Database = {
           notes?: string | null
           product_type?: string | null
           round_to?: number
+          terms?: Json
           updated_at?: string
         }
         Relationships: []

@@ -1,0 +1,1 @@
+ALTER TABLE public.pricing_rules ADD COLUMN terms jsonb NOT NULL DEFAULT '[]'::jsonb;

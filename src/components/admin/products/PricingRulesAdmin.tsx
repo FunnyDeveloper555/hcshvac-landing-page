@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { PRODUCT_SPEC_CATEGORIES } from "@/lib/productSpecs";
-import { computeSellingPrice, pickRule, PricingRule } from "@/lib/pricingRules";
+import { computeSellingPrice, pickRule, PricingRule, FormulaTerm, Op, termsOf, defaultTerms, describeTerms } from "@/lib/pricingRules";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Row = PricingRule & { id: string; notes?: string | null };
 const ALL = "__all__";
-const blank: Row = { id: "", name: "", product_type: null, company_id: null, markup: 1.8, labor_cost: 0, round_to: 0, is_active: true, notes: "" };
+const blank: Row = { id: "", name: "", product_type: null, company_id: null, markup: 1.8, labor_cost: 0, round_to: 0, is_active: true, notes: "", terms: defaultTerms() };
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function PricingRulesAdmin() {
@@ -29,7 +30,7 @@ export default function PricingRulesAdmin() {
   const load = async () => {
     const { data, error } = await db.from("pricing_rules").select("*").order("created_at");
     if (error) toast.error(error.message);
-    setRules((data || []).map((r: any) => ({ ...r, markup: Number(r.markup), labor_cost: Number(r.labor_cost), round_to: Number(r.round_to) })));
+    setRules((data || []).map((r: any) => ({ ...r, markup: Number(r.markup), labor_cost: Number(r.labor_cost), round_to: Number(r.round_to), terms: termsOf({ ...r, markup: Number(r.markup), labor_cost: Number(r.labor_cost) }) })));
   };
   useEffect(() => {
     load();
@@ -39,10 +40,13 @@ export default function PricingRulesAdmin() {
   const save = async () => {
     if (!form) return;
     if (!form.name.trim()) return toast.error("Rule name is required");
-    if (!(form.markup > 0)) return toast.error("Markup must be greater than 0");
+    const terms = form.terms || defaultTerms();
+    if (!terms.some((t) => t.enabled)) return toast.error("Check at least one formula line");
+    const mu = terms.find((t) => t.title.trim().toUpperCase() === "MU");
+    const labor = terms.find((t) => t.title.trim().toLowerCase() === "labor");
     const payload = {
       name: form.name.trim(), product_type: form.product_type || null, company_id: form.company_id || null,
-      markup: form.markup, labor_cost: form.labor_cost || 0, round_to: form.round_to || 0,
+      markup: mu?.value ?? 1, labor_cost: labor?.value ?? 0, terms, round_to: form.round_to || 0,
       is_active: form.is_active !== false, notes: form.notes || null,
     };
     const { error } = form.id ? await db.from("pricing_rules").update(payload).eq("id", form.id) : await db.from("pricing_rules").insert(payload);
@@ -72,7 +76,7 @@ export default function PricingRulesAdmin() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Pricing Rules</h1>
-          <p className="text-sm text-muted-foreground">Selling Price = (Our Cost × Markup) + Labor. The most specific active rule wins.</p>
+          <p className="text-sm text-muted-foreground">Build each formula from lines like OC × MU + Labor. The most specific active rule wins.</p>
         </div>
         <Button onClick={() => setForm({ ...blank })}><Plus className="mr-1 h-4 w-4" />New Rule</Button>
       </div>
@@ -95,8 +99,26 @@ export default function PricingRulesAdmin() {
                 <SelectContent><SelectItem value={ALL}>All companies</SelectItem>
                   {companies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select></div>
-            <div className="space-y-1"><Label>Markup (MU) ×</Label><Input type="number" step="0.01" value={form.markup} onChange={(e) => setForm({ ...form, markup: Number(e.target.value) })} /></div>
-            <div className="space-y-1"><Label>Labor cost ($)</Label><Input type="number" step="1" value={form.labor_cost} onChange={(e) => setForm({ ...form, labor_cost: Number(e.target.value) })} /></div>
+            <div className="space-y-2 md:col-span-3">
+              <Label>Formula lines (checked lines are used top to bottom; the sign joins a line to the next one)</Label>
+              {(form.terms || []).map((t, i) => {
+                const set = (patch: Partial<FormulaTerm>) => setForm({ ...form, terms: (form.terms || []).map((x, j) => (j === i ? { ...x, ...patch } : x)) });
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <Checkbox checked={t.enabled} onCheckedChange={(v) => set({ enabled: !!v })} disabled={t.isCost} />
+                    <Input className="w-32" type="number" step="0.01" disabled={t.isCost} placeholder={t.isCost ? "Our Cost" : ""} value={t.isCost ? "" : t.value} onChange={(e) => set({ value: Number(e.target.value) })} />
+                    <Select value={t.op} onValueChange={(v) => set({ op: v as Op })}>
+                      <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+                      <SelectContent>{(["+", "-", "*", "/"] as Op[]).map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Input className="w-48" value={t.title} disabled={t.isCost} placeholder="Title" onChange={(e) => set({ title: e.target.value })} />
+                    {!t.isCost && <Button size="icon" variant="ghost" onClick={() => setForm({ ...form, terms: (form.terms || []).filter((_, j) => j !== i) })}><Trash2 className="h-4 w-4" /></Button>}
+                  </div>
+                );
+              })}
+              <Button size="sm" variant="outline" onClick={() => setForm({ ...form, terms: [...(form.terms || []), { enabled: true, title: "", value: 0, op: "+" }] })}><Plus className="mr-1 h-4 w-4" />Add line</Button>
+              <p className="text-xs text-muted-foreground">Formula: {describeTerms(form.terms || [])}</p>
+            </div>
             <div className="space-y-1"><Label>Round up to nearest ($, 0 = none)</Label><Input type="number" step="1" value={form.round_to} onChange={(e) => setForm({ ...form, round_to: Number(e.target.value) })} /></div>
             <div className="space-y-1 md:col-span-2"><Label>Notes</Label><Input value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
             <div className="flex items-center gap-2 pt-6"><Switch checked={form.is_active !== false} onCheckedChange={(v) => setForm({ ...form, is_active: v })} /><Label>Active</Label></div>
@@ -117,7 +139,7 @@ export default function PricingRulesAdmin() {
                   <TableCell className="font-medium">{r.name}</TableCell>
                   <TableCell>{r.product_type || "All"}</TableCell>
                   <TableCell>{companyName(r.company_id)}</TableCell>
-                  <TableCell>(OC × {r.markup}) + {money(r.labor_cost)}{r.round_to > 0 ? `, round up to $${r.round_to}` : ""}</TableCell>
+                  <TableCell>{describeTerms(termsOf(r))}{r.round_to > 0 ? `, round up to $${r.round_to}` : ""}</TableCell>
                   <TableCell>{r.is_active !== false ? "Active" : "Inactive"}</TableCell>
                   <TableCell className="flex gap-1">
                     <Button size="icon" variant="ghost" onClick={() => setForm({ ...r })}><Pencil className="h-4 w-4" /></Button>
