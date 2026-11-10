@@ -37,3 +37,10 @@ describe("custom formula lines", () => {
     expect(evaluateTerms([{ enabled: true, title: "OC", value: 0, op: "/", isCost: true }, { enabled: true, title: "Margin", value: 0.5, op: "+" }], 100)).toBe(200);
   });
 });
+
+import { productOurCost } from "../src/lib/pricingRules";
+describe("productOurCost", () => {
+  it("prefers specifications.our_cost", () => expect(productOurCost({ specifications: { our_cost: "$1,053.66" }, invoice_unit_price_text: "900" })).toBe(1053.66));
+  it("falls back to invoice unit price", () => expect(productOurCost({ specifications: {}, invoice_unit_price_text: "900" })).toBe(900));
+  it("returns null without a cost", () => expect(productOurCost({ specifications: {}, invoice_unit_price_text: "" })).toBeNull());
+});
