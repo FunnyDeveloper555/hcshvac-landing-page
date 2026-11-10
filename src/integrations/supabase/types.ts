@@ -1446,6 +1446,7 @@ export type Database = {
           service_areas: Json | null
           service_directory: Json
           service_guides: Json
+          services_page: Json | null
           services_provided: Json | null
           site_template: string | null
           slug: string | null
@@ -1538,6 +1539,7 @@ export type Database = {
           service_areas?: Json | null
           service_directory?: Json
           service_guides?: Json
+          services_page?: Json | null
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null
@@ -1630,6 +1632,7 @@ export type Database = {
           service_areas?: Json | null
           service_directory?: Json
           service_guides?: Json
+          services_page?: Json | null
           services_provided?: Json | null
           site_template?: string | null
           slug?: string | null
