@@ -289,6 +289,7 @@ const staticMenuItems: MenuItem[] = [
       { title: "Bulk Add", url: "/admin/products/bulk", icon: Upload },
       { title: "List", url: "/admin/products/list", icon: List },
       { title: "Categories", url: "/admin/products/categories", icon: FolderOpen },
+      { title: "Pricing Rules", url: "/admin/products/pricing-rules", icon: Calculator },
     ],
   },
   {
