@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { validateUSAddress } from "@/lib/addressValidator";
+import { CAUTION_OPTIONS, parseCautions } from "@/lib/customerCautions";
 import { MapPin, CheckCircle2 } from "lucide-react";
 
 const TITLE_OPTIONS = [
@@ -43,56 +44,11 @@ const STATUS_OPTIONS = [
   { value: "blacklisted", label: "BLACKLISTED: See NOTES" },
 ];
 
-const CAUTION_OPTIONS: { key: string; label: string; needsInput?: boolean; blink?: boolean; sub?: { key: string; label: string; blink?: boolean }[] }[] = [
-  { key: "call_before_arrival", label: "Call Before Arrival", blink: true },
-  { key: "text_before_arrival", label: "Text Before Arrival" },
-  { key: "has_dogs", label: "Has Dogs" },
-  { key: "has_cats", label: "Has Cats (Allergy Alert)", blink: true },
-  {
-    key: "handicap",
-    label: "Handicap",
-    sub: [
-      { key: "handicap_deaf", label: "Deaf" },
-      { key: "handicap_blind", label: "Blind" },
-      { key: "handicap_wheelchair", label: "Wheel Chair / Walker", blink: true },
-      { key: "handicap_bed_bound", label: "Bed Bound" },
-      { key: "handicap_other", label: "Other" },
-    ],
-  },
-  { key: "doorbell_broken", label: "Doorbell Does not Work" },
-  { key: "use_side_door", label: "Use Side Door" },
-  { key: "use_back_door", label: "Use Back Door" },
-  { key: "customer_opens_garage", label: "Customer Will Open Garage" },
-  { key: "buzz_box", label: "Buzz This on Box", needsInput: true },
-  { key: "buzzer_nonfunctional", label: "Buzzer System is NON FUNCTIONAL" },
-  { key: "see_neighbor", label: "See Neighbor (Name / Address / Phone)", needsInput: true, blink: true },
-  { key: "other", label: "Other", needsInput: true },
-];
-
 const formatPhone = (input: string): string => {
   const digits = (input || "").replace(/\D/g, "").slice(0, 10);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
   return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-};
-
-type CautionsState = {
-  selected: Record<string, boolean>;
-  inputs: Record<string, string>;
-};
-
-const parseCautions = (raw: string): CautionsState => {
-  if (!raw) return { selected: {}, inputs: {} };
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && parsed.selected) {
-      return { selected: parsed.selected || {}, inputs: parsed.inputs || {} };
-    }
-  } catch {
-    // legacy free-text — keep in "other" input
-    return { selected: { other: true }, inputs: { other: raw } };
-  }
-  return { selected: {}, inputs: {} };
 };
 
 const CustomersAdd = () => {

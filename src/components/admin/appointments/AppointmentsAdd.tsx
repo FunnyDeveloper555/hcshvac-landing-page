@@ -18,6 +18,7 @@ import AppointmentCartPanel from "./AppointmentCartPanel";
 import { VISIT_TYPES } from "@/components/admin/DiagnosticFeesAdd";
 import { ourServiceVisitOptions, APPOINTMENT_TYPE_PROPERTY, parseOurServices } from "@/lib/ourServices";
 import { timeSlotsWith } from "@/lib/timeSlots";
+import { formatCautions } from "@/lib/customerCautions";
 
 interface CustomerRecord {
   id: string;
@@ -935,7 +936,7 @@ export default function AppointmentsAdd() {
             {selectedCustomer?.cautions_restrictions && (
               <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3">
                 <div className="text-sm font-semibold text-destructive mb-1">⚠ Customer Alerts / Cautions</div>
-                <div className="text-sm whitespace-pre-wrap">{selectedCustomer.cautions_restrictions}</div>
+                <div className="text-sm whitespace-pre-wrap">{formatCautions(selectedCustomer.cautions_restrictions) || selectedCustomer.cautions_restrictions}</div>
                 <div className="text-xs text-muted-foreground mt-1">Managed on the Customer profile.</div>
               </div>
             )}
