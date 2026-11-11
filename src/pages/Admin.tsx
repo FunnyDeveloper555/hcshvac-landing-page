@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import NotificationBell from "@/components/admin/NotificationBell";
 import SubmissionActionAlerts from "@/components/admin/SubmissionActionAlerts";
+import OverdueAppointmentAlerts from "@/components/admin/OverdueAppointmentAlerts";
 import ChatPage from "@/components/admin/chat/ChatPage";
 import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -196,6 +197,7 @@ const Admin = () => {
             </div>
           </header>
           <SubmissionActionAlerts />
+          <OverdueAppointmentAlerts />
 
           <main className="flex-1 p-1 md:p-2 overflow-auto admin-compact">
             <div className="mx-auto w-full max-w-[1280px]">

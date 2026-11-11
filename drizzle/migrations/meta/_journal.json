@@ -295,6 +295,13 @@
       "when": 1794325960083,
       "tag": "0041_product_selling_price",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794402208475,
+      "tag": "0042_auto_close_after_two_business_days",
+      "breakpoints": true
     }
   ]
 }
