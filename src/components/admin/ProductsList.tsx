@@ -20,6 +20,12 @@ import BulkPricingDialog from "./products/BulkPricingDialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calculator } from "lucide-react";
 
+const productSeries = (p: any): string => {
+  const sp = p?.specifications && typeof p.specifications === "object" ? p.specifications : {};
+  const v = sp.series ?? sp.series_number ?? "";
+  return (Array.isArray(v) ? v.join(", ") : String(v)).trim();
+};
+
 type SortField = "product_name" | "model_number" | "category" | "company" | "brand" | "poise" | "afue" | "stages" | "voltage" | "refrigerant" | "tons_btu" | "seer_rating" | "status";
 type SortDirection = "asc" | "desc" | null;
 
@@ -98,6 +104,10 @@ const ProductsList = () => {
     const tonsBtuMap = new Map<string, number>();
     const seerMap = new Map<string, number>();
     const statusMap = new Map<string, number>();
+    const seriesMap = new Map<string, number>();
+    const typeMap = new Map<string, number>();
+    const ruleMap = new Map<string, number>();
+    const costMap = new Map<string, number>();
 
     products.forEach((p: any) => {
       if (p.category) catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
@@ -112,6 +122,13 @@ const ProductsList = () => {
       if ((p as any).refrigerant_type) refrigerantMap.set((p as any).refrigerant_type, (refrigerantMap.get((p as any).refrigerant_type) || 0) + 1);
       if ((p as any).tons_btu) tonsBtuMap.set((p as any).tons_btu, (tonsBtuMap.get((p as any).tons_btu) || 0) + 1);
       if ((p as any).seer_rating) seerMap.set((p as any).seer_rating, (seerMap.get((p as any).seer_rating) || 0) + 1);
+      const ser = productSeries(p);
+      if (ser) seriesMap.set(ser, (seriesMap.get(ser) || 0) + 1);
+      if (p.spec_type) typeMap.set(p.spec_type, (typeMap.get(p.spec_type) || 0) + 1);
+      const rl = p.pricing_rule_id ? "Has pricing rule" : "No pricing rule";
+      ruleMap.set(rl, (ruleMap.get(rl) || 0) + 1);
+      const cl = p.selling_price != null ? "Has selling price" : "No selling price";
+      costMap.set(cl, (costMap.get(cl) || 0) + 1);
       const st = (p as any).status || "active_not_showing";
       const statusLabel = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[st] || st;
       statusMap.set(statusLabel, (statusMap.get(statusLabel) || 0) + 1);
@@ -140,11 +157,13 @@ const ProductsList = () => {
     const REFRIGERANT_OPTS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"].map((v) => ({ value: v, count: refrigerantMap.get(v) || 0 }));
     const TONS_BTU_OPTS = ["1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "7.5 Ton", "10 Ton", "12.5 Ton", "15 Ton", "20 Ton"].map((v) => ({ value: v, count: tonsBtuMap.get(v) || 0 }));
     const SEER_OPTS = ["13.2 SEER2", "14 SEER2", "14.3 SEER2", "15 SEER2", "15.2 SEER2", "16 SEER2", "17 SEER2", "18 SEER2", "19 SEER2", "20 SEER2", "21 SEER2"].map((v) => ({ value: v, count: seerMap.get(v) || 0 }));
-    const BRAND_OPTS = ["Ameristar", "Durastar", "Rheem"].map((v) => ({ value: v, count: brandMap.get(v) || 0 }));
+    const BRAND_OPTS = toOpts(new Map([...["Ameristar", "Durastar", "Rheem"].map((v) => [v, 0] as [string, number]), ...brandMap]));
 
     return [
       { label: "Category", key: "category", options: categoryOptions },
+      { label: "Product Type", key: "spec_type", options: toOpts(typeMap) },
       { label: "Brand", key: "brand", options: BRAND_OPTS },
+      { label: "Series", key: "series", options: toOpts(seriesMap) },
       { label: "Poise", key: "poise", options: POISE_OPTS },
       { label: "AFUE", key: "afue", options: AFUE_OPTS },
       { label: "Width", key: "width", options: WIDTH_OPTS },
@@ -155,6 +174,8 @@ const ProductsList = () => {
       { label: "SEER Rating", key: "seer_rating", options: SEER_OPTS },
       { label: "Company", key: "company", options: toOpts(compMap) },
       { label: "Status", key: "status", options: toOpts(statusMap) },
+      { label: "Pricing Rule", key: "pricing_rule", options: toOpts(ruleMap) },
+      { label: "Selling Price", key: "selling_price", options: toOpts(costMap) },
     ];
   }, [products]);
 
@@ -229,6 +250,14 @@ const ProductsList = () => {
     if (tonsBtuF.length) filtered = filtered.filter((p: any) => tonsBtuF.includes(p.tons_btu || ""));
     const seerF = selectedFilters.seer_rating || [];
     if (seerF.length) filtered = filtered.filter((p: any) => seerF.includes(p.seer_rating || ""));
+    const seriesF = selectedFilters.series || [];
+    if (seriesF.length) filtered = filtered.filter((p: any) => seriesF.includes(productSeries(p)));
+    const typesF = selectedFilters.spec_type || [];
+    if (typesF.length) filtered = filtered.filter((p: any) => typesF.includes(p.spec_type || ""));
+    const rulesF = selectedFilters.pricing_rule || [];
+    if (rulesF.length) filtered = filtered.filter((p: any) => rulesF.includes(p.pricing_rule_id ? "Has pricing rule" : "No pricing rule"));
+    const spF = selectedFilters.selling_price || [];
+    if (spF.length) filtered = filtered.filter((p: any) => spF.includes(p.selling_price != null ? "Has selling price" : "No selling price"));
     const statuses = selectedFilters.status || [];
     if (statuses.length) {
       const statusLabelMap: Record<string, string> = { active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" };
