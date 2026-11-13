@@ -65,6 +65,7 @@ import CustomersAdd from "@/components/admin/CustomersAdd";
 import DiagnosticFeesList from "@/components/admin/DiagnosticFeesList";
 import DiagnosticFeesAdd from "@/components/admin/DiagnosticFeesAdd";
 import CustomersList from "@/components/admin/CustomersList";
+import CustomerHistory from "@/components/admin/CustomerHistory";
 import SiteProfileForm from "@/components/admin/siteprofile/SiteProfileForm";
 import SiteProfilesList from "@/components/admin/siteprofile/SiteProfilesList";
 import SiteProfilesLogs from "@/components/admin/siteprofile/SiteProfilesLogs";
@@ -220,6 +221,7 @@ const Admin = () => {
               <Route path="/employees/*" element={<EmployeesAdmin />} />
               <Route path="/customers/add" element={<CustomersAdd />} />
               <Route path="/customers/list" element={<CustomersList />} />
+              <Route path="/customers/history" element={<CustomerHistory />} />
               <Route path="/appointments/add" element={<AppointmentsAdd />} />
               <Route path="/appointments/list" element={<AppointmentsList />} />
               <Route path="/site-profiles/list" element={<SiteProfilesList />} />

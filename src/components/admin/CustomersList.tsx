@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User, PhoneIncoming } from "lucide-react";
+import { Trash2, Loader2, Pencil, Eye, Send, MoreHorizontal, Phone, CalendarPlus, User, PhoneIncoming, History } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -320,6 +320,9 @@ const CustomersList = () => {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(customer.id)}>
                           <User className="mr-2 h-4 w-4" /> View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/admin/customers/history?id=${customer.id}`)}>
+                          <History className="mr-2 h-4 w-4" /> History
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
