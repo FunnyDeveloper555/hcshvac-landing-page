@@ -77,6 +77,7 @@ const staticMenuItems: MenuItem[] = [
     children: [
       { title: "Add", url: "/admin/customers/add", icon: Plus },
       { title: "List", url: "/admin/customers/list", icon: List },
+      { title: "History", url: "/admin/customers/history", icon: History },
     ]
   },
 
