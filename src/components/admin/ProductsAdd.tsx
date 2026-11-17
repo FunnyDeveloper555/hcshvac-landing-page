@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, GripVertical } from "lucide-react";
+import { Loader2, Plus, Trash2, GripVertical, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { useQuery } from "@tanstack/react-query";
@@ -44,7 +46,6 @@ const POISE_OPTIONS = ["Upflow", "Downflow"];
 const AFUE_OPTIONS = ["80%", "92%", "95%", "96%", "97%", "98%"];
 const WIDTH_OPTIONS = ['14.5"', '17.5"', '21"', '24.5"'];
 const STAGES_OPTIONS = ["Single Stage", "Two Stage", "Two Stage Variable"];
-const BRAND_OPTIONS = ["Ameristar", "Durastar", "Rheem"];
 const VOLTAGE_OPTIONS = ["120V", "208V", "230V", "240V", "277V", "440V"];
 const REFRIGERANT_OPTIONS = ["R22", "R410a", "R32", "R454B", "R407C", "R134a"];
 const TONS_BTU_OPTIONS = ["1.5 Ton", "2 Ton", "2.5 Ton", "3 Ton", "3.5 Ton", "4 Ton", "5 Ton", "7.5 Ton", "10 Ton", "12.5 Ton", "15 Ton", "20 Ton"];
@@ -164,14 +165,17 @@ const ProductsAdd = () => {
     },
   });
 
-  const { data: brands = [] } = useQuery({
+  const { data: brands = [], isLoading: brandsLoading, isError: brandsError, refetch: refetchBrands } = useQuery({
     queryKey: ["products-brands"],
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase.from("brands").select("id, name").eq("is_active", true).order("name");
       if (error) throw error;
       return data || [];
     },
   });
+
+  const selectedBrandName = brandName || brands.find((brand) => brand.id === brandId)?.name || "";
 
   const { data: allCategories = [] } = useQuery({
     queryKey: ["product-categories"],
@@ -306,7 +310,7 @@ const ProductsAdd = () => {
         spot_text: spotText || null,
         spot_images: spotImages,
         brand_id: brandId || null,
-        brand_name: brandName || null,
+        brand_name: selectedBrandName || null,
         spec_type: specType || null,
         specifications: specType ? specs : {},
         poise: poise || null,
@@ -446,16 +450,38 @@ const ProductsAdd = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Brand</Label>
-                  <Select value={brandName || "placeholder"} onValueChange={(val) => setBrandName(val === "placeholder" ? "" : val)}>
-                    <SelectTrigger><SelectValue placeholder="Select brand" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="placeholder" disabled className="hidden">Select brand</SelectItem>
-                      {BRAND_OPTIONS.map((b) => (
-                        <SelectItem key={b} value={b}>{b}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="product-brand">Brand</Label>
+                  <Popover open={brandOpen} onOpenChange={setBrandOpen}>
+                    <PopoverTrigger asChild>
+                      <Button id="product-brand" type="button" variant="outline" role="combobox" aria-expanded={brandOpen} aria-label="Brand" disabled={brandsLoading} className="w-full justify-between font-normal">
+                        <span className="truncate">{selectedBrandName || (brandsLoading ? "Loading brands…" : "Select brand")}</span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search brands…" />
+                        <CommandList>
+                          <CommandEmpty>{brandsError ? "Unable to load brands." : "No brands found."}</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem value="Clear brand selection" onSelect={() => { setBrandId(""); setBrandName(""); setBrandOpen(false); }}>No brand</CommandItem>
+                            {selectedBrandName && !brands.some((brand) => brand.name === selectedBrandName) && (
+                              <CommandItem value={selectedBrandName} onSelect={() => setBrandOpen(false)}>
+                                <Check className="mr-2 h-4 w-4" />{selectedBrandName}
+                              </CommandItem>
+                            )}
+                            {brands.map((brand) => (
+                              <CommandItem key={brand.id} value={brand.name} onSelect={() => { setBrandId(brand.id); setBrandName(brand.name); setBrandOpen(false); }}>
+                                <Check className={cn("mr-2 h-4 w-4", selectedBrandName === brand.name ? "opacity-100" : "opacity-0")} />
+                                {brand.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {brandsError && <Button type="button" variant="link" size="sm" onClick={() => refetchBrands()}>Retry loading brands</Button>}
                 </div>
             </ProductSpecsFields>
 
