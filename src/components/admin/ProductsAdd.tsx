@@ -125,6 +125,11 @@ const ProductsAdd = () => {
   const [laborWarranty, setLaborWarranty] = useState("");
 
   // Bullet points
+  const [wiPrice, setWiPrice] = useState("");
+  const [replacedWithId, setReplacedWithId] = useState("");
+  const [replaceSearch, setReplaceSearch] = useState("");
+  const [replaceResults, setReplaceResults] = useState<any[]>([]);
+  const [replacedWith, setReplacedWith] = useState<any | null>(null);
   const [bulletPoints, setBulletPoints] = useState<string[]>([]);
   const [newBulletPoint, setNewBulletPoint] = useState("");
 
@@ -272,6 +277,11 @@ const ProductsAdd = () => {
       setPartsWarranty((data as any).parts_warranty || "");
       setLaborWarranty((data as any).labor_warranty || "");
       setBulletPoints((data as any).bullet_points || []);
+      setWiPrice((data as any).wi_price != null ? String((data as any).wi_price) : "");
+      setReplacedWithId((data as any).replaced_with_product_id || "");
+      if ((data as any).replaced_with_product_id) {
+        supabase.from("products").select("id, product_name, model_number").eq("id", (data as any).replaced_with_product_id).maybeSingle().then(({ data: r }) => setReplacedWith(r));
+      }
       setPromoTitle((data as any).promo_title || "");
       setPromoDescription((data as any).promo_description || "");
       setPromoImageUrl((data as any).promo_image_url || "");
@@ -330,6 +340,8 @@ const ProductsAdd = () => {
         parts_warranty: partsWarranty || "",
         labor_warranty: laborWarranty || "",
         bullet_points: bulletPoints,
+        wi_price: wiPrice ? parseFloat(wiPrice) : null,
+        replaced_with_product_id: productStatus.startsWith("discontinued") || productStatus === "deactivated" ? (replacedWithId || null) : null,
         promo_title: promoTitle || "",
         promo_description: promoDescription || "",
         promo_image_url: promoImageUrl || "",
@@ -435,6 +447,40 @@ const ProductsAdd = () => {
                   <SelectItem value="deactivated">Deactivated (Not Showing)</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="space-y-2 max-w-sm">
+                <Label>WI= Price (with installation)</Label>
+                <Input type="number" step="0.01" placeholder="0.00" value={wiPrice} onChange={(e) => setWiPrice(e.target.value)} />
+              </div>
+              {(productStatus.startsWith("discontinued") || productStatus === "deactivated") && (
+                <div className="space-y-2">
+                  <Label>Replaced With (search SKU / model / name)</Label>
+                  {replacedWith ? (
+                    <div className="flex items-center gap-3 text-sm">
+                      <a href={`/admin/products/add?id=${replacedWith.id}`} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        {replacedWith.product_name}{replacedWith.model_number ? ` (${replacedWith.model_number})` : ""}
+                      </a>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => { setReplacedWith(null); setReplacedWithId(""); }}>Remove</Button>
+                    </div>
+                  ) : (
+                    <div className="max-w-md space-y-1">
+                      <Input placeholder="Type at least 2 characters" value={replaceSearch} onChange={async (e) => {
+                        const q = e.target.value; setReplaceSearch(q);
+                        if (q.trim().length < 2) { setReplaceResults([]); return; }
+                        const t = q.trim().replace(/[%,()]/g, "");
+                        const { data: r } = await supabase.from("products").select("id, product_name, model_number")
+                          .or(`model_number.ilike.%${t}%,product_name.ilike.%${t}%`).neq("id", editId || "00000000-0000-0000-0000-000000000000").limit(8);
+                        setReplaceResults(r || []);
+                      }} />
+                      {replaceResults.map((r) => (
+                        <button key={r.id} type="button" className="block w-full text-left text-sm px-2 py-1 rounded hover:bg-muted"
+                          onClick={() => { setReplacedWith(r); setReplacedWithId(r.id); setReplaceResults([]); setReplaceSearch(""); }}>
+                          {r.product_name}{r.model_number ? ` (${r.model_number})` : ""}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <ProductSpecsFields specType={specType} onSpecTypeChange={setSpecType} specs={specs} onSpecsChange={setSpecs}>

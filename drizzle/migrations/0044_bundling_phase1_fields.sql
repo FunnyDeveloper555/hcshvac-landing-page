@@ -1,0 +1,2 @@
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS state text, ADD COLUMN IF NOT EXISTS text_orders_phone text, ADD COLUMN IF NOT EXISTS email_orders_to text;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS wi_price numeric, ADD COLUMN IF NOT EXISTS replaced_with_product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;

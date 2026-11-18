@@ -31,6 +31,9 @@ const formSchema = z.object({
   representative_phone: z.string().min(10, "Valid phone number is required"),
   representative_email: z.string().email("Valid email is required"),
   our_account_number: z.string().optional(),
+  state: z.string().optional(),
+  text_orders_phone: z.string().optional(),
+  email_orders_to: z.string().email("Valid email is required").or(z.literal("")).optional(),
   industries: z.array(industrySchema).min(1, "At least one industry is required"),
 });
 
@@ -62,6 +65,9 @@ const VendorsAdd = () => {
       representative_phone: "",
       representative_email: "",
       our_account_number: "",
+      state: "",
+      text_orders_phone: "",
+      email_orders_to: "",
       industries: [{ product_category: "", product_brand_name: "" }],
     },
   });
@@ -106,6 +112,9 @@ const VendorsAdd = () => {
         representative_phone: data.representative_phone,
         representative_email: data.representative_email,
         our_account_number: data.our_account_number || "",
+        state: (data as any).state || "",
+        text_orders_phone: (data as any).text_orders_phone || "",
+        email_orders_to: (data as any).email_orders_to || "",
         industries: data.vendor_industries?.length > 0 
           ? data.vendor_industries.map((ind: any) => ({
               id: ind.id,
@@ -120,6 +129,14 @@ const VendorsAdd = () => {
   };
 
   const industries = form.watch("industries");
+  const [brandOptions, setBrandOptions] = useState<string[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.from("brands").select("name").order("name").then(({ data }) =>
+      setBrandOptions(Array.from(new Set((data || []).map((b: any) => b.name).filter(Boolean)))));
+    supabase.from("product_categories").select("name").order("name").then(({ data }) =>
+      setCategoryOptions(Array.from(new Set((data || []).map((c: any) => c.name).filter(Boolean)))));
+  }, []);
 
   const addIndustry = () => {
     form.setValue("industries", [
@@ -179,7 +196,10 @@ const VendorsAdd = () => {
             representative_email: values.representative_email,
             logo_url: logoUrl,
             our_account_number: values.our_account_number || null,
-          })
+            state: values.state || null,
+            text_orders_phone: values.text_orders_phone || null,
+            email_orders_to: values.email_orders_to || null,
+          } as any)
           .eq("id", editId);
 
         if (vendorError) throw vendorError;
@@ -223,7 +243,10 @@ const VendorsAdd = () => {
             representative_email: values.representative_email,
             logo_url: logoUrl,
             our_account_number: values.our_account_number || null,
-          })
+            state: values.state || null,
+            text_orders_phone: values.text_orders_phone || null,
+            email_orders_to: values.email_orders_to || null,
+          } as any)
           .select()
           .single();
 
@@ -382,6 +405,30 @@ const VendorsAdd = () => {
                 </FormItem>
               )}
             />
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <FormField control={form.control} name="state" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Branch State</FormLabel>
+                  <FormControl><Input placeholder="IL" maxLength={2} {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="text_orders_phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Text Orders Phone Number</FormLabel>
+                  <FormControl><Input type="tel" placeholder="(555) 123-4567" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="email_orders_to" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-Mail Orders To</FormLabel>
+                  <FormControl><Input type="email" placeholder="orders@vendor.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -457,6 +504,8 @@ const VendorsAdd = () => {
               </Button>
             </div>
 
+            <datalist id="vendor-brand-options">{brandOptions.map((b) => <option key={b} value={b} />)}</datalist>
+            <datalist id="vendor-category-options">{categoryOptions.map((c) => <option key={c} value={c} />)}</datalist>
             {industries.map((_, index) => (
               <div key={index} className="p-4 border rounded-lg space-y-4">
                 <div className="flex items-center justify-between">
@@ -481,7 +530,7 @@ const VendorsAdd = () => {
                       <FormItem>
                         <FormLabel>Primary Product Category</FormLabel>
                         <FormControl>
-                          <Input placeholder="HVAC Equipment" {...field} />
+                          <Input list="vendor-category-options" placeholder="Pick or type a category" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -495,7 +544,7 @@ const VendorsAdd = () => {
                       <FormItem>
                         <FormLabel>Primary Product Brand Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Carrier" {...field} />
+                          <Input list="vendor-brand-options" placeholder="Pick or type a brand" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

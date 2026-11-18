@@ -27,3 +27,8 @@
 - [x] Inspect and preserve the uploaded HTML/CSS/JS website for Blue Flame only.
 - [x] Verify pages, navigation, images, and isolation from the CRM and other companies (five original external images unavailable).
 - [x] Request publishing to both connected Blue Flame addresses; deployment completion remains unverified.
+
+# Product bundling (client PDF)
+- [x] Phase 1: vendor ordering contacts/state/brand pickers; product WI= price, Replaced With link, vendor state filter.
+- [ ] Phase 2: Bundle Maker proposal screen.
+- [ ] Phase 3: Task sourcing automation.

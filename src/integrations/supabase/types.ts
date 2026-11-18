@@ -5317,6 +5317,7 @@ export type Database = {
           promo_title: string | null
           refrigerant_type: string | null
           repair_tags: string[]
+          replaced_with_product_id: string | null
           seer_rating: string | null
           selling_price: number | null
           spec_type: string | null
@@ -5330,6 +5331,7 @@ export type Database = {
           updated_at: string
           voltage: string | null
           weight: number | null
+          wi_price: number | null
           width_size: string | null
         }
         Insert: {
@@ -5379,6 +5381,7 @@ export type Database = {
           promo_title?: string | null
           refrigerant_type?: string | null
           repair_tags?: string[]
+          replaced_with_product_id?: string | null
           seer_rating?: string | null
           selling_price?: number | null
           spec_type?: string | null
@@ -5392,6 +5395,7 @@ export type Database = {
           updated_at?: string
           voltage?: string | null
           weight?: number | null
+          wi_price?: number | null
           width_size?: string | null
         }
         Update: {
@@ -5441,6 +5445,7 @@ export type Database = {
           promo_title?: string | null
           refrigerant_type?: string | null
           repair_tags?: string[]
+          replaced_with_product_id?: string | null
           seer_rating?: string | null
           selling_price?: number | null
           spec_type?: string | null
@@ -5454,6 +5459,7 @@ export type Database = {
           updated_at?: string
           voltage?: string | null
           weight?: number | null
+          wi_price?: number | null
           width_size?: string | null
         }
         Relationships: [
@@ -5483,6 +5489,13 @@ export type Database = {
             columns: ["pricing_rule_id"]
             isOneToOne: false
             referencedRelation: "pricing_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_replaced_with_product_id_fkey"
+            columns: ["replaced_with_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -6401,6 +6414,7 @@ export type Database = {
       vendors: {
         Row: {
           created_at: string
+          email_orders_to: string | null
           hours_of_operation: string | null
           id: string
           logo_url: string | null
@@ -6410,6 +6424,8 @@ export type Database = {
           representative_first_name: string
           representative_last_name: string
           representative_phone: string
+          state: string | null
+          text_orders_phone: string | null
           updated_at: string
           vendor_address: string
           vendor_name: string
@@ -6417,6 +6433,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_orders_to?: string | null
           hours_of_operation?: string | null
           id?: string
           logo_url?: string | null
@@ -6426,6 +6443,8 @@ export type Database = {
           representative_first_name: string
           representative_last_name: string
           representative_phone: string
+          state?: string | null
+          text_orders_phone?: string | null
           updated_at?: string
           vendor_address: string
           vendor_name: string
@@ -6433,6 +6452,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_orders_to?: string | null
           hours_of_operation?: string | null
           id?: string
           logo_url?: string | null
@@ -6442,6 +6462,8 @@ export type Database = {
           representative_first_name?: string
           representative_last_name?: string
           representative_phone?: string
+          state?: string | null
+          text_orders_phone?: string | null
           updated_at?: string
           vendor_address?: string
           vendor_name?: string

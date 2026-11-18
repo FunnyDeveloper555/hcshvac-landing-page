@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
@@ -24,10 +25,12 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
     queryKey: ["spec-vendors"],
     staleTime: 30000,
     queryFn: async () => {
-      const { data } = await supabase.from("vendors").select("id, vendor_name").order("vendor_name");
-      return (data || []) .map((v: any) => ({ id: v.id, name: v.vendor_name })) as { id: string; name: string }[];
+      const { data } = await supabase.from("vendors").select("id, vendor_name, state").order("vendor_name");
+      return (data || []) .map((v: any) => ({ id: v.id, name: v.vendor_name, state: (v.state || "").toUpperCase() })) as { id: string; name: string; state: string }[];
     },
   });
+  const [vendorState, setVendorState] = useState("all");
+  const vendorStates = Array.from(new Set(vendors.map((x) => x.state).filter(Boolean))).sort();
   const set = (k: string, v: any) => onSpecsChange({ ...specs, [k]: v });
 
   const toggle = (k: string, opt: string) => {
@@ -50,13 +53,22 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
         );
       case "vendor":
         return (
-          <Select value={v || "__none"} onValueChange={(x) => set(f.key, x === "__none" ? "" : x)}>
-            <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
-            <SelectContent className="max-h-72">
-              <SelectItem value="__none">—</SelectItem>
-              {vendors.map((o) => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={vendorState} onValueChange={setVendorState}>
+              <SelectTrigger className="w-28" aria-label="Vendor state"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All states</SelectItem>
+                {vendorStates.map((st) => <SelectItem key={st} value={st}>{st}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={v || "__none"} onValueChange={(x) => set(f.key, x === "__none" ? "" : x)}>
+              <SelectTrigger><SelectValue placeholder="Select vendor" /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="__none">—</SelectItem>
+                {vendors.filter((o) => vendorState === "all" || o.state === vendorState || o.name === v).map((o) => <SelectItem key={o.id} value={o.name}>{o.name}{o.state ? ` (${o.state})` : ""}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         );
       case "multi":
         return (

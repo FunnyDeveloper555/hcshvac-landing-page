@@ -309,6 +309,13 @@
       "when": 1794838425717,
       "tag": "0043_tighten_rls_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794987451499,
+      "tag": "0044_bundling_phase1_fields",
+      "breakpoints": true
     }
   ]
 }
