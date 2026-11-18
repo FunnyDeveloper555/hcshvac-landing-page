@@ -91,3 +91,26 @@ export function injectProducts(html: string, products: Tpl[]): string {
     () => `<script>var HVAC_PRODUCTS = ${json};</script>`,
   );
 }
+
+export interface WebsiteBundle { name: string; description: string | null; image_url: string | null; price_override: number | null; total_listed: number }
+
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
+/** Add a "System Bundles" section above the catalog for bundles switched on in Bundle Maker. */
+export function injectBundles(html: string, bundles: WebsiteBundle[]): string {
+  if (!bundles.length) return html;
+  const cards = bundles.map((b) => {
+    const price = Number(b.price_override ?? b.total_listed ?? 0);
+    return `<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;">
+      ${b.image_url ? `<img src="${esc(b.image_url)}" alt="${esc(b.name)}" style="width:100%;height:160px;object-fit:contain;background:#fff;border-radius:10px;" loading="lazy">` : ""}
+      <h3 style="margin:0;font-size:1.15rem;">${esc(b.name)}</h3>
+      ${b.description ? `<p style="margin:0;opacity:.8;font-size:.95rem;">${esc(b.description)}</p>` : ""}
+      ${price > 0 ? `<div style="font-weight:700;font-size:1.3rem;">${price.toLocaleString("en-US", { style: "currency", currency: "USD" })}</div>` : ""}
+      <a href="contact.html" class="btn btn-primary" style="margin-top:auto;text-align:center;">Request This Bundle</a>
+    </div>`;
+  }).join("");
+  const section = `<section class="section section-navy" id="systemBundlesSection"><div class="container">
+    <h2 style="margin:0 0 20px;">System Bundles</h2>
+    <div class="grid-3" style="gap:24px;">${cards}</div></div></section>`;
+  return html.replace(/<main class="section section-navy" id="productsCatalogSection">/, (m) => section + m);
+}

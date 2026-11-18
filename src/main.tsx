@@ -3,7 +3,22 @@ import { applyServiceDirectory, type WebsiteServiceDirectory, applyServiceGuides
 import { applyHero, applyTopBar, applyTrustBar, type WebsiteTrustBar, applyCoreServices, type WebsiteCoreServices, blueFlameInPlacePage, rewriteBlueFlameAssets, type WebsiteTopBar, type WebsiteHero } from "./lib/blueFlameWebsite";
 
 import { applyServicesPage, type WebsiteServicesPage } from "./lib/blueFlameServicesPage";
-import { injectProducts, toTemplateProduct, type ProductRow } from "./lib/blueFlameProducts";
+import { injectBundles, injectProducts, toTemplateProduct, type ProductRow, type WebsiteBundle } from "./lib/blueFlameProducts";
+
+async function loadBundles(): Promise<WebsiteBundle[]> {
+  try {
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const h = { apikey: key, Authorization: `Bearer ${key}` };
+    const base = import.meta.env.VITE_SUPABASE_URL;
+    const c = await (await fetch(`${base}/rest/v1/companies?slug=eq.blueflameheatingcooling&select=id`, { headers: h })).json();
+    const cid = c?.[0]?.id;
+    const scope = cid ? `&or=(company_id.is.null,company_id.eq.${cid})` : "&company_id=is.null";
+    const rows = await (await fetch(`${base}/rest/v1/product_bundles?select=name,description,image_url,price_override,total_listed&is_showing=eq.true${scope}&order=name.asc`, { headers: h })).json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
 
 async function loadProducts(): Promise<ProductRow[] | null> {
   try {
@@ -35,8 +50,8 @@ if (blueFlamePage) {
   // Show the uploaded Blue Flame page at the clean address (e.g. "/" or "/about.html"),
   // with the Page Builder settings applied.
   const needsProducts = /\/(products|product-detail)\.html$/.test(blueFlamePage);
-  Promise.all([fetch(blueFlamePage).then((r) => r.text()), loadSettings(), needsProducts ? loadProducts() : Promise.resolve(null)]).then(([raw, cfg, products]) => {
-    const html = products ? injectProducts(raw, products.map((p) => toTemplateProduct(p))) : raw;
+  Promise.all([fetch(blueFlamePage).then((r) => r.text()), loadSettings(), needsProducts ? loadProducts() : Promise.resolve(null), /\/products\.html$/.test(blueFlamePage) ? loadBundles() : Promise.resolve([])]).then(([raw, cfg, products, bundles]) => {
+    const html = injectBundles(products ? injectProducts(raw, products.map((p) => toTemplateProduct(p))) : raw, bundles);
     document.open();
     document.write(applyServicesPage(applyAirQuality(applyFinancing(applyAboutUs(applyFooter(applyFaq(applyFlagship(applyServiceGuides(applyServiceDirectory(applyCoreServices(applyTrustBar(applyHero(applyTopBar(rewriteBlueFlameAssets(html), cfg?.top_bar), cfg?.hero), cfg?.trust_bar), cfg?.core_services), cfg?.service_directory), cfg?.service_guides), cfg?.flagship), cfg?.faq), cfg?.footer), cfg?.about_us), cfg?.financing), cfg?.air_quality), cfg?.services_page));
     document.close();

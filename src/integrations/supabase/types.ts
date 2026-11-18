@@ -3574,6 +3574,42 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_plans: {
+        Row: {
+          active: boolean
+          apr: number
+          bdr: number
+          created_at: string
+          id: string
+          label: string | null
+          months: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          apr?: number
+          bdr?: number
+          created_at?: string
+          id?: string
+          label?: string | null
+          months: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          apr?: number
+          bdr?: number
+          created_at?: string
+          id?: string
+          label?: string | null
+          months?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       galleries: {
         Row: {
           activity_date: string | null
@@ -4816,6 +4852,68 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: true
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_bundles: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_showing: boolean
+          items: Json
+          name: string
+          package: string
+          price_override: number | null
+          slug: string | null
+          total_listed: number
+          total_our_cost: number
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_showing?: boolean
+          items?: Json
+          name: string
+          package?: string
+          price_override?: number | null
+          slug?: string | null
+          total_listed?: number
+          total_our_cost?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_showing?: boolean
+          items?: Json
+          name?: string
+          package?: string
+          price_override?: number | null
+          slug?: string | null
+          total_listed?: number
+          total_our_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_bundles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

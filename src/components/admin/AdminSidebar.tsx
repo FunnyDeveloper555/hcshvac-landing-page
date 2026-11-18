@@ -291,8 +291,11 @@ const staticMenuItems: MenuItem[] = [
       { title: "List", url: "/admin/products/list", icon: List },
       { title: "Categories", url: "/admin/products/categories", icon: FolderOpen },
       { title: "Pricing Rules", url: "/admin/products/pricing-rules", icon: Calculator },
+      { title: "Bundles", url: "/admin/products/bundles", icon: Calculator },
       { title: "Bundle Maker", url: "/admin/products/bundle-maker", icon: Calculator },
       { title: "Estimates", url: "/admin/products/estimates", icon: Calculator },
+      { title: "New Estimate", url: "/admin/products/estimate", icon: Calculator },
+      { title: "Finance Calculator", url: "/admin/products/finance-calculator", icon: Calculator },
     ],
   },
   {

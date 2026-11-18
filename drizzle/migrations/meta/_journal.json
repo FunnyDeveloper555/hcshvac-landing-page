@@ -323,6 +323,13 @@
       "when": 1794987742781,
       "tag": "0045_product_estimates",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1795013991023,
+      "tag": "0046_product_bundles_finance_plans",
+      "breakpoints": true
     }
   ]
 }
