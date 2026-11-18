@@ -13,6 +13,7 @@ import { Loader2, Pencil } from "lucide-react";
 import { timeSlots, timeSlotsWith } from "@/lib/timeSlots";
 import { getCompanyInviterEmail } from "@/lib/companyEmail";
 import { useAdminLog } from "@/hooks/useAdminLog";
+import { AppointmentAttachments } from "@/components/admin/appointments/AppointmentAttachments";
 
 interface Invitation {
   id: string;
@@ -47,31 +48,10 @@ interface Appointment {
 }
 
 function ClosurePhotos({ paths }: { paths: string[] }) {
-  const { data: urls = [] } = useQuery({
-    queryKey: ["closure-photos", paths],
-    queryFn: async () => {
-      const out: { path: string; url: string }[] = [];
-      for (const path of paths) {
-        const { data } = await supabase.storage.from("appointment-files").createSignedUrl(path, 3600);
-        if (data?.signedUrl) out.push({ path, url: data.signedUrl });
-      }
-      return out;
-    },
-    enabled: paths.length > 0,
-    staleTime: 300000,
-  });
   if (paths.length === 0) return null;
   return (
     <div className="col-span-2">
-      <div className="text-muted-foreground">Photos / videos</div>
-      <div className="flex flex-wrap gap-2 pt-1">
-        {urls.map((u) => (
-          <a key={u.path} href={u.url} target="_blank" rel="noreferrer" className="text-primary underline text-xs break-all">
-            {u.path.split("/").pop()}
-          </a>
-        ))}
-        {urls.length === 0 && <span className="text-xs text-muted-foreground">{paths.length} file(s)</span>}
-      </div>
+      <AppointmentAttachments paths={paths} />
     </div>
   );
 }

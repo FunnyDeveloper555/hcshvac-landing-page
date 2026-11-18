@@ -1,4 +1,5 @@
 # Architecture rules
+- Appointment close-out attachments use AppointmentAttachments in Customer History and appointment details, with short-lived signed links to private storage so PDFs and media remain staff-accessible without public exposure.
 - Product add/edit Brand selection reads active database brands and saves both their ID and name, preserving legacy names so catalog links and display text stay aligned.
 - Bulk product parsing preserves original descriptions, extracts explicit labeled measurements, stores diameter and unmatched details in specifications (including Other products), and maps height/width/depth/weight to the existing page-level columns so review and saved products retain them.
 

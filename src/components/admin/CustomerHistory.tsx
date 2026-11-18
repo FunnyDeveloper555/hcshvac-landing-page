@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Search } from "lucide-react";
 import { format } from "date-fns";
+import { AppointmentAttachments } from "@/components/admin/appointments/AppointmentAttachments";
 
 const digits = (p?: string | null) => (p || "").replace(/\D/g, "").slice(-10);
 const fmt = (d?: string | null) => (d ? format(new Date(d), "MM-dd-yyyy h:mm a") : "—");
@@ -207,6 +208,7 @@ export default function CustomerHistory() {
                         </div>
                         <div className="text-muted-foreground">{a.scheduled_date || "No date"} {a.scheduled_time || ""}</div>
                         {a.visit_summary_notes && <div className="mt-1">Summary: {a.visit_summary_notes}</div>}
+                        <AppointmentAttachments paths={Array.isArray(a.closure_photos) ? a.closure_photos.filter((path: unknown): path is string => typeof path === "string") : []} />
                         {a.cancellation_reason && <div className="mt-1">Cancelled: {a.cancellation_reason}</div>}
                       </div>
                     ))}

@@ -60,6 +60,7 @@ export function CloseAppointmentDialog({ open, onOpenChange, appointment }: Clos
         .eq("id", appointment.id);
       if (error) throw error;
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["history-data"] });
       toast.success("Appointment closed with visit summary");
       logAction("status_change", "appointment", appointment.id, {
         new_status: "closed",
@@ -82,7 +83,7 @@ export function CloseAppointmentDialog({ open, onOpenChange, appointment }: Clos
         <DialogHeader>
           <DialogTitle>Close appointment — {appointment?.customer_name}</DialogTitle>
           <DialogDescription>
-            Add the visit summary notes and any photos or videos from the job. This closes the appointment.
+            Add the visit summary notes and any photos, videos or PDFs from the job. This closes the appointment.
           </DialogDescription>
         </DialogHeader>
 
@@ -99,11 +100,11 @@ export function CloseAppointmentDialog({ open, onOpenChange, appointment }: Clos
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="closure-files">Photos / videos</Label>
+            <Label htmlFor="closure-files">Photos / videos / PDFs</Label>
             <input
               id="closure-files"
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,application/pdf,.pdf"
               multiple
               className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:text-foreground"
               onChange={(e) => setFiles(Array.from(e.target.files || []))}
