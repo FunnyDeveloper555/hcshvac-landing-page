@@ -25,8 +25,10 @@ import { template as bookingReceived } from './booking-received.tsx'
 import { template as vendorRfq } from './vendor-rfq.tsx'
 import { template as bookingSubmissionAlert } from './booking-submission-alert.tsx'
 import { template as chatUnrepliedAlert } from './chat-unreplied-alert.tsx'
+import { template as customerEstimate } from './customer-estimate.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'customer-estimate': customerEstimate,
   'application-received': applicationReceived,
   'interview-invite': interviewInvite,
   'next-steps-required': nextStepsRequired,

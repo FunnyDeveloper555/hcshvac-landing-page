@@ -72,6 +72,8 @@ export interface EstimateLine {
   items?: BundleItems;
   product?: P;
   financed?: boolean;
+  /** Finance plans offered for this line (one = chosen with the customer, several = options). */
+  finance?: { key: string; label: string | null; months: number; apr: number; bdr: number }[];
 }
 
 export const lineTotal = (l: EstimateLine) => Math.round((l.qty || 0) * (l.unitPrice || 0) * 100) / 100;

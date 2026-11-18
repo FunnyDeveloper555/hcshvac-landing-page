@@ -9,14 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Boxes, Loader2, Package, Printer, Save, Trash2, Wrench } from "lucide-react";
+import { Boxes, Loader2, Mail, Package, Printer, Save, Trash2, Wrench } from "lucide-react";
 import { estimateValidUntil } from "@/lib/bundleMath";
 import {
   BundleItems, EstimateLine, PACKAGE_LABELS, PackageKey, bundleTotals, emptyBundleItems, estimateTotals,
   legacyEstimateLines, lineTotal, packageProducts, productLine, toBundleItems,
 } from "@/lib/bundles";
 import { BundleEditor, ProductPicker, money } from "./bundle/BundleEditor";
-import { FinanceButton } from "./bundle/FinanceCalculator";
+import { FinanceButton, PickedPlan, planName } from "./bundle/FinanceCalculator";
+import { monthlyPayment } from "@/lib/bundleMath";
 import { bundlePrice, useBundles } from "./BundlesList";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -38,6 +39,8 @@ export default function EstimateBuilder() {
   const [siteProfile, setSiteProfile] = useState("");
   const [lines, setLines] = useState<EstimateLine[]>([]);
   const [discount, setDiscount] = useState(0);
+  const [totalFinance, setTotalFinance] = useState<PickedPlan[]>([]);
+  const [emailing, setEmailing] = useState(false);
   const [bundleOpen, setBundleOpen] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
   const [customItems, setCustomItems] = useState<BundleItems>(emptyBundleItems());
@@ -63,7 +66,7 @@ export default function EstimateBuilder() {
       const d: any = data.data || {};
       setEstimateNumber(data.estimate_number || ""); setCompanyId(data.company_id || "");
       setCustomer(d.customer || null); setEstDate(d.estDate || estDate); setRep(d.rep || rep); setSiteProfile(d.siteProfile || "");
-      setLines(legacyEstimateLines(d)); setDiscount(Number(d.discount || 0));
+      setLines(legacyEstimateLines(d)); setDiscount(Number(d.discount || 0)); setTotalFinance(Array.isArray(d.totalFinance) ? d.totalFinance : []);
     });
   }, [estId]);
 
@@ -123,7 +126,7 @@ export default function EstimateBuilder() {
       const row = {
         estimate_number: number, company_id: companyId || null, customer_id: customer?.id || null,
         total_our_cost: totals.ourCost, total_listed: totals.total,
-        data: { customer, estDate, rep, siteProfile, lines, discount },
+        data: { customer, estDate, rep, siteProfile, lines, discount, totalFinance },
       };
       const res = estId
         ? await supabase.from("product_estimates").update(row as any).eq("id", estId).select().single()
@@ -132,9 +135,43 @@ export default function EstimateBuilder() {
       setEstimateNumber(number);
       if (!estId) setParams({ id: res.data.id });
       toast({ title: "Estimate saved", description: number });
+      return number;
     } catch (e: any) {
       toast({ title: "Could not save", description: e.message, variant: "destructive" });
     } finally { setSaving(false); }
+  };
+
+  const emailEstimate = async () => {
+    const to = customer?.email;
+    if (!to) return toast({ title: "The customer has no email on file", variant: "destructive" });
+    if (!lines.length) return toast({ title: "Add something to the estimate first", variant: "destructive" });
+    setEmailing(true);
+    try {
+      const num = (await save()) || estimateNumber;
+      const fin = (amount: number, plans: PickedPlan[]) => plans.map((p) => ({ name: planName(p), months: p.months, apr: p.apr, monthly: monthlyPayment(amount, p.apr, p.months) }));
+      const { data: co } = companyId ? await supabase.from("companies").select("name, company_email_primary").eq("id", companyId).maybeSingle() : { data: null };
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "customer-estimate", recipientEmail: to,
+          idempotencyKey: `estimate-${num}-${Date.now()}`,
+          fromEmail: co?.company_email_primary || "master@hcshvac.com", fromName: co?.name || "HCS Inc.",
+          templateData: {
+            companyName: co?.name, customerName: [customer.bill_to_first_name, customer.bill_to_last_name].filter(Boolean).join(" "),
+            estimateNumber: num, estDate, validUntil: estimateValidUntil(new Date(estDate + "T12:00")).toLocaleDateString(),
+            rep, lines: lines.map((l) => ({
+              title: l.title, description: l.description, qty: l.qty, total: lineTotal(l),
+              included: l.items && l.package ? packageProducts(l.items, l.package).map((p: any) => p.product_name) : [],
+              finance: fin(lineTotal(l), l.finance || []),
+            })),
+            subtotal: totals.subtotal, discount: totals.discount, total: totals.total, totalFinance: fin(totals.total, totalFinance),
+          },
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Estimate emailed", description: to });
+    } catch (e: any) {
+      toast({ title: "Could not email", description: e.message, variant: "destructive" });
+    } finally { setEmailing(false); }
   };
 
   const addr = (c: any, k: "bill_to" | "ship_to") => c ? [
@@ -149,6 +186,7 @@ export default function EstimateBuilder() {
         <h2 className="text-3xl font-bold">Estimate</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4 mr-2" />Print / PDF</Button>
+          <Button variant="outline" onClick={emailEstimate} disabled={emailing || saving}>{emailing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}Email Estimate</Button>
           <Button onClick={save} disabled={saving}>{saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}Save Estimate</Button>
         </div>
       </div>
@@ -238,11 +276,12 @@ export default function EstimateBuilder() {
                     <div className="text-right w-28"><div className="text-xs text-muted-foreground">Line total</div><div className="font-semibold">{money(lineTotal(l))}</div></div>
                   </div>
                 </div>
+                <FinanceSummary amount={lineTotal(l)} plans={l.finance || []} />
                 {included.length > 0 && (
                   <ul className="list-disc pl-5 text-sm text-muted-foreground">{included.map((p: any, i: number) => <li key={(p.id || "") + i}>{p.model_number ? `${p.model_number} · ` : ""}{p.product_name}</li>)}</ul>
                 )}
                 <div className="flex flex-wrap gap-2 print:hidden">
-                  <FinanceButton amount={lineTotal(l)} title={l.title} />
+                  <FinanceButton amount={lineTotal(l)} title={l.title} selected={l.finance || []} onSelectedChange={(f) => updLine(l.id, { finance: f })} />
                   {l.type === "custom_bundle" && <Button size="sm" variant="outline" onClick={() => openCustom(l)}>Edit bundle</Button>}
                   <Button size="sm" variant="ghost" onClick={() => setLines(lines.filter((x) => x.id !== l.id))}><Trash2 className="h-4 w-4 mr-1 text-destructive" />Remove</Button>
                 </div>
@@ -256,7 +295,8 @@ export default function EstimateBuilder() {
               <span className="hidden print:inline">{money(totals.discount)}</span></div>
             <div className="flex justify-between text-base font-bold border-t pt-1"><span>Total</span><span>{money(totals.total)}</span></div>
             <div className="flex justify-between text-muted-foreground print:hidden"><span>Our cost</span><span>{money(totals.ourCost)}</span></div>
-            <div className="pt-1 print:hidden"><FinanceButton amount={totals.total} label="Finance the total" title={`Estimate ${estimateNumber || ""} total`} /></div>
+            <div className="pt-1 print:hidden"><FinanceButton amount={totals.total} label="Finance the total" title={`Estimate ${estimateNumber || ""} total`} selected={totalFinance} onSelectedChange={setTotalFinance} /></div>
+            <FinanceSummary amount={totals.total} plans={totalFinance} />
           </div>
         </CardContent>
       </Card>
@@ -285,6 +325,23 @@ export default function EstimateBuilder() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** Customer-facing list of the financing picked: one plan = chosen, several = options. */
+function FinanceSummary({ amount, plans }: { amount: number; plans: PickedPlan[] }) {
+  if (!plans.length || !amount) return null;
+  return (
+    <div className="rounded-md bg-muted/50 p-2 text-sm">
+      <div className="font-medium mb-1">{plans.length === 1 ? "Financing chosen" : "Financing options"}</div>
+      <ul className="space-y-0.5">
+        {plans.map((p) => (
+          <li key={p.key} className="flex justify-between gap-4">
+            <span>{planName(p)} · {p.apr}% APR</span><span className="font-semibold">{money(monthlyPayment(amount, p.apr, p.months))}/mo</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

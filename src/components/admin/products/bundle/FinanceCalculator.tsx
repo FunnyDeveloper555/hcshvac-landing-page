@@ -24,9 +24,25 @@ export function useFinancePlans() {
 }
 
 /** Shows monthly payments for any amount using the shared finance plans. */
-export function FinanceCalculator({ amount, onAmountChange, title }: { amount: number; onAmountChange?: (n: number) => void; title?: string }) {
+/** A plan picked for an estimate (snapshot, so emailed/printed terms don't change later). */
+export interface PickedPlan { key: string; label: string | null; months: number; apr: number; bdr: number }
+export const planKey = (p: { months: number; apr: number; bdr: number }) => `${p.months}|${p.apr}|${p.bdr}`;
+export const planName = (p: { label: string | null; months: number }) => p.label || `${p.months} months`;
+
+export function FinanceCalculator({ amount, onAmountChange, title, selected, onSelectedChange }: {
+  amount: number; onAmountChange?: (n: number) => void; title?: string;
+  selected?: PickedPlan[]; onSelectedChange?: (s: PickedPlan[]) => void;
+}) {
   const { data: plans = [], isLoading } = useFinancePlans();
   const active = plans.filter((p) => p.active);
+  const picking = !!onSelectedChange;
+  const keys = new Set((selected || []).map((p) => p.key));
+  const toPick = (p: PlanRow): PickedPlan => ({ key: planKey(p), label: p.label, months: p.months, apr: p.apr, bdr: p.bdr });
+  const toggle = (p: PlanRow, on: boolean) => {
+    const rest = (selected || []).filter((x) => x.key !== planKey(p));
+    onSelectedChange?.(on ? [...rest, toPick(p)].sort((a, b) => a.months - b.months) : rest);
+  };
+  const allOn = active.length > 0 && active.every((p) => keys.has(planKey(p)));
   return (
     <div className="space-y-3">
       {title && <div className="text-sm text-muted-foreground">{title}</div>}
@@ -38,10 +54,11 @@ export function FinanceCalculator({ amount, onAmountChange, title }: { amount: n
       </div>
       {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
         <table className="w-full text-sm">
-          <thead><tr className="border-b text-left"><th className="py-2">Plan</th><th>Months</th><th>APR %</th><th>BDr %</th><th className="text-right">Monthly</th><th className="text-right">CC</th></tr></thead>
+          <thead><tr className="border-b text-left">{picking && <th className="py-2 w-10"><input type="checkbox" aria-label="Select all plans" checked={allOn} onChange={(e) => onSelectedChange!(e.target.checked ? active.map(toPick) : [])} /></th>}<th className="py-2">Plan</th><th>Months</th><th>APR %</th><th>BDr %</th><th className="text-right">Monthly</th><th className="text-right">CC</th></tr></thead>
           <tbody>
             {active.map((p, i) => (
-              <tr key={p.id || i} className="border-b">
+              <tr key={p.id || i} className={`border-b ${keys.has(planKey(p)) ? "bg-muted/60" : ""}`}>
+                {picking && <td><input type="checkbox" aria-label={`Offer ${planName(p)}`} checked={keys.has(planKey(p))} onChange={(e) => toggle(p, e.target.checked)} /></td>}
                 <td className="py-1.5">{p.label || `${p.months} months`}</td><td>{p.months}</td><td>{p.apr}</td><td>{p.bdr}</td>
                 <td className="text-right font-medium">{money(monthlyPayment(amount, p.apr, p.months))}</td>
                 <td className="text-right text-muted-foreground">{money(contractorCost(amount, p.bdr))}</td>
@@ -56,15 +73,20 @@ export function FinanceCalculator({ amount, onAmountChange, title }: { amount: n
 }
 
 /** Button that opens the calculator for a given amount — usable anywhere. */
-export function FinanceButton({ amount, label = "Apply financing", title }: { amount: number; label?: string; title?: string }) {
+export function FinanceButton({ amount, label = "Apply financing", title, selected, onSelectedChange }: {
+  amount: number; label?: string; title?: string; selected?: PickedPlan[]; onSelectedChange?: (s: PickedPlan[]) => void;
+}) {
   const [open, setOpen] = useState(false);
+  const n = selected?.length || 0;
   return (
     <>
-      <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)} disabled={!amount}><Landmark className="h-4 w-4 mr-1" />{label}</Button>
+      <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)} disabled={!amount}><Landmark className="h-4 w-4 mr-1" />{label}{n ? ` (${n} picked)` : ""}</Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-auto">
           <DialogHeader><DialogTitle>Finance Calculator</DialogTitle></DialogHeader>
-          <FinanceCalculator amount={amount} title={title} />
+          {onSelectedChange && <p className="text-sm text-muted-foreground">Tick the plan you chose with the customer, or tick several (or all) to offer them as options on the estimate.</p>}
+          <FinanceCalculator amount={amount} title={title} selected={selected} onSelectedChange={onSelectedChange} />
+          {onSelectedChange && <div className="flex justify-end"><Button onClick={() => setOpen(false)}>Done</Button></div>}
         </DialogContent>
       </Dialog>
     </>
