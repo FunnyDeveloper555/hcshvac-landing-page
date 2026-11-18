@@ -4917,6 +4917,45 @@ export type Database = {
           },
         ]
       }
+      product_estimates: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          data: Json
+          estimate_number: string | null
+          id: string
+          total_listed: number | null
+          total_our_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          data?: Json
+          estimate_number?: string | null
+          id?: string
+          total_listed?: number | null
+          total_our_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          data?: Json
+          estimate_number?: string | null
+          id?: string
+          total_listed?: number | null
+          total_our_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_price_history: {
         Row: {
           change_reason: string | null

@@ -30,5 +30,5 @@
 
 # Product bundling (client PDF)
 - [x] Phase 1: vendor ordering contacts/state/brand pickers; product WI= price, Replaced With link, vendor state filter.
-- [ ] Phase 2: Bundle Maker proposal screen.
+- [x] Phase 2: Bundle Maker proposal screen + Estimates list.
 - [ ] Phase 3: Task sourcing automation.

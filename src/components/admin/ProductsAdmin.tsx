@@ -1,3 +1,5 @@
+import BundleMaker from "./products/BundleMaker";
+import EstimatesList from "./products/EstimatesList";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProductsList from "./ProductsList";
 import ProductsAdd from "./ProductsAdd";
@@ -13,6 +15,8 @@ const ProductsAdmin = () => {
         <Route path="/add" element={<ProductsAdd />} />
         <Route path="/bulk" element={<ProductsBulkImport />} />
         <Route path="/list" element={<ProductsList />} />
+        <Route path="/bundle-maker" element={<BundleMaker />} />
+        <Route path="/estimates" element={<EstimatesList />} />
         <Route path="/pricing-rules" element={<PricingRulesAdmin />} />
         <Route path="/categories" element={<ProductCategoriesAdmin />} />
       </Routes>

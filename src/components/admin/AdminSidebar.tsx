@@ -291,6 +291,8 @@ const staticMenuItems: MenuItem[] = [
       { title: "List", url: "/admin/products/list", icon: List },
       { title: "Categories", url: "/admin/products/categories", icon: FolderOpen },
       { title: "Pricing Rules", url: "/admin/products/pricing-rules", icon: Calculator },
+      { title: "Bundle Maker", url: "/admin/products/bundle-maker", icon: Calculator },
+      { title: "Estimates", url: "/admin/products/estimates", icon: Calculator },
     ],
   },
   {

@@ -28,3 +28,4 @@
 - Blue Flame services.html editing is config-driven by SERVICES_SECTIONS in src/lib/blueFlameServicesPage.ts (stored in companies.services_page per section key), so the editor, defaults and website stay aligned from one definition.
 - Pricing rules live in public.pricing_rules; selling price math and rule matching (company+type > type > company > default) are only in src/lib/pricingRules.ts so every screen prices the same way.
 - Bulk pricing writes products.selling_price/pricing_rule_id from the Products List selection via BulkPricingDialog; Our Cost is read only through productOurCost() in src/lib/pricingRules.ts so every screen agrees on cost.
+- Bundle Maker estimates are stored as one product_estimates row with a JSONB snapshot of picked products, so saved proposals keep their prices even if catalog prices change; financing math lives only in src/lib/bundleMath.ts.
