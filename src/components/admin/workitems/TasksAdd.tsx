@@ -357,6 +357,7 @@ export default function TasksAdd() {
           quote={quote}
           onQuoteChange={setQuote}
           onBeforeSend={saveInPlace}
+          onCompleted={() => set("status", "completed")}
         />
       )}
 

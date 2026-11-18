@@ -171,7 +171,14 @@ Deno.serve(async (req) => {
     vendor_id: vendor?.vendor_id || null,
     media,
   });
-  await sb.from(itemType === "task" ? "tasks" : "tickets").update({ updated_at: new Date().toISOString() }).eq("id", match.id);
+  const touch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  // Stop the 2-minute no-reply alert for this vendor and reopen a closed session.
+  if (itemType === "task" && vendor?.vendor_id && match.sourcing && Array.isArray(match.sourcing.vendors)) {
+    const s = match.sourcing;
+    for (const v of s.vendors) if (v?.vendor_id === vendor.vendor_id) v.replied_at = touch.updated_at;
+    touch.sourcing = s;
+  }
+  await sb.from(itemType === "task" ? "tasks" : "tickets").update(touch).eq("id", match.id);
 
   // Alert the assigned staff.
   const crew: any[] = Array.isArray(match.assigned_team) ? match.assigned_team : [];

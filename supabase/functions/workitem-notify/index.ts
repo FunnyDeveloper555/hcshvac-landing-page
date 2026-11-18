@@ -294,6 +294,15 @@ Deno.serve(async (req) => {
           if (sg?.signedUrl) media.push({ url: sg.signedUrl, name: files[i].name, isImage: String(files[i].type || "").startsWith("image/") });
         });
       }
+      // Sourcing session: one ID per task so vendors can resume without repeating details.
+      if (!s.session_id) s.session_id = label || String(row.id).slice(0, 8).toUpperCase();
+      const sessionId = s.session_id;
+      const { data: prof } = await supabase.from("profiles").select("display_name").eq("user_id", userData.user.id).maybeSingle();
+      const { data: emp } = await supabase.from("employees").select("first_name, last_name, phone_number, email_address")
+        .ilike("email_address", userData.user.email || "").limit(1).maybeSingle();
+      const staffName = [emp?.first_name, emp?.last_name].filter(Boolean).join(" ") || prof?.display_name || userData.user.email || "";
+      const staffMobile = emp?.phone_number || "";
+      const staffEmail = emp?.email_address || userData.user.email || "";
       const results: any[] = [];
       const now = new Date().toISOString();
       for (const v of vendors) {
@@ -305,13 +314,27 @@ Deno.serve(async (req) => {
           if (!phone || !SID || !TOKEN || !FROM) {
             results.push({ to: `${v.name} (text)`, status: "failed", error: "no text number" });
           } else {
-            const body = [
-              `${companyName} – Price & Availability ${label || ""}`.trim(),
-              v.account_number ? `Acct #: ${v.account_number}` : "",
-              s.message || "",
-              customer ? `Job site: ${customer}` : "",
-              ...media.slice(0, 5).map((m) => m.url),
-            ].filter(Boolean).join("\n");
+            const resumed = !!v.sent_at;
+            const body = (resumed
+              ? [
+                  `Session ${sessionId} (cont.) - ${companyName}`,
+                  `Subject: ${row.title || "Price & Availability"}`,
+                  s.message || "",
+                  ...media.slice(0, 5).map((m) => m.url),
+                ]
+              : [
+                  `${companyName}`,
+                  v.account_number ? `Acct #: ${v.account_number}` : "",
+                  `Employee: ${staffName}`,
+                  staffMobile ? `Mobile: ${staffMobile}` : "",
+                  staffEmail ? `Email: ${staffEmail}` : "",
+                  `Session ID: ${sessionId}`,
+                  `Subject: ${row.title || "Price & Availability"}`,
+                  s.message || "",
+                  customer ? `Job site: ${customer}` : "",
+                  ...media.slice(0, 5).map((m) => m.url),
+                  `Reply to this text and include session ${sessionId}.`,
+                ]).filter(Boolean).join("\n");
             try {
               const form = new URLSearchParams({ To: phone, From: FROM!, Body: body.slice(0, 1550) });
               media.filter((m) => m.isImage).slice(0, 10).forEach((m) => form.append("MediaUrl", m.url));
@@ -323,6 +346,14 @@ Deno.serve(async (req) => {
               if (!res.ok) throw new Error((await res.json())?.message || `Twilio ${res.status}`);
               results.push({ to: `${v.name} (text)`, status: "sent" });
               sent = true;
+              v.awaiting_since = new Date().toISOString();
+              v.replied_at = null;
+              v.no_reply_alerted_at = null;
+              await supabase.from("work_item_replies").insert({
+                item_type: "task", item_id: itemId, author_id: userData.user.id,
+                author_name: `${staffName} → ${v.name} (text)`, message: body.slice(0, 4000),
+                direction: "outbound", channel: "sms", phone, vendor_id: v.vendor_id,
+              });
             } catch (e) {
               results.push({ to: `${v.name} (text)`, status: "failed", error: (e as Error).message });
             }
@@ -340,10 +371,18 @@ Deno.serve(async (req) => {
                 templateName: "vendor-rfq",
                 recipientEmail: email,
                 idempotencyKey: `rfq-${row.id}-${v.vendor_id}-${now}`,
-                templateData: { companyName, vendorName: v.name, accountNumber: v.account_number, number: label, message: s.message, customer, media },
+                templateData: { companyName, vendorName: v.name, accountNumber: v.account_number, number: `${label || ""} · Session ${sessionId}`, message: [`Employee: ${staffName}${staffMobile ? ` · ${staffMobile}` : ""}${staffEmail ? ` · ${staffEmail}` : ""}`, s.message].filter(Boolean).join("\n\n"), customer, media },
               }),
             });
-            if (res.ok) { results.push({ to: `${v.name} (email)`, status: "sent" }); sent = true; }
+            if (res.ok) {
+              results.push({ to: `${v.name} (email)`, status: "sent" }); sent = true;
+              await supabase.from("work_item_replies").insert({
+                item_type: "task", item_id: itemId, author_id: userData.user.id,
+                author_name: `${staffName} → ${v.name} (email)`,
+                message: `Email to ${email} — Session ${sessionId}\n${s.message || ""}`.slice(0, 4000),
+                direction: "outbound", channel: "email", vendor_id: v.vendor_id,
+              });
+            }
             else results.push({ to: `${v.name} (email)`, status: "failed", error: await res.text() });
           }
         }
@@ -354,6 +393,17 @@ Deno.serve(async (req) => {
         item_type: "task", item_id: itemId, author_id: userData.user.id, author_name: userData.user.email,
         message: `Price & availability request sent to: ${vendors.filter((v) => v.sent_at === now).map((v) => v.name).join(", ") || "nobody"}`,
       });
+      // 2 minutes after a text goes out, check for vendor replies and alert staff if none.
+      if (vendors.some((v) => v.awaiting_since && v.sent_at === now)) {
+        const later = new Promise((r) => setTimeout(r, 125_000)).then(() =>
+          fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/vendor-noreply-alert`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ task_id: itemId }),
+          }).catch((e) => console.error("no-reply check failed", e)));
+        // deno-lint-ignore no-explicit-any
+        (globalThis as any).EdgeRuntime?.waitUntil?.(later);
+      }
       return json({ success: true, results, sourcing: s });
     }
 

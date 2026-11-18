@@ -36,6 +36,9 @@ export interface SourcingVendor {
   price: string;
   availability: string;
   sent_at?: string | null;
+  awaiting_since?: string | null;
+  replied_at?: string | null;
+  no_reply_alerted_at?: string | null;
 }
 
 export interface Sourcing {
@@ -44,6 +47,8 @@ export interface Sourcing {
   include_task_photos: boolean;
   include_customer: boolean;
   media: Attachment[];
+  session_id?: string | null;
+  closed_at?: string | null;
 }
 
 export const emptySourcing = (): Sourcing => ({
@@ -71,15 +76,16 @@ export interface QuoteState {
 }
 
 async function vendorRow(v: VendorLite): Promise<SourcingVendor> {
-  const { data } = await supabase.from("vendors").select("our_account_number").eq("id", v.id).maybeSingle();
+  const { data } = await supabase.from("vendors").select("our_account_number, text_orders_phone, email_orders_to").eq("id", v.id).maybeSingle();
+  const extra = (data || {}) as { our_account_number?: string | null; text_orders_phone?: string | null; email_orders_to?: string | null };
   return {
     vendor_id: v.id,
     name: v.vendor_name,
     address: v.vendor_address || "",
     phone: v.phone || "",
-    sms: v.representative_phone || v.phone || "",
-    email: v.representative_email || "",
-    account_number: (data as { our_account_number?: string } | null)?.our_account_number || "",
+    sms: extra.text_orders_phone || v.representative_phone || v.phone || "",
+    email: extra.email_orders_to || v.representative_email || "",
+    account_number: extra.our_account_number || "",
     method: "both",
     alt_sms: "",
     alt_email: "",
@@ -100,6 +106,7 @@ export function SourcingCard({
   quote,
   onQuoteChange,
   onBeforeSend,
+  onCompleted,
 }: {
   taskType: string;
   value: Sourcing;
@@ -110,8 +117,35 @@ export function SourcingCard({
   onQuoteChange: (q: QuoteState) => void;
   /** Saves the task first; returns its id. */
   onBeforeSend: () => Promise<string | null>;
+  /** Called after the sourcing session is closed and the task marked Completed. */
+  onCompleted?: () => void;
 }) {
   const [sending, setSending] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  const closeSession = async () => {
+    if (!confirm("Close this sourcing session and mark the task Completed?")) return;
+    setClosing(true);
+    try {
+      const id = await onBeforeSend();
+      if (!id) return;
+      const next = { ...value, closed_at: new Date().toISOString() };
+      const { error } = await supabase.from("tasks")
+        .update({ sourcing: next as never, status: "completed" }).eq("id", id);
+      if (error) throw error;
+      await supabase.from("work_item_replies").insert({
+        item_type: "task", item_id: id,
+        message: `Sourcing session ${value.session_id || ""} closed — task completed.`.replace("  ", " "),
+      });
+      onChange(next);
+      onCompleted?.();
+      toast.success("Session closed and task completed");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setClosing(false);
+    }
+  };
   const [quoting, setQuoting] = useState(false);
   const gca = isGcaType(taskType);
   const setV = (i: number, patch: Partial<SourcingVendor>) =>
@@ -189,6 +223,12 @@ export function SourcingCard({
         <p className="text-xs text-muted-foreground">
           Ask one or many vendors for price &amp; availability in one message.
         </p>
+        {value.session_id && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Badge variant="outline">Session {value.session_id}</Badge>
+            {value.closed_at && <Badge variant="secondary">Closed {new Date(value.closed_at).toLocaleString()}</Badge>}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {value.vendors.length === 0 && <p className="text-sm text-muted-foreground">No vendors added yet.</p>}
@@ -198,6 +238,9 @@ export function SourcingCard({
               <span className="text-sm font-semibold">Vendor {i + 1}</span>
               <div className="flex items-center gap-2">
                 {v.sent_at && <Badge variant="secondary">Sent {new Date(v.sent_at).toLocaleString()}</Badge>}
+                {v.replied_at ? <Badge>Replied</Badge>
+                  : v.no_reply_alerted_at ? <Badge variant="destructive">No reply — staff alerted</Badge>
+                  : v.awaiting_since ? <Badge variant="outline">Waiting for reply</Badge> : null}
                 <Button type="button" size="icon" variant="ghost" title="Remove vendor"
                   onClick={() => onChange({ ...value, vendors: value.vendors.filter((_, idx) => idx !== i) })}>
                   <Trash2 className="h-4 w-4 text-destructive" />
@@ -276,8 +319,18 @@ export function SourcingCard({
 
         <Button type="button" onClick={sendRfq} disabled={sending}>
           {sending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-          Send to vendors
+          {value.vendors.some((v) => v.sent_at) ? "Send follow-up (resume session)" : "Send to vendors"}
         </Button>
+        <p className="-mt-2 text-xs text-muted-foreground">
+          The first text includes company, account #, your name, mobile, email and the session ID. Follow-ups only carry the session ID.
+          If a vendor doesn't reply by text within 2 minutes, the assigned team gets a text alert.
+        </p>
+        {value.session_id && !value.closed_at && (
+          <Button type="button" variant="outline" onClick={closeSession} disabled={closing}>
+            {closing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Close session &amp; complete task
+          </Button>
+        )}
 
         {gca && (
           <div className="space-y-3 rounded-md border border-primary/40 p-3">
