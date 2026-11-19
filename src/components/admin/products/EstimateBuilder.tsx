@@ -148,7 +148,7 @@ export default function EstimateBuilder() {
     setEmailing(true);
     try {
       const num = (await save()) || estimateNumber;
-      const fin = (amount: number, plans: PickedPlan[]) => plans.map((p) => ({ name: planName(p), months: p.months, apr: p.apr, monthly: monthlyPayment(amount, p.apr, p.months) }));
+      const fin = (amount: number, plans: PickedPlan[]) => plans.map((p) => ({ name: planName(p), months: p.months, apr: p.apr, monthly: monthlyPayment(amount, p.apr, p.months), understanding: p.understanding || null }));
       const { data: co } = companyId ? await supabase.from("companies").select("name, company_email_primary").eq("id", companyId).maybeSingle() : { data: null };
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
