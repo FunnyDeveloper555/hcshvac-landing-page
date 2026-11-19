@@ -3,6 +3,25 @@ export type SpecFieldKind = "text" | "textarea" | "url" | "select" | "multi" | "
 export interface SpecField { key: string; label: string; kind: SpecFieldKind; options?: string[] }
 export interface SpecCategory { name: string; fields: SpecField[] }
 
+// Added from "Estimate Revision" (Residential / Commercial product types).
+const base = (extra: SpecField[] = []): SpecField[] => [
+  { key: "series_number", label: "Series Number", kind: "text" },
+  { key: "vendor", label: "Vendor", kind: "vendor" },
+  { key: "vendor_sku_item_number", label: "Vendor SKU/Item Number", kind: "text" },
+  { key: "location_type", label: "Location Type", kind: "multi", options: ["Residential", "Commercial", "Light Commercial", "Industrial"] },
+  ...extra,
+  { key: "notes", label: "Notes", kind: "textarea" },
+];
+const EXTRA_CATEGORIES: SpecCategory[] = [
+  { name: "Tankless Water Heater", fields: base([{ key: "fuel_type", label: "Fuel Type", kind: "select", options: ["Natural Gas", "Propane", "Electric"] }, { key: "gpm", label: "GPM", kind: "text" }]) },
+  { name: "Air Quality", fields: base([{ key: "air_quality_type", label: "Air Quality Type", kind: "select", options: ["Humidifiers", "U.V Lights", "Air Cleaners"] }]) },
+  { name: "Small Packaged Unit", fields: base([{ key: "tonnage", label: "Tonnage", kind: "text" }, { key: "voltage", label: "Voltage", kind: "text" }]) },
+  { name: "Packaged Unit", fields: base([{ key: "tonnage", label: "Tonnage", kind: "text" }, { key: "voltage", label: "Voltage", kind: "text" }]) },
+  { name: "RTU", fields: base([{ key: "tonnage", label: "Tonnage", kind: "text" }, { key: "voltage", label: "Voltage", kind: "text" }, { key: "heat_type", label: "Heat Type", kind: "select", options: ["Gas/Electric", "Heat Pump", "Electric Heat", "Cooling Only"] }]) },
+  { name: "Curb Adapter", fields: base([{ key: "fits_from", label: "Fits From (old unit)", kind: "text" }, { key: "fits_to", label: "Fits To (new unit)", kind: "text" }]) },
+  { name: "Economizer", fields: base([{ key: "compatible_units", label: "Compatible Units", kind: "text" }]) },
+];
+
 export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
   {
     "name": "Furnace",
@@ -1256,6 +1275,7 @@ export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
   {
     "name": "Boiler",
     "fields": [
+      { "key": "boiler_type", "label": "Boiler Type", "kind": "select", "options": ["Hot Water Boiler", "Steam Boiler", "Tankless Boiler", "Combi Tankless"] },
       {
         "key": "series",
         "label": "Series",
@@ -1485,7 +1505,8 @@ export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
         "kind": "text"
       }
     ]
-  }
+  },
+  ...EXTRA_CATEGORIES,
 ];
 
 export const specCategory = (name?: string | null) => PRODUCT_SPEC_CATEGORIES.find((c) => c.name === name);
