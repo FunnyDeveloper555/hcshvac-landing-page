@@ -330,6 +330,13 @@
       "when": 1795013991023,
       "tag": "0046_product_bundles_finance_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1795097940863,
+      "tag": "0047_finance_plan_types",
+      "breakpoints": true
     }
   ]
 }

@@ -3578,34 +3578,43 @@ export type Database = {
         Row: {
           active: boolean
           apr: number
+          base_apr: number | null
           bdr: number
           created_at: string
           id: string
           label: string | null
           months: number
+          plan_type: string
           sort_order: number
+          understanding: string | null
           updated_at: string
         }
         Insert: {
           active?: boolean
           apr?: number
+          base_apr?: number | null
           bdr?: number
           created_at?: string
           id?: string
           label?: string | null
           months: number
+          plan_type?: string
           sort_order?: number
+          understanding?: string | null
           updated_at?: string
         }
         Update: {
           active?: boolean
           apr?: number
+          base_apr?: number | null
           bdr?: number
           created_at?: string
           id?: string
           label?: string | null
           months?: number
+          plan_type?: string
           sort_order?: number
+          understanding?: string | null
           updated_at?: string
         }
         Relationships: []
