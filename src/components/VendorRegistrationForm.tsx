@@ -79,22 +79,13 @@ export const VendorRegistrationForm = () => {
 
       // Upload logo if provided
       if (logoFile) {
-        const fileExt = logoFile.name.split(".").pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("vendor-logos")
-          .upload(fileName, logoFile);
-
-        if (uploadError) {
-          throw new Error(`Logo upload failed: ${uploadError.message}`);
+        const fd = new FormData();
+        fd.append("file", logoFile);
+        const { data: up, error: uploadError } = await supabase.functions.invoke("vendor-logo-upload", { body: fd });
+        if (uploadError || !up?.url) {
+          throw new Error(`Logo upload failed: ${up?.error || uploadError?.message || "unknown error"}`);
         }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from("vendor-logos")
-          .getPublicUrl(fileName);
-
-        logoUrl = publicUrl;
+        logoUrl = up.url;
       }
 
       // Insert vendor
