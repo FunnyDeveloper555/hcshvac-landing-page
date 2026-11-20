@@ -63,8 +63,12 @@ export default function HireApplicationsList() {
       if ((data as any)?.error) throw new Error((data as any).error);
       return data;
     },
-    onSuccess: () => {
-      toast({ title: "Portal invite sent", description: "Applicant will receive an email to set up their account." });
+    onSuccess: async (data: any) => {
+      if (data?.portal_url) { try { await navigator.clipboard.writeText(data.portal_url); } catch { /* ignore */ } }
+      toast({
+        title: "Portal invite sent",
+        description: `New setup link emailed${data?.sms_sent ? " and texted" : " (text not sent)"}. The link was also copied so you can paste it to the applicant.`,
+      });
       qc.invalidateQueries({ queryKey: ["applicant-accounts"] });
     },
     onError: (e: any) => toast({ title: "Failed", description: e.message, variant: "destructive" }),
@@ -140,10 +144,19 @@ export default function HireApplicationsList() {
                       </TableCell>
                       <TableCell className="text-right space-x-2">
                         {acct ? (
-                          <Button size="sm" variant="outline"
-                            onClick={() => navigate(`/admin/new-hire/applicant/${acct.id}`)}>
-                            <ExternalLink className="h-3 w-3 mr-1" /> Open
-                          </Button>
+                          <>
+                            <Button size="sm" variant="outline" disabled={createPortal.isPending}
+                              onClick={() => createPortal.mutate(a.id)}>
+                              {createPortal.isPending && createPortal.variables === a.id
+                                ? <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                : <UserPlus className="h-3 w-3 mr-1" />}
+                              Resend Invite
+                            </Button>
+                            <Button size="sm" variant="outline"
+                              onClick={() => navigate(`/admin/new-hire/applicant/${acct.id}`)}>
+                              <ExternalLink className="h-3 w-3 mr-1" /> Open
+                            </Button>
+                          </>
                         ) : (
                           <Button size="sm" disabled={createPortal.isPending}
                             onClick={() => createPortal.mutate(a.id)}>

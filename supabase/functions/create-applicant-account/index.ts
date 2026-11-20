@@ -157,6 +157,31 @@ Deno.serve(async (req) => {
       console.warn("Email invoke failed", e);
     }
 
+    // Also text the link so applicants who miss the email (spam/junk) still get it
+    let smsSent = false;
+    try {
+      const sid = Deno.env.get("TWILIO_ACCOUNT_SID");
+      const tok = Deno.env.get("TWILIO_AUTH_TOKEN");
+      const from = Deno.env.get("TWILIO_PHONE_NUMBER");
+      const digits = String(app.phone || "").replace(/\D/g, "");
+      if (sid && tok && from && digits.length >= 10 && actionLink) {
+        const to = digits.length === 10 ? `+1${digits}` : `+${digits}`;
+        const fd = new URLSearchParams();
+        fd.append("To", to);
+        fd.append("From", from);
+        fd.append("Body", `${companyName || "HCS HVAC"}: Hi ${app.first_name || ""}, set up your applicant portal here: ${actionLink}`);
+        const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+          method: "POST",
+          headers: { Authorization: `Basic ${btoa(`${sid}:${tok}`)}`, "Content-Type": "application/x-www-form-urlencoded" },
+          body: fd,
+        });
+        smsSent = r.ok;
+        if (!r.ok) console.warn("Invite SMS failed", r.status, await r.text());
+      }
+    } catch (e) {
+      console.warn("Invite SMS error", e);
+    }
+
     // Log
     await admin.from("admin_logs").insert({
       user_id: caller.id,
@@ -171,6 +196,8 @@ Deno.serve(async (req) => {
       success: true,
       applicant_account_id: acct.id,
       user_id: userId,
+      portal_url: actionLink,
+      sms_sent: smsSent,
     }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
