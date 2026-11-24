@@ -13,6 +13,7 @@ const base = (extra: SpecField[] = []): SpecField[] => [
   { key: "notes", label: "Notes", kind: "textarea" },
 ];
 const EXTRA_CATEGORIES: SpecCategory[] = [
+  { name: "Air Handler", fields: base([{ key: "refrigerant_type", label: "Refrigerant Type", kind: "select", options: ["R-410A", "R-32", "R-454B", "R-22", "Other"] }, { key: "blower_tons", label: "Tons Blower", kind: "text" }, { key: "blower_type", label: "Blower Type", kind: "select", options: ["PSC", "ECM", "Variable Speed"] }, { key: "heat_kit_kw", label: "Heat Kit (kW)", kind: "text" }, { key: "stages", label: "Stages", kind: "select", options: ["Single Stage", "Two Stage", "Variable"] }]) },
   { name: "Tankless Water Heater", fields: base([{ key: "fuel_type", label: "Fuel Type", kind: "select", options: ["Natural Gas", "Propane", "Electric"] }, { key: "gpm", label: "GPM", kind: "text" }]) },
   { name: "Air Quality", fields: base([{ key: "air_quality_type", label: "Air Quality Type", kind: "select", options: ["Humidifiers", "U.V Lights", "Air Cleaners"] }]) },
   { name: "Small Packaged Unit", fields: base([{ key: "tonnage", label: "Tonnage", kind: "text" }, { key: "voltage", label: "Voltage", kind: "text" }]) },
@@ -109,13 +110,13 @@ export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
         "kind": "select",
         "options": [
           "N/A",
-          "0.8",
-          "0.9",
-          "0.92",
-          "0.95",
-          "0.96",
-          "0.97",
-          "0.98"
+          "80%",
+          "90%",
+          "92%",
+          "95%",
+          "96%",
+          "97%",
+          "98%"
         ]
       },
       {
@@ -1508,6 +1509,16 @@ export const PRODUCT_SPEC_CATEGORIES: SpecCategory[] = [
   },
   ...EXTRA_CATEGORIES,
 ];
+
+/** Normalize AFUE to the percent format used everywhere ("0.8" or ".80" -> "80%"). */
+export function formatAfue(value: unknown): string {
+  const raw = String(value ?? "").trim();
+  if (!raw || /^n\/?a$/i.test(raw)) return raw;
+  const n = Number(raw.replace(/%/g, ""));
+  if (!Number.isFinite(n)) return raw;
+  const pct = n <= 1 ? n * 100 : n;
+  return `${Math.round(pct * 10) / 10}%`;
+}
 
 export const specCategory = (name?: string | null) => PRODUCT_SPEC_CATEGORIES.find((c) => c.name === name);
 

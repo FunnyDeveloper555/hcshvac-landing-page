@@ -1,4 +1,4 @@
-import { PRODUCT_SPEC_CATEGORIES, specCategory, visibleSpecFields } from "./productSpecs";
+import { PRODUCT_SPEC_CATEGORIES, formatAfue, specCategory, visibleSpecFields } from "./productSpecs";
 import type { Json, TablesInsert } from "@/integrations/supabase/types";
 
 export type FieldKind = "text" | "textarea" | "number" | "select" | "radio" | "multi" | "boolean" | "brand" | "vendor" | "image" | "images" | "bullets" | "costs" | "generator" | "url";
@@ -43,8 +43,10 @@ export function masterElements(custom: FormElement[] = []): FormElement[] {
 }
 export function defaultForm(name: string): ProductTypeForm {
   const base = ["item_name", "model_number", "vendor_sku_item_number", "vendor", "product_name", "brand_name", "series_number", "location_type", "voltage", "main_image"];
-  const fields = name === "Pumps" ? [...base, "gpm"] : [...base, "name_generator", ...visibleSpecFields(specCategory(name)).map(f => f.key), "height", "length_depth", "width_size", "weight", "parts_warranty", "labor_warranty", "spot_text", "bullet_points", "thumbnail_images"];
-  return { name, fields: [...new Set(fields)], is_active: true };
+  const fields = name === "Pumps" ? [...base, "gpm"] : [...base, "name_generator", ...visibleSpecFields(specCategory(name)).map(f => f.key), ...(name === "Air Handler" ? ["refrigerant_type", "a2l_compliant"] : []), "height", "length_depth", "width_size", "weight", "parts_warranty", "labor_warranty", "spot_text", "bullet_points", "thumbnail_images"];
+  // Refrigerant never applies to furnaces (gas heat only); it belongs to Air Handlers/coils/condensers.
+  const filtered = name === "Furnace" ? fields.filter(k => !/refrigerant/.test(k)) : fields;
+  return { name, fields: [...new Set(filtered)], is_active: true };
 }
 export function readFieldKeys(value: unknown): string[] {
   return Array.isArray(value) ? [...new Set(value.filter((k): k is string => typeof k === "string"))] : [];
@@ -55,10 +57,11 @@ export function asObject(value: unknown): FormValues {
 export function valuesFromProduct(product: FormValues): FormValues {
   const specs = asObject(product.specifications);
   const images = Array.isArray(product.spot_images) ? product.spot_images : [];
-  const values = { ...specs, ...product, main_image: images[0] || "", thumbnail_images: images.slice(1) };
+  const values: FormValues = { ...specs, ...product, main_image: images[0] || "", thumbnail_images: images.slice(1) };
   for (const element of masterElements()) {
     if (element.column && (product[element.column] == null || product[element.column] === "") && specs[element.key] != null) values[element.key] = specs[element.key];
   }
+  if (values.afue) values.afue = formatAfue(values.afue);
   return values;
 }
 /** Only selected controls write catalog columns; hidden attributes survive edits. */
