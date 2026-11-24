@@ -231,6 +231,7 @@ export default function BookingForm() {
           bill_to_city: formData.billToSameAsShipTo ? null : formData.billToCity,
           bill_to_state: formData.billToSameAsShipTo ? null : formData.billToState,
           bill_to_zip_code: formData.billToSameAsShipTo ? null : formData.billToZipCode,
+          company_id: invitation.company_id,
           location_type: invitation.invitation_type,
           residential_type: invitation.invitation_type === "residential" ? formData.residentialType : null,
           residential_occupancy: invitation.invitation_type === "residential" ? formData.residentialOccupancy : null,
