@@ -74,6 +74,8 @@ export function productFormPatch(typeName: string, elements: FormElement[], valu
     if (element.column) payload[element.column] = element.kind === "number" ? (value === "" || value == null ? null : Number(value)) : value ?? null;
     else specs[element.key] = value ?? (element.kind === "boolean" ? false : "");
   }
+  if (payload.afue) payload.afue = formatAfue(payload.afue);
+  if (specs.afue) specs.afue = formatAfue(specs.afue);
   if (elements.some(f => f.kind === "brand")) payload.brand_id = values.brand_id || null;
   if (elements.some(f => f.kind === "image" || f.kind === "images")) payload.spot_images = [values.main_image, ...(Array.isArray(values.thumbnail_images) ? values.thumbnail_images : [])].filter(Boolean);
   if (elements.some(f => f.kind === "costs")) {

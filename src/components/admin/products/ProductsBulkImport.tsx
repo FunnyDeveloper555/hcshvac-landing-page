@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatAfue } from "@/lib/productSpecs";
 import * as XLSX from "xlsx";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,7 +122,7 @@ export default function ProductsBulkImport() {
         brand_name: p.brand_name || null, spec_type: p.spec_type || null, ...productImportDetails(p, specs),
         category: p.spec_type || null, spot_text: p.description || null,
         tons_btu: p.tons_btu || null, seer_rating: p.seer_rating || null, refrigerant_type: p.refrigerant_type || null,
-        voltage: p.voltage || null, afue: p.afue || null, stages: p.stages || null,
+        voltage: p.voltage || null, afue: p.afue ? formatAfue(p.afue) : null, stages: p.stages || null,
         status: "active_not_showing" as const, invoice_unit_price_text: p.price != null ? String(p.price) : "",
       };
     });
