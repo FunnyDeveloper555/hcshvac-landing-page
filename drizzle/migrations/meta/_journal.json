@@ -344,6 +344,13 @@
       "when": 1795188904305,
       "tag": "0048_lock_finance_plans_vendor_logos",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1795507072594,
+      "tag": "0049_product_type_form_maker",
+      "breakpoints": true
     }
   ]
 }

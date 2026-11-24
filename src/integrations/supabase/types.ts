@@ -5063,6 +5063,36 @@ export type Database = {
         }
         Relationships: []
       }
+      product_form_elements: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          key: string
+          kind: string
+          label: string
+          options: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          key: string
+          kind: string
+          label: string
+          options?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          key?: string
+          kind?: string
+          label?: string
+          options?: Json
+        }
+        Relationships: []
+      }
       product_price_history: {
         Row: {
           change_reason: string | null
@@ -5361,6 +5391,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_type_forms: {
+        Row: {
+          created_at: string
+          created_by: string
+          fields: Json
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          fields?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          fields?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       product_variants: {
         Row: {

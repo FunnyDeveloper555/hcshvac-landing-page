@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PRODUCT_SPEC_CATEGORIES, specCategory, visibleSpecFields, type SpecField } from "@/lib/productSpecs";
+import { useProductForms, availableProductForms } from "@/hooks/useProductForms";
+import { useNavigate } from "react-router-dom";
 
 type Specs = Record<string, any>;
 
@@ -19,6 +21,8 @@ interface Props {
 }
 
 export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsChange, children }: Props) {
+  const savedForms = useProductForms();
+  const navigate = useNavigate();
   const cat = specCategory(specType);
   const fields = visibleSpecFields(cat);
   const { data: vendors = [] } = useQuery({
@@ -47,7 +51,7 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
             <SelectTrigger><SelectValue placeholder={`Select ${f.label}`} /></SelectTrigger>
             <SelectContent className="max-h-72">
               <SelectItem value="__none">—</SelectItem>
-              {f.options!.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              {(f.options || []).map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
             </SelectContent>
           </Select>
         );
@@ -73,7 +77,7 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
       case "multi":
         return (
           <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
-            {f.options!.map((o) => (
+            {(f.options || []).map((o) => (
               <label key={o} className="flex items-center gap-2 text-sm">
                 <Checkbox checked={Array.isArray(v) && v.includes(o)} onCheckedChange={() => toggle(f.key, o)} />
                 {o}
@@ -101,11 +105,14 @@ export function ProductSpecsFields({ specType, onSpecTypeChange, specs, onSpecsC
       {children}
       <div className="space-y-2">
         <Label>Product Type *</Label>
-        <Select value={specType || "__none"} onValueChange={(x) => onSpecTypeChange(x === "__none" ? "" : x)}>
+        <Select value={specType || "__none"} onValueChange={(x) => {
+          if (savedForms.data?.some(f => f.name === x) || x === "Pumps" || x === "Air Conditioner") navigate(`/admin/products/type/${encodeURIComponent(x)}?new=1`);
+          else onSpecTypeChange(x === "__none" ? "" : x);
+        }}>
           <SelectTrigger><SelectValue placeholder="Select product type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="__none">None</SelectItem>
-            {PRODUCT_SPEC_CATEGORIES.map((c) => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
+            {availableProductForms(savedForms.data).filter(c => c.is_active || c.name === specType).map((c) => <SelectItem key={c.name} value={c.name}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>

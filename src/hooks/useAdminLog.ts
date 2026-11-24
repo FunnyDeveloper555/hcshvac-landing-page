@@ -34,6 +34,9 @@ type EntityType =
   | "content_metadata"
   | "gallery"
   | "product_category"
+  | "product"
+  | "product_type_form"
+  | "product_form_element"
   | "ticket"
   | "task";
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePendingSubmissions } from "@/hooks/usePendingSubmissions";
 import { pendingSubmissionIds, oldestPendingSubmission } from "@/lib/submissionAlerts";
 import { PendingSubmissionDot } from "./PendingSubmissionDot";
+import { useProductForms, availableProductForms } from "@/hooks/useProductForms";
 
 interface MenuItem {
   title: string;
@@ -482,12 +483,20 @@ export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {
     ],
   }), [companies]);
 
+  const productForms = useProductForms();
   const menuItems = useMemo(() => {
     const companiesIndex = staticMenuItems.findIndex(item => item.title === "Companies");
     const items = [...staticMenuItems];
     items.splice(companiesIndex + 1, 0, pageBuilderMenu);
+    const databaseIndex = items.findIndex(item => item.title === "Database Content PROFILE");
+    const databaseMenu = items[databaseIndex];
+    if (databaseMenu) items[databaseIndex] = { ...databaseMenu, title: "Database Content", children: [
+      { title: "Form Maker", url: "/admin/products/form-maker", icon: Settings },
+      ...availableProductForms(productForms.data).filter(form => form.is_active).map(form => ({ title: form.name, url: `/admin/products/type/${encodeURIComponent(form.name)}`, icon: Package })),
+      ...(databaseMenu.children || []),
+    ] };
     return items;
-  }, [pageBuilderMenu]);
+  }, [pageBuilderMenu, productForms.data]);
 
   const getInitialOpenGroups = useCallback(() => {
     return menuItems.reduce((acc, item) => {
