@@ -97,7 +97,14 @@ export function productFormPatch(typeName: string, elements: FormElement[], valu
   payload.specifications = specs as Json;
   return payload as TablesInsert<"products">;
 }
+const firstOf = (v: unknown) => (Array.isArray(v) ? v[0] : v) as string | undefined;
 export function generatedProductName(typeName: string, values: FormValues): string {
+  if (typeName.trim().toLowerCase() === "furnace") {
+    // Client furnace pattern: [AFUE%] [Brand] [Model] [Location] [Stages] [Poise] Furnace
+    const afue = values.afue ? formatAfue(String(values.afue)) : "";
+    return [afue, values.brand_name, values.model_number, firstOf(values.location_type), firstOf(values.stages), firstOf(values.poise), "Furnace"]
+      .map(v => (v == null ? "" : String(v).trim())).filter(Boolean).join(" ");
+  }
   const location = Array.isArray(values.location_type) ? values.location_type[0] : values.location_type;
   return [values.brand_name, values.model_number, location, values.tons_btu || values.tonnage || values.input_btu_s || values.btu_s || values.gallons_capacity_size, values.refrigerant_type, values.seer_rating, typeName].filter(Boolean).join(" ");
 }

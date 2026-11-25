@@ -18,7 +18,23 @@ import { useAdminLog } from "@/hooks/useAdminLog";
 import ProductFilterSidebar from "@/components/company/ProductFilterSidebar";
 import BulkPricingDialog from "./products/BulkPricingDialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calculator } from "lucide-react";
+import { Calculator, Columns3, PencilLine } from "lucide-react";
+import BulkEditDialog from "./products/BulkEditDialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+const COLUMNS = [
+  { key: "product_name", label: "Product Name" }, { key: "model_number", label: "Model Number" }, { key: "series", label: "Series" },
+  { key: "category", label: "Category" }, { key: "company", label: "Company" }, { key: "brand", label: "Brand" },
+  { key: "poise", label: "Poise" }, { key: "afue", label: "AFUE" }, { key: "stages", label: "Stages" },
+  { key: "voltage", label: "Voltage" }, { key: "refrigerant", label: "Refrigerant" }, { key: "tons_btu", label: "Tons/BTU" },
+  { key: "seer_rating", label: "SEER" }, { key: "selling_price", label: "Selling Price" }, { key: "status", label: "Status" },
+] as const;
+type ColKey = typeof COLUMNS[number]["key"];
+const PRESETS: Record<string, ColKey[]> = {
+  "All Products": COLUMNS.map(c => c.key),
+  Furnace: ["product_name", "model_number", "series", "company", "brand", "poise", "afue", "stages", "voltage", "tons_btu", "selling_price", "status"],
+};
+const COLS_STORAGE = "products-list-columns";
 
 const productSeries = (p: any): string => {
   const sp = p?.specifications && typeof p.specifications === "object" ? p.specifications : {};
@@ -44,6 +60,13 @@ const ProductsList = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [visibleCols, setVisibleCols] = useState<ColKey[]>(() => {
+    try { const v = JSON.parse(localStorage.getItem(COLS_STORAGE) || "null"); if (Array.isArray(v) && v.length) return v; } catch { /* ignore */ }
+    return PRESETS["All Products"];
+  });
+  const saveCols = (cols: ColKey[]) => { setVisibleCols(cols); localStorage.setItem(COLS_STORAGE, JSON.stringify(cols)); };
+  const show = (k: ColKey) => visibleCols.includes(k);
 
   const { data: products, isLoading, refetch } = useQuery({
     queryKey: ["products-list"],
@@ -435,10 +458,32 @@ const ProductsList = () => {
             </label>
             {selectedIds.size > 0 && <span className="text-sm text-muted-foreground">{selectedIds.size} selected</span>}
             {selectedIds.size > 0 && <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>Clear selection</Button>}
-            <Button size="sm" className="ml-auto" disabled={selectedIds.size === 0} onClick={() => setPricingOpen(true)}>
+            <Popover>
+              <PopoverTrigger asChild><Button size="sm" variant="outline" className="ml-auto"><Columns3 className="h-4 w-4 mr-2" />Customize Columns</Button></PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <div className="flex gap-2 mb-3">{Object.keys(PRESETS).map(n => <Button key={n} size="sm" variant="secondary" onClick={() => saveCols(PRESETS[n])}>{n}</Button>)}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {COLUMNS.map(c => (
+                    <label key={c.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox checked={show(c.key)} onCheckedChange={(v) => saveCols(v ? COLUMNS.map(x => x.key).filter(k => k === c.key || visibleCols.includes(k)) : visibleCols.filter(k => k !== c.key))} />{c.label}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button size="sm" variant="secondary" disabled={selectedIds.size === 0} onClick={() => setBulkOpen(true)}>
+              <PencilLine className="h-4 w-4 mr-2" /> Bulk Edit
+            </Button>
+            <Button size="sm" disabled={selectedIds.size === 0} onClick={() => setPricingOpen(true)}>
               <Calculator className="h-4 w-4 mr-2" /> Set Pricing Rule
             </Button>
           </div>
+          <BulkEditDialog
+            open={bulkOpen}
+            onOpenChange={setBulkOpen}
+            products={(products || []).filter((p: any) => selectedIds.has(p.id))}
+            onApplied={() => { setSelectedIds(new Set()); refetch(); }}
+          />
           <BulkPricingDialog
             open={pricingOpen}
             onOpenChange={setPricingOpen}
@@ -453,20 +498,21 @@ const ProductsList = () => {
                 <TableRow>
                   <TableHead className="w-[40px]" />
                   <TableHead className="w-[60px]">Image</TableHead>
-                  <SortableHead field="product_name">Product Name</SortableHead>
-                  <SortableHead field="model_number">Model #</SortableHead>
-                  <SortableHead field="category">Category</SortableHead>
-                  <SortableHead field="company">Company</SortableHead>
-                  <SortableHead field="brand">Brand</SortableHead>
-                  <SortableHead field="poise">Poise</SortableHead>
-                  <SortableHead field="afue">AFUE</SortableHead>
-                  <SortableHead field="stages">Stages</SortableHead>
-                  <SortableHead field="voltage">Voltage</SortableHead>
-                  <SortableHead field="refrigerant">Refrigerant</SortableHead>
-                  <SortableHead field="tons_btu">Tons/BTU</SortableHead>
-                  <SortableHead field="seer_rating">SEER</SortableHead>
-                  <TableHead className="text-right">Selling Price</TableHead>
-                  <SortableHead field="status">Status</SortableHead>
+                  {show("product_name") && <SortableHead field="product_name">Product Name</SortableHead>}
+                  {show("model_number") && <SortableHead field="model_number">Model #</SortableHead>}
+                  {show("series") && <TableHead>Series</TableHead>}
+                  {show("category") && <SortableHead field="category">Category</SortableHead>}
+                  {show("company") && <SortableHead field="company">Company</SortableHead>}
+                  {show("brand") && <SortableHead field="brand">Brand</SortableHead>}
+                  {show("poise") && <SortableHead field="poise">Poise</SortableHead>}
+                  {show("afue") && <SortableHead field="afue">AFUE</SortableHead>}
+                  {show("stages") && <SortableHead field="stages">Stages</SortableHead>}
+                  {show("voltage") && <SortableHead field="voltage">Voltage</SortableHead>}
+                  {show("refrigerant") && <SortableHead field="refrigerant">Refrigerant</SortableHead>}
+                  {show("tons_btu") && <SortableHead field="tons_btu">Tons/BTU</SortableHead>}
+                  {show("seer_rating") && <SortableHead field="seer_rating">SEER</SortableHead>}
+                  {show("selling_price") && <TableHead className="text-right">Selling Price</TableHead>}
+                  {show("status") && <SortableHead field="status">Status</SortableHead>}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -486,27 +532,28 @@ const ProductsList = () => {
                         <div className="h-10 w-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">—</div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{product.product_name}</TableCell>
-                    <TableCell>{(product as any).model_number || "—"}</TableCell>
-                    <TableCell>{product.category || "—"}</TableCell>
-                    <TableCell>{(product.companies as any)?.name || "—"}</TableCell>
-                    <TableCell>{product.brand_name || "—"}</TableCell>
-                    <TableCell>{product.poise || "—"}</TableCell>
-                    <TableCell>{product.afue || "—"}</TableCell>
-                    <TableCell>{(product as any).stages || "—"}</TableCell>
-                    <TableCell>{(product as any).voltage || "—"}</TableCell>
-                    <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>
-                    <TableCell>{(product as any).tons_btu || "—"}</TableCell>
-                    <TableCell>{(product as any).seer_rating || "—"}</TableCell>
-                    <TableCell className="text-right">{product.selling_price != null ? `$${Number(product.selling_price).toFixed(2)}` : "—"}</TableCell>
-                    <TableCell>
+                    {show("product_name") && <TableCell className="font-medium">{product.product_name}</TableCell>}
+                    {show("model_number") && <TableCell>{(product as any).model_number || "—"}</TableCell>}
+                    {show("series") && <TableCell>{productSeries(product) || "—"}</TableCell>}
+                    {show("category") && <TableCell>{product.category || "—"}</TableCell>}
+                    {show("company") && <TableCell>{(product.companies as any)?.name || "—"}</TableCell>}
+                    {show("brand") && <TableCell>{product.brand_name || "—"}</TableCell>}
+                    {show("poise") && <TableCell>{product.poise || "—"}</TableCell>}
+                    {show("afue") && <TableCell>{product.afue || "—"}</TableCell>}
+                    {show("stages") && <TableCell>{(product as any).stages || "—"}</TableCell>}
+                    {show("voltage") && <TableCell>{(product as any).voltage || "—"}</TableCell>}
+                    {show("refrigerant") && <TableCell>{(product as any).refrigerant_type || "—"}</TableCell>}
+                    {show("tons_btu") && <TableCell>{(product as any).tons_btu || "—"}</TableCell>}
+                    {show("seer_rating") && <TableCell>{(product as any).seer_rating || "—"}</TableCell>}
+                    {show("selling_price") && <TableCell className="text-right">{product.selling_price != null ? `$${Number(product.selling_price).toFixed(2)}` : "—"}</TableCell>}
+                    {show("status") && (<TableCell>
                       {(() => {
                         const s = (product as any).status;
                         const label = ({ active_showing: "Active (Showing)", active_not_showing: "Active (Not Showing)", discontinued_showing: "Discontinued (Showing)", deactivated: "Deactivated" } as Record<string,string>)[s] || s;
                         const variant = s === "active_showing" ? "default" : s === "discontinued_showing" ? "outline" : "secondary";
                         return <Badge variant={variant as any}>{label}</Badge>;
                       })()}
-                    </TableCell>
+                    </TableCell>)}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button size="sm" variant="outline" onClick={() => navigate(`/admin/products/add?id=${product.id}`)}><Pencil className="h-4 w-4" /></Button>
@@ -517,7 +564,7 @@ const ProductsList = () => {
                 ))}
                 {paginatedProducts.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={visibleCols.length + 3} className="text-center text-muted-foreground py-8">
                       {hasActiveFilters ? "No products match your filters." : "No products found. Add your first one!"}
                     </TableCell>
                   </TableRow>

@@ -39,7 +39,7 @@ test("image order roundtrips and generator retains standard name sequence", () =
   assert.equal(values.main_image, "main"); assert.deepEqual(values.thumbnail_images, ["thumb"]);
   const patch = productFormPatch("Pumps", masterElements().filter(f => ["image", "images"].includes(f.kind)), values);
   assert.deepEqual(patch.spot_images, ["main", "thumb"]);
-  assert.equal(generatedProductName("Furnace", { brand_name: "Brand", model_number: "M1", location_type: ["Residential"], input_btu_s: "60000", refrigerant_type: "R-32", seer_rating: "16" }), "Brand M1 Residential 60000 R-32 16 Furnace");
+  assert.equal(generatedProductName("Furnace", { afue: "0.96", brand_name: "Goodman", model_number: "GR9S960403AN", location_type: ["Residential"], stages: "Single Stage", poise: "Up-Flow", input_btu_s: "40000", refrigerant_type: "R-32" }), "96% Goodman GR9S960403AN Residential Single Stage Up-Flow Furnace");
 });
 test("malformed field configuration falls back safely", () => {
   assert.deepEqual(readFieldKeys(null), []); assert.deepEqual(readFieldKeys(["gpm", null, "gpm", 1]), ["gpm"]);
