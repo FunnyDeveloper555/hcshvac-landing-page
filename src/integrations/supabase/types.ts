@@ -5394,6 +5394,7 @@ export type Database = {
       }
       product_type_forms: {
         Row: {
+          applicable_areas: string[]
           created_at: string
           created_by: string
           fields: Json
@@ -5403,6 +5404,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          applicable_areas?: string[]
           created_at?: string
           created_by?: string
           fields?: Json
@@ -5412,6 +5414,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          applicable_areas?: string[]
           created_at?: string
           created_by?: string
           fields?: Json

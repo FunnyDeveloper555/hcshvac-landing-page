@@ -69,11 +69,12 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
     }
     return <Input id={id} type={f.kind === "number" ? "number" : f.kind === "url" ? "url" : "text"} step={f.kind === "number" ? "0.01" : undefined} value={String(v ?? "")} onChange={e => set(f.key, e.target.value)} required={f.key === "product_name"} />;
   };
-  const sections = [...new Set(elements.map(f => f.section))];
+  // Keep the Form Maker layout order: consecutive elements of one section share a heading.
+  const groups = elements.reduce<{ section: string; items: typeof elements }[]>((acc, f) => { const last = acc[acc.length - 1]; if (last && last.section === f.section) last.items.push(f); else acc.push({ section: f.section, items: [f] }); return acc; }, []);
   return <>
     {elements.some(f => f.kind === "vendor" || f.kind === "costs") && <div className="max-w-xs space-y-2"><Label htmlFor="form-vendor-state">Vendor State</Label>{select("form-vendor-state", vendorState, ["all", ...new Set(vendors.map(v => (v.state || "").toUpperCase()).filter(Boolean))], setVendorState)}</div>}
-    {sections.map(section => <section key={section} className="space-y-4 border-t pt-5"><h3 className="font-semibold text-lg">{section}</h3><div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-      {elements.filter(f => f.section === section).map(f => <div key={f.key} className={`space-y-2 min-w-0 ${["textarea", "multi", "costs", "bullets", "images", "image"].includes(f.kind) ? "md:col-span-2 xl:col-span-3" : ""}`}><Label htmlFor={`field-${f.key}`}>{f.label}{f.key === "product_name" ? " *" : ""}</Label>{render(f)}</div>)}
+    {groups.map(({ section, items }, gi) => <section key={`${section}-${gi}`} className="space-y-4 border-t pt-5"><h3 className="font-semibold text-lg">{section}</h3><div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {items.map(f => <div key={f.key} className={`space-y-2 min-w-0 ${["textarea", "multi", "costs", "bullets", "images", "image"].includes(f.kind) ? "md:col-span-2 xl:col-span-3" : ""}`}><Label htmlFor={`field-${f.key}`}>{f.label}{f.key === "product_name" ? " *" : ""}</Label>{render(f)}</div>)}
     </div></section>)}
     <FileManagerPicker open={!!picker} onOpenChange={open => { if (!open) setPicker(null); }} accept="image/*" title="Choose Product Image" onSelect={url => {
       if (!picker) return;

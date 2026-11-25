@@ -1,0 +1,1 @@
+ALTER TABLE public.product_type_forms ADD COLUMN IF NOT EXISTS applicable_areas text[] NOT NULL DEFAULT '{}';

@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAdminLog } from "@/hooks/useAdminLog";
 import { availableProductForms, useProductForms, useProductFormElements } from "@/hooks/useProductForms";
-import { masterElements, productFormPatch, valuesFromProduct, asObject, type FormValues } from "@/lib/productForms";
+import { orderedElements, masterElements, productFormPatch, valuesFromProduct, asObject, type FormValues } from "@/lib/productForms";
 import { ProductFormFields } from "./ProductFormFields";
 import { Loader2, Pencil, Plus, Trash2, ChevronLeft, ChevronRight, Settings2, Save, ArrowLeft } from "lucide-react";
 import ProductsAdd from "@/components/admin/ProductsAdd";
@@ -18,7 +18,7 @@ import ProductsAdd from "@/components/admin/ProductsAdd";
 export function ConfiguredProductEditor({ typeName, id, onSaved }: { typeName: string; id?: string; onSaved: () => void }) {
   const formsQuery = useProductForms(); const customQuery = useProductFormElements(); const client = useQueryClient();
   const config = availableProductForms(formsQuery.data).find(f => f.name === typeName);
-  const elements = masterElements(customQuery.data).filter(f => config?.fields.includes(f.key));
+  const elements = orderedElements(masterElements(customQuery.data), config?.fields || []);
   const [values, setValues] = useState<FormValues>({ status: "active_not_showing" }); const [busy, setBusy] = useState(false);
   const { toast } = useToast(); const { logAction } = useAdminLog();
   const productQuery = useQuery({ queryKey: ["form-product", id], enabled: !!id, staleTime: 30_000, queryFn: async () => {

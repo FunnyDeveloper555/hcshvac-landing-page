@@ -46,5 +46,8 @@ test("malformed field configuration falls back safely", () => {
 });
 test("legacy sheet values remain editable when the equivalent catalog column is empty", () => {
   const values = valuesFromProduct({ product_name: "Legacy furnace", voltage: null, afue: "", specifications: { voltage: "120v", afue: "96" } });
-  assert.equal(values.voltage, "120v"); assert.equal(values.afue, "96");
+  assert.equal(values.voltage, "120v"); assert.equal(values.afue, "96%");
 });
+import { moveKey, orderedElements, STANDARD_ELEMENTS } from "../src/lib/productForms";
+test("layout: moves an item to a new position", () => { assert.deepEqual(moveKey(["a", "b", "c"], 2, 0), ["c", "a", "b"]); });
+test("layout: elements follow saved order", () => { assert.deepEqual(orderedElements(STANDARD_ELEMENTS, ["missing", "model_number", "product_name"]).map(e => e.key), ["model_number", "product_name"]); });

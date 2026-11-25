@@ -6,9 +6,9 @@ export function useProductForms() {
   return useQuery({
     queryKey: ["product-type-forms"], staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("product_type_forms").select("id,name,fields,is_active").order("name");
+      const { data, error } = await supabase.from("product_type_forms").select("id,name,fields,is_active,applicable_areas").order("name");
       if (error) throw error;
-      return (data || []).map(row => ({ ...row, fields: readFieldKeys(row.fields) })) as ProductTypeForm[];
+      return (data || []).map(row => ({ ...row, fields: readFieldKeys(row.fields), applicable_areas: row.applicable_areas || [] })) as ProductTypeForm[];
     },
   });
 }

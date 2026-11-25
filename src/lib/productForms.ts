@@ -3,7 +3,17 @@ import type { Json, TablesInsert } from "@/integrations/supabase/types";
 
 export type FieldKind = "text" | "textarea" | "number" | "select" | "radio" | "multi" | "boolean" | "brand" | "vendor" | "image" | "images" | "bullets" | "costs" | "generator" | "url";
 export interface FormElement { key: string; label: string; kind: FieldKind; options?: string[]; column?: string; section: string }
-export interface ProductTypeForm { id?: string; name: string; fields: string[]; is_active: boolean }
+export interface ProductTypeForm { id?: string; name: string; fields: string[]; is_active: boolean; applicable_areas?: string[] }
+export const APPLICABLE_AREAS = ["HVAC Equipment", "Plumbing", "Electrical", "HVAC Parts", "Plumbing Parts", "Other"];
+/** Returns the chosen elements in the saved layout order (fields array order). */
+export function orderedElements(all: FormElement[], keys: string[]): FormElement[] {
+  const byKey = new Map(all.map(e => [e.key, e]));
+  return keys.map(k => byKey.get(k)).filter((e): e is FormElement => !!e);
+}
+export function moveKey(keys: string[], from: number, to: number): string[] {
+  if (from === to || from < 0 || to < 0 || from >= keys.length || to >= keys.length) return keys;
+  const next = [...keys]; const [k] = next.splice(from, 1); next.splice(to, 0, k); return next;
+}
 export type FormValues = Record<string, unknown>;
 const field = (key: string, label: string, kind: FieldKind = "text", section = "Identification", column?: string, options?: string[]): FormElement => ({ key, label, kind, section, column, options });
 
