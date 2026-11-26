@@ -52,9 +52,9 @@ export function ConfiguredProductEditor({ typeName, id, onSaved }: { typeName: s
   };
   if (formsQuery.isLoading || customQuery.isLoading || (id && productQuery.isLoading)) return <Loader2 className="h-6 w-6 animate-spin" />;
   if (formsQuery.error || customQuery.error || productQuery.error || companiesQuery.error || categoriesQuery.error) return <p className="text-destructive">Unable to load this product form. Please refresh and try again.</p>;
-  return <form onSubmit={save} className="space-y-5">
+  return <form onSubmit={save} className="space-y-5 compact-form">
     <h3 className="text-xl font-semibold">{id ? "Edit" : "Add"} {typeName}</h3>
-    <section className="grid md:grid-cols-3 gap-4">
+    <section className="grid md:grid-cols-3 xl:grid-cols-4 gap-4">
       <div className="space-y-2"><Label htmlFor="form-status">Item Status</Label><Select value={String(values.status || "active_not_showing")} onValueChange={v => set("status", v)}><SelectTrigger id="form-status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active_showing">Item Active (Showing)</SelectItem><SelectItem value="active_not_showing">Item Active (Not Showing)</SelectItem><SelectItem value="discontinued_showing">Item Discontinued (Showing)</SelectItem><SelectItem value="deactivated">Deactivated (Not Showing)</SelectItem></SelectContent></Select></div>
       <div className="space-y-2"><Label htmlFor="form-company">Company *</Label><Select value={String(values.company_id || "__none")} onValueChange={v => set("company_id", v === "__none" ? "" : v)}><SelectTrigger id="form-company"><SelectValue placeholder="Select company" /></SelectTrigger><SelectContent><SelectItem value="__none">Select company</SelectItem>{companiesQuery.data?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
       <div className="space-y-2"><Label htmlFor="form-category">Product Filter Category</Label><Select value={String(values.category_id || "__none")} onValueChange={v => set("category_id", v === "__none" ? "" : v)}><SelectTrigger id="form-category"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent><SelectItem value="__none">—</SelectItem>{categoriesQuery.data?.map(c => <SelectItem key={c.id} value={c.id}>{categoryPath(c.id)}</SelectItem>)}</SelectContent></Select></div>

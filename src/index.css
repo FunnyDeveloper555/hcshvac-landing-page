@@ -187,3 +187,19 @@
 .admin-compact .mt-8 { margin-top: 0.75rem; }
 .admin-compact [class*="CardHeader"], .admin-compact .card-header { padding: 0.5rem 0.625rem; }
 .admin-compact [class*="CardContent"], .admin-compact .card-content { padding: 0.5rem 0.625rem; }
+
+/* Dense admin forms: smaller controls, tighter spacing, less scrolling */
+.compact-form { font-size: 0.8125rem; }
+.compact-form input:not([type=checkbox]):not([type=radio]), .compact-form button[role=combobox] { height: 2rem; padding-top: 0.25rem; padding-bottom: 0.25rem; font-size: 0.8125rem; }
+.compact-form textarea { min-height: 3.5rem; font-size: 0.8125rem; padding: 0.375rem 0.625rem; }
+.compact-form button:not([role=combobox]):not([role=checkbox]) { height: 2rem; padding-left: 0.75rem; padding-right: 0.75rem; font-size: 0.8125rem; }
+.compact-form label { font-size: 0.75rem; line-height: 1rem; }
+.compact-form .space-y-2 > * + * { margin-top: 0.25rem; }
+.compact-form .space-y-3 > * + * { margin-top: 0.5rem; }
+.compact-form .space-y-4 > * + * { margin-top: 0.5rem; }
+.compact-form .space-y-5 > * + * { margin-top: 0.75rem; }
+.compact-form .gap-4 { gap: 0.5rem 0.75rem; }
+.compact-form .gap-3 { gap: 0.5rem; }
+.compact-form .pt-5, .compact-form .pt-4 { padding-top: 0.5rem; }
+.compact-form h3 { font-size: 0.95rem; }
+.compact-form .w-28 { width: 4.5rem; }

@@ -24,7 +24,7 @@ type Key = "image" | "parts" | "labor" | "bullets" | "desc" | "status" | "name";
 
 function Row({ on, toggle, k, label, children }: { on: Record<Key, boolean>; toggle: (k: Key) => void; k: Key; label: string; children?: React.ReactNode }) {
   return (
-    <div className="rounded-lg border p-3 space-y-2">
+    <div className="rounded-md border px-2.5 py-1.5 space-y-2">
       <label className="flex items-center gap-2 font-medium cursor-pointer"><Checkbox checked={on[k]} onCheckedChange={() => toggle(k)} />{label}</label>
       {on[k] && children}
     </div>
@@ -78,10 +78,10 @@ export default function BulkEditDialog({ open, onOpenChange, products, onApplied
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto compact-form p-4 gap-2">
         <DialogHeader><DialogTitle>Bulk Edit {products.length} Selected Products</DialogTitle></DialogHeader>
         <p className="text-sm text-muted-foreground">Check each item you want to change. Unchecked items stay as they are.</p>
-        <div className="space-y-3">
+        <div className="grid md:grid-cols-2 gap-x-4 gap-y-2">
           <Row on={on} toggle={toggle} k="image" label="Edit Image of Selected">
             <div className="flex flex-wrap items-center gap-3">
               <Select value={imageMode} onValueChange={v => setImageMode(v as any)}>
