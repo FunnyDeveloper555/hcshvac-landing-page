@@ -420,7 +420,7 @@ const ProductsAdd = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 compact-form">
       <h2 className="text-3xl font-bold">{isEditing ? "Edit Product" : "Add New Product"}</h2>
       <Tabs defaultValue="properties">
         <TabsList className="w-full justify-start h-auto flex-wrap gap-0 bg-transparent border-b rounded-none p-0">
