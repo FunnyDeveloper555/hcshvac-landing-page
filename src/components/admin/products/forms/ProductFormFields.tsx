@@ -34,6 +34,7 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
   };
   const render = (f: FormElement) => {
     const v = values[f.key]; const id = `field-${f.key}`;
+    if (f.key === "product_name") return <div className="flex flex-wrap items-center gap-2"><Input id={id} className="min-w-0 flex-1" value={String(v ?? "")} onChange={e => set(f.key, e.target.value)} required /><Button type="button" size="icon" variant="outline" className="shrink-0" title="Auto-Generate Name" aria-label="Auto-Generate Name" onClick={() => set("product_name", generatedProductName(typeName, values))}><WandSparkles className="h-4 w-4" /></Button></div>;
     if (f.kind === "generator") return <Button type="button" variant="outline" onClick={() => set("product_name", generatedProductName(typeName, values))}><WandSparkles className="h-4 w-4 mr-2" />Auto-Generate Name</Button>;
     if (f.kind === "brand") return <Select value={String(values.brand_id || "__none")} onValueChange={id => {
       const brand = brands.find(b => b.id === id); onChange({ ...values, brand_id: brand?.id || "", brand_name: brand?.name || "" });
@@ -70,7 +71,8 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
     return <Input id={id} type={f.kind === "number" ? "number" : f.kind === "url" ? "url" : "text"} step={f.kind === "number" ? "0.01" : undefined} value={String(v ?? "")} onChange={e => set(f.key, e.target.value)} required={f.key === "product_name"} />;
   };
   // Keep the Form Maker layout order: consecutive elements of one section share a heading.
-  const groups = elements.reduce<{ section: string; items: typeof elements }[]>((acc, f) => { const last = acc[acc.length - 1]; if (last && last.section === f.section) last.items.push(f); else acc.push({ section: f.section, items: [f] }); return acc; }, []);
+  const displayElements = elements.some(f => f.key === "product_name") ? elements.filter(f => f.kind !== "generator") : elements;
+  const groups = displayElements.reduce<{ section: string; items: typeof elements }[]>((acc, f) => { const last = acc[acc.length - 1]; if (last && last.section === f.section) last.items.push(f); else acc.push({ section: f.section, items: [f] }); return acc; }, []);
   return <>
     {elements.some(f => f.kind === "vendor" || f.kind === "costs") && <div className="max-w-xs space-y-2"><Label htmlFor="form-vendor-state">Vendor State</Label>{select("form-vendor-state", vendorState, ["all", ...new Set(vendors.map(v => (v.state || "").toUpperCase()).filter(Boolean))], setVendorState)}</div>}
     {groups.map(({ section, items }, gi) => <section key={`${section}-${gi}`} className="space-y-4 border-t pt-5"><h3 className="font-semibold text-lg">{section}</h3><div className="grid md:grid-cols-3 xl:grid-cols-4 gap-4">

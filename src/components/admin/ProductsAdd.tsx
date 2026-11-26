@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Plus, Trash2, GripVertical, Check, ChevronsUpDown } from "lucide-react";
+import { Loader2, Plus, Trash2, GripVertical, Check, ChevronsUpDown, WandSparkles } from "lucide-react";
+import { generatedProductName, valuesFromProduct } from "@/lib/productForms";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -213,8 +214,13 @@ const ProductsAdd = () => {
       const cat = allCategories.find((c: any) => c.id === catId);
       return cat?.name || "";
     })();
-    const parts = [brandName, modelNumber, resComLabel || (Array.isArray(specs.location_type) ? specs.location_type[0] : ""), tonsBtu || specs.btu_s || specs.input_btu_s || specs.tonnage || specs.gallons_capacity_size || "", refrigerantType || (Array.isArray(specs.refrigerant) ? specs.refrigerant[0] : specs.refrigerant_type || ""), seerRating || specs.seer_rating || "", equipType || specType].filter(Boolean);
-    return parts.join(" ");
+    return generatedProductName(specType || equipType, valuesFromProduct({
+      specifications: specs,
+      brand_name: selectedBrandName, model_number: modelNumber,
+      afue, stages, poise, tons_btu: tonsBtu, seer_rating: seerRating,
+      refrigerant_type: refrigerantType || (Array.isArray(specs.refrigerant) ? specs.refrigerant[0] : specs.refrigerant_type || ""),
+      location_type: resComLabel || specs.location_type,
+    }));
   };
 
   const handleAutoGenerate = () => {
@@ -533,16 +539,13 @@ const ProductsAdd = () => {
 
             {/* Generate Product Name */}
             <div className="border rounded-lg p-4 space-y-4">
-              <h3 className="text-lg font-semibold">Generate Product Name</h3>
+              <h3 className="text-lg font-semibold">Product Name</h3>
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-2">
-                  <Label>Product Name *</Label>
-                  <Input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
-                  <p className="text-xs text-muted-foreground">Pattern: {"{Brand} {Model} {Location} {Tons/BTU} {Refrigerant} {SEER} {Product Type}"}</p>
+                  <Label htmlFor="product-name">Product Name *</Label>
+                  <Input id="product-name" placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
                 </div>
-                <Button type="button" variant="outline" onClick={handleAutoGenerate}>
-                  Auto-Generate
-                </Button>
+                <Button type="button" size="icon" variant="outline" title="Auto-Generate Name" aria-label="Auto-Generate Name" onClick={handleAutoGenerate}><WandSparkles className="h-4 w-4" /></Button>
               </div>
             </div>
 

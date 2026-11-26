@@ -1,5 +1,6 @@
 # Architecture rules
 - Product Form Maker stores type layouts and reusable field definitions in staff-only configuration tables; productForms maps selected standard fields to catalog columns and preserves hidden JSONB attributes, so editing layouts never destroys product data.
+- Product Add/Edit and bulk name generation use generatedProductName with valuesFromProduct for legacy column/specification fallback; keep the generator beside Product Name so editor layouts cannot hide it below unrelated fields.
 - Appointment close-out attachments use AppointmentAttachments in Customer History and appointment details, with short-lived signed links to private storage so PDFs and media remain staff-accessible without public exposure.
 - Product add/edit Brand selection reads active database brands and saves both their ID and name, preserving legacy names so catalog links and display text stay aligned.
 - Bulk product parsing preserves original descriptions, extracts explicit labeled measurements, stores diameter and unmatched details in specifications (including Other products), and maps height/width/depth/weight to the existing page-level columns so review and saved products retain them.

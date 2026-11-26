@@ -48,6 +48,10 @@ test("legacy sheet values remain editable when the equivalent catalog column is 
   const values = valuesFromProduct({ product_name: "Legacy furnace", voltage: null, afue: "", specifications: { voltage: "120v", afue: "96" } });
   assert.equal(values.voltage, "120v"); assert.equal(values.afue, "96%");
 });
+test("legacy editor furnace generation uses sheet AFUE, stages and poise when columns are empty", () => {
+  const values = valuesFromProduct({ brand_name: "Goodman", model_number: "GR9S960403AN", afue: "", stages: "", poise: "", specifications: { afue: ".96", location_type: ["Residential"], stages: "Single Stage", poise: "Up-Flow", refrigerant_type: "R-32", input_btu_s: "40000" } });
+  assert.equal(generatedProductName("Furnace", values), "96% Goodman GR9S960403AN Residential Single Stage Up-Flow Furnace");
+});
 import { moveKey, orderedElements, STANDARD_ELEMENTS } from "../src/lib/productForms";
 test("layout: moves an item to a new position", () => { assert.deepEqual(moveKey(["a", "b", "c"], 2, 0), ["c", "a", "b"]); });
 test("layout: elements follow saved order", () => { assert.deepEqual(orderedElements(STANDARD_ELEMENTS, ["missing", "model_number", "product_name"]).map(e => e.key), ["model_number", "product_name"]); });
