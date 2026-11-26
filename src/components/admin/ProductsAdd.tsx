@@ -540,12 +540,12 @@ const ProductsAdd = () => {
             {/* Generate Product Name */}
             <div className="border rounded-lg p-4 space-y-4">
               <h3 className="text-lg font-semibold">Product Name</h3>
-              <div className="flex items-end gap-2">
-                <div className="flex-1 space-y-2">
+              <div className="flex flex-wrap items-end gap-2">
+                <div className="min-w-[140px] flex-1 space-y-2">
                   <Label htmlFor="product-name">Product Name *</Label>
                   <Input id="product-name" placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)} />
                 </div>
-                <Button type="button" size="icon" variant="outline" title="Auto-Generate Name" aria-label="Auto-Generate Name" onClick={handleAutoGenerate}><WandSparkles className="h-4 w-4" /></Button>
+                <Button type="button" size="sm" variant="outline" className="shrink-0" title="Generate Name" onClick={handleAutoGenerate}><WandSparkles className="h-4 w-4 mr-2" />Generate Name</Button>
               </div>
             </div>
 
