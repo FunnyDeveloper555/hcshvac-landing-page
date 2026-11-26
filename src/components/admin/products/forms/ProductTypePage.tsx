@@ -60,7 +60,7 @@ export function ConfiguredProductEditor({ typeName, id, onSaved }: { typeName: s
       <div className="space-y-2"><Label htmlFor="form-category">Product Filter Category</Label><Select value={String(values.category_id || "__none")} onValueChange={v => set("category_id", v === "__none" ? "" : v)}><SelectTrigger id="form-category"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent><SelectItem value="__none">—</SelectItem>{categoriesQuery.data?.map(c => <SelectItem key={c.id} value={c.id}>{categoryPath(c.id)}</SelectItem>)}</SelectContent></Select></div>
     </section>
     <ProductFormFields elements={elements} values={values} onChange={setValues} typeName={typeName} />
-    <div className="flex gap-2 border-t pt-4"><Button type="submit" disabled={busy}><Save className="h-4 w-4 mr-2" />{busy ? "Saving…" : id ? "Update Product" : "Create Product"}</Button><Button type="button" variant="outline" onClick={onSaved}>Cancel</Button></div>
+    <div className="sticky bottom-0 z-10 flex gap-2 border-t bg-background py-3"><Button type="submit" disabled={busy}><Save className="h-4 w-4 mr-2" />{busy ? "Saving…" : id ? "Update Product" : "Create Product"}</Button><Button type="button" variant="outline" onClick={onSaved}>Cancel</Button></div>
   </form>;
 }
 
