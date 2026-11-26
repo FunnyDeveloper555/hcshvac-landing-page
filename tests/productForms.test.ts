@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { defaultForm, masterElements, productFormPatch, valuesFromProduct, generatedProductName, readFieldKeys } from "../src/lib/productForms";
+import { applyGeneratedName, defaultForm, masterElements, productFormPatch, valuesFromProduct, generatedProductName, readFieldKeys } from "../src/lib/productForms";
 
 test("Pumps form includes GPM without furnace-only measurements", () => {
   const pump = defaultForm("Pumps");
@@ -55,3 +55,15 @@ test("legacy editor furnace generation uses sheet AFUE, stages and poise when co
 import { moveKey, orderedElements, STANDARD_ELEMENTS } from "../src/lib/productForms";
 test("layout: moves an item to a new position", () => { assert.deepEqual(moveKey(["a", "b", "c"], 2, 0), ["c", "a", "b"]); });
 test("layout: elements follow saved order", () => { assert.deepEqual(orderedElements(STANDARD_ELEMENTS, ["missing", "model_number", "product_name"]).map(e => e.key), ["model_number", "product_name"]); });
+test("Generate Name fills both the Item Name and Product Name boxes the form shows", () => {
+  const elements = masterElements().filter(f => ["item_name", "product_name", "brand_name", "model_number", "afue", "stages", "poise", "location_type"].includes(f.key));
+  const values = applyGeneratedName("Furnace", elements, { brand_name: "Goodman", model_number: "GR9S960403AN", afue: "96", stages: "Single Stage", poise: "Up-Flow", location_type: ["Residential"] });
+  assert.equal(values.product_name, "96% Goodman GR9S960403AN Residential Single Stage Up-Flow Furnace");
+  assert.equal(values.item_name, values.product_name);
+});
+test("Generate Name leaves the Item Name box alone when the form does not show it", () => {
+  const elements = masterElements().filter(f => ["product_name", "brand_name", "model_number"].includes(f.key));
+  const values = applyGeneratedName("Pumps", elements, { brand_name: "Grundfos", model_number: "SC12" });
+  assert.equal(values.product_name, "Grundfos SC12 Pumps");
+  assert.equal(Object.hasOwn(values, "item_name"), false);
+});

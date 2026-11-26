@@ -98,6 +98,14 @@ export function productFormPatch(typeName: string, elements: FormElement[], valu
   return payload as TablesInsert<"products">;
 }
 const firstOf = (v: unknown) => (Array.isArray(v) ? v[0] : v) as string | undefined;
+/** Name fields the form actually shows; the generator fills every one of them. */
+export function nameFieldKeys(elements: FormElement[]): string[] {
+  return ["product_name", "item_name"].filter(k => elements.some(e => e.key === k));
+}
+export function applyGeneratedName(typeName: string, elements: FormElement[], values: FormValues): FormValues {
+  const name = generatedProductName(typeName, values);
+  return { ...values, ...Object.fromEntries(nameFieldKeys(elements).map(k => [k, name])) };
+}
 export function generatedProductName(typeName: string, values: FormValues): string {
   if (typeName.trim().toLowerCase() === "furnace") {
     // Client furnace pattern: [AFUE%] [Brand] [Model] [Location] [Stages] [Poise] Furnace

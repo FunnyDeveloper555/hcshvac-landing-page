@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileManagerPicker } from "@/components/admin/filemanager/FileManagerPicker";
 import { ImagePlus, Plus, Trash2, WandSparkles } from "lucide-react";
-import { asObject, generatedProductName, type FormElement, type FormValues } from "@/lib/productForms";
+import { applyGeneratedName, asObject, type FormElement, type FormValues } from "@/lib/productForms";
 
 interface Props { elements: FormElement[]; values: FormValues; onChange: (v: FormValues) => void; typeName: string }
 export function ProductFormFields({ elements, values, onChange, typeName }: Props) {
@@ -22,6 +22,9 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
     const { data, error } = await supabase.from("vendors").select("id,vendor_name,state").order("vendor_name"); if (error) throw error; return data || [];
   } });
   const set = (key: string, value: unknown) => onChange({ ...values, [key]: value });
+  // One labeled action fills every name field the form shows (Item Name and/or Product Name).
+  const generateName = () => onChange(applyGeneratedName(typeName, elements, values));
+  const nameField = (f: FormElement, id: string) => <div className="flex flex-wrap items-center gap-2"><Input id={id} className="min-w-[140px] flex-1" value={String(values[f.key] ?? "")} onChange={e => set(f.key, e.target.value)} required={f.key === "product_name"} /><Button type="button" size="sm" variant="outline" className="shrink-0" title="Generate Name" onClick={generateName}><WandSparkles className="h-4 w-4 mr-2" />Generate Name</Button></div>;
   const vendorOptions = vendors.filter(v => vendorState === "all" || (v.state || "").toUpperCase() === vendorState);
   const select = (id: string, value: unknown, options: string[], onSelect: (v: string) => void) => {
     const current = typeof value === "string" ? value : "";
@@ -34,8 +37,8 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
   };
   const render = (f: FormElement) => {
     const v = values[f.key]; const id = `field-${f.key}`;
-    if (f.key === "product_name") return <div className="flex flex-wrap items-center gap-2"><Input id={id} className="min-w-[140px] flex-1" value={String(v ?? "")} onChange={e => set(f.key, e.target.value)} required /><Button type="button" size="sm" variant="outline" className="shrink-0" title="Generate Name" onClick={() => set("product_name", generatedProductName(typeName, values))}><WandSparkles className="h-4 w-4 mr-2" />Generate Name</Button></div>;
-    if (f.kind === "generator") return <Button type="button" variant="outline" onClick={() => set("product_name", generatedProductName(typeName, values))}><WandSparkles className="h-4 w-4 mr-2" />Auto-Generate Name</Button>;
+    if (f.key === "product_name" || f.key === "item_name") return nameField(f, id);
+    if (f.kind === "generator") return <Button type="button" variant="outline" onClick={generateName}><WandSparkles className="h-4 w-4 mr-2" />Auto-Generate Name</Button>;
     if (f.kind === "brand") return <Select value={String(values.brand_id || "__none")} onValueChange={id => {
       const brand = brands.find(b => b.id === id); onChange({ ...values, brand_id: brand?.id || "", brand_name: brand?.name || "" });
     }}><SelectTrigger id={id}><SelectValue placeholder="Select brand" /></SelectTrigger><SelectContent>
@@ -76,7 +79,7 @@ export function ProductFormFields({ elements, values, onChange, typeName }: Prop
   return <>
     {elements.some(f => f.kind === "vendor" || f.kind === "costs") && <div className="max-w-xs space-y-2"><Label htmlFor="form-vendor-state">Vendor State</Label>{select("form-vendor-state", vendorState, ["all", ...new Set(vendors.map(v => (v.state || "").toUpperCase()).filter(Boolean))], setVendorState)}</div>}
     {groups.map(({ section, items }, gi) => <section key={`${section}-${gi}`} className="space-y-4 border-t pt-5"><h3 className="font-semibold text-lg">{section}</h3><div className="grid md:grid-cols-3 xl:grid-cols-4 gap-4">
-      {items.map(f => <div key={f.key} className={`space-y-2 min-w-0 ${["textarea", "multi", "costs", "bullets", "images", "image"].includes(f.kind) ? "md:col-span-3 xl:col-span-4" : f.key === "product_name" ? "md:col-span-2" : ""}`}><Label htmlFor={`field-${f.key}`}>{f.label}{f.key === "product_name" ? " *" : ""}</Label>{render(f)}</div>)}
+      {items.map(f => <div key={f.key} className={`space-y-2 min-w-0 ${["textarea", "multi", "costs", "bullets", "images", "image"].includes(f.kind) ? "md:col-span-3 xl:col-span-4" : ["product_name", "item_name"].includes(f.key) ? "md:col-span-2" : ""}`}><Label htmlFor={`field-${f.key}`}>{f.label}{f.key === "product_name" ? " *" : ""}</Label>{render(f)}</div>)}
     </div></section>)}
     <FileManagerPicker open={!!picker} onOpenChange={open => { if (!open) setPicker(null); }} accept="image/*" title="Choose Product Image" onSelect={url => {
       if (!picker) return;

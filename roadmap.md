@@ -2,6 +2,7 @@
 - [x] Product Form Maker: staff-only saved product-type layouts and reusable custom elements.
 - [x] Product Form Maker: field picker, preview, tailored product CRUD and Database Content menu.
 - [x] Product Form Maker: test mappings, permissions and signed-in save/read-back flow.
+- [x] Generate Name button beside both Item Name and Product Name on the tailored product form.
 - [x] Extract description dimensions and useful specifications during bulk product parsing; verified signed-in upload of two original rows and tested save-field mapping without importing real products.
 - [x] Add Service Directory after Core Services with template-filled settings and website updates.
 - [x] Verify the signed-in Service Directory save and template rendering.
